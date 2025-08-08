@@ -1,26 +1,76 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Everybody Eats brand-inspired palette */
+  --ee-bg: #fffdf7; /* warm off-white */
+  --ee-fg: #101418; /* near-black */
+  --ee-primary: #2e7d32; /* deep green */
+  --ee-primary-700: #256628; /* darker hover */
+  --ee-accent: #f59e0b; /* amber accent */
+  --ee-muted: #6b7280; /* gray-500 */
+  --ee-border: #e5e7eb; /* gray-200 */
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: var(--ee-bg);
+  --color-foreground: var(--ee-fg);
+  --color-primary: var(--ee-primary);
+  --color-primary-700: var(--ee-primary-700);
+  --color-accent: var(--ee-accent);
+  --color-muted: var(--ee-muted);
+  --color-border: var(--ee-border);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --ee-bg: #0a0f0a;
+    --ee-fg: #e5f0e8;
+    --ee-primary: #4caf50;
+    --ee-primary-700: #3d8b40;
+    --ee-accent: #fbbf24;
+    --ee-muted: #9ca3af;
+    --ee-border: #1f2937;
   }
 }
 
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--ee-bg);
+  color: var(--ee-fg);
+}
+
+/* Simple utility for branded buttons */
+.btn {
+  @apply inline-flex items-center justify-center rounded px-4 py-2 font-medium transition-colors;
+}
+.btn-primary {
+  background: var(--ee-primary);
+  color: white;
+}
+.btn-primary:hover {
+  background: var(--ee-primary-700);
+}
+.btn-outline {
+  @apply border;
+  border-color: var(--ee-primary);
+  color: var(--ee-primary);
+}
+.btn-outline:hover {
+  background: color-mix(in oklab, var(--ee-primary) 10%, transparent);
+}
+
+.header-link {
+  color: white;
+}
+.header-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.card {
+  @apply border rounded;
+  border-color: var(--ee-border);
+  background: white;
 }

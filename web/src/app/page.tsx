@@ -2,21 +2,41 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="py-16 text-center">
-      <h1 className="text-3xl font-semibold mb-3">
-        Everybody Eats Volunteer Portal
-      </h1>
-      <p className="text-gray-600 mb-6">
-        Pay-what-you-can social kitchen. Help us run community dinners.
-      </p>
-      <div className="flex gap-3 justify-center">
-        <Link href="/shifts" className="px-4 py-2 rounded bg-black text-white">
-          Browse Shifts
-        </Link>
-        <Link href="/login" className="px-4 py-2 rounded border">
-          Login
-        </Link>
-      </div>
+    <div>
+      <section className="bg-[var(--ee-bg)]">
+        <div className="max-w-6xl mx-auto px-4 py-16 grid gap-6 md:grid-cols-2 md:items-center">
+          <div>
+            <p className="uppercase text-sm tracking-wide text-[color:var(--ee-accent)] mb-2">
+              Meals that matter
+            </p>
+            <h1 className="text-4xl md:text-5xl font-semibold leading-tight mb-4">
+              Making a difference one plate at a time
+            </h1>
+            <p className="text-[color:var(--ee-muted)] mb-6">
+              Everybody Eats is an innovative, charitable restaurant,
+              transforming rescued food into quality 3-course meals on a
+              pay-what-you-can basis. Join us and be part of reducing food
+              waste, food insecurity and social isolation in Aotearoa.
+            </p>
+            <div className="flex gap-3">
+              <Link href="/shifts" className="btn btn-primary">
+                Volunteer shifts
+              </Link>
+              <Link href="/login" className="btn btn-outline">
+                Volunteer login
+              </Link>
+            </div>
+          </div>
+          <div className="hidden md:block" aria-hidden>
+            <div
+              className="aspect-[4/3] w-full rounded overflow-hidden border"
+              style={{ borderColor: "var(--ee-border)" }}
+            >
+              <div className="h-full w-full bg-[var(--ee-primary)]/10" />
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

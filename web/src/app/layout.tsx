@@ -29,15 +29,32 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <header className="border-b">
-          <nav className="max-w-5xl mx-auto p-4 flex gap-4">
-            <Link href="/">Home</Link>
-            <Link href="/shifts">Shifts</Link>
-            <Link href="/login" className="ml-auto">
-              Login
-            </Link>
-          </nav>
+          <div className="bg-[var(--ee-primary)] text-white">
+            <nav className="max-w-6xl mx-auto px-4 py-3 flex gap-6 items-center">
+              <Link
+                href="/"
+                className="font-semibold tracking-tight header-link"
+              >
+                Everybody Eats
+              </Link>
+              <Link href="/shifts" className="header-link">
+                Shifts
+              </Link>
+              <Link href="/login" className="ml-auto header-link">
+                Volunteer login
+              </Link>
+            </nav>
+          </div>
         </header>
-        <main className="max-w-5xl mx-auto p-4">{children}</main>
+        <main className="max-w-6xl mx-auto p-4">{children}</main>
+        <footer className="border-t mt-12">
+          <div className="max-w-6xl mx-auto px-4 py-8 text-sm text-[color:var(--ee-muted)]">
+            <div>
+              Registered charity number: CC56055 · © Everybody Eats{" "}
+              {new Date().getFullYear()}
+            </div>
+          </div>
+        </footer>
       </body>
     </html>
   );

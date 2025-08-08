@@ -27,7 +27,7 @@ export default function LoginPage() {
 
   return (
     <div className="max-w-md mx-auto p-6">
-      <h1 className="text-2xl font-semibold mb-4">Login</h1>
+      <h1 className="text-2xl font-semibold mb-4">Volunteer login</h1>
       <form onSubmit={onSubmit} className="space-y-3">
         <input
           className="w-full border rounded p-2"
@@ -44,10 +44,7 @@ export default function LoginPage() {
           onChange={(e) => setPassword(e.target.value)}
         />
         {error && <div className="text-red-600 text-sm">{error}</div>}
-        <button
-          type="submit"
-          className="w-full rounded bg-black text-white p-2"
-        >
+        <button type="submit" className="btn btn-primary w-full">
           Sign in
         </button>
       </form>

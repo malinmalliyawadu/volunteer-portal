@@ -11,9 +11,9 @@ export default async function ShiftsPage() {
   type ShiftWithRelations = (typeof shifts)[number];
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <h1 className="text-2xl font-semibold mb-4">Volunteer Shifts</h1>
-      <div className="space-y-4">
+    <div className="max-w-6xl mx-auto p-4">
+      <h1 className="text-3xl font-semibold mb-6">Volunteer Shifts</h1>
+      <div className="grid gap-4 md:grid-cols-2">
         {shifts.map((s: ShiftWithRelations) => {
           let confirmedCount = 0;
           for (const signup of s.signups) {
@@ -23,22 +23,22 @@ export default async function ShiftsPage() {
           return (
             <div
               key={s.id}
-              className="border rounded p-4 flex items-center justify-between"
+              className="card p-4 flex items-center justify-between"
             >
               <div>
                 <div className="font-medium">{s.shiftType.name}</div>
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-[color:var(--ee-muted)]">
                   {format(s.start, "EEE dd MMM, h:mma")} –{" "}
                   {format(s.end, "h:mma")} · {s.location}
                 </div>
-                <div className="text-sm">
+                <div className="text-sm mt-1">
                   Capacity: {s.capacity} · Remaining: {remaining}
                 </div>
               </div>
               <form action={`/api/shifts/${s.id}/signup`} method="post">
                 <button
                   type="submit"
-                  className="px-3 py-2 rounded bg-black text-white disabled:opacity-50"
+                  className="btn btn-primary disabled:opacity-50"
                   disabled={remaining === 0}
                 >
                   Sign up
