@@ -1,0 +1,70 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  VOLUNTEER
+  ADMIN
+}
+
+enum SignupStatus {
+  CONFIRMED
+  WAITLISTED
+  CANCELED
+}
+
+model User {
+  id             String   @id @default(cuid())
+  email          String   @unique
+  name           String?
+  phone          String?
+  hashedPassword String
+  role           Role     @default(VOLUNTEER)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  signups        Signup[]
+}
+
+model ShiftType {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  shifts      Shift[]
+}
+
+model Shift {
+  id           String    @id @default(cuid())
+  shiftTypeId  String
+  shiftType    ShiftType @relation(fields: [shiftTypeId], references: [id])
+  start        DateTime
+  end          DateTime
+  location     String?
+  capacity     Int
+  notes        String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  signups      Signup[]
+}
+
+model Signup {
+  id        String       @id @default(cuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id])
+  shiftId   String
+  shift     Shift        @relation(fields: [shiftId], references: [id])
+  status    SignupStatus @default(CONFIRMED)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@unique([userId, shiftId])
+}
