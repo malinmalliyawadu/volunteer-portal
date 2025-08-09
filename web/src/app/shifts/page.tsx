@@ -11,6 +11,93 @@ const LOCATIONS = ["Wellington", "Glenn Innes", "Onehunga"] as const;
 
 type LocationOption = (typeof LOCATIONS)[number];
 
+// Shift type theming configuration
+const SHIFT_THEMES = {
+  Dishwasher: {
+    icon: "🍽️",
+    gradient: "from-blue-500 to-cyan-500",
+    bgColor: "bg-blue-50",
+    borderColor: "border-blue-200",
+    textColor: "text-blue-700",
+    category: "Kitchen",
+    emoji: "🧽",
+  },
+  "FOH Set-Up & Service": {
+    icon: "🏪",
+    gradient: "from-purple-500 to-pink-500",
+    bgColor: "bg-purple-50",
+    borderColor: "border-purple-200",
+    textColor: "text-purple-700",
+    category: "Service",
+    emoji: "✨",
+  },
+  "Front of House": {
+    icon: "🤝",
+    gradient: "from-green-500 to-emerald-500",
+    bgColor: "bg-green-50",
+    borderColor: "border-green-200",
+    textColor: "text-green-700",
+    category: "Service",
+    emoji: "🌟",
+  },
+  "Kitchen Prep": {
+    icon: "🥕",
+    gradient: "from-orange-500 to-amber-500",
+    bgColor: "bg-orange-50",
+    borderColor: "border-orange-200",
+    textColor: "text-orange-700",
+    category: "Kitchen",
+    emoji: "🔪",
+  },
+  "Kitchen Prep & Service": {
+    icon: "👨‍🍳",
+    gradient: "from-red-500 to-pink-500",
+    bgColor: "bg-red-50",
+    borderColor: "border-red-200",
+    textColor: "text-red-700",
+    category: "Kitchen",
+    emoji: "🍳",
+  },
+  "Kitchen Service & Pack Down": {
+    icon: "🍜",
+    gradient: "from-indigo-500 to-purple-500",
+    bgColor: "bg-indigo-50",
+    borderColor: "border-indigo-200",
+    textColor: "text-indigo-700",
+    category: "Kitchen",
+    emoji: "📦",
+  },
+} as const;
+
+// Default theme for unknown shift types
+const DEFAULT_THEME = {
+  icon: "🤲",
+  gradient: "from-gray-500 to-slate-500",
+  bgColor: "bg-gray-50",
+  borderColor: "border-gray-200",
+  textColor: "text-gray-700",
+  category: "Volunteer",
+  emoji: "❤️",
+};
+
+function getShiftTheme(shiftTypeName: string) {
+  return (
+    SHIFT_THEMES[shiftTypeName as keyof typeof SHIFT_THEMES] || DEFAULT_THEME
+  );
+}
+
+function getDurationInHours(start: Date, end: Date): string {
+  const durationMs = end.getTime() - start.getTime();
+  const hours = durationMs / (1000 * 60 * 60);
+  const wholeHours = Math.floor(hours);
+  const minutes = Math.round((hours - wholeHours) * 60);
+
+  if (minutes === 0) {
+    return `${wholeHours}h`;
+  }
+  return `${wholeHours}h ${minutes}m`;
+}
+
 export default async function ShiftsPage({
   searchParams,
 }: {
@@ -162,10 +249,13 @@ export default async function ShiftsPage({
                         )
                       : undefined;
 
+                    const theme = getShiftTheme(s.shiftType.name);
+                    const duration = getDurationInHours(s.start, s.end);
+
                     return (
                       <Card
                         key={s.id}
-                        className="group hover:shadow-xl transition-all duration-300 overflow-hidden animate-slide-up"
+                        className={`group hover:shadow-xl transition-all duration-300 overflow-hidden animate-slide-up border-l-4 ${theme.borderColor} ${theme.bgColor} hover:scale-[1.02]`}
                         style={{
                           animationDelay: `${
                             dayIndex * 0.1 + shiftIndex * 0.05
@@ -173,51 +263,82 @@ export default async function ShiftsPage({
                         }}
                       >
                         <CardContent className="p-6">
+                          {/* Header with icon and title */}
                           <div className="flex items-start justify-between mb-4">
                             <div className="min-w-0 flex-1">
-                              <h3 className="font-semibold text-lg mb-1 group-hover:text-primary transition-colors">
-                                {s.shiftType.name}
-                              </h3>
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                                <svg
-                                  className="w-4 h-4"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
+                              <div className="flex items-center gap-3 mb-2">
+                                <div
+                                  className={`w-12 h-12 rounded-xl bg-gradient-to-br ${theme.gradient} flex items-center justify-center text-white text-xl shadow-lg`}
                                 >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                                  />
-                                </svg>
-                                <span>
-                                  {format(s.start, "h:mm a")} -{" "}
-                                  {format(s.end, "h:mm a")}
-                                </span>
+                                  {theme.icon}
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <h3 className="font-bold text-lg mb-1 group-hover:text-primary transition-colors line-clamp-1">
+                                    {s.shiftType.name}
+                                  </h3>
+                                  <div
+                                    className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${theme.bgColor} ${theme.textColor} border ${theme.borderColor}`}
+                                  >
+                                    <span>{theme.emoji}</span>
+                                    <span>{theme.category}</span>
+                                  </div>
+                                </div>
                               </div>
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <svg
-                                  className="w-4 h-4"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                                  />
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                                  />
-                                </svg>
-                                <span>{s.location}</span>
+
+                              {/* Time and location info */}
+                              <div className="space-y-2 mb-3">
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                  <div className="w-4 h-4 flex items-center justify-center">
+                                    <svg
+                                      className="w-4 h-4"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                      />
+                                    </svg>
+                                  </div>
+                                  <span className="font-medium">
+                                    {format(s.start, "h:mm a")} -{" "}
+                                    {format(s.end, "h:mm a")}
+                                  </span>
+                                  <span
+                                    className={`px-2 py-0.5 rounded-full text-xs font-medium ${theme.bgColor} ${theme.textColor}`}
+                                  >
+                                    {duration}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                  <div className="w-4 h-4 flex items-center justify-center">
+                                    <svg
+                                      className="w-4 h-4"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                                      />
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                                      />
+                                    </svg>
+                                  </div>
+                                  <span className="font-medium">
+                                    {s.location}
+                                  </span>
+                                </div>
                               </div>
                             </div>
                             {mySignup ? (
@@ -230,59 +351,83 @@ export default async function ShiftsPage({
                                 }
                               >
                                 {mySignup.status === "CONFIRMED"
-                                  ? "Confirmed"
-                                  : "Waitlisted"}
+                                  ? "✅ Confirmed"
+                                  : "⏳ Waitlisted"}
                               </Badge>
                             ) : null}
                           </div>
 
-                          {/* Capacity indicator */}
+                          {/* Description */}
+                          {s.shiftType.description && (
+                            <div className="mb-4 p-3 bg-white/50 rounded-lg border border-white/20">
+                              <p className="text-sm text-muted-foreground line-clamp-2">
+                                {s.shiftType.description}
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Enhanced capacity indicator */}
                           <div className="mb-4">
                             <div className="flex items-center justify-between text-sm mb-2">
-                              <span className="text-muted-foreground">
-                                Capacity
-                              </span>
-                              <span className="font-medium">
+                              <div className="flex items-center gap-2">
+                                <div className="w-4 h-4 flex items-center justify-center">
+                                  <svg
+                                    className="w-4 h-4 text-muted-foreground"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                                    />
+                                  </svg>
+                                </div>
+                                <span className="text-muted-foreground font-medium">
+                                  Volunteers
+                                </span>
+                              </div>
+                              <span className="font-bold text-base">
                                 {confirmedCount}/{s.capacity}
                               </span>
                             </div>
-                            <div className="progress-bar">
+                            <div className="progress-bar bg-gray-200">
                               <div
-                                className="progress-fill"
+                                className={`progress-fill bg-gradient-to-r ${theme.gradient}`}
                                 style={{ width: `${pct}%` }}
                               />
                             </div>
                             {isFull && waitlistCount > 0 && (
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {waitlistCount} on waitlist
+                              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                                <span>⏳</span>
+                                <span>{waitlistCount} on waitlist</span>
                               </p>
                             )}
                           </div>
 
-                          {s.shiftType.description && (
-                            <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                              {s.shiftType.description}
-                            </p>
-                          )}
-
+                          {/* Action buttons */}
                           <div className="flex items-center justify-between">
                             {isFull ? (
                               <Badge
                                 variant="secondary"
                                 className="badge-outline"
                               >
-                                Waitlist open
+                                🎯 Waitlist open
                               </Badge>
                             ) : (
-                              <Badge className="badge-accent">
-                                {remaining} spot{remaining !== 1 ? "s" : ""}{" "}
+                              <Badge
+                                className={`${theme.bgColor} ${theme.textColor} border ${theme.borderColor}`}
+                              >
+                                ✨ {remaining} spot{remaining !== 1 ? "s" : ""}{" "}
                                 left
                               </Badge>
                             )}
 
                             {mySignup ? (
-                              <span className="text-sm text-muted-foreground">
-                                You&apos;re signed up
+                              <span className="text-sm text-muted-foreground font-medium">
+                                You&apos;re signed up! 🎉
                               </span>
                             ) : isFull ? (
                               session ? (
@@ -298,16 +443,16 @@ export default async function ShiftsPage({
                                   <Button
                                     type="submit"
                                     size="sm"
-                                    className="btn-outline"
+                                    className="btn-outline hover:scale-105 transition-transform"
                                   >
-                                    Join waitlist
+                                    🎯 Join waitlist
                                   </Button>
                                 </form>
                               ) : (
                                 <Button
                                   asChild
                                   size="sm"
-                                  className="btn-primary"
+                                  className="btn-primary hover:scale-105 transition-transform"
                                 >
                                   <Link
                                     href={{
@@ -315,7 +460,7 @@ export default async function ShiftsPage({
                                       query: { callbackUrl: "/shifts" },
                                     }}
                                   >
-                                    Join waitlist
+                                    🎯 Join waitlist
                                   </Link>
                                 </Button>
                               )
@@ -327,20 +472,24 @@ export default async function ShiftsPage({
                                 <Button
                                   type="submit"
                                   size="sm"
-                                  className="btn-primary"
+                                  className={`btn-primary bg-gradient-to-r ${theme.gradient} hover:scale-105 transition-transform shadow-lg`}
                                 >
-                                  Sign up
+                                  ✨ Sign up
                                 </Button>
                               </form>
                             ) : (
-                              <Button asChild size="sm" className="btn-primary">
+                              <Button
+                                asChild
+                                size="sm"
+                                className="btn-primary hover:scale-105 transition-transform"
+                              >
                                 <Link
                                   href={{
                                     pathname: "/login",
                                     query: { callbackUrl: "/shifts" },
                                   }}
                                 >
-                                  Sign up
+                                  ✨ Sign up
                                 </Link>
                               </Button>
                             )}
