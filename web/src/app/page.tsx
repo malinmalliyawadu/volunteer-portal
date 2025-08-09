@@ -164,6 +164,97 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      <section className="section-content py-16">
+        <div className="max-w-4xl mx-auto text-center space-y-8">
+          <h1 className="text-4xl font-bold text-foreground mb-6">
+            Welcome to Everybody Eats Volunteer Portal
+          </h1>
+
+          <p className="text-lg text-muted-foreground mb-8">
+            Join our community of volunteers and help make a difference by
+            signing up for volunteer shifts.
+          </p>
+
+          {/* Dark Mode Demo Card */}
+          <div className="card p-6 mx-auto max-w-md">
+            <h3 className="text-xl font-semibold mb-4">🌙 Dark Mode Support</h3>
+            <p className="text-muted-foreground mb-4">
+              This portal now supports dark mode! Click the theme toggle in the
+              header to switch between light, dark, and system themes.
+            </p>
+            <div className="flex items-center justify-center space-x-2">
+              <div className="w-4 h-4 bg-primary rounded-full"></div>
+              <div className="w-4 h-4 bg-accent rounded-full"></div>
+              <div className="w-4 h-4 bg-muted rounded-full"></div>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            {session?.user ? (
+              <>
+                <Button asChild size="lg" className="btn-primary">
+                  <Link href="/shifts">Browse Available Shifts</Link>
+                </Button>
+                <Button asChild variant="outline" size="lg">
+                  <Link href="/dashboard">View My Dashboard</Link>
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button asChild size="lg" className="btn-primary">
+                  <Link href="/shifts">Browse Available Shifts</Link>
+                </Button>
+                <Button asChild variant="outline" size="lg">
+                  <Link href="/login">Volunteer Login</Link>
+                </Button>
+              </>
+            )}
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 mt-16">
+            <div className="card p-6">
+              <h3 className="text-xl font-semibold mb-4">🍽️ Community Meals</h3>
+              <p className="text-muted-foreground">
+                Help prepare and serve meals for our community members in need.
+              </p>
+            </div>
+
+            <div className="card p-6">
+              <h3 className="text-xl font-semibold mb-4">
+                📦 Food Distribution
+              </h3>
+              <p className="text-muted-foreground">
+                Assist with organizing and distributing food packages to
+                families.
+              </p>
+            </div>
+
+            <div className="card p-6">
+              <h3 className="text-xl font-semibold mb-4">🤝 Event Support</h3>
+              <p className="text-muted-foreground">
+                Join our team for special events and community outreach
+                programs.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-16 p-8 bg-primary-light rounded-xl">
+            <h2 className="text-2xl font-semibold mb-4">
+              Ready to Make a Difference?
+            </h2>
+            <p className="text-muted-foreground mb-6">
+              Every volunteer hour contributes to stronger, more connected
+              communities. Join us in our mission to ensure everybody eats.
+            </p>
+            {!session?.user && (
+              <Button asChild size="lg" className="btn-primary">
+                <Link href="/login">Get Started</Link>
+              </Button>
+            )}
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

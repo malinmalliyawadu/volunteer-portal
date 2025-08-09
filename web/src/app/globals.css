@@ -281,6 +281,19 @@ h6 {
 }
 
 .dark {
+  /* Dark mode values for --ee-* custom properties */
+  --ee-bg: #0a0f0a;
+  --ee-fg: #e5f0e8;
+  --ee-primary: #1d5337;
+  --ee-primary-700: #3d8b40;
+  --ee-primary-light: #1a2f1a;
+  --ee-accent: #f8fb69;
+  --ee-accent-subtle: #e4e85a;
+  --ee-muted: #9ca3af;
+  --ee-border: #1f2937;
+  --ee-card-bg: #111827;
+
+  /* shadcn/ui dark mode variables */
   --background: oklch(0.147 0.004 49.25);
   --foreground: oklch(0.985 0.001 106.423);
   --card: oklch(0.216 0.006 56.043);
