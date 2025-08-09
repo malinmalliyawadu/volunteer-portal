@@ -9,10 +9,15 @@
   --ee-fg: #101418; /* near-black */
   --ee-primary: #1d5337; /* brand green */
   --ee-primary-700: #256628; /* darker hover */
+  --ee-primary-light: #e8f5e8; /* light green tint */
   --ee-accent: #f8fb69; /* brand accent */
+  --ee-accent-subtle: #fcfd94; /* lighter accent */
   --ee-muted: #6b7280; /* gray-500 */
   --ee-border: #e5e7eb; /* gray-200 */
-  --radius: 0.625rem;
+  --ee-card-bg: #ffffff; /* pure white for cards */
+  --ee-gradient-start: #1d5337;
+  --ee-gradient-end: #256628;
+  --radius: 0.75rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.147 0.004 49.25);
   --card: oklch(1 0 0);
@@ -51,9 +56,12 @@
   --color-foreground: var(--ee-fg);
   --color-primary: var(--ee-primary);
   --color-primary-700: var(--ee-primary-700);
+  --color-primary-light: var(--ee-primary-light);
   --color-accent: var(--ee-accent);
+  --color-accent-subtle: var(--ee-accent-subtle);
   --color-muted: var(--ee-muted);
   --color-border: var(--ee-border);
+  --color-card-bg: var(--ee-card-bg);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -93,9 +101,12 @@
     --ee-fg: #e5f0e8;
     --ee-primary: #1d5337;
     --ee-primary-700: #3d8b40;
+    --ee-primary-light: #1a2f1a;
     --ee-accent: #f8fb69;
+    --ee-accent-subtle: #e4e85a;
     --ee-muted: #9ca3af;
     --ee-border: #1f2937;
+    --ee-card-bg: #111827;
   }
 }
 
@@ -103,76 +114,170 @@ html,
 body {
   background: var(--ee-bg);
   color: var(--ee-fg);
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+/* Enhanced typography */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
 /* Simple utility for branded buttons */
 .btn {
-  @apply inline-flex items-center justify-center rounded px-4 py-2 font-medium transition-colors;
+  @apply inline-flex items-center justify-center rounded-lg px-4 py-2.5 font-medium transition-all duration-200;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px 0 rgb(0 0 0 / 0.15);
 }
 .btn-sm {
-  @apply px-3 py-1.5 text-sm;
+  @apply px-3 py-2 text-sm rounded-md;
 }
 .btn-primary {
-  background: var(--ee-primary);
+  background: linear-gradient(
+    135deg,
+    var(--ee-gradient-start),
+    var(--ee-gradient-end)
+  );
   color: white;
 }
 .btn-primary:hover {
-  background: var(--ee-primary-700);
+  background: linear-gradient(135deg, var(--ee-primary-700), var(--ee-primary));
 }
 .btn-secondary {
   @apply border;
   border-color: var(--ee-border);
-  background: white;
+  background: var(--ee-card-bg);
   color: var(--ee-fg);
 }
 .btn-secondary:hover {
-  background: color-mix(in oklab, var(--ee-primary) 8%, white);
+  background: var(--ee-primary-light);
+  border-color: var(--ee-primary);
 }
 .btn-outline {
-  @apply border;
+  @apply border-2;
   border-color: var(--ee-primary);
   color: var(--ee-primary);
+  background: transparent;
 }
 .btn-outline:hover {
-  background: color-mix(in oklab, var(--ee-primary) 10%, transparent);
+  background: var(--ee-primary);
+  color: white;
 }
 
 .header-link {
   color: white;
+  transition: all 0.2s ease;
 }
 .header-link:hover {
   text-decoration: underline;
   text-underline-offset: 3px;
+  text-decoration-thickness: 2px;
 }
 
+/* Enhanced cards */
 .card {
-  @apply border rounded;
+  @apply border rounded-xl;
   border-color: var(--ee-border);
-  background: white;
-  box-shadow: 0 1px 2px rgba(16, 20, 24, 0.04);
+  background: var(--ee-card-bg);
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  transition: all 0.2s ease;
+}
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 }
 
-/* Badges */
+/* Enhanced badges */
 .badge {
-  @apply inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium;
+  @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold;
+  transition: all 0.2s ease;
 }
 .badge-muted {
   background: #f3f4f6;
   color: #374151;
 }
 .badge-accent {
-  background: color-mix(in oklab, var(--ee-accent) 20%, white);
+  background: linear-gradient(
+    135deg,
+    var(--ee-accent),
+    var(--ee-accent-subtle)
+  );
   color: #92400e;
 }
+.badge-primary {
+  background: linear-gradient(135deg, var(--ee-primary), var(--ee-primary-700));
+  color: white;
+}
 .badge-outline {
-  @apply border;
+  @apply border-2;
   border-color: var(--ee-border);
   color: var(--ee-fg);
-  background: white;
+  background: transparent;
 }
 
 .muted-text {
   color: var(--ee-muted);
+}
+
+/* Page sections */
+.section-hero {
+}
+
+.section-content {
+  background: var(--ee-bg);
+}
+
+/* Progress bars */
+.progress-bar {
+  @apply w-full bg-gray-200 rounded-full h-2;
+  overflow: hidden;
+}
+.progress-fill {
+  @apply h-full rounded-full transition-all duration-500;
+  background: linear-gradient(90deg, var(--ee-primary), var(--ee-primary-700));
+}
+
+/* Animation utilities */
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Focus states */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;
 }
 
 .dark {

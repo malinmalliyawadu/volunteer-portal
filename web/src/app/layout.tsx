@@ -53,6 +53,15 @@ export default async function RootLayout({
               </Link>
 
               <div className="ml-2 hidden md:flex items-center gap-1">
+                {session?.user ? (
+                  <Button
+                    asChild
+                    variant="ghost"
+                    className="text-white/90 hover:text-white hover:bg-white/10"
+                  >
+                    <Link href="/dashboard">Dashboard</Link>
+                  </Button>
+                ) : null}
                 <Button
                   asChild
                   variant="ghost"
@@ -93,6 +102,10 @@ export default async function RootLayout({
                       )?.name ??
                         (session.user as { email?: string | null })?.email ??
                         "Account") as string
+                    }
+                    userEmail={
+                      (session.user as { email?: string | null })?.email ??
+                      undefined
                     }
                   />
                 ) : (
