@@ -93,3 +93,56 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Already signed up?" }, { status: 400 });
   }
 }
+
+export async function DELETE(req: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email },
+  });
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const url = new URL(req.url);
+  const segments = url.pathname.split("/");
+  const shiftId = segments[segments.length - 2];
+
+  // Find the existing signup
+  const existingSignup = await prisma.signup.findUnique({
+    where: { userId_shiftId: { userId: user.id, shiftId } },
+    include: { shift: true },
+  });
+
+  if (!existingSignup) {
+    return NextResponse.json({ error: "Signup not found" }, { status: 404 });
+  }
+
+  // Don't allow canceling past shifts
+  const now = new Date();
+  if (existingSignup.shift.end < now) {
+    return NextResponse.json(
+      { error: "Cannot cancel past shifts" },
+      { status: 400 }
+    );
+  }
+
+  // Don't allow canceling already canceled signups
+  if (existingSignup.status === "CANCELED") {
+    return NextResponse.json(
+      { error: "Signup is already canceled" },
+      { status: 400 }
+    );
+  }
+
+  // Update the signup status to CANCELED
+  const canceledSignup = await prisma.signup.update({
+    where: { id: existingSignup.id },
+    data: { status: "CANCELED" },
+  });
+
+  return NextResponse.json(canceledSignup);
+}

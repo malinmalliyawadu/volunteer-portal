@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CancelSignupButton } from "./cancel-signup-button";
 
 export default async function MyShiftsPage({
   searchParams,
@@ -171,7 +172,16 @@ export default async function MyShiftsPage({
           </div>
         </div>
         {upcoming.length === 0 ? (
-          <div className="muted-text">No upcoming shifts yet.</div>
+          <div className="text-center py-8">
+            <div className="muted-text mb-4">No upcoming shifts yet.</div>
+            <div className="text-sm muted-text">
+              Visit the{" "}
+              <Link href="/shifts" className="text-blue-600 hover:underline">
+                shifts page
+              </Link>{" "}
+              to sign up for available volunteer opportunities.
+            </div>
+          </div>
         ) : (
           <div className="space-y-3">
             {upcoming.map((su: SignupWithRelations) => (
@@ -196,6 +206,14 @@ export default async function MyShiftsPage({
                       {su.shift.location ?? "TBC"}
                     </div>
                   </div>
+                  {su.status !== "CANCELED" && (
+                    <div className="flex-shrink-0">
+                      <CancelSignupButton
+                        shiftId={su.shift.id}
+                        shiftName={su.shift.shiftType.name}
+                      />
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ))}
@@ -218,7 +236,9 @@ export default async function MyShiftsPage({
           </div>
         </div>
         {past.length === 0 ? (
-          <div className="muted-text">No historical shifts.</div>
+          <div className="text-center py-8">
+            <div className="muted-text">No historical shifts.</div>
+          </div>
         ) : (
           <div className="space-y-3">
             {past.map((su: SignupWithRelations) => (
