@@ -1,10 +1,13 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
-import { Card, CardContent } from "@/components/ui/card";
+import { redirect } from "next/navigation";
+import { prisma } from "@/lib/prisma";
+import { format, differenceInHours } from "date-fns";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { PageHeader } from "@/components/page-header";
 
 export default async function ProfilePage() {
   const session = await getServerSession(authOptions);
@@ -85,15 +88,11 @@ export default async function ProfilePage() {
   }).toString()}`;
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-8 animate-fade-in">
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-primary-700 bg-clip-text text-transparent">
-          Your Profile
-        </h1>
-        <p className="text-muted-foreground">
-          Manage your volunteer account and track your impact
-        </p>
-      </div>
+    <div className="max-w-6xl mx-auto p-6 space-y-8 animate-fade-in">
+      <PageHeader
+        title="Your Profile"
+        description="Manage your volunteer account and track your impact"
+      />
 
       {session?.user ? (
         <div className="space-y-8">

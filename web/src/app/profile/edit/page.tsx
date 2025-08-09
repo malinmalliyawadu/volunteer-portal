@@ -32,6 +32,7 @@ import {
   FileText,
   ExternalLink,
 } from "lucide-react";
+import { PageHeader } from "@/components/page-header";
 
 interface EditProfilePageProps {
   searchParams: Promise<{
@@ -854,33 +855,20 @@ export default function EditProfilePage({
 
   return (
     <div className="min-h-screen">
-      <div className="max-w-4xl mx-auto p-6 space-y-8">
-        {/* Header */}
-        <div className="text-center space-y-4">
-          <div className="flex items-center justify-center gap-4 mb-6">
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/profile" className="flex items-center gap-2">
+      <div className="max-w-6xl mx-auto p-6 space-y-8 animate-fade-in">
+        <PageHeader
+          title="Edit Your Profile"
+          description="Update your volunteer profile to help us provide you with the best possible experience. Your information is kept secure and confidential."
+        >
+          <div className="flex justify-start mt-6">
+            <Button asChild variant="outline" size="sm" className="gap-2">
+              <Link href="/profile">
                 <ArrowLeft className="h-4 w-4" />
                 Back to Profile
               </Link>
             </Button>
           </div>
-          <div className="space-y-2">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              Edit Your Profile
-            </h1>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Update your volunteer profile to help us provide you with the best
-              possible experience. Your information is kept secure and
-              confidential.
-            </p>
-            <p className="text-sm text-muted-foreground max-w-2xl mx-auto mt-2">
-              💡 <strong>Tip:</strong> Click on any section above or use the
-              tabs to jump around freely. You can save your progress at any
-              time!
-            </p>
-          </div>
-        </div>
+        </PageHeader>
 
         {/* Progress Indicator */}
         <div className="bg-white rounded-xl shadow-sm border border-border p-6">

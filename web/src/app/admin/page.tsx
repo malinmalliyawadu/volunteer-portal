@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/page-header";
 
 const LOCATIONS = ["Wellington", "Glenn Innes", "Onehunga"] as const;
 type LocationOption = (typeof LOCATIONS)[number];
@@ -54,6 +55,7 @@ export default async function AdminDashboardPage({
     pastShifts,
     totalSignups,
     confirmedSignups,
+    pendingSignups,
     waitlistedSignups,
     recentSignups,
     nextShift,
@@ -78,6 +80,12 @@ export default async function AdminDashboardPage({
     prisma.signup.count({
       where: {
         status: "CONFIRMED",
+        ...(selectedLocation ? { shift: { location: selectedLocation } } : {}),
+      },
+    }),
+    prisma.signup.count({
+      where: {
+        status: "PENDING",
         ...(selectedLocation ? { shift: { location: selectedLocation } } : {}),
       },
     }),
@@ -193,10 +201,14 @@ export default async function AdminDashboardPage({
 
   type SignupWithUserAndShift = {
     id: string;
-    status: "CONFIRMED" | "WAITLISTED" | "CANCELED";
+    status: "PENDING" | "CONFIRMED" | "WAITLISTED" | "CANCELED";
     createdAt: Date;
     user: { id: string; name: string | null; email: string };
-    shift: { start: Date; location: string; shiftType: { name: string } };
+    shift: {
+      start: Date;
+      location: string | null;
+      shiftType: { name: string };
+    };
   };
 
   // Filter shifts that need attention (less than 50% capacity filled)
@@ -220,52 +232,46 @@ export default async function AdminDashboardPage({
   return (
     <div className="animate-fade-in">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            Admin Dashboard
-            {selectedLocation && (
-              <span className="text-xl text-muted-foreground ml-2">
-                - {selectedLocation}
+        <PageHeader
+          title={`Admin Dashboard${
+            selectedLocation ? ` - ${selectedLocation}` : ""
+          }`}
+          description={`Overview of volunteer portal activity and management tools${
+            selectedLocation ? ` for ${selectedLocation}` : ""
+          }.`}
+        >
+          {/* Location filter */}
+          <div className="mt-6 p-6 bg-card-bg rounded-xl border border-border">
+            <div className="flex flex-wrap gap-3 items-center">
+              <span className="text-sm font-medium text-foreground mr-2">
+                Filter by location:
               </span>
-            )}
-          </h1>
-          <p className="text-muted-foreground">
-            Overview of volunteer portal activity and management tools
-            {selectedLocation
-              ? ` for ${selectedLocation}`
-              : " across all locations"}
-          </p>
-        </div>
-
-        {/* Location Filter */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Filter by Location</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
               <Button
                 asChild
-                variant={!selectedLocation ? "default" : "outline"}
+                variant={!selectedLocation ? "default" : "secondary"}
                 size="sm"
+                className={!selectedLocation ? "btn-primary" : ""}
               >
-                <Link href={createLocationUrl()}>All Locations</Link>
+                <Link href={{ pathname: "/admin", query: {} }}>
+                  All locations
+                </Link>
               </Button>
-              {availableLocations.map((location: string) => (
+              {LOCATIONS.map((loc) => (
                 <Button
-                  key={location}
                   asChild
-                  variant={
-                    selectedLocation === location ? "default" : "outline"
-                  }
+                  key={loc}
+                  variant={selectedLocation === loc ? "default" : "secondary"}
                   size="sm"
+                  className={selectedLocation === loc ? "btn-primary" : ""}
                 >
-                  <Link href={createLocationUrl(location)}>{location}</Link>
+                  <Link href={{ pathname: "/admin", query: { location: loc } }}>
+                    {loc}
+                  </Link>
                 </Button>
               ))}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </PageHeader>
 
         {/* Quick Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -297,16 +303,26 @@ export default async function AdminDashboardPage({
             </CardContent>
           </Card>
 
-          <Card>
+          <Card
+            className={
+              pendingSignups > 0 ? "border-orange-200 bg-orange-50" : ""
+            }
+          >
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                 Total Signups
+                {pendingSignups > 0 && (
+                  <Badge className="bg-orange-100 text-orange-800 border-orange-200">
+                    {pendingSignups} pending
+                  </Badge>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{totalSignups}</div>
               <p className="text-xs text-muted-foreground">
-                {confirmedSignups} confirmed, {waitlistedSignups} waitlisted
+                {confirmedSignups} confirmed, {pendingSignups} pending,{" "}
+                {waitlistedSignups} waitlisted
               </p>
             </CardContent>
           </Card>
@@ -480,6 +496,8 @@ export default async function AdminDashboardPage({
                         variant={
                           signup.status === "CONFIRMED"
                             ? "default"
+                            : signup.status === "PENDING"
+                            ? "outline"
                             : signup.status === "WAITLISTED"
                             ? "secondary"
                             : "destructive"

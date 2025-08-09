@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { redirect } from "next/navigation";
 import Image from "next/image";
+import { PageHeader } from "@/components/page-header";
 
 export default async function Home() {
   const session = await getServerSession(authOptions);
@@ -175,14 +176,10 @@ export default async function Home() {
 
       <section className="section-content py-16">
         <div className="max-w-4xl mx-auto text-center space-y-8">
-          <h1 className="text-4xl font-bold text-foreground mb-6">
-            Welcome to Everybody Eats Volunteer Portal
-          </h1>
-
-          <p className="text-lg text-muted-foreground mb-8">
-            Join our community of volunteers and help make a difference by
-            signing up for volunteer shifts.
-          </p>
+          <PageHeader
+            title="Welcome to Everybody Eats Volunteer Portal"
+            description="Join our community of volunteers and help make a difference by signing up for volunteer shifts."
+          />
 
           {/* Dark Mode Demo Card */}
           <div className="card p-6 mx-auto max-w-md">

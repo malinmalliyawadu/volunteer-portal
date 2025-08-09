@@ -16,6 +16,7 @@ enum Role {
 }
 
 enum SignupStatus {
+  PENDING
   CONFIRMED
   WAITLISTED
   CANCELED

@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import AchievementsCard from "@/components/achievements-card";
+import { PageHeader } from "@/components/page-header";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -25,16 +26,17 @@ export default async function DashboardPage() {
     totalShifts,
     completedShifts,
     upcomingShifts,
+    pendingShifts,
     nextShift,
     recentShifts,
     totalVolunteers,
     monthlyShifts,
   ] = await Promise.all([
-    // Total shifts ever signed up for
+    // Total shifts ever signed up for (including pending)
     prisma.signup.count({
       where: {
         userId: userId!,
-        status: { in: ["CONFIRMED", "WAITLISTED"] },
+        status: { in: ["PENDING", "CONFIRMED", "WAITLISTED"] },
       },
     }),
 
@@ -57,12 +59,21 @@ export default async function DashboardPage() {
       },
     }),
 
-    // Next upcoming shift
+    // Pending approval shifts count
+    prisma.signup.count({
+      where: {
+        userId: userId!,
+        shift: { start: { gte: now } },
+        status: "PENDING",
+      },
+    }),
+
+    // Next upcoming shift (confirmed or pending)
     prisma.signup.findFirst({
       where: {
         userId: userId!,
         shift: { start: { gte: now } },
-        status: "CONFIRMED",
+        status: { in: ["PENDING", "CONFIRMED"] },
       },
       include: { shift: { include: { shiftType: true } } },
       orderBy: { shift: { start: "asc" } },
@@ -127,26 +138,11 @@ export default async function DashboardPage() {
   )[0]?.[0];
 
   return (
-    <div className="animate-fade-in space-y-6">
-      {/* Welcome Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">
-            Welcome back{userName ? `, ${userName}` : ""}! 👋
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Here's what's happening with your volunteer journey
-          </p>
-        </div>
-        <div className="flex gap-3 mt-4 sm:mt-0">
-          <Button asChild size="sm" variant="outline">
-            <Link href="/shifts">Browse Shifts</Link>
-          </Button>
-          <Button asChild size="sm">
-            <Link href="/shifts/mine">My Schedule</Link>
-          </Button>
-        </div>
-      </div>
+    <div className="animate-fade-in space-y-6 py-4">
+      <PageHeader
+        title={`Welcome back${userName ? `, ${userName}` : ""}!`}
+        description="Here's what's happening with your volunteer journey"
+      ></PageHeader>
 
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -226,7 +222,14 @@ export default async function DashboardPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold">{upcomingShifts}</p>
-                <p className="text-sm text-muted-foreground">Upcoming Shifts</p>
+                <p className="text-sm text-muted-foreground">
+                  Confirmed Shifts
+                  {pendingShifts > 0 && (
+                    <span className="block text-orange-600 font-medium">
+                      +{pendingShifts} pending approval
+                    </span>
+                  )}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -291,6 +294,17 @@ export default async function DashboardPage() {
                     <p className="text-muted-foreground">
                       {nextShift.shift.location}
                     </p>
+                    {nextShift.status === "PENDING" && (
+                      <Badge
+                        variant="outline"
+                        className="bg-orange-50 text-orange-700 border-orange-200 mt-2"
+                      >
+                        Pending Approval
+                      </Badge>
+                    )}
+                    {nextShift.status === "CONFIRMED" && (
+                      <Badge className="mt-2">Confirmed</Badge>
+                    )}
                   </div>
                   <Badge variant="secondary">
                     {formatDistanceToNow(nextShift.shift.start, {

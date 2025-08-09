@@ -6,6 +6,8 @@ import { authOptions } from "@/lib/auth-options";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ShiftSignupDialog } from "@/components/shift-signup-dialog";
+import { PageHeader } from "@/components/page-header";
 
 const LOCATIONS = ["Wellington", "Glenn Innes", "Onehunga"] as const;
 
@@ -141,46 +143,45 @@ export default async function ShiftsPage({
   const sortedKeys = Array.from(groups.keys()).sort();
 
   return (
-    <div className="max-w-6xl mx-auto p-4 animate-fade-in">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-primary-700 bg-clip-text text-transparent">
-          Volunteer Shifts
-        </h1>
-        <p className="text-lg text-muted-foreground">
-          Find and sign up for upcoming shifts
-          {selectedLocation ? ` in ${selectedLocation}` : ""}.
-        </p>
-      </div>
-
-      {/* Location filter */}
-      <div className="mb-8 p-6 bg-card-bg rounded-xl border border-border">
-        <div className="flex flex-wrap gap-3 items-center">
-          <span className="text-sm font-medium text-foreground mr-2">
-            Filter by location:
-          </span>
-          <Button
-            asChild
-            variant={!selectedLocation ? "default" : "secondary"}
-            size="sm"
-            className={!selectedLocation ? "btn-primary" : ""}
-          >
-            <Link href={{ pathname: "/shifts", query: {} }}>All locations</Link>
-          </Button>
-          {LOCATIONS.map((loc) => (
+    <div className="max-w-6xl mx-auto py-4 animate-fade-in">
+      <PageHeader
+        title="Volunteer Shifts"
+        description={`Find and sign up for upcoming shifts${
+          selectedLocation ? ` in ${selectedLocation}` : ""
+        }.`}
+      >
+        {/* Location filter */}
+        <div className="mt-6 p-6 bg-card-bg rounded-xl border border-border">
+          <div className="flex flex-wrap gap-3 items-center">
+            <span className="text-sm font-medium text-foreground mr-2">
+              Filter by location:
+            </span>
             <Button
               asChild
-              key={loc}
-              variant={selectedLocation === loc ? "default" : "secondary"}
+              variant={!selectedLocation ? "default" : "secondary"}
               size="sm"
-              className={selectedLocation === loc ? "btn-primary" : ""}
+              className={!selectedLocation ? "btn-primary" : ""}
             >
-              <Link href={{ pathname: "/shifts", query: { location: loc } }}>
-                {loc}
+              <Link href={{ pathname: "/shifts", query: {} }}>
+                All locations
               </Link>
             </Button>
-          ))}
+            {LOCATIONS.map((loc) => (
+              <Button
+                asChild
+                key={loc}
+                variant={selectedLocation === loc ? "default" : "secondary"}
+                size="sm"
+                className={selectedLocation === loc ? "btn-primary" : ""}
+              >
+                <Link href={{ pathname: "/shifts", query: { location: loc } }}>
+                  {loc}
+                </Link>
+              </Button>
+            ))}
+          </div>
         </div>
-      </div>
+      </PageHeader>
 
       {shifts.length === 0 ? (
         <div className="text-center py-16">
@@ -227,25 +228,27 @@ export default async function ShiftsPage({
                   {dayShifts.map((s: ShiftWithRelations, shiftIndex) => {
                     let confirmedCount = 0;
                     let waitlistCount = 0;
+                    let pendingCount = 0;
                     for (const signup of s.signups) {
                       if (signup.status === "CONFIRMED") confirmedCount += 1;
                       if (signup.status === "WAITLISTED") waitlistCount += 1;
+                      if (signup.status === "PENDING") pendingCount += 1;
+                      // Note: CANCELED signups are excluded from all counts
                     }
-                    const remaining = Math.max(0, s.capacity - confirmedCount);
+                    const totalSignedUp =
+                      confirmedCount + waitlistCount + pendingCount;
+                    const remaining = Math.max(0, s.capacity - totalSignedUp);
                     const isFull = remaining === 0;
-                    const pct = Math.min(
-                      100,
-                      Math.round((confirmedCount / s.capacity) * 100)
-                    );
 
-                    // Determine if the current user is already signed up for this shift
+                    // Determine if the current user is already signed up for this shift (excluding canceled)
                     const currentUserId = (
                       session?.user as { id?: string } | undefined
                     )?.id;
                     const mySignup = currentUserId
                       ? s.signups.find(
                           (su: (typeof s.signups)[number]) =>
-                            su.userId === currentUserId
+                            su.userId === currentUserId &&
+                            su.status !== "CANCELED"
                         )
                       : undefined;
 
@@ -347,11 +350,15 @@ export default async function ShiftsPage({
                                 className={
                                   mySignup.status === "CONFIRMED"
                                     ? "badge-primary"
+                                    : mySignup.status === "PENDING"
+                                    ? "badge-accent"
                                     : "badge-accent"
                                 }
                               >
                                 {mySignup.status === "CONFIRMED"
                                   ? "✅ Confirmed"
+                                  : mySignup.status === "PENDING"
+                                  ? "⏳ Pending Approval"
                                   : "⏳ Waitlisted"}
                               </Badge>
                             ) : null}
@@ -390,20 +397,37 @@ export default async function ShiftsPage({
                                 </span>
                               </div>
                               <span className="font-bold text-base">
-                                {confirmedCount}/{s.capacity}
+                                {totalSignedUp}/{s.capacity}
                               </span>
                             </div>
                             <div className="progress-bar bg-gray-200">
                               <div
                                 className={`progress-fill bg-gradient-to-r ${theme.gradient}`}
-                                style={{ width: `${pct}%` }}
+                                style={{
+                                  width: `${Math.min(
+                                    100,
+                                    Math.round(
+                                      (totalSignedUp / s.capacity) * 100
+                                    )
+                                  )}%`,
+                                }}
                               />
                             </div>
-                            {isFull && waitlistCount > 0 && (
-                              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                                <span>⏳</span>
-                                <span>{waitlistCount} on waitlist</span>
-                              </p>
+                            {(pendingCount > 0 || waitlistCount > 0) && (
+                              <div className="text-xs text-muted-foreground mt-1 space-y-0.5">
+                                {pendingCount > 0 && (
+                                  <p className="flex items-center gap-1">
+                                    <span>⏳</span>
+                                    <span>{pendingCount} pending approval</span>
+                                  </p>
+                                )}
+                                {waitlistCount > 0 && (
+                                  <p className="flex items-center gap-1">
+                                    <span>🎯</span>
+                                    <span>{waitlistCount} on waitlist</span>
+                                  </p>
+                                )}
+                              </div>
                             )}
                           </div>
 
@@ -431,23 +455,29 @@ export default async function ShiftsPage({
                               </span>
                             ) : isFull ? (
                               session ? (
-                                <form
-                                  action={`/api/shifts/${s.id}/signup`}
-                                  method="post"
+                                <ShiftSignupDialog
+                                  shift={{
+                                    id: s.id,
+                                    start: s.start,
+                                    end: s.end,
+                                    location: s.location,
+                                    capacity: s.capacity,
+                                    shiftType: {
+                                      name: s.shiftType.name,
+                                      description: s.shiftType.description,
+                                    },
+                                  }}
+                                  confirmedCount={confirmedCount}
+                                  isWaitlist={true}
                                 >
-                                  <input
-                                    type="hidden"
-                                    name="waitlist"
-                                    value="1"
-                                  />
                                   <Button
-                                    type="submit"
+                                    type="button"
                                     size="sm"
                                     className="btn-outline hover:scale-105 transition-transform"
                                   >
                                     🎯 Join waitlist
                                   </Button>
-                                </form>
+                                </ShiftSignupDialog>
                               ) : (
                                 <Button
                                   asChild
@@ -465,18 +495,28 @@ export default async function ShiftsPage({
                                 </Button>
                               )
                             ) : session ? (
-                              <form
-                                action={`/api/shifts/${s.id}/signup`}
-                                method="post"
+                              <ShiftSignupDialog
+                                shift={{
+                                  id: s.id,
+                                  start: s.start,
+                                  end: s.end,
+                                  location: s.location,
+                                  capacity: s.capacity,
+                                  shiftType: {
+                                    name: s.shiftType.name,
+                                    description: s.shiftType.description,
+                                  },
+                                }}
+                                confirmedCount={confirmedCount}
                               >
                                 <Button
-                                  type="submit"
+                                  type="button"
                                   size="sm"
                                   className={`btn-primary bg-gradient-to-r ${theme.gradient} hover:scale-105 transition-transform shadow-lg`}
                                 >
                                   ✨ Sign up
                                 </Button>
-                              </form>
+                              </ShiftSignupDialog>
                             ) : (
                               <Button
                                 asChild

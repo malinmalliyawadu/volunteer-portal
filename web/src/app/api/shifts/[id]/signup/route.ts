@@ -74,10 +74,10 @@ export async function POST(req: Request) {
     return NextResponse.json(signup);
   }
 
-  // Spots available → create confirmed signup
+  // Spots available → create pending signup that requires admin approval
   try {
     const signup = await prisma.signup.create({
-      data: { userId: user.id, shiftId: shift.id, status: "CONFIRMED" },
+      data: { userId: user.id, shiftId: shift.id, status: "PENDING" },
     });
 
     // Check for new achievements after successful signup

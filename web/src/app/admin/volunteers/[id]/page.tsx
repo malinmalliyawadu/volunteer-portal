@@ -20,6 +20,7 @@ import {
   Filter,
   ChevronLeft,
 } from "lucide-react";
+import { PageHeader } from "@/components/page-header";
 
 interface AdminVolunteerPageProps {
   params: Promise<{ id: string }>;
@@ -172,26 +173,20 @@ export default async function AdminVolunteerPage({
 
   return (
     <div className="min-h-screen">
-      <div className="max-w-6xl mx-auto p-4">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-4 mb-4">
-            <Button asChild variant="outline" size="sm" className="shadow-sm">
-              <Link href="/admin/shifts" className="flex items-center gap-2">
+      <div className="max-w-7xl mx-auto p-4">
+        <PageHeader
+          title="Volunteer Profile"
+          description="Comprehensive view of volunteer information and activity"
+        >
+          <div className="flex justify-start mt-6">
+            <Button asChild variant="outline" size="sm" className="gap-2">
+              <Link href="/admin/shifts">
                 <ChevronLeft className="h-4 w-4" />
                 Back to Shifts
               </Link>
             </Button>
           </div>
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-slate-200">
-            <h1 className="text-4xl font-bold text-slate-900 mb-2">
-              Volunteer Profile
-            </h1>
-            <p className="text-slate-600">
-              Comprehensive view of volunteer information and activity
-            </p>
-          </div>
-        </div>
+        </PageHeader>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Profile Info */}

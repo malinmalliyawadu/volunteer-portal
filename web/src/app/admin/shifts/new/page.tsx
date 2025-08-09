@@ -4,12 +4,13 @@ import { authOptions } from "@/lib/auth-options";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { z } from "zod";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { SelectField } from "@/components/ui/select-field";
+import { PageHeader } from "@/components/page-header";
 
 const LOCATIONS = ["Wellington", "Glenn Innes", "Onehunga"] as const;
 
@@ -90,15 +91,13 @@ export default async function NewShiftPage() {
 
   return (
     <div className="max-w-2xl mx-auto p-4">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-semibold">Create shift</h1>
-          <p className="muted-text mt-1">Add a new upcoming shift.</p>
+      <PageHeader title="Create shift" description="Add a new upcoming shift.">
+        <div className="flex justify-end mt-6">
+          <Button asChild variant="secondary">
+            <Link href="/admin/shifts">Back to shifts</Link>
+          </Button>
         </div>
-        <Button asChild variant="secondary">
-          <Link href="/admin/shifts">Back to shifts</Link>
-        </Button>
-      </div>
+      </PageHeader>
 
       <Card>
         <CardContent className="p-4">

@@ -20,9 +20,23 @@ import {
   User,
   X,
 } from "lucide-react";
+import { PageHeader } from "@/components/page-header";
 
 const LOCATIONS = ["Wellington", "Glenn Innes", "Onehunga"] as const;
+
 type LocationOption = (typeof LOCATIONS)[number];
+
+function getDurationInHours(start: Date, end: Date): string {
+  const durationMs = end.getTime() - start.getTime();
+  const hours = durationMs / (1000 * 60 * 60);
+  const wholeHours = Math.floor(hours);
+  const minutes = Math.round((hours - wholeHours) * 60);
+
+  if (minutes === 0) {
+    return `${wholeHours}h`;
+  }
+  return `${wholeHours}h ${minutes}m`;
+}
 
 export default async function AdminShiftsPage({
   searchParams,
@@ -164,15 +178,19 @@ export default async function AdminShiftsPage({
 
   function counts(s: ShiftWithAll) {
     let confirmed = 0;
+    let pending = 0;
     let waitlisted = 0;
     for (const su of s.signups) {
       if (su.status === "CONFIRMED") confirmed += 1;
+      if (su.status === "PENDING") pending += 1;
       if (su.status === "WAITLISTED") waitlisted += 1;
+      // Note: CANCELED signups are excluded from all counts
     }
     return {
       confirmed,
+      pending,
       waitlisted,
-      remaining: Math.max(0, s.capacity - confirmed),
+      remaining: Math.max(0, s.capacity - confirmed - pending),
     };
   }
 
@@ -182,15 +200,37 @@ export default async function AdminShiftsPage({
     phone,
     status,
     userId,
+    signupId,
   }: {
     name: string | null;
     email: string;
     phone: string | null;
-    status: "CONFIRMED" | "WAITLISTED" | "CANCELED";
+    status: "PENDING" | "CONFIRMED" | "WAITLISTED" | "CANCELED";
     userId: string;
+    signupId: string;
   }) {
+    const handleSignupAction = async (action: "approve" | "reject") => {
+      try {
+        const response = await fetch(`/api/admin/signups/${signupId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action }),
+        });
+
+        if (response.ok) {
+          window.location.reload(); // Refresh to show updated state
+        } else {
+          const error = await response.json();
+          alert(error.error || "Failed to process signup");
+        }
+      } catch (error) {
+        console.error("Signup action error:", error);
+        alert("Failed to process signup");
+      }
+    };
+
     return (
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-2 md:gap-4 text-sm py-3 px-1 hover:bg-slate-50 rounded-lg transition-colors">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-2 md:gap-4 text-sm py-3 px-1 hover:bg-slate-50 rounded-lg transition-colors">
         <div className="truncate">
           <Link
             href={`/admin/volunteers/${userId}`}
@@ -203,6 +243,11 @@ export default async function AdminShiftsPage({
         <div className="truncate text-slate-600">{email}</div>
         <div className="truncate text-slate-600">{phone ?? "—"}</div>
         <div>
+          {status === "PENDING" && (
+            <Badge className="bg-orange-100 text-orange-800 border-orange-200">
+              Pending Approval
+            </Badge>
+          )}
           {status === "CONFIRMED" && (
             <Badge className="bg-green-100 text-green-800 border-green-200">
               Confirmed
@@ -219,12 +264,33 @@ export default async function AdminShiftsPage({
             </Badge>
           )}
         </div>
+        <div className="flex gap-2">
+          {status === "PENDING" && (
+            <>
+              <Button
+                size="sm"
+                onClick={() => handleSignupAction("approve")}
+                className="h-8 px-3 bg-green-600 hover:bg-green-700 text-white"
+              >
+                ✓ Approve
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleSignupAction("reject")}
+                className="h-8 px-3 border-red-200 text-red-600 hover:bg-red-50"
+              >
+                ✕ Reject
+              </Button>
+            </>
+          )}
+        </div>
       </div>
     );
   }
 
   function ShiftCard({ s }: { s: ShiftWithAll }) {
-    const { confirmed, waitlisted, remaining } = counts(s);
+    const { confirmed, pending, waitlisted, remaining } = counts(s);
     return (
       <Card className="shadow-sm border-slate-200 hover:shadow-md transition-shadow">
         <CardContent className="p-6">
@@ -232,13 +298,19 @@ export default async function AdminShiftsPage({
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 mb-2">
                 <Calendar className="h-5 w-5 text-blue-600 flex-shrink-0" />
-                <h3 className="font-semibold text-slate-900 text-lg">
+                <h3 className="font-semibold text-lg text-slate-900 truncate">
                   {s.shiftType.name}
                 </h3>
+              </div>
+              <div className="space-y-2 mb-3">
+                <div className="flex items-center gap-2 text-sm text-slate-600">
+                  <Clock className="h-3 w-3" />
+                  {format(s.start, "h:mm a")} - {format(s.end, "h:mm a")}
+                </div>
                 {s.location && (
                   <Badge
                     variant="outline"
-                    className="border-slate-300 text-slate-600"
+                    className="text-xs bg-slate-100 text-slate-700 border-slate-300"
                   >
                     <MapPin className="h-3 w-3 mr-1" />
                     {s.location}
@@ -252,32 +324,47 @@ export default async function AdminShiftsPage({
                 </div>
                 <div className="flex items-center gap-1">
                   <Clock className="h-3 w-3" />
-                  {format(s.start, "h:mma")} – {format(s.end, "h:mma")}
+                  Duration: {getDurationInHours(s.start, s.end)}
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-2 text-sm">
-              <Badge className="bg-blue-100 text-blue-800 border-blue-200">
-                <Users className="h-3 w-3 mr-1" />
-                {confirmed}/{s.capacity} confirmed
-              </Badge>
-              {waitlisted > 0 && (
-                <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">
-                  {waitlisted} waitlisted
-                </Badge>
-              )}
-              {remaining === 0 ? (
-                <Badge className="bg-red-100 text-red-800 border-red-200">
-                  Full
-                </Badge>
-              ) : (
-                <Badge
-                  variant="outline"
-                  className="border-green-300 text-green-700"
-                >
-                  {remaining} spots left
-                </Badge>
-              )}
+
+            <div className="text-right">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Badge
+                    variant="outline"
+                    className="bg-green-50 text-green-700 border-green-200"
+                  >
+                    ✓ {confirmed} confirmed
+                  </Badge>
+                  {pending > 0 && (
+                    <Badge
+                      variant="outline"
+                      className="bg-orange-50 text-orange-700 border-orange-200"
+                    >
+                      ⏳ {pending} pending
+                    </Badge>
+                  )}
+                  {waitlisted > 0 && (
+                    <Badge
+                      variant="outline"
+                      className="bg-yellow-50 text-yellow-700 border-yellow-200"
+                    >
+                      📋 {waitlisted} waitlisted
+                    </Badge>
+                  )}
+                </div>
+                <div className="text-sm text-slate-600">
+                  {remaining > 0 ? (
+                    <span className="text-green-600 font-medium">
+                      {remaining} spots remaining
+                    </span>
+                  ) : (
+                    <span className="text-slate-500">Full</span>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -288,11 +375,12 @@ export default async function AdminShiftsPage({
             </div>
           ) : (
             <div className="border-t border-slate-100 pt-4">
-              <div className="hidden md:grid md:grid-cols-4 md:gap-4 text-xs uppercase tracking-wide text-slate-500 font-medium pb-2 px-1">
+              <div className="hidden md:grid md:grid-cols-5 md:gap-4 text-xs uppercase tracking-wide text-slate-500 font-medium pb-2 px-1">
                 <div>Volunteer</div>
                 <div>Email</div>
                 <div>Phone</div>
                 <div>Status</div>
+                <div>Actions</div>
               </div>
               <div className="space-y-1">
                 {s.signups
@@ -304,9 +392,10 @@ export default async function AdminShiftsPage({
                     ) => {
                       type Status = ShiftWithAll["signups"][number]["status"];
                       const order: Record<Status, number> = {
-                        CONFIRMED: 0,
-                        WAITLISTED: 1,
-                        CANCELED: 2,
+                        PENDING: 0,
+                        CONFIRMED: 1,
+                        WAITLISTED: 2,
+                        CANCELED: 3,
                       };
                       const ao = order[a.status];
                       const bo = order[b.status];
@@ -324,6 +413,7 @@ export default async function AdminShiftsPage({
                       phone={su.user.phone}
                       status={su.status}
                       userId={su.user.id}
+                      signupId={su.id}
                     />
                   ))}
               </div>
@@ -408,22 +498,31 @@ export default async function AdminShiftsPage({
   }
 
   // Helper function to create filter URLs
-  const createFilterUrl = (newParams: Record<string, string | undefined>) => {
+  const createFilterUrl = (
+    location?: LocationOption | null,
+    newDateFrom?: string,
+    newDateTo?: string
+  ) => {
     const searchParams = new URLSearchParams();
 
-    // Keep existing params
-    if (selectedLocation) searchParams.set("location", selectedLocation);
-    if (rawDateFrom) searchParams.set("dateFrom", rawDateFrom);
-    if (rawDateTo) searchParams.set("dateTo", rawDateTo);
+    // Preserve existing params unless overridden
+    if (location !== undefined) {
+      if (location) searchParams.set("location", location);
+    } else if (selectedLocation) {
+      searchParams.set("location", selectedLocation);
+    }
 
-    // Apply new params
-    Object.entries(newParams).forEach(([key, value]) => {
-      if (value) {
-        searchParams.set(key, value);
-      } else {
-        searchParams.delete(key);
-      }
-    });
+    if (newDateFrom !== undefined) {
+      if (newDateFrom) searchParams.set("dateFrom", newDateFrom);
+    } else if (rawDateFrom) {
+      searchParams.set("dateFrom", rawDateFrom);
+    }
+
+    if (newDateTo !== undefined) {
+      if (newDateTo) searchParams.set("dateTo", newDateTo);
+    } else if (rawDateTo) {
+      searchParams.set("dateTo", rawDateTo);
+    }
 
     return `/admin/shifts?${searchParams.toString()}`;
   };
@@ -431,62 +530,90 @@ export default async function AdminShiftsPage({
   return (
     <div className="min-h-screen">
       <div className="max-w-7xl mx-auto p-4">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-slate-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-4xl font-bold text-slate-900 mb-2 flex items-center gap-3">
-                  <Calendar className="h-8 w-8 text-blue-600" />
-                  Admin · Shifts
-                </h1>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <p className="text-slate-600">
-                    Manage volunteer shifts and view signup details
-                  </p>
-                  {(selectedLocation || dateFrom || dateTo) && (
-                    <div className="flex items-center gap-2">
-                      {selectedLocation && (
-                        <Badge
-                          variant="outline"
-                          className="border-blue-200 text-blue-700"
+        <PageHeader
+          title="Admin · Shifts"
+          description="Manage volunteer shifts and view signup details"
+        >
+          <div className="flex items-center justify-between mt-6">
+            <div className="flex items-center gap-2 flex-wrap">
+              {(selectedLocation || dateFrom || dateTo) && (
+                <div className="flex items-center gap-2">
+                  {selectedLocation && (
+                    <Badge variant="outline" className="gap-1">
+                      📍 {selectedLocation}
+                      <Button
+                        asChild
+                        variant="ghost"
+                        size="sm"
+                        className="h-4 w-4 p-0 hover:bg-destructive hover:text-destructive-foreground"
+                      >
+                        <Link
+                          href={createFilterUrl(null, rawDateFrom, rawDateTo)}
                         >
-                          <Filter className="h-3 w-3 mr-1" />
-                          {selectedLocation}
-                        </Badge>
-                      )}
-                      {(dateFrom || dateTo) && (
-                        <Badge
-                          variant="outline"
-                          className="border-green-200 text-green-700"
-                        >
-                          <Calendar className="h-3 w-3 mr-1" />
-                          {dateFrom && dateTo
-                            ? `${format(dateFrom, "dd MMM")} - ${format(
-                                dateTo,
-                                "dd MMM"
-                              )}`
-                            : dateFrom
-                            ? `From ${format(dateFrom, "dd MMM yyyy")}`
-                            : `Until ${format(dateTo!, "dd MMM yyyy")}`}
-                        </Badge>
-                      )}
-                    </div>
+                          <X className="h-3 w-3" />
+                        </Link>
+                      </Button>
+                    </Badge>
                   )}
+                  {dateFrom && (
+                    <Badge variant="outline" className="gap-1">
+                      📅 From {format(dateFrom, "MMM d")}
+                      <Button
+                        asChild
+                        variant="ghost"
+                        size="sm"
+                        className="h-4 w-4 p-0 hover:bg-destructive hover:text-destructive-foreground"
+                      >
+                        <Link
+                          href={createFilterUrl(
+                            selectedLocation,
+                            undefined,
+                            rawDateTo
+                          )}
+                        >
+                          <X className="h-3 w-3" />
+                        </Link>
+                      </Button>
+                    </Badge>
+                  )}
+                  {dateTo && (
+                    <Badge variant="outline" className="gap-1">
+                      📅 To {format(dateTo, "MMM d")}
+                      <Button
+                        asChild
+                        variant="ghost"
+                        size="sm"
+                        className="h-4 w-4 p-0 hover:bg-destructive hover:text-destructive-foreground"
+                      >
+                        <Link
+                          href={createFilterUrl(
+                            selectedLocation,
+                            rawDateFrom,
+                            undefined
+                          )}
+                        >
+                          <X className="h-3 w-3" />
+                        </Link>
+                      </Button>
+                    </Badge>
+                  )}
+                  <Button asChild variant="outline" size="sm" className="gap-1">
+                    <Link href="/admin/shifts">
+                      <X className="h-3 w-3" />
+                      Clear filters
+                    </Link>
+                  </Button>
                 </div>
-              </div>
-              <Button asChild className="shadow-sm">
-                <Link
-                  href="/admin/shifts/new"
-                  className="flex items-center gap-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  Create shift
-                </Link>
-              </Button>
+              )}
             </div>
+            <Button asChild size="sm" className="btn-primary gap-2">
+              <Link href="/admin/shifts/new">
+                <Plus className="h-4 w-4" />
+                Create shift
+              </Link>
+            </Button>
           </div>
-        </div>
+        </PageHeader>
 
         {/* Filters */}
         <div className="mb-6">

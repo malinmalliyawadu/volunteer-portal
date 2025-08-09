@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
+import { PageHeader } from "@/components/page-header";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("volunteer@example.com");
@@ -38,13 +39,12 @@ export default function LoginPage() {
   return (
     <div className="min-h-[80vh] flex items-center justify-center animate-fade-in">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-primary-700 bg-clip-text text-transparent">
-            Welcome back
-          </h1>
-          <p className="text-muted-foreground">
-            Sign in to your volunteer account
-          </p>
+        <div className="text-center">
+          <PageHeader
+            title="Welcome back"
+            description="Sign in to your volunteer account"
+            className="mb-6"
+          />
         </div>
 
         <Card className="animate-slide-up">

@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CancelSignupButton } from "./cancel-signup-button";
+import { PageHeader } from "@/components/page-header";
 
 export default async function MyShiftsPage({
   searchParams,
@@ -62,20 +63,36 @@ export default async function MyShiftsPage({
 
   const [upcomingCount, pastCount, upcoming, past] = await Promise.all([
     prisma.signup.count({
-      where: { userId: userId!, shift: { end: { gte: now } } },
+      where: {
+        userId: userId!,
+        shift: { end: { gte: now } },
+        status: { not: "CANCELED" },
+      },
     }),
     prisma.signup.count({
-      where: { userId: userId!, shift: { end: { lt: now } } },
+      where: {
+        userId: userId!,
+        shift: { end: { lt: now } },
+        status: { not: "CANCELED" },
+      },
     }),
     prisma.signup.findMany({
-      where: { userId: userId!, shift: { end: { gte: now } } },
+      where: {
+        userId: userId!,
+        shift: { end: { gte: now } },
+        status: { not: "CANCELED" },
+      },
       include: { shift: { include: { shiftType: true } } },
       orderBy: { shift: { start: "asc" } },
       skip: (uPage - 1) * uSize,
       take: uSize,
     }),
     prisma.signup.findMany({
-      where: { userId: userId!, shift: { end: { lt: now } } },
+      where: {
+        userId: userId!,
+        shift: { end: { lt: now } },
+        status: { not: "CANCELED" },
+      },
       include: { shift: { include: { shiftType: true } } },
       orderBy: { shift: { start: "desc" } },
       skip: (pPage - 1) * pSize,
@@ -149,13 +166,11 @@ export default async function MyShiftsPage({
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-4">
-      <div className="mb-6">
-        <h1 className="text-3xl font-semibold">My Shifts</h1>
-        <p className="muted-text mt-1">
-          View your upcoming and past volunteer shifts.
-        </p>
-      </div>
+    <div className="max-w-6xl mx-auto py-4">
+      <PageHeader
+        title="My Shifts"
+        description="View your upcoming and past volunteer shifts."
+      />
 
       <section className="mb-10">
         <div className="flex items-center gap-3 mb-3">
@@ -192,12 +207,17 @@ export default async function MyShiftsPage({
                       <div className="font-medium truncate">
                         {su.shift.shiftType.name}
                       </div>
+                      {su.status === "PENDING" && (
+                        <Badge
+                          variant="outline"
+                          className="bg-orange-50 text-orange-700 border-orange-200"
+                        >
+                          Pending Approval
+                        </Badge>
+                      )}
                       {su.status === "CONFIRMED" && <Badge>Confirmed</Badge>}
                       {su.status === "WAITLISTED" && (
                         <Badge variant="secondary">Waitlisted</Badge>
-                      )}
-                      {su.status === "CANCELED" && (
-                        <Badge variant="secondary">Canceled</Badge>
                       )}
                     </div>
                     <div className="text-sm muted-text">
@@ -206,14 +226,12 @@ export default async function MyShiftsPage({
                       {su.shift.location ?? "TBC"}
                     </div>
                   </div>
-                  {su.status !== "CANCELED" && (
-                    <div className="flex-shrink-0">
-                      <CancelSignupButton
-                        shiftId={su.shift.id}
-                        shiftName={su.shift.shiftType.name}
-                      />
-                    </div>
-                  )}
+                  <div className="flex-shrink-0">
+                    <CancelSignupButton
+                      shiftId={su.shift.id}
+                      shiftName={su.shift.shiftType.name}
+                    />
+                  </div>
                 </CardContent>
               </Card>
             ))}
@@ -249,12 +267,17 @@ export default async function MyShiftsPage({
                       <div className="font-medium truncate">
                         {su.shift.shiftType.name}
                       </div>
+                      {su.status === "PENDING" && (
+                        <Badge
+                          variant="outline"
+                          className="bg-orange-50 text-orange-700 border-orange-200"
+                        >
+                          Pending Approval
+                        </Badge>
+                      )}
                       {su.status === "CONFIRMED" && <Badge>Confirmed</Badge>}
                       {su.status === "WAITLISTED" && (
                         <Badge variant="secondary">Waitlisted</Badge>
-                      )}
-                      {su.status === "CANCELED" && (
-                        <Badge variant="secondary">Canceled</Badge>
                       )}
                     </div>
                     <div className="text-sm muted-text">
