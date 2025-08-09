@@ -138,7 +138,7 @@ export default async function RootLayout({
                       variant="outline"
                       className="bg-transparent text-white border-white/40 hover:bg-white/10 hover:text-white"
                     >
-                      <Link href="/login">Volunteer login</Link>
+                      <Link href="/login">Login</Link>
                     </Button>
                   )}
                 </div>

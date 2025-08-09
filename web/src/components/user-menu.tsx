@@ -33,7 +33,7 @@ export function UserMenu({ userName, userEmail }: UserMenuProps) {
           className="relative h-10 w-auto px-3 bg-white/10 text-white border border-white/20 hover:bg-white/20 hover:text-white rounded-full transition-all duration-200"
         >
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center text-sm font-semibold backdrop-blur-sm">
+            <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center text-sm font-semibold backdrop-blur-sm -ml-2">
               {initials}
             </div>
             <span className="hidden sm:block text-sm font-medium">
