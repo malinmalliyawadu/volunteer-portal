@@ -70,7 +70,19 @@ export default async function RootLayout({
                       variant="ghost"
                       className="text-white/90 hover:text-white hover:bg-white/10"
                     >
-                      <Link href="/dashboard">Dashboard</Link>
+                      <Link
+                        href={
+                          (
+                            session.user as
+                              | { role?: "ADMIN" | "VOLUNTEER" }
+                              | undefined
+                          )?.role === "ADMIN"
+                            ? "/admin"
+                            : "/dashboard"
+                        }
+                      >
+                        Dashboard
+                      </Link>
                     </Button>
                   ) : null}
                   <Button

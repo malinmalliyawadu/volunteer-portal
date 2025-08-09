@@ -10,6 +10,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { SelectField } from "@/components/ui/select-field";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { PolicyContent } from "@/components/markdown-content";
 import { useToast } from "@/hooks/use-toast";
 import {
   ArrowLeft,
@@ -21,6 +30,7 @@ import {
   MapPin,
   Bell,
   FileText,
+  ExternalLink,
 } from "lucide-react";
 
 interface EditProfilePageProps {
@@ -96,8 +106,40 @@ export default function EditProfilePage({
 }: EditProfilePageProps) {
   const [loading, setLoading] = useState(false);
   const [currentSection, setCurrentSection] = useState(0);
+  const [volunteerAgreementOpen, setVolunteerAgreementOpen] = useState(false);
+  const [healthSafetyPolicyOpen, setHealthSafetyPolicyOpen] = useState(false);
+  const [volunteerAgreementContent, setVolunteerAgreementContent] =
+    useState("");
+  const [healthSafetyPolicyContent, setHealthSafetyPolicyContent] =
+    useState("");
   const router = useRouter();
   const { toast } = useToast();
+
+  // Load policy content
+  useEffect(() => {
+    const loadPolicyContent = async () => {
+      try {
+        const [volunteerResponse, healthSafetyResponse] = await Promise.all([
+          fetch("/content/volunteer-agreement.md"),
+          fetch("/content/health-safety-policy.md"),
+        ]);
+
+        if (volunteerResponse.ok) {
+          const volunteerText = await volunteerResponse.text();
+          setVolunteerAgreementContent(volunteerText);
+        }
+
+        if (healthSafetyResponse.ok) {
+          const healthSafetyText = await healthSafetyResponse.text();
+          setHealthSafetyPolicyContent(healthSafetyText);
+        }
+      } catch (error) {
+        console.error("Failed to load policy content:", error);
+      }
+    };
+
+    loadPolicyContent();
+  }, []);
 
   // Initialize form data with URL parameters or defaults
   const [formData, setFormData] = useState({
@@ -687,13 +729,39 @@ export default function EditProfilePage({
                     disabled={loading}
                     className="h-4 w-4 mt-1"
                   />
-                  <div>
-                    <Label
-                      htmlFor="volunteerAgreementAccepted"
-                      className="text-sm font-medium"
-                    >
-                      I have read and agree with the Volunteer Agreement
-                    </Label>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Label
+                        htmlFor="volunteerAgreementAccepted"
+                        className="text-sm font-medium cursor-pointer"
+                      >
+                        I have read and agree with the
+                      </Label>
+                      <Dialog
+                        open={volunteerAgreementOpen}
+                        onOpenChange={setVolunteerAgreementOpen}
+                      >
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="link"
+                            className="p-0 h-auto text-sm font-medium text-primary underline"
+                          >
+                            Volunteer Agreement
+                            <ExternalLink className="h-3 w-3 ml-1" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                          <DialogHeader>
+                            <DialogTitle>Volunteer Agreement</DialogTitle>
+                            <DialogDescription>
+                              Please read the complete volunteer agreement
+                              below.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <PolicyContent content={volunteerAgreementContent} />
+                        </DialogContent>
+                      </Dialog>
+                    </div>
                     <p className="text-xs text-muted-foreground mt-1">
                       This agreement outlines your responsibilities and
                       expectations as a volunteer.
@@ -714,13 +782,39 @@ export default function EditProfilePage({
                     disabled={loading}
                     className="h-4 w-4 mt-1"
                   />
-                  <div>
-                    <Label
-                      htmlFor="healthSafetyPolicyAccepted"
-                      className="text-sm font-medium"
-                    >
-                      I have read and agree with the Health and Safety policy
-                    </Label>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Label
+                        htmlFor="healthSafetyPolicyAccepted"
+                        className="text-sm font-medium cursor-pointer"
+                      >
+                        I have read and agree with the
+                      </Label>
+                      <Dialog
+                        open={healthSafetyPolicyOpen}
+                        onOpenChange={setHealthSafetyPolicyOpen}
+                      >
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="link"
+                            className="p-0 h-auto text-sm font-medium text-primary underline"
+                          >
+                            Health and Safety policy
+                            <ExternalLink className="h-3 w-3 ml-1" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                          <DialogHeader>
+                            <DialogTitle>Health and Safety Policy</DialogTitle>
+                            <DialogDescription>
+                              Please read the complete health and safety policy
+                              below.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <PolicyContent content={healthSafetyPolicyContent} />
+                        </DialogContent>
+                      </Dialog>
+                    </div>
                     <p className="text-xs text-muted-foreground mt-1">
                       This policy ensures the safety and well-being of all
                       volunteers and participants.

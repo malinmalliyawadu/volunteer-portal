@@ -106,16 +106,23 @@ export default async function AdminShiftsPage({
     email,
     phone,
     status,
+    userId,
   }: {
     name: string | null;
     email: string;
     phone: string | null;
     status: "CONFIRMED" | "WAITLISTED" | "CANCELED";
+    userId: string;
   }) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-4 gap-2 md:gap-4 text-sm py-1">
         <div className="truncate">
-          <span className="font-medium">{name ?? "(No name)"}</span>
+          <Link
+            href={`/admin/volunteers/${userId}`}
+            className="font-medium text-blue-600 hover:text-blue-800 hover:underline"
+          >
+            {name ?? "(No name)"}
+          </Link>
         </div>
         <div className="truncate text-[color:var(--ee-muted)]">{email}</div>
         <div className="truncate text-[color:var(--ee-muted)]">
@@ -208,6 +215,7 @@ export default async function AdminShiftsPage({
                       email={su.user.email}
                       phone={su.user.phone}
                       status={su.status}
+                      userId={su.user.id}
                     />
                   ))}
               </div>

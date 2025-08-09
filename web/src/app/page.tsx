@@ -8,9 +8,17 @@ import Image from "next/image";
 export default async function Home() {
   const session = await getServerSession(authOptions);
 
-  // Redirect logged-in users to their dashboard
+  // Redirect logged-in users to their appropriate dashboard
   if (session?.user) {
-    redirect("/dashboard");
+    const userRole = (
+      session.user as { role?: "ADMIN" | "VOLUNTEER" } | undefined
+    )?.role;
+
+    if (userRole === "ADMIN") {
+      redirect("/admin");
+    } else {
+      redirect("/dashboard");
+    }
   }
 
   return (
