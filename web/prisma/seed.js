@@ -440,6 +440,93 @@ async function main() {
   const LOCATIONS = ["Wellington", "Glenn Innes", "Onehunga"];
   const createdShifts = [];
 
+  // Create historical shifts for the past 4 weeks to show volunteer history
+  const historicalShifts = [];
+  for (let weekOffset = 4; weekOffset >= 1; weekOffset--) {
+    // Create 2-3 shifts per week in the past
+    const shiftsThisWeek = weekOffset === 1 ? 3 : 2; // More recent week has more shifts
+
+    for (let shiftInWeek = 0; shiftInWeek < shiftsThisWeek; shiftInWeek++) {
+      // Vary the days - Monday, Wednesday, Friday pattern mostly
+      const dayOffset = shiftInWeek === 0 ? 1 : shiftInWeek === 1 ? 3 : 5; // Mon, Wed, Fri
+      const pastDate = addDays(today, -(weekOffset * 7) + dayOffset);
+
+      // Rotate through different shift types and locations for variety
+      const shiftTypeIndex = (weekOffset + shiftInWeek) % shiftConfigs.length;
+      const locationIndex = (weekOffset + shiftInWeek) % LOCATIONS.length;
+      const config = shiftConfigs[shiftTypeIndex];
+      const location = LOCATIONS[locationIndex];
+
+      const start = set(pastDate, {
+        hours: config.startHour,
+        minutes: config.startMinute,
+        seconds: 0,
+        milliseconds: 0,
+      });
+
+      const end = set(pastDate, {
+        hours: config.endHour,
+        minutes: config.endMinute,
+        seconds: 0,
+        milliseconds: 0,
+      });
+
+      const historicalShift = await prisma.shift.create({
+        data: {
+          shiftTypeId: config.type.id,
+          start,
+          end,
+          location,
+          capacity: config.capacity,
+          notes:
+            weekOffset === 1 && shiftInWeek === 0
+              ? "Great teamwork this shift!"
+              : null,
+        },
+      });
+
+      historicalShifts.push(historicalShift);
+
+      // Create signup for sample volunteer for most historical shifts
+      if (shiftInWeek < 2) {
+        // Sample volunteer worked 2 out of 3 shifts each week
+        await prisma.signup.create({
+          data: {
+            userId: volunteer.id,
+            shiftId: historicalShift.id,
+            status: "CONFIRMED",
+          },
+        });
+      }
+
+      // Fill some historical shifts with other volunteers for realism
+      const volunteersToAdd = Math.min(
+        config.capacity - (shiftInWeek < 2 ? 1 : 0),
+        extraVolunteers.length
+      );
+      for (let v = 0; v < volunteersToAdd; v++) {
+        const volunteerIndex =
+          (weekOffset * 10 + shiftInWeek * 3 + v) % extraVolunteers.length;
+        const otherVolunteer = extraVolunteers[volunteerIndex];
+
+        await prisma.signup.upsert({
+          where: {
+            userId_shiftId: {
+              userId: otherVolunteer.id,
+              shiftId: historicalShift.id,
+            },
+          },
+          update: {},
+          create: {
+            userId: otherVolunteer.id,
+            shiftId: historicalShift.id,
+            status: "CONFIRMED",
+          },
+        });
+      }
+    }
+  }
+
   // Create shifts for the next 7 days
   for (let i = 0; i < 7; i++) {
     const date = addDays(today, i + 1);
