@@ -1,6 +1,6 @@
 const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcrypt");
-const { addDays, set, subYears } = require("date-fns");
+const { addDays, set, subYears, subMonths } = require("date-fns");
 
 const prisma = new PrismaClient();
 
@@ -223,6 +223,7 @@ async function main() {
       healthSafetyPolicyAccepted: true,
       hashedPassword: volunteerHash,
       role: "VOLUNTEER",
+      createdAt: subMonths(new Date(), 6), // Been volunteering for 6 months
     },
   });
 
@@ -442,6 +443,136 @@ async function main() {
 
   // Create historical shifts for the past 4 weeks to show volunteer history
   const historicalShifts = [];
+
+  // Extended historical data - past 6 months for better achievement demonstration
+  const extendedHistoricalPeriods = [
+    // 6 months ago - started volunteering
+    { weeksAgo: 24, shiftsPerWeek: 1 },
+    { weeksAgo: 23, shiftsPerWeek: 1 },
+    { weeksAgo: 22, shiftsPerWeek: 2 },
+    { weeksAgo: 21, shiftsPerWeek: 1 },
+
+    // 5 months ago - getting regular
+    { weeksAgo: 20, shiftsPerWeek: 2 },
+    { weeksAgo: 19, shiftsPerWeek: 2 },
+    { weeksAgo: 18, shiftsPerWeek: 2 },
+    { weeksAgo: 17, shiftsPerWeek: 3 },
+
+    // 4 months ago - very active
+    { weeksAgo: 16, shiftsPerWeek: 3 },
+    { weeksAgo: 15, shiftsPerWeek: 2 },
+    { weeksAgo: 14, shiftsPerWeek: 3 },
+    { weeksAgo: 13, shiftsPerWeek: 2 },
+
+    // 3 months ago - consistent volunteer
+    { weeksAgo: 12, shiftsPerWeek: 2 },
+    { weeksAgo: 11, shiftsPerWeek: 3 },
+    { weeksAgo: 10, shiftsPerWeek: 2 },
+    { weeksAgo: 9, shiftsPerWeek: 2 },
+
+    // 2 months ago - experienced
+    { weeksAgo: 8, shiftsPerWeek: 2 },
+    { weeksAgo: 7, shiftsPerWeek: 3 },
+    { weeksAgo: 6, shiftsPerWeek: 2 },
+    { weeksAgo: 5, shiftsPerWeek: 2 },
+
+    // Recent weeks
+    { weeksAgo: 4, shiftsPerWeek: 2 },
+    { weeksAgo: 3, shiftsPerWeek: 3 },
+    { weeksAgo: 2, shiftsPerWeek: 2 },
+    { weeksAgo: 1, shiftsPerWeek: 2 },
+  ];
+
+  // Create extended historical shifts
+  for (const period of extendedHistoricalPeriods) {
+    for (
+      let shiftInWeek = 0;
+      shiftInWeek < period.shiftsPerWeek;
+      shiftInWeek++
+    ) {
+      // Vary the days - Monday, Wednesday, Friday pattern mostly
+      const dayOffset = shiftInWeek === 0 ? 1 : shiftInWeek === 1 ? 3 : 5; // Mon, Wed, Fri
+      const pastDate = addDays(today, -(period.weeksAgo * 7) + dayOffset);
+
+      // Rotate through different shift types and locations for variety
+      const shiftTypeIndex =
+        (period.weeksAgo + shiftInWeek) % shiftConfigs.length;
+      const locationIndex = (period.weeksAgo + shiftInWeek) % LOCATIONS.length;
+      const config = shiftConfigs[shiftTypeIndex];
+      const location = LOCATIONS[locationIndex];
+
+      const start = set(pastDate, {
+        hours: config.startHour,
+        minutes: config.startMinute,
+        seconds: 0,
+        milliseconds: 0,
+      });
+
+      const end = set(pastDate, {
+        hours: config.endHour,
+        minutes: config.endMinute,
+        seconds: 0,
+        milliseconds: 0,
+      });
+
+      const historicalShift = await prisma.shift.create({
+        data: {
+          shiftTypeId: config.type.id,
+          start,
+          end,
+          location,
+          capacity: config.capacity,
+          notes:
+            period.weeksAgo === 1 && shiftInWeek === 0
+              ? "Great teamwork this shift!"
+              : period.weeksAgo > 20
+              ? "Early volunteer shift"
+              : null,
+        },
+      });
+
+      historicalShifts.push(historicalShift);
+
+      // Create signup for sample volunteer for ALL these historical shifts
+      await prisma.signup.create({
+        data: {
+          userId: volunteer.id,
+          shiftId: historicalShift.id,
+          status: "CONFIRMED",
+          createdAt: addDays(start, -Math.floor(Math.random() * 7) - 1), // Signed up 1-7 days before
+        },
+      });
+
+      // Also add some other volunteers to these shifts for realism
+      const volunteersToAdd = Math.min(
+        config.capacity - 1, // Leave space for sample volunteer
+        Math.floor(Math.random() * 3) + 1 // 1-3 other volunteers
+      );
+
+      for (let v = 0; v < volunteersToAdd; v++) {
+        const volunteerIndex =
+          (period.weeksAgo * 10 + shiftInWeek * 3 + v) % extraVolunteers.length;
+        const otherVolunteer = extraVolunteers[volunteerIndex];
+
+        await prisma.signup.upsert({
+          where: {
+            userId_shiftId: {
+              userId: otherVolunteer.id,
+              shiftId: historicalShift.id,
+            },
+          },
+          update: {},
+          create: {
+            userId: otherVolunteer.id,
+            shiftId: historicalShift.id,
+            status: "CONFIRMED",
+          },
+        });
+      }
+    }
+  }
+
+  // Original 4-week historical data (keeping for consistency)
   for (let weekOffset = 4; weekOffset >= 1; weekOffset--) {
     // Create 2-3 shifts per week in the past
     const shiftsThisWeek = weekOffset === 1 ? 3 : 2; // More recent week has more shifts
@@ -623,6 +754,192 @@ async function main() {
       });
       extraIndex = (extraIndex + 1) % extraVolunteers.length;
     }
+  }
+
+  // Seed achievements
+  console.log("🎯 Seeding achievements...");
+  try {
+    // Define achievements directly here to avoid import issues
+    const ACHIEVEMENT_DEFINITIONS = [
+      // Milestone Achievements
+      {
+        name: "First Steps",
+        description: "Complete your first volunteer shift",
+        category: "MILESTONE",
+        icon: "🌟",
+        criteria: JSON.stringify({ type: "shifts_completed", value: 1 }),
+        points: 10,
+      },
+      {
+        name: "Getting Started",
+        description: "Complete 5 volunteer shifts",
+        category: "MILESTONE",
+        icon: "⭐",
+        criteria: JSON.stringify({ type: "shifts_completed", value: 5 }),
+        points: 25,
+      },
+      {
+        name: "Making a Difference",
+        description: "Complete 10 volunteer shifts",
+        category: "MILESTONE",
+        icon: "🎯",
+        criteria: JSON.stringify({ type: "shifts_completed", value: 10 }),
+        points: 50,
+      },
+      {
+        name: "Veteran Volunteer",
+        description: "Complete 25 volunteer shifts",
+        category: "MILESTONE",
+        icon: "🏆",
+        criteria: JSON.stringify({ type: "shifts_completed", value: 25 }),
+        points: 100,
+      },
+      {
+        name: "Community Champion",
+        description: "Complete 50 volunteer shifts",
+        category: "MILESTONE",
+        icon: "👑",
+        criteria: JSON.stringify({ type: "shifts_completed", value: 50 }),
+        points: 200,
+      },
+      // Hour-based Achievements
+      {
+        name: "Time Keeper",
+        description: "Volunteer for 10 hours",
+        category: "DEDICATION",
+        icon: "⏰",
+        criteria: JSON.stringify({ type: "hours_volunteered", value: 10 }),
+        points: 30,
+      },
+      {
+        name: "Dedicated Helper",
+        description: "Volunteer for 25 hours",
+        category: "DEDICATION",
+        icon: "💪",
+        criteria: JSON.stringify({ type: "hours_volunteered", value: 25 }),
+        points: 75,
+      },
+      {
+        name: "Marathon Volunteer",
+        description: "Volunteer for 50 hours",
+        category: "DEDICATION",
+        icon: "🏃",
+        criteria: JSON.stringify({ type: "hours_volunteered", value: 50 }),
+        points: 150,
+      },
+      {
+        name: "Century Club",
+        description: "Volunteer for 100 hours",
+        category: "DEDICATION",
+        icon: "💯",
+        criteria: JSON.stringify({ type: "hours_volunteered", value: 100 }),
+        points: 300,
+      },
+      // Consistency Achievements
+      {
+        name: "Consistent Helper",
+        description: "Volunteer for 3 consecutive months",
+        category: "DEDICATION",
+        icon: "📅",
+        criteria: JSON.stringify({ type: "consecutive_months", value: 3 }),
+        points: 50,
+      },
+      {
+        name: "Reliable Volunteer",
+        description: "Volunteer for 6 consecutive months",
+        category: "DEDICATION",
+        icon: "🗓️",
+        criteria: JSON.stringify({ type: "consecutive_months", value: 6 }),
+        points: 100,
+      },
+      {
+        name: "Year-Round Helper",
+        description: "Volunteer for 12 consecutive months",
+        category: "DEDICATION",
+        icon: "🎊",
+        criteria: JSON.stringify({ type: "consecutive_months", value: 12 }),
+        points: 200,
+      },
+      // Anniversary Achievements
+      {
+        name: "One Year Strong",
+        description: "Volunteer for one full year",
+        category: "MILESTONE",
+        icon: "🎂",
+        criteria: JSON.stringify({ type: "years_volunteering", value: 1 }),
+        points: 150,
+      },
+      {
+        name: "Two Year Veteran",
+        description: "Volunteer for two full years",
+        category: "MILESTONE",
+        icon: "🎉",
+        criteria: JSON.stringify({ type: "years_volunteering", value: 2 }),
+        points: 300,
+      },
+      // Community Impact
+      {
+        name: "Meal Master",
+        description: "Help prepare an estimated 100 meals",
+        category: "IMPACT",
+        icon: "🍽️",
+        criteria: JSON.stringify({ type: "community_impact", value: 100 }),
+        points: 75,
+      },
+      {
+        name: "Food Hero",
+        description: "Help prepare an estimated 500 meals",
+        category: "IMPACT",
+        icon: "🦸",
+        criteria: JSON.stringify({ type: "community_impact", value: 500 }),
+        points: 200,
+      },
+      {
+        name: "Hunger Fighter",
+        description: "Help prepare an estimated 1000 meals",
+        category: "IMPACT",
+        icon: "⚔️",
+        criteria: JSON.stringify({ type: "community_impact", value: 1000 }),
+        points: 400,
+      },
+    ];
+
+    // Create achievements
+    for (const achievementDef of ACHIEVEMENT_DEFINITIONS) {
+      await prisma.achievement.upsert({
+        where: { name: achievementDef.name },
+        update: {
+          description: achievementDef.description,
+          category: achievementDef.category,
+          icon: achievementDef.icon,
+          criteria: achievementDef.criteria,
+          points: achievementDef.points,
+          isActive: true,
+        },
+        create: {
+          name: achievementDef.name,
+          description: achievementDef.description,
+          category: achievementDef.category,
+          icon: achievementDef.icon,
+          criteria: achievementDef.criteria,
+          points: achievementDef.points,
+          isActive: true,
+        },
+      });
+    }
+    console.log(`✅ Seeded ${ACHIEVEMENT_DEFINITIONS.length} achievements`);
+
+    // Calculate sample volunteer's achievements
+    const completedShifts = await prisma.signup.count({
+      where: {
+        userId: volunteer.id,
+        status: "CONFIRMED",
+        shift: { end: { lt: new Date() } },
+      },
+    });
+    console.log(`📊 Sample volunteer has completed ${completedShifts} shifts`);
+  } catch (error) {
+    console.error("Warning: Could not seed achievements:", error.message);
   }
 }
 

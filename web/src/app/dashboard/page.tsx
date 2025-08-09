@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import AchievementsCard from "@/components/achievements-card";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -459,68 +460,73 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      {/* Impact & Community Stats */}
-      <Card className="animate-slide-up" style={{ animationDelay: "0.6s" }}>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <svg
-              className="w-5 h-5 text-primary"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-              />
-            </svg>
-            Your Impact & Community
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-primary mb-2">
-                {totalHours * 15}
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Estimated meals helped prepare
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Based on ~15 meals per volunteer hour
-              </p>
-            </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Achievements */}
+        <AchievementsCard />
 
-            <div className="text-center">
-              <div className="text-3xl font-bold text-accent mb-2">
-                {totalVolunteers}
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Active volunteers in our community
-              </p>
-              {favoriteShiftType && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  Your specialty: {favoriteShiftType}
+        {/* Impact & Community Stats */}
+        <Card className="animate-slide-up" style={{ animationDelay: "0.6s" }}>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <svg
+                className="w-5 h-5 text-primary"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                />
+              </svg>
+              Your Impact & Community
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-primary mb-2">
+                  {totalHours * 15}
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Estimated meals helped prepare
                 </p>
-              )}
-            </div>
-
-            <div className="text-center">
-              <div className="text-3xl font-bold text-green-600 mb-2">
-                {Math.round(totalHours * 2.5 * 10) / 10}kg
+                <p className="text-xs text-muted-foreground mt-1">
+                  Based on ~15 meals per volunteer hour
+                </p>
               </div>
-              <p className="text-sm text-muted-foreground">
-                Estimated food waste prevented
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Based on rescue food operations
-              </p>
+
+              <div className="text-center">
+                <div className="text-3xl font-bold text-accent mb-2">
+                  {totalVolunteers}
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Active volunteers in our community
+                </p>
+                {favoriteShiftType && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Your specialty: {favoriteShiftType}
+                  </p>
+                )}
+              </div>
+
+              <div className="text-center">
+                <div className="text-3xl font-bold text-green-600 mb-2">
+                  {Math.round(totalHours * 2.5 * 10) / 10}kg
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Estimated food waste prevented
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Based on rescue food operations
+                </p>
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Quick Actions */}
       <Card className="animate-slide-up" style={{ animationDelay: "0.7s" }}>

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
+import { checkAndUnlockAchievements } from "@/lib/achievements";
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
@@ -61,6 +62,15 @@ export async function POST(req: Request) {
     const signup = await prisma.signup.create({
       data: { userId: user.id, shiftId: shift.id, status: "WAITLISTED" },
     });
+
+    // Check for new achievements after successful signup
+    try {
+      await checkAndUnlockAchievements(user.id);
+    } catch (achievementError) {
+      // Don't fail the signup if achievement checking fails
+      console.error("Error checking achievements:", achievementError);
+    }
+
     return NextResponse.json(signup);
   }
 
@@ -69,6 +79,15 @@ export async function POST(req: Request) {
     const signup = await prisma.signup.create({
       data: { userId: user.id, shiftId: shift.id, status: "CONFIRMED" },
     });
+
+    // Check for new achievements after successful signup
+    try {
+      await checkAndUnlockAchievements(user.id);
+    } catch (achievementError) {
+      // Don't fail the signup if achievement checking fails
+      console.error("Error checking achievements:", achievementError);
+    }
+
     return NextResponse.json(signup);
   } catch {
     return NextResponse.json({ error: "Already signed up?" }, { status: 400 });

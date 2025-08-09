@@ -28,6 +28,14 @@ enum NotificationPreference {
   NONE
 }
 
+enum AchievementCategory {
+  MILESTONE
+  DEDICATION
+  SPECIALIZATION
+  COMMUNITY
+  IMPACT
+}
+
 model User {
   id             String   @id @default(cuid())
   email          String   @unique
@@ -66,6 +74,7 @@ model User {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   signups        Signup[]
+  achievements   UserAchievement[]
 }
 
 model ShiftType {
@@ -102,4 +111,30 @@ model Signup {
   updatedAt DateTime     @updatedAt
 
   @@unique([userId, shiftId])
+}
+
+model Achievement {
+  id          String              @id @default(cuid())
+  name        String              @unique
+  description String
+  category    AchievementCategory
+  icon        String              // emoji or icon name
+  criteria    String              // JSON describing unlock criteria
+  points      Int                 @default(0)
+  isActive    Boolean             @default(true)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  users       UserAchievement[]
+}
+
+model UserAchievement {
+  id            String      @id @default(cuid())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id])
+  achievementId String
+  achievement   Achievement @relation(fields: [achievementId], references: [id])
+  unlockedAt    DateTime    @default(now())
+  progress      Int         @default(0) // for progressive achievements
+  
+  @@unique([userId, achievementId])
 }
