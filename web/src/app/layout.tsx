@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
+import Image from "next/image";
 import "./globals.css";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
+import { Button } from "@/components/ui/button";
+import { UserMenu } from "@/components/user-menu";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,30 +36,75 @@ export default async function RootLayout({
       >
         <header className="border-b">
           <div className="bg-[var(--ee-primary)] text-white">
-            <nav className="max-w-6xl mx-auto px-4 py-3 flex gap-6 items-center">
-              <Link
-                href="/"
-                className="font-semibold tracking-tight header-link"
-              >
-                Everybody Eats
+            <nav
+              aria-label="Main"
+              className="max-w-6xl mx-auto px-4 py-6 flex items-center gap-3"
+            >
+              <Link href="/" className="flex items-center gap-2 cursor-pointer">
+                <Image
+                  src="/logo.svg"
+                  alt="Everybody Eats"
+                  width={240}
+                  height={88}
+                  priority
+                  className="h-12 w-auto"
+                />
+                <span className="sr-only">Everybody Eats logo</span>
               </Link>
-              <Link href="/shifts" className="header-link">
-                Shifts
-              </Link>
-              {session?.user ? (
-                <Link href="/shifts/mine" className="header-link">
-                  My shifts
-                </Link>
-              ) : null}
-              {(session?.user as { role?: "ADMIN" } | undefined)?.role ===
-              "ADMIN" ? (
-                <Link href="/admin/shifts" className="header-link">
-                  Admin
-                </Link>
-              ) : null}
-              <Link href="/login" className="ml-auto header-link">
-                Volunteer login
-              </Link>
+
+              <div className="ml-2 hidden md:flex items-center gap-1">
+                <Button
+                  asChild
+                  variant="ghost"
+                  className="text-white/90 hover:text-white hover:bg-white/10"
+                >
+                  <Link href="/shifts">Shifts</Link>
+                </Button>
+                {session?.user ? (
+                  <Button
+                    asChild
+                    variant="ghost"
+                    className="text-white/90 hover:text-white hover:bg-white/10"
+                  >
+                    <Link href="/shifts/mine">My shifts</Link>
+                  </Button>
+                ) : null}
+                {(session?.user as { role?: "ADMIN" } | undefined)?.role ===
+                "ADMIN" ? (
+                  <Button
+                    asChild
+                    variant="ghost"
+                    className="text-white/90 hover:text-white hover:bg-white/10"
+                  >
+                    <Link href="/admin/shifts">Admin</Link>
+                  </Button>
+                ) : null}
+              </div>
+
+              <div className="ml-auto">
+                {session?.user ? (
+                  <UserMenu
+                    userName={
+                      ((
+                        session.user as {
+                          name?: string | null;
+                          email?: string | null;
+                        }
+                      )?.name ??
+                        (session.user as { email?: string | null })?.email ??
+                        "Account") as string
+                    }
+                  />
+                ) : (
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="bg-transparent text-white border-white/40 hover:bg-white/10 hover:text-white"
+                  >
+                    <Link href="/login">Volunteer login</Link>
+                  </Button>
+                )}
+              </div>
             </nav>
           </div>
         </header>

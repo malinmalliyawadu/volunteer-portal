@@ -4,6 +4,9 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 export default async function AdminShiftsPage({
   searchParams,
@@ -119,15 +122,11 @@ export default async function AdminShiftsPage({
           {phone ?? "—"}
         </div>
         <div>
-          {status === "CONFIRMED" && (
-            <span className="badge badge-accent">Confirmed</span>
-          )}
+          {status === "CONFIRMED" && <Badge>Confirmed</Badge>}
           {status === "WAITLISTED" && (
-            <span className="badge badge-muted">Waitlisted</span>
+            <Badge variant="secondary">Waitlisted</Badge>
           )}
-          {status === "CANCELED" && (
-            <span className="badge badge-muted">Canceled</span>
-          )}
+          {status === "CANCELED" && <Badge variant="secondary">Canceled</Badge>}
         </div>
       </div>
     );
@@ -136,85 +135,86 @@ export default async function AdminShiftsPage({
   function ShiftCard({ s }: { s: ShiftWithAll }) {
     const { confirmed, waitlisted, remaining } = counts(s);
     return (
-      <div className="card p-4 space-y-3">
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          <div className="min-w-0">
-            <div className="font-medium truncate flex items-center gap-2">
-              <span>{s.shiftType.name}</span>
-              <span className="badge badge-outline">{s.location ?? "TBC"}</span>
+      <Card>
+        <CardContent className="p-4 space-y-3">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="min-w-0">
+              <div className="font-medium truncate flex items-center gap-2">
+                <span>{s.shiftType.name}</span>
+                <Badge variant="outline">{s.location ?? "TBC"}</Badge>
+              </div>
+              <div className="text-sm muted-text">
+                {format(s.start, "EEE dd MMM, h:mma")} –{" "}
+                {format(s.end, "h:mma")}
+              </div>
             </div>
-            <div className="text-sm muted-text">
-              {format(s.start, "EEE dd MMM, h:mma")} – {format(s.end, "h:mma")}
+            <div className="flex items-center gap-2 text-sm">
+              <Badge>
+                {confirmed}/{s.capacity} confirmed
+              </Badge>
+              {waitlisted > 0 && (
+                <Badge variant="secondary">{waitlisted} waitlisted</Badge>
+              )}
+              {remaining === 0 ? (
+                <Badge variant="secondary">Full</Badge>
+              ) : (
+                <Badge variant="outline">{remaining} spots left</Badge>
+              )}
             </div>
           </div>
-          <div className="flex items-center gap-2 text-sm">
-            <span className="badge badge-accent">
-              {confirmed}/{s.capacity} confirmed
-            </span>
-            {waitlisted > 0 && (
-              <span className="badge badge-muted">{waitlisted} waitlisted</span>
-            )}
-            {remaining === 0 ? (
-              <span className="badge badge-muted">Full</span>
-            ) : (
-              <span className="badge badge-outline">
-                {remaining} spots left
-              </span>
-            )}
-          </div>
-        </div>
 
-        {s.signups.length === 0 ? (
-          <div className="text-sm muted-text">No signups yet.</div>
-        ) : (
-          <div
-            className="border-t pt-3"
-            style={{ borderColor: "var(--ee-border)" }}
-          >
-            <div className="hidden md:grid md:grid-cols-4 md:gap-4 text-xs uppercase tracking-wide text-[color:var(--ee-muted)] pb-1">
-              <div>Name</div>
-              <div>Email</div>
-              <div>Phone</div>
-              <div>Status</div>
-            </div>
+          {s.signups.length === 0 ? (
+            <div className="text-sm muted-text">No signups yet.</div>
+          ) : (
             <div
-              className="divide-y"
+              className="border-t pt-3"
               style={{ borderColor: "var(--ee-border)" }}
             >
-              {s.signups
-                .slice()
-                .sort(
-                  (
-                    a: ShiftWithAll["signups"][number],
-                    b: ShiftWithAll["signups"][number]
-                  ) => {
-                    type Status = ShiftWithAll["signups"][number]["status"];
-                    const order: Record<Status, number> = {
-                      CONFIRMED: 0,
-                      WAITLISTED: 1,
-                      CANCELED: 2,
-                    };
-                    const ao = order[a.status];
-                    const bo = order[b.status];
-                    if (ao !== bo) return ao - bo;
-                    return (a.user.name ?? a.user.email).localeCompare(
-                      b.user.name ?? b.user.email
-                    );
-                  }
-                )
-                .map((su: ShiftWithAll["signups"][number]) => (
-                  <SignupRow
-                    key={su.id}
-                    name={su.user.name}
-                    email={su.user.email}
-                    phone={su.user.phone}
-                    status={su.status}
-                  />
-                ))}
+              <div className="hidden md:grid md:grid-cols-4 md:gap-4 text-xs uppercase tracking-wide text-[color:var(--ee-muted)] pb-1">
+                <div>Name</div>
+                <div>Email</div>
+                <div>Phone</div>
+                <div>Status</div>
+              </div>
+              <div
+                className="divide-y"
+                style={{ borderColor: "var(--ee-border)" }}
+              >
+                {s.signups
+                  .slice()
+                  .sort(
+                    (
+                      a: ShiftWithAll["signups"][number],
+                      b: ShiftWithAll["signups"][number]
+                    ) => {
+                      type Status = ShiftWithAll["signups"][number]["status"];
+                      const order: Record<Status, number> = {
+                        CONFIRMED: 0,
+                        WAITLISTED: 1,
+                        CANCELED: 2,
+                      };
+                      const ao = order[a.status];
+                      const bo = order[b.status];
+                      if (ao !== bo) return ao - bo;
+                      return (a.user.name ?? a.user.email).localeCompare(
+                        b.user.name ?? b.user.email
+                      );
+                    }
+                  )
+                  .map((su: ShiftWithAll["signups"][number]) => (
+                    <SignupRow
+                      key={su.id}
+                      name={su.user.name}
+                      email={su.user.email}
+                      phone={su.user.phone}
+                      status={su.status}
+                    />
+                  ))}
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </CardContent>
+      </Card>
     );
   }
 
@@ -250,31 +250,29 @@ export default async function AdminShiftsPage({
     return (
       <div className="flex items-center gap-2">
         {isFirst ? (
-          <span className="btn btn-secondary btn-sm opacity-50 cursor-not-allowed">
+          <Button variant="secondary" size="sm" disabled>
             Previous
-          </span>
+          </Button>
         ) : (
-          <Link
-            href={{ pathname: basePath, query: query(page - 1) }}
-            className="btn btn-secondary btn-sm"
-          >
-            Previous
-          </Link>
+          <Button asChild variant="secondary" size="sm">
+            <Link href={{ pathname: basePath, query: query(page - 1) }}>
+              Previous
+            </Link>
+          </Button>
         )}
         <span className="text-sm muted-text">
           Page {page} of {totalPages}
         </span>
         {isLast ? (
-          <span className="btn btn-secondary btn-sm opacity-50 cursor-not-allowed">
+          <Button variant="secondary" size="sm" disabled>
             Next
-          </span>
+          </Button>
         ) : (
-          <Link
-            href={{ pathname: basePath, query: query(page + 1) }}
-            className="btn btn-secondary btn-sm"
-          >
-            Next
-          </Link>
+          <Button asChild variant="secondary" size="sm">
+            <Link href={{ pathname: basePath, query: query(page + 1) }}>
+              Next
+            </Link>
+          </Button>
         )}
       </div>
     );
@@ -290,16 +288,16 @@ export default async function AdminShiftsPage({
               Review upcoming and past shifts and see all volunteer signups.
             </p>
           </div>
-          <Link href="/admin/shifts/new" className="btn btn-primary">
-            Create shift
-          </Link>
+          <Button asChild>
+            <Link href="/admin/shifts/new">Create shift</Link>
+          </Button>
         </div>
       </div>
 
       <section className="mb-10">
         <div className="flex items-center gap-3 mb-3">
           <h2 className="text-xl font-semibold">Upcoming shifts</h2>
-          <span className="badge badge-outline">{upcomingCount}</span>
+          <Badge variant="outline">{upcomingCount}</Badge>
           <div className="ml-auto">
             <Pagination
               page={uPage}
@@ -323,7 +321,7 @@ export default async function AdminShiftsPage({
       <section>
         <div className="flex items-center gap-3 mb-3">
           <h2 className="text-xl font-semibold">Historical shifts</h2>
-          <span className="badge badge-outline">{pastCount}</span>
+          <Badge variant="outline">{pastCount}</Badge>
           <div className="ml-auto">
             <Pagination
               page={pPage}

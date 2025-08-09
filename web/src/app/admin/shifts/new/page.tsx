@@ -4,6 +4,12 @@ import { authOptions } from "@/lib/auth-options";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { z } from "zod";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { SelectField } from "@/components/ui/select-field";
 
 const LOCATIONS = ["Wellington", "Glenn Innes", "Onehunga"] as const;
 
@@ -89,106 +95,98 @@ export default async function NewShiftPage() {
           <h1 className="text-3xl font-semibold">Create shift</h1>
           <p className="muted-text mt-1">Add a new upcoming shift.</p>
         </div>
-        <Link href="/admin/shifts" className="btn btn-secondary">
-          Back to shifts
-        </Link>
+        <Button asChild variant="secondary">
+          <Link href="/admin/shifts">Back to shifts</Link>
+        </Button>
       </div>
 
-      <form action={createShift} className="space-y-4 card p-4">
-        <div>
-          <label className="block text-sm mb-1">Shift type</label>
-          <select
-            name="shiftTypeId"
-            className="w-full border rounded p-2"
-            required
-          >
-            <option value="">Select a shift type...</option>
-            {shiftTypes.map((t: (typeof shiftTypes)[number]) => (
-              <option key={t.id} value={t.id}>
-                {t.name}
-              </option>
-            ))}
-          </select>
-        </div>
+      <Card>
+        <CardContent className="p-4">
+          <form action={createShift} className="space-y-4">
+            <div>
+              <Label htmlFor="shiftTypeId" className="block text-sm mb-1">
+                Shift type
+              </Label>
+              <SelectField
+                name="shiftTypeId"
+                id="shiftTypeId"
+                placeholder="Select a shift type..."
+                required
+                options={shiftTypes.map((t: (typeof shiftTypes)[number]) => ({
+                  value: t.id,
+                  label: t.name,
+                }))}
+                className="w-full"
+              />
+            </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <div>
-            <label className="block text-sm mb-1">Date</label>
-            <input
-              type="date"
-              name="date"
-              className="w-full border rounded p-2"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm mb-1">Start time</label>
-            <input
-              type="time"
-              name="startTime"
-              className="w-full border rounded p-2"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm mb-1">End time</label>
-            <input
-              type="time"
-              name="endTime"
-              className="w-full border rounded p-2"
-              required
-            />
-          </div>
-        </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div>
+                <Label htmlFor="date" className="block text-sm mb-1">
+                  Date
+                </Label>
+                <Input type="date" name="date" id="date" required />
+              </div>
+              <div>
+                <Label htmlFor="startTime" className="block text-sm mb-1">
+                  Start time
+                </Label>
+                <Input type="time" name="startTime" id="startTime" required />
+              </div>
+              <div>
+                <Label htmlFor="endTime" className="block text-sm mb-1">
+                  End time
+                </Label>
+                <Input type="time" name="endTime" id="endTime" required />
+              </div>
+            </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div>
-            <label className="block text-sm mb-1">Location</label>
-            <select
-              name="location"
-              className="w-full border rounded p-2"
-              required
-            >
-              <option value="">Select a location...</option>
-              {LOCATIONS.map((loc) => (
-                <option key={loc} value={loc}>
-                  {loc}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm mb-1">Capacity</label>
-            <input
-              type="number"
-              name="capacity"
-              min={1}
-              step={1}
-              className="w-full border rounded p-2"
-              placeholder="e.g. 6"
-              required
-            />
-          </div>
-        </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="location" className="block text-sm mb-1">
+                  Location
+                </Label>
+                <SelectField
+                  name="location"
+                  id="location"
+                  placeholder="Select a location..."
+                  required
+                  options={LOCATIONS.map((loc) => ({ value: loc, label: loc }))}
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <Label htmlFor="capacity" className="block text-sm mb-1">
+                  Capacity
+                </Label>
+                <Input
+                  type="number"
+                  name="capacity"
+                  id="capacity"
+                  min={1}
+                  step={1}
+                  placeholder="e.g. 6"
+                  required
+                />
+              </div>
+            </div>
 
-        <div>
-          <label className="block text-sm mb-1">Notes (optional)</label>
-          <textarea
-            name="notes"
-            className="w-full border rounded p-2"
-            rows={3}
-          />
-        </div>
+            <div>
+              <Label htmlFor="notes" className="block text-sm mb-1">
+                Notes (optional)
+              </Label>
+              <Textarea name="notes" id="notes" rows={3} />
+            </div>
 
-        <div className="flex justify-end gap-2 pt-2">
-          <Link href="/admin/shifts" className="btn btn-secondary">
-            Cancel
-          </Link>
-          <button type="submit" className="btn btn-primary">
-            Create shift
-          </button>
-        </div>
-      </form>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button asChild variant="secondary">
+                <Link href="/admin/shifts">Cancel</Link>
+              </Button>
+              <Button type="submit">Create shift</Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

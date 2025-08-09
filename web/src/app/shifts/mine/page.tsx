@@ -4,6 +4,9 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 export default async function MyShiftsPage({
   searchParams,
@@ -116,31 +119,29 @@ export default async function MyShiftsPage({
     return (
       <div className="flex items-center gap-2">
         {isFirst ? (
-          <span className="btn btn-secondary btn-sm opacity-50 cursor-not-allowed">
+          <Button variant="secondary" size="sm" disabled>
             Previous
-          </span>
+          </Button>
         ) : (
-          <Link
-            href={{ pathname: basePath, query: query(page - 1) }}
-            className="btn btn-secondary btn-sm"
-          >
-            Previous
-          </Link>
+          <Button asChild variant="secondary" size="sm">
+            <Link href={{ pathname: basePath, query: query(page - 1) }}>
+              Previous
+            </Link>
+          </Button>
         )}
         <span className="text-sm muted-text">
           Page {page} of {totalPages}
         </span>
         {isLast ? (
-          <span className="btn btn-secondary btn-sm opacity-50 cursor-not-allowed">
+          <Button variant="secondary" size="sm" disabled>
             Next
-          </span>
+          </Button>
         ) : (
-          <Link
-            href={{ pathname: basePath, query: query(page + 1) }}
-            className="btn btn-secondary btn-sm"
-          >
-            Next
-          </Link>
+          <Button asChild variant="secondary" size="sm">
+            <Link href={{ pathname: basePath, query: query(page + 1) }}>
+              Next
+            </Link>
+          </Button>
         )}
       </div>
     );
@@ -158,7 +159,7 @@ export default async function MyShiftsPage({
       <section className="mb-10">
         <div className="flex items-center gap-3 mb-3">
           <h2 className="text-xl font-semibold">Upcoming</h2>
-          <span className="badge badge-outline">{upcomingCount}</span>
+          <Badge variant="outline">{upcomingCount}</Badge>
           <div className="ml-auto">
             <Pagination
               page={uPage}
@@ -174,32 +175,29 @@ export default async function MyShiftsPage({
         ) : (
           <div className="space-y-3">
             {upcoming.map((su: SignupWithRelations) => (
-              <div
-                key={su.id}
-                className="card p-4 flex items-center justify-between gap-6"
-              >
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <div className="font-medium truncate">
-                      {su.shift.shiftType.name}
+              <Card key={su.id}>
+                <CardContent className="p-4 flex items-center justify-between gap-6">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="font-medium truncate">
+                        {su.shift.shiftType.name}
+                      </div>
+                      {su.status === "CONFIRMED" && <Badge>Confirmed</Badge>}
+                      {su.status === "WAITLISTED" && (
+                        <Badge variant="secondary">Waitlisted</Badge>
+                      )}
+                      {su.status === "CANCELED" && (
+                        <Badge variant="secondary">Canceled</Badge>
+                      )}
                     </div>
-                    {su.status === "CONFIRMED" && (
-                      <span className="badge badge-accent">Confirmed</span>
-                    )}
-                    {su.status === "WAITLISTED" && (
-                      <span className="badge badge-muted">Waitlisted</span>
-                    )}
-                    {su.status === "CANCELED" && (
-                      <span className="badge badge-muted">Canceled</span>
-                    )}
+                    <div className="text-sm muted-text">
+                      {format(su.shift.start, "EEE dd MMM, h:mma")} –{" "}
+                      {format(su.shift.end, "h:mma")} ·{" "}
+                      {su.shift.location ?? "TBC"}
+                    </div>
                   </div>
-                  <div className="text-sm muted-text">
-                    {format(su.shift.start, "EEE dd MMM, h:mma")} –{" "}
-                    {format(su.shift.end, "h:mma")} ·{" "}
-                    {su.shift.location ?? "TBC"}
-                  </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         )}
@@ -208,7 +206,7 @@ export default async function MyShiftsPage({
       <section>
         <div className="flex items-center gap-3 mb-3">
           <h2 className="text-xl font-semibold">History</h2>
-          <span className="badge badge-outline">{pastCount}</span>
+          <Badge variant="outline">{pastCount}</Badge>
           <div className="ml-auto">
             <Pagination
               page={pPage}
@@ -224,32 +222,29 @@ export default async function MyShiftsPage({
         ) : (
           <div className="space-y-3">
             {past.map((su: SignupWithRelations) => (
-              <div
-                key={su.id}
-                className="card p-4 flex items-center justify-between gap-6"
-              >
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <div className="font-medium truncate">
-                      {su.shift.shiftType.name}
+              <Card key={su.id}>
+                <CardContent className="p-4 flex items-center justify-between gap-6">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="font-medium truncate">
+                        {su.shift.shiftType.name}
+                      </div>
+                      {su.status === "CONFIRMED" && <Badge>Confirmed</Badge>}
+                      {su.status === "WAITLISTED" && (
+                        <Badge variant="secondary">Waitlisted</Badge>
+                      )}
+                      {su.status === "CANCELED" && (
+                        <Badge variant="secondary">Canceled</Badge>
+                      )}
                     </div>
-                    {su.status === "CONFIRMED" && (
-                      <span className="badge badge-accent">Confirmed</span>
-                    )}
-                    {su.status === "WAITLISTED" && (
-                      <span className="badge badge-muted">Waitlisted</span>
-                    )}
-                    {su.status === "CANCELED" && (
-                      <span className="badge badge-muted">Canceled</span>
-                    )}
+                    <div className="text-sm muted-text">
+                      {format(su.shift.start, "EEE dd MMM, h:mma")} –{" "}
+                      {format(su.shift.end, "h:mma")} ·{" "}
+                      {su.shift.location ?? "TBC"}
+                    </div>
                   </div>
-                  <div className="text-sm muted-text">
-                    {format(su.shift.start, "EEE dd MMM, h:mma")} –{" "}
-                    {format(su.shift.end, "h:mma")} ·{" "}
-                    {su.shift.location ?? "TBC"}
-                  </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         )}

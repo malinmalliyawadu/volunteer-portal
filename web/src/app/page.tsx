@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   return (
@@ -19,12 +20,12 @@ export default function Home() {
               waste, food insecurity and social isolation in Aotearoa.
             </p>
             <div className="flex gap-3">
-              <Link href="/shifts" className="btn btn-primary">
-                Volunteer shifts
-              </Link>
-              <Link href="/login" className="btn btn-outline">
-                Volunteer login
-              </Link>
+              <Button asChild>
+                <Link href="/shifts">Volunteer shifts</Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link href="/login">Volunteer login</Link>
+              </Button>
             </div>
           </div>
           <div className="hidden md:block" aria-hidden>
