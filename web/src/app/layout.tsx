@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth-options";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,15 +16,16 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Everybody Eats Volunteer Portal",
   description: "Sign up for volunteer shifts",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await getServerSession(authOptions);
+
   return (
     <html lang="en">
       <body
@@ -40,6 +43,17 @@ export default function RootLayout({
               <Link href="/shifts" className="header-link">
                 Shifts
               </Link>
+              {session?.user ? (
+                <Link href="/shifts/mine" className="header-link">
+                  My shifts
+                </Link>
+              ) : null}
+              {(session?.user as { role?: "ADMIN" } | undefined)?.role ===
+              "ADMIN" ? (
+                <Link href="/admin/shifts" className="header-link">
+                  Admin
+                </Link>
+              ) : null}
               <Link href="/login" className="ml-auto header-link">
                 Volunteer login
               </Link>

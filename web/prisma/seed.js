@@ -33,6 +33,23 @@ async function main() {
     },
   });
 
+  // Additional volunteers for seeding full and waitlisted shifts
+  const extraVolunteers = [];
+  for (let i = 1; i <= 20; i++) {
+    const email = `vol${i}@example.com`;
+    const u = await prisma.user.upsert({
+      where: { email },
+      update: {},
+      create: {
+        email,
+        name: `Volunteer ${i}`,
+        hashedPassword: volunteerHash,
+        role: "VOLUNTEER",
+      },
+    });
+    extraVolunteers.push(u);
+  }
+
   const kitchen = await prisma.shiftType.upsert({
     where: { name: "Kitchen" },
     update: {},
@@ -62,11 +79,16 @@ async function main() {
     { startHour: 17, endHour: 21 },
   ];
   const types = [kitchen, front, dishes];
+  const LOCATIONS = ["Wellington", "Glenn Innes", "Onehunga"];
+
+  const createdShifts = [];
 
   for (let i = 0; i < 5; i++) {
     const date = addDays(today, i + 1);
-    for (const t of types) {
-      for (const slot of baseTimes) {
+    for (let ti = 0; ti < types.length; ti++) {
+      const t = types[ti];
+      for (let si = 0; si < baseTimes.length; si++) {
+        const slot = baseTimes[si];
         const start = set(date, {
           hours: slot.startHour,
           minutes: 0,
@@ -79,20 +101,27 @@ async function main() {
           seconds: 0,
           milliseconds: 0,
         });
-        await prisma.shift.create({
+        const location =
+          LOCATIONS[
+            (i * types.length * baseTimes.length + ti * baseTimes.length + si) %
+              LOCATIONS.length
+          ];
+        const shift = await prisma.shift.create({
           data: {
             shiftTypeId: t.id,
             start,
             end,
-            location: "Auckland CBD",
+            location,
             capacity: t.name === "Kitchen" ? 6 : 4,
             notes: i === 0 ? "Bring closed-toe shoes" : null,
           },
         });
+        createdShifts.push(shift);
       }
     }
   }
 
+  // Ensure the sample volunteer is signed up for the first shift
   const firstShift = await prisma.shift.findFirst({
     orderBy: { start: "asc" },
   });
@@ -108,6 +137,35 @@ async function main() {
         status: "CONFIRMED",
       },
     });
+  }
+
+  // Make some shifts full and add a waitlisted signup to demonstrate UI state
+  let extraIndex = 0;
+  for (let i = 0; i < createdShifts.length; i++) {
+    const s = createdShifts[i];
+    // Every 4th shift: fill to capacity and add one waitlisted
+    if (i % 4 === 0) {
+      const capacity = s.capacity;
+      // Create confirmed signups to fill the shift
+      for (let c = 0; c < capacity; c++) {
+        const user = extraVolunteers[(extraIndex + c) % extraVolunteers.length];
+        await prisma.signup.upsert({
+          where: { userId_shiftId: { userId: user.id, shiftId: s.id } },
+          update: { status: "CONFIRMED" },
+          create: { userId: user.id, shiftId: s.id, status: "CONFIRMED" },
+        });
+      }
+      extraIndex = (extraIndex + capacity) % extraVolunteers.length;
+
+      // Add one waitlisted person as well
+      const waitlister = extraVolunteers[extraIndex % extraVolunteers.length];
+      await prisma.signup.upsert({
+        where: { userId_shiftId: { userId: waitlister.id, shiftId: s.id } },
+        update: { status: "WAITLISTED" },
+        create: { userId: waitlister.id, shiftId: s.id, status: "WAITLISTED" },
+      });
+      extraIndex = (extraIndex + 1) % extraVolunteers.length;
+    }
   }
 }
 
