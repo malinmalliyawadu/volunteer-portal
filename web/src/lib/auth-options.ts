@@ -6,9 +6,20 @@ import bcrypt from "bcrypt";
 
 type AppRole = "ADMIN" | "VOLUNTEER";
 
-type TokenWithRole = JWT & { role?: AppRole };
+type TokenWithProfile = JWT & {
+  role?: AppRole;
+  phone?: string;
+  firstName?: string;
+  lastName?: string;
+};
 
-type SessionUserWithRole = { id?: string; role?: AppRole };
+type SessionUserWithProfile = {
+  id?: string;
+  role?: AppRole;
+  phone?: string;
+  firstName?: string;
+  lastName?: string;
+};
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
@@ -35,26 +46,63 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           name: user.name,
           role: user.role,
+          phone: user.phone,
+          firstName: user.firstName,
+          lastName: user.lastName,
         };
       },
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
-      const t = token as TokenWithRole;
+    async jwt({ token, user, trigger, session }) {
+      const t = token as TokenWithProfile;
       if (user) {
-        const u = user as { role?: AppRole };
+        const u = user as {
+          role?: AppRole;
+          phone?: string;
+          firstName?: string;
+          lastName?: string;
+        };
         t.role = u.role;
+        t.phone = u.phone;
+        t.firstName = u.firstName;
+        t.lastName = u.lastName;
       }
+
+      // Handle session updates (like profile changes)
+      if (trigger === "update" && session) {
+        // Update token with fresh user data from database
+        const dbUser = await prisma.user.findUnique({
+          where: { id: t.sub },
+          select: {
+            name: true,
+            phone: true,
+            role: true,
+            firstName: true,
+            lastName: true,
+          },
+        });
+        if (dbUser) {
+          t.name = dbUser.name;
+          t.phone = dbUser.phone;
+          t.role = dbUser.role;
+          t.firstName = dbUser.firstName;
+          t.lastName = dbUser.lastName;
+        }
+      }
+
       return t;
     },
     async session({ session, token }) {
-      const t = token as TokenWithRole & { sub?: string };
+      const t = token as TokenWithProfile & { sub?: string };
       const s = session as Session;
       if (s.user) {
-        const u = s.user as SessionUserWithRole;
+        const u = s.user as SessionUserWithProfile;
         u.id = t.sub;
         u.role = t.role;
+        u.phone = t.phone;
+        u.firstName = t.firstName;
+        u.lastName = t.lastName;
       }
       return s;
     },

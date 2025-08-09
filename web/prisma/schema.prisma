@@ -21,13 +21,48 @@ enum SignupStatus {
   CANCELED
 }
 
+enum NotificationPreference {
+  EMAIL
+  SMS
+  BOTH
+  NONE
+}
+
 model User {
   id             String   @id @default(cuid())
   email          String   @unique
   name           String?
+  firstName      String?
+  lastName       String?
   phone          String?
+  dateOfBirth    DateTime?
+  pronouns       String?
+  profilePhotoUrl String?
   hashedPassword String
   role           Role     @default(VOLUNTEER)
+  
+  // Emergency contact information
+  emergencyContactName         String?
+  emergencyContactRelationship String?
+  emergencyContactPhone        String?
+  
+  // Medical and reference information
+  medicalConditions String?
+  willingToProvideReference Boolean @default(false)
+  
+  // Discovery and availability
+  howDidYouHearAboutUs String?
+  availableDays        String? // JSON array of days
+  availableLocations   String? // JSON array of locations
+  
+  // Communication preferences
+  emailNewsletterSubscription Boolean @default(true)
+  notificationPreference      NotificationPreference @default(EMAIL)
+  
+  // Agreement confirmations
+  volunteerAgreementAccepted  Boolean @default(false)
+  healthSafetyPolicyAccepted  Boolean @default(false)
+  
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   signups        Signup[]
