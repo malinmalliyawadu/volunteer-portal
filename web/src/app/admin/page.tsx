@@ -94,7 +94,7 @@ export default async function AdminDashboardPage({
       orderBy: { createdAt: "desc" },
       where: selectedLocation ? { shift: { location: selectedLocation } } : {},
       include: {
-        user: { select: { name: true, email: true } },
+        user: { select: { id: true, name: true, email: true } },
         shift: {
           select: {
             start: true,
@@ -195,7 +195,7 @@ export default async function AdminDashboardPage({
     id: string;
     status: "CONFIRMED" | "WAITLISTED" | "CANCELED";
     createdAt: Date;
-    user: { name: string | null; email: string };
+    user: { id: string; name: string | null; email: string };
     shift: { start: Date; location: string; shiftType: { name: string } };
   };
 
@@ -459,7 +459,16 @@ export default async function AdminDashboardPage({
                   >
                     <div className="flex-1">
                       <div className="font-medium">
-                        {signup.user.name || signup.user.email}
+                        {signup.user.name ? (
+                          <Link
+                            href={`/admin/volunteers/${signup.user.id}`}
+                            className="hover:underline"
+                          >
+                            {signup.user.name}
+                          </Link>
+                        ) : (
+                          signup.user.email
+                        )}
                       </div>
                       <div className="text-sm text-muted-foreground">
                         {signup.shift.shiftType.name} -{" "}
