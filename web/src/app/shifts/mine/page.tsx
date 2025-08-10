@@ -217,7 +217,7 @@ export default async function MyShiftsPage({
 
   return (
     <div className="min-h-screen">
-      <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto py-4 animate-fade-in">
         <div className="mb-8">
           <PageHeader
             title="My Shifts"
