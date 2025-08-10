@@ -93,15 +93,6 @@ const hearAboutUsOptions = [
   { value: "other", label: "Other" },
 ];
 
-const locationOptions = [
-  { value: "downtown", label: "Downtown Location" },
-  { value: "westside", label: "Westside Location" },
-  { value: "eastside", label: "Eastside Location" },
-  { value: "north", label: "North Location" },
-  { value: "south", label: "South Location" },
-  { value: "mobile", label: "Mobile/Outreach" },
-];
-
 export default function EditProfilePage({
   searchParams,
 }: EditProfilePageProps) {
@@ -113,10 +104,13 @@ export default function EditProfilePage({
     useState("");
   const [healthSafetyPolicyContent, setHealthSafetyPolicyContent] =
     useState("");
+  const [locationOptions, setLocationOptions] = useState<
+    Array<{ value: string; label: string }>
+  >([]);
   const router = useRouter();
   const { toast } = useToast();
 
-  // Load policy content
+  // Load policy content and location options
   useEffect(() => {
     const loadPolicyContent = async () => {
       try {
@@ -139,7 +133,26 @@ export default function EditProfilePage({
       }
     };
 
+    const loadLocationOptions = async () => {
+      try {
+        const response = await fetch("/api/locations");
+        if (response.ok) {
+          const locations = await response.json();
+          setLocationOptions(locations);
+        } else {
+          console.error("Failed to load locations");
+          // Fallback to empty array if API fails
+          setLocationOptions([]);
+        }
+      } catch (error) {
+        console.error("Failed to load locations:", error);
+        // Fallback to empty array if API fails
+        setLocationOptions([]);
+      }
+    };
+
     loadPolicyContent();
+    loadLocationOptions();
   }, []);
 
   // Initialize form data with URL parameters or defaults

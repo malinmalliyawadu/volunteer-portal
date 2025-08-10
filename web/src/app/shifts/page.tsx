@@ -258,7 +258,7 @@ export default async function ShiftsPage({
                     return (
                       <Card
                         key={s.id}
-                        className={`group hover:shadow-xl transition-all duration-300 overflow-hidden animate-slide-up border-l-4 ${theme.borderColor} ${theme.bgColor} hover:scale-[1.02]`}
+                        className={`group hover:shadow-xl transition-all duration-300 overflow-hidden animate-slide-up border-l-4 ${theme.borderColor} ${theme.bgColor} hover:scale-[1.02] py-0`}
                         style={{
                           animationDelay: `${
                             dayIndex * 0.1 + shiftIndex * 0.05

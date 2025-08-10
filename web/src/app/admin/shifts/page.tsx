@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DateFilter } from "@/components/date-filter";
+import { SignupActions } from "@/components/signup-actions";
 import {
   Calendar,
   Clock,
@@ -128,7 +129,13 @@ export default async function AdminShiftsPage({
 
   // Create filters for queries
   const locationFilter = selectedLocation ? { location: selectedLocation } : {};
-  const dateFilter: any = {};
+  const dateFilter: {
+    start?: {
+      gte?: Date;
+      lte?: Date;
+      lt?: Date;
+    };
+  } = {};
 
   if (dateFrom && dateTo) {
     dateFilter.start = {
@@ -209,26 +216,6 @@ export default async function AdminShiftsPage({
     userId: string;
     signupId: string;
   }) {
-    const handleSignupAction = async (action: "approve" | "reject") => {
-      try {
-        const response = await fetch(`/api/admin/signups/${signupId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action }),
-        });
-
-        if (response.ok) {
-          window.location.reload(); // Refresh to show updated state
-        } else {
-          const error = await response.json();
-          alert(error.error || "Failed to process signup");
-        }
-      } catch (error) {
-        console.error("Signup action error:", error);
-        alert("Failed to process signup");
-      }
-    };
-
     return (
       <div className="grid grid-cols-1 md:grid-cols-5 gap-2 md:gap-4 text-sm py-3 px-1 hover:bg-slate-50 rounded-lg transition-colors">
         <div className="truncate">
@@ -264,26 +251,8 @@ export default async function AdminShiftsPage({
             </Badge>
           )}
         </div>
-        <div className="flex gap-2">
-          {status === "PENDING" && (
-            <>
-              <Button
-                size="sm"
-                onClick={() => handleSignupAction("approve")}
-                className="h-8 px-3 bg-green-600 hover:bg-green-700 text-white"
-              >
-                ✓ Approve
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => handleSignupAction("reject")}
-                className="h-8 px-3 border-red-200 text-red-600 hover:bg-red-50"
-              >
-                ✕ Reject
-              </Button>
-            </>
-          )}
+        <div>
+          <SignupActions signupId={signupId} status={status} />
         </div>
       </div>
     );
@@ -643,7 +612,7 @@ export default async function AdminShiftsPage({
                 </label>
                 <div className="flex items-center gap-2 flex-wrap">
                   <Link
-                    href={createFilterUrl({ location: undefined })}
+                    href={createFilterUrl(null, rawDateFrom, rawDateTo)}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                       !selectedLocation
                         ? "bg-blue-100 text-blue-800 border border-blue-200"
@@ -655,7 +624,7 @@ export default async function AdminShiftsPage({
                   {LOCATIONS.map((location) => (
                     <Link
                       key={location}
-                      href={createFilterUrl({ location })}
+                      href={createFilterUrl(location, rawDateFrom, rawDateTo)}
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
                         selectedLocation === location
                           ? "bg-blue-100 text-blue-800 border border-blue-200"

@@ -181,20 +181,6 @@ export default async function Home() {
             description="Join our community of volunteers and help make a difference by signing up for volunteer shifts."
           />
 
-          {/* Dark Mode Demo Card */}
-          <div className="card p-6 mx-auto max-w-md">
-            <h3 className="text-xl font-semibold mb-4">🌙 Dark Mode Support</h3>
-            <p className="text-muted-foreground mb-4">
-              This portal now supports dark mode! Click the theme toggle in the
-              header to switch between light, dark, and system themes.
-            </p>
-            <div className="flex items-center justify-center space-x-2">
-              <div className="w-4 h-4 bg-primary rounded-full"></div>
-              <div className="w-4 h-4 bg-accent rounded-full"></div>
-              <div className="w-4 h-4 bg-muted rounded-full"></div>
-            </div>
-          </div>
-
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             {session?.user ? (
               <>

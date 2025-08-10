@@ -32,7 +32,40 @@ export default function LoginPage() {
     if (res?.error) {
       setError("Invalid credentials");
     } else {
-      window.location.href = "/dashboard";
+      window.location.href = "/";
+    }
+  }
+
+  async function handleQuickLogin(userType: "volunteer" | "admin") {
+    setError(null);
+    setIsLoading(true);
+
+    const credentials = {
+      volunteer: {
+        email: "volunteer@example.com",
+        password: "volunteer123",
+      },
+      admin: {
+        email: "admin@everybodyeats.nz",
+        password: "admin123",
+      },
+    };
+
+    const { email: loginEmail, password: loginPassword } =
+      credentials[userType];
+
+    const res = await signIn("credentials", {
+      email: loginEmail,
+      password: loginPassword,
+      redirect: false,
+    });
+
+    setIsLoading(false);
+
+    if (res?.error) {
+      setError("Login failed");
+    } else {
+      window.location.href = "/";
     }
   }
 
@@ -134,11 +167,30 @@ export default function LoginPage() {
 
             <div className="mt-6 pt-6 border-t border-border">
               <div className="bg-accent/10 rounded-lg p-4 text-center">
-                <p className="text-sm font-medium text-primary mb-1">
+                <p className="text-sm font-medium text-primary mb-3">
                   Demo Credentials
                 </p>
-                <p className="text-xs text-muted-foreground">
-                  Email: volunteer@example.com | Password: volunteer123
+                <div className="flex flex-col gap-2">
+                  <Button
+                    onClick={() => handleQuickLogin("volunteer")}
+                    className="w-full btn-secondary"
+                    size="sm"
+                    disabled={isLoading}
+                  >
+                    Login as Volunteer
+                  </Button>
+                  <Button
+                    onClick={() => handleQuickLogin("admin")}
+                    className="w-full btn-secondary"
+                    size="sm"
+                    disabled={isLoading}
+                  >
+                    Login as Admin
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground mt-3">
+                  Volunteer: volunteer@example.com | Admin:
+                  admin@everybodyeats.nz
                 </p>
               </div>
             </div>

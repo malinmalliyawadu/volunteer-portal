@@ -192,7 +192,7 @@ export default async function AdminVolunteerPage({
           {/* Left Column - Profile Info */}
           <div className="lg:col-span-1 space-y-6">
             {/* Basic Information */}
-            <Card className="shadow-sm border-slate-200">
+            <Card className="shadow-sm border-slate-200 h-fit">
               <CardContent className="p-6">
                 <div className="text-center">
                   <div className="mx-auto mb-4">
@@ -270,7 +270,7 @@ export default async function AdminVolunteerPage({
             </Card>
 
             {/* Contact Information */}
-            <Card className="shadow-sm border-slate-200">
+            <Card className="shadow-sm border-slate-200 h-fit">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-slate-900">
                   <Phone className="h-5 w-5 text-blue-600" />
@@ -308,7 +308,7 @@ export default async function AdminVolunteerPage({
             </Card>
 
             {/* Emergency Contact */}
-            <Card className="shadow-sm border-slate-200">
+            <Card className="shadow-sm border-slate-200 h-fit">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-slate-900">
                   <Heart className="h-5 w-5 text-red-500" />
@@ -347,7 +347,7 @@ export default async function AdminVolunteerPage({
           {/* Right Column - Detailed Info */}
           <div className="lg:col-span-2 space-y-6">
             {/* Availability & Preferences */}
-            <Card className="shadow-sm border-slate-200">
+            <Card className="shadow-sm border-slate-200 h-fit">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-slate-900">
                   <MapPin className="h-5 w-5 text-green-600" />
@@ -415,7 +415,7 @@ export default async function AdminVolunteerPage({
             </Card>
 
             {/* Additional Information */}
-            <Card className="shadow-sm border-slate-200">
+            <Card className="shadow-sm border-slate-200 h-fit">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-slate-900">
                   <Shield className="h-5 w-5 text-purple-600" />
@@ -463,7 +463,7 @@ export default async function AdminVolunteerPage({
             </Card>
 
             {/* Shift History with Location Filter */}
-            <Card className="shadow-sm border-slate-200">
+            <Card className="shadow-sm border-slate-200 h-fit">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2 text-slate-900">

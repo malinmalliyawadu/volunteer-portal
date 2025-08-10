@@ -166,96 +166,14 @@ export default async function ProfilePage() {
             </CardContent>
           </Card>
 
-          {/* Quick Stats */}
-          <div className="grid md:grid-cols-3 gap-6">
-            <Card
-              className="animate-slide-up"
-              style={{ animationDelay: "0.1s" }}
-            >
-              <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg
-                    className="w-6 h-6 text-blue-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    />
-                  </svg>
-                </div>
-                <h3 className="text-2xl font-bold text-blue-600 mb-1">0</h3>
-                <p className="text-sm text-muted-foreground">
-                  Shifts Completed
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card
-              className="animate-slide-up"
-              style={{ animationDelay: "0.2s" }}
-            >
-              <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg
-                    className="w-6 h-6 text-green-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                </div>
-                <h3 className="text-2xl font-bold text-green-600 mb-1">0</h3>
-                <p className="text-sm text-muted-foreground">
-                  Hours Volunteered
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card
-              className="animate-slide-up"
-              style={{ animationDelay: "0.3s" }}
-            >
-              <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg
-                    className="w-6 h-6 text-purple-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                    />
-                  </svg>
-                </div>
-                <h3 className="text-2xl font-bold text-purple-600 mb-1">0</h3>
-                <p className="text-sm text-muted-foreground">Meals Served</p>
-              </CardContent>
-            </Card>
-          </div>
-
           {/* Profile Details Grid */}
           <div className="grid md:grid-cols-2 gap-8">
             {/* Personal Information */}
             <Card
-              className="animate-slide-up"
+              className="animate-slide-up h-fit"
               style={{ animationDelay: "0.4s" }}
             >
-              <CardContent className="p-6">
+              <CardContent className="px-6">
                 <div className="flex items-center gap-4 mb-6">
                   <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
                     <svg
@@ -333,10 +251,10 @@ export default async function ProfilePage() {
 
             {/* Emergency Contact & Availability */}
             <Card
-              className="animate-slide-up"
+              className="animate-slide-up h-fit"
               style={{ animationDelay: "0.5s" }}
             >
-              <CardContent className="p-6">
+              <CardContent className="px-6">
                 <div className="flex items-center gap-4 mb-6">
                   <div className="w-12 h-12 bg-accent/20 rounded-lg flex items-center justify-center">
                     <svg
@@ -404,10 +322,10 @@ export default async function ProfilePage() {
 
             {/* Availability Information */}
             <Card
-              className="animate-slide-up"
+              className="animate-slide-up h-fit"
               style={{ animationDelay: "0.6s" }}
             >
-              <CardContent className="p-6">
+              <CardContent className="px-6">
                 <div className="flex items-center gap-4 mb-6">
                   <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                     <svg
@@ -482,7 +400,7 @@ export default async function ProfilePage() {
 
             {/* Quick Actions */}
             <Card
-              className="animate-slide-up"
+              className="animate-slide-up h-fit"
               style={{ animationDelay: "0.7s" }}
             >
               <CardContent className="p-6">

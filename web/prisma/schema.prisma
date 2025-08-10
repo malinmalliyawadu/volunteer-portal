@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,6 +5,98 @@ generator client {
 datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
+}
+
+model User {
+  id                           String                 @id @default(cuid())
+  email                        String                 @unique
+  name                         String?
+  firstName                    String?
+  lastName                     String?
+  phone                        String?
+  dateOfBirth                  DateTime?
+  pronouns                     String?
+  profilePhotoUrl              String?
+  hashedPassword               String
+  role                         Role                   @default("VOLUNTEER")
+  emergencyContactName         String?
+  emergencyContactRelationship String?
+  emergencyContactPhone        String?
+  medicalConditions            String?
+  willingToProvideReference    Boolean                @default(false)
+  howDidYouHearAboutUs         String?
+  availableDays                String?
+  availableLocations           String?
+  emailNewsletterSubscription  Boolean                @default(true)
+  notificationPreference       NotificationPreference @default("EMAIL")
+  volunteerAgreementAccepted   Boolean                @default(false)
+  healthSafetyPolicyAccepted   Boolean                @default(false)
+  createdAt                    DateTime               @default(now())
+  updatedAt                    DateTime               @updatedAt
+  signups                      Signup[]
+  achievements                 UserAchievement[]
+}
+
+model ShiftType {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  shifts      Shift[]
+}
+
+model Shift {
+  id          String    @id @default(cuid())
+  shiftTypeId String
+  start       DateTime
+  end         DateTime
+  location    String?
+  capacity    Int
+  notes       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  shiftType   ShiftType @relation(fields: [shiftTypeId], references: [id])
+  signups     Signup[]
+}
+
+model Signup {
+  id        String       @id @default(cuid())
+  userId    String
+  shiftId   String
+  status    SignupStatus @default("CONFIRMED")
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  shift     Shift        @relation(fields: [shiftId], references: [id])
+  user      User         @relation(fields: [userId], references: [id])
+
+  @@unique([userId, shiftId])
+}
+
+model Achievement {
+  id          String              @id @default(cuid())
+  name        String              @unique
+  description String
+  category    AchievementCategory
+  icon        String
+  criteria    String
+  points      Int                 @default(0)
+  isActive    Boolean             @default(true)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  users       UserAchievement[]
+}
+
+model UserAchievement {
+  id            String      @id @default(cuid())
+  userId        String
+  achievementId String
+  unlockedAt    DateTime    @default(now())
+  progress      Int         @default(0)
+  achievement   Achievement @relation(fields: [achievementId], references: [id])
+  user          User        @relation(fields: [userId], references: [id])
+
+  @@unique([userId, achievementId])
 }
 
 enum Role {
@@ -35,107 +124,4 @@ enum AchievementCategory {
   SPECIALIZATION
   COMMUNITY
   IMPACT
-}
-
-model User {
-  id             String   @id @default(cuid())
-  email          String   @unique
-  name           String?
-  firstName      String?
-  lastName       String?
-  phone          String?
-  dateOfBirth    DateTime?
-  pronouns       String?
-  profilePhotoUrl String?
-  hashedPassword String
-  role           Role     @default(VOLUNTEER)
-  
-  // Emergency contact information
-  emergencyContactName         String?
-  emergencyContactRelationship String?
-  emergencyContactPhone        String?
-  
-  // Medical and reference information
-  medicalConditions String?
-  willingToProvideReference Boolean @default(false)
-  
-  // Discovery and availability
-  howDidYouHearAboutUs String?
-  availableDays        String? // JSON array of days
-  availableLocations   String? // JSON array of locations
-  
-  // Communication preferences
-  emailNewsletterSubscription Boolean @default(true)
-  notificationPreference      NotificationPreference @default(EMAIL)
-  
-  // Agreement confirmations
-  volunteerAgreementAccepted  Boolean @default(false)
-  healthSafetyPolicyAccepted  Boolean @default(false)
-  
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  signups        Signup[]
-  achievements   UserAchievement[]
-}
-
-model ShiftType {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  shifts      Shift[]
-}
-
-model Shift {
-  id           String    @id @default(cuid())
-  shiftTypeId  String
-  shiftType    ShiftType @relation(fields: [shiftTypeId], references: [id])
-  start        DateTime
-  end          DateTime
-  location     String?
-  capacity     Int
-  notes        String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  signups      Signup[]
-}
-
-model Signup {
-  id        String       @id @default(cuid())
-  userId    String
-  user      User         @relation(fields: [userId], references: [id])
-  shiftId   String
-  shift     Shift        @relation(fields: [shiftId], references: [id])
-  status    SignupStatus @default(CONFIRMED)
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
-
-  @@unique([userId, shiftId])
-}
-
-model Achievement {
-  id          String              @id @default(cuid())
-  name        String              @unique
-  description String
-  category    AchievementCategory
-  icon        String              // emoji or icon name
-  criteria    String              // JSON describing unlock criteria
-  points      Int                 @default(0)
-  isActive    Boolean             @default(true)
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
-  users       UserAchievement[]
-}
-
-model UserAchievement {
-  id            String      @id @default(cuid())
-  userId        String
-  user          User        @relation(fields: [userId], references: [id])
-  achievementId String
-  achievement   Achievement @relation(fields: [achievementId], references: [id])
-  unlockedAt    DateTime    @default(now())
-  progress      Int         @default(0) // for progressive achievements
-  
-  @@unique([userId, achievementId])
 }

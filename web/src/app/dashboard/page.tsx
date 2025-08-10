@@ -264,7 +264,10 @@ export default async function DashboardPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Next Shift */}
-        <Card className="animate-slide-up" style={{ animationDelay: "0.4s" }}>
+        <Card
+          className="animate-slide-up h-fit"
+          style={{ animationDelay: "0.4s" }}
+        >
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <svg
@@ -387,7 +390,10 @@ export default async function DashboardPage() {
         </Card>
 
         {/* Recent Activity */}
-        <Card className="animate-slide-up" style={{ animationDelay: "0.5s" }}>
+        <Card
+          className="animate-slide-up h-fit"
+          style={{ animationDelay: "0.5s" }}
+        >
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <svg
@@ -412,7 +418,7 @@ export default async function DashboardPage() {
                 {recentShifts.map((signup: CompletedSignup) => (
                   <div
                     key={signup.id}
-                    className="flex items-center gap-3 p-3 rounded-lg bg-muted/30"
+                    className="flex items-center gap-3 p-3 rounded-lg"
                   >
                     <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
                       <svg
@@ -479,7 +485,10 @@ export default async function DashboardPage() {
         <AchievementsCard />
 
         {/* Impact & Community Stats */}
-        <Card className="animate-slide-up" style={{ animationDelay: "0.6s" }}>
+        <Card
+          className="animate-slide-up h-fit"
+          style={{ animationDelay: "0.6s" }}
+        >
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <svg
@@ -543,7 +552,10 @@ export default async function DashboardPage() {
       </div>
 
       {/* Quick Actions */}
-      <Card className="animate-slide-up" style={{ animationDelay: "0.7s" }}>
+      <Card
+        className="animate-slide-up h-fit"
+        style={{ animationDelay: "0.7s" }}
+      >
         <CardHeader>
           <CardTitle>Quick Actions</CardTitle>
         </CardHeader>

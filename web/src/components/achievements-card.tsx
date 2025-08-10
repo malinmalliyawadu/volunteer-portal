@@ -168,7 +168,7 @@ export default function AchievementsCard() {
               {nextAchievements.map((achievement) => (
                 <div
                   key={achievement.id}
-                  className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 border border-muted"
+                  className="flex items-center gap-3 p-3 rounded-lg border border-muted/10"
                 >
                   <div className="text-2xl flex-shrink-0 opacity-60">
                     {achievement.icon}
