@@ -7,8 +7,8 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { DateFilter } from "@/components/date-filter";
 import { SignupActions } from "@/components/signup-actions";
+import { FilterControls } from "@/components/filter-controls";
 import {
   Calendar,
   Clock,
@@ -466,180 +466,53 @@ export default async function AdminShiftsPage({
     );
   }
 
-  // Helper function to create filter URLs
-  const createFilterUrl = (
-    location?: LocationOption | null,
-    newDateFrom?: string,
-    newDateTo?: string
-  ) => {
-    const searchParams = new URLSearchParams();
-
-    // Preserve existing params unless overridden
-    if (location !== undefined) {
-      if (location) searchParams.set("location", location);
-    } else if (selectedLocation) {
-      searchParams.set("location", selectedLocation);
-    }
-
-    if (newDateFrom !== undefined) {
-      if (newDateFrom) searchParams.set("dateFrom", newDateFrom);
-    } else if (rawDateFrom) {
-      searchParams.set("dateFrom", rawDateFrom);
-    }
-
-    if (newDateTo !== undefined) {
-      if (newDateTo) searchParams.set("dateTo", newDateTo);
-    } else if (rawDateTo) {
-      searchParams.set("dateTo", rawDateTo);
-    }
-
-    return `/admin/shifts?${searchParams.toString()}`;
-  };
-
   return (
     <div className="min-h-screen">
       <div className="max-w-7xl mx-auto p-4">
         <PageHeader
           title="Admin · Shifts"
           description="Manage volunteer shifts and view signup details"
-        >
-          <div className="flex items-center justify-between mt-6">
-            <div className="flex items-center gap-2 flex-wrap">
-              {(selectedLocation || dateFrom || dateTo) && (
-                <div className="flex items-center gap-2">
-                  {selectedLocation && (
-                    <Badge variant="outline" className="gap-1">
-                      📍 {selectedLocation}
-                      <Button
-                        asChild
-                        variant="ghost"
-                        size="sm"
-                        className="h-4 w-4 p-0 hover:bg-destructive hover:text-destructive-foreground"
-                      >
-                        <Link
-                          href={createFilterUrl(null, rawDateFrom, rawDateTo)}
-                        >
-                          <X className="h-3 w-3" />
-                        </Link>
-                      </Button>
-                    </Badge>
-                  )}
-                  {dateFrom && (
-                    <Badge variant="outline" className="gap-1">
-                      📅 From {format(dateFrom, "MMM d")}
-                      <Button
-                        asChild
-                        variant="ghost"
-                        size="sm"
-                        className="h-4 w-4 p-0 hover:bg-destructive hover:text-destructive-foreground"
-                      >
-                        <Link
-                          href={createFilterUrl(
-                            selectedLocation,
-                            undefined,
-                            rawDateTo
-                          )}
-                        >
-                          <X className="h-3 w-3" />
-                        </Link>
-                      </Button>
-                    </Badge>
-                  )}
-                  {dateTo && (
-                    <Badge variant="outline" className="gap-1">
-                      📅 To {format(dateTo, "MMM d")}
-                      <Button
-                        asChild
-                        variant="ghost"
-                        size="sm"
-                        className="h-4 w-4 p-0 hover:bg-destructive hover:text-destructive-foreground"
-                      >
-                        <Link
-                          href={createFilterUrl(
-                            selectedLocation,
-                            rawDateFrom,
-                            undefined
-                          )}
-                        >
-                          <X className="h-3 w-3" />
-                        </Link>
-                      </Button>
-                    </Badge>
-                  )}
-                  <Button asChild variant="outline" size="sm" className="gap-1">
-                    <Link href="/admin/shifts">
-                      <X className="h-3 w-3" />
-                      Clear filters
-                    </Link>
-                  </Button>
-                </div>
-              )}
-            </div>
+          actions={
             <Button asChild size="sm" className="btn-primary gap-2">
               <Link href="/admin/shifts/new">
                 <Plus className="h-4 w-4" />
                 Create shift
               </Link>
             </Button>
-          </div>
-        </PageHeader>
+          }
+        />
 
         {/* Filters */}
         <div className="mb-6">
           <Card className="shadow-sm border-slate-200">
-            <CardHeader className="pb-3">
+            <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Filter className="h-5 w-5 text-slate-600" />
                   Filters
                 </CardTitle>
                 {(selectedLocation || dateFrom || dateTo) && (
-                  <Link
-                    href="/admin/shifts"
-                    className="text-sm text-slate-500 hover:text-slate-700 flex items-center gap-1"
+                  <Button
+                    asChild
+                    variant="ghost"
+                    size="sm"
+                    className="text-slate-500 hover:text-slate-700 gap-1"
                   >
-                    <X className="h-3 w-3" />
-                    Clear all
-                  </Link>
+                    <Link href="/admin/shifts">
+                      <X className="h-3 w-3" />
+                      Clear all filters
+                    </Link>
+                  </Button>
                 )}
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Location Filter */}
-              <div>
-                <label className="text-sm font-medium text-slate-700 mb-2 block">
-                  Location
-                </label>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Link
-                    href={createFilterUrl(null, rawDateFrom, rawDateTo)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      !selectedLocation
-                        ? "bg-blue-100 text-blue-800 border border-blue-200"
-                        : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                    }`}
-                  >
-                    All Locations
-                  </Link>
-                  {LOCATIONS.map((location) => (
-                    <Link
-                      key={location}
-                      href={createFilterUrl(location, rawDateFrom, rawDateTo)}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                        selectedLocation === location
-                          ? "bg-blue-100 text-blue-800 border border-blue-200"
-                          : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                      }`}
-                    >
-                      <MapPin className="h-3 w-3" />
-                      {location}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-
-              {/* Date Filter */}
-              <DateFilter rawDateFrom={rawDateFrom} rawDateTo={rawDateTo} />
+            <CardContent className="space-y-6">
+              <FilterControls
+                selectedLocation={selectedLocation}
+                rawDateFrom={rawDateFrom}
+                rawDateTo={rawDateTo}
+                locations={LOCATIONS}
+              />
             </CardContent>
           </Card>
         </div>

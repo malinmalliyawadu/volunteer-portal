@@ -70,6 +70,7 @@ export default async function AdminVolunteerPage({
       phone: true,
       dateOfBirth: true,
       pronouns: true,
+      profilePhotoUrl: true,
       emergencyContactName: true,
       emergencyContactRelationship: true,
       emergencyContactPhone: true,
@@ -137,10 +138,12 @@ export default async function AdminVolunteerPage({
   const now = new Date();
   const totalShifts = allSignups.length;
   const upcomingShifts = allSignups.filter(
-    (signup) => signup.shift.start >= now && signup.status === "CONFIRMED"
+    (signup: (typeof allSignups)[0]) =>
+      signup.shift.start >= now && signup.status === "CONFIRMED"
   ).length;
   const completedShifts = allSignups.filter(
-    (signup) => signup.shift.start < now && signup.status === "CONFIRMED"
+    (signup: (typeof allSignups)[0]) =>
+      signup.shift.start < now && signup.status === "CONFIRMED"
   ).length;
 
   const dayLabels: Record<string, string> = {
@@ -195,9 +198,12 @@ export default async function AdminVolunteerPage({
             <Card className="shadow-sm border-slate-200 h-fit">
               <CardContent className="p-6">
                 <div className="text-center">
-                  <div className="mx-auto mb-4">
+                  <div className="flex justify-center mx-auto mb-4">
                     <Avatar className="h-24 w-24 border-4 border-white shadow-lg">
-                      <AvatarImage src="" alt={volunteer.name || "Volunteer"} />
+                      <AvatarImage
+                        src={volunteer.profilePhotoUrl || ""}
+                        alt={volunteer.name || "Volunteer"}
+                      />
                       <AvatarFallback className="text-xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
                         {volunteerInitials}
                       </AvatarFallback>

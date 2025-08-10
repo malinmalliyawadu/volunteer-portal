@@ -8,13 +8,6 @@ import { UserMenu } from "@/components/user-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
 import { Session } from "next-auth";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { ChevronDown } from "lucide-react";
 
 interface SiteHeaderProps {
   session: Session | null;
@@ -45,6 +38,9 @@ export function SiteHeader({
     );
   };
 
+  const isAdmin =
+    (session?.user as { role?: "ADMIN" } | undefined)?.role === "ADMIN";
+
   return (
     <header className="border-b">
       <div className="bg-[var(--ee-primary)] text-white">
@@ -69,26 +65,9 @@ export function SiteHeader({
               <Button
                 asChild
                 variant="ghost"
-                className={getLinkClassName(
-                  (session.user as { role?: "ADMIN" | "VOLUNTEER" } | undefined)
-                    ?.role === "ADMIN"
-                    ? "/admin"
-                    : "/dashboard"
-                )}
+                className={getLinkClassName(isAdmin ? "/admin" : "/dashboard")}
               >
-                <Link
-                  href={
-                    (
-                      session.user as
-                        | { role?: "ADMIN" | "VOLUNTEER" }
-                        | undefined
-                    )?.role === "ADMIN"
-                      ? "/admin"
-                      : "/dashboard"
-                  }
-                >
-                  Dashboard
-                </Link>
+                <Link href={isAdmin ? "/admin" : "/dashboard"}>Dashboard</Link>
               </Button>
             ) : null}
 
@@ -100,7 +79,7 @@ export function SiteHeader({
               <Link href="/shifts">Shifts</Link>
             </Button>
 
-            {session?.user ? (
+            {session?.user && !isAdmin ? (
               <Button
                 asChild
                 variant="ghost"
@@ -110,41 +89,23 @@ export function SiteHeader({
               </Button>
             ) : null}
 
-            {(session?.user as { role?: "ADMIN" } | undefined)?.role ===
-            "ADMIN" ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className={cn(
-                      "text-white/90 hover:text-white hover:bg-white/10",
-                      (pathname.startsWith("/admin") ||
-                        pathname === "/admin") &&
-                        "text-white bg-white/20 font-medium"
-                    )}
-                  >
-                    Admin
-                    <ChevronDown className="ml-1 h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem asChild>
-                    <Link href="/admin" className="cursor-pointer">
-                      Dashboard
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/admin/shifts" className="cursor-pointer">
-                      Manage Shifts
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/admin/users" className="cursor-pointer">
-                      Manage Users
-                    </Link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+            {isAdmin ? (
+              <>
+                <Button
+                  asChild
+                  variant="ghost"
+                  className={getLinkClassName("/admin/shifts")}
+                >
+                  <Link href="/admin/shifts">Manage Shifts</Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="ghost"
+                  className={getLinkClassName("/admin/users")}
+                >
+                  <Link href="/admin/users">Manage Users</Link>
+                </Button>
+              </>
             ) : null}
           </div>
 

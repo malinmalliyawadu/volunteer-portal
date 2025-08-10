@@ -74,68 +74,52 @@ export function DateFilter({ rawDateFrom, rawDateTo }: DateFilterProps) {
   };
 
   return (
-    <div>
-      <label className="text-sm font-medium text-slate-700 mb-2 block">
-        Date Range
-      </label>
-      <div className="flex items-center gap-4">
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className={cn(
-                "w-[280px] justify-start text-left font-normal",
-                !dateRange && "text-muted-foreground"
-              )}
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {dateRange?.from ? (
-                dateRange.to ? (
-                  <>
-                    {format(dateRange.from, "LLL dd, y")} -{" "}
-                    {format(dateRange.to, "LLL dd, y")}
-                  </>
-                ) : (
-                  format(dateRange.from, "LLL dd, y")
-                )
-              ) : (
-                <span>Pick a date range</span>
-              )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              initialFocus
-              mode="range"
-              defaultMonth={dateRange?.from}
-              selected={dateRange}
-              onSelect={handleDateRangeChange}
-              numberOfMonths={2}
-            />
-          </PopoverContent>
-        </Popover>
-
-        {(dateFrom || dateTo) && (
+    <div className="flex items-center gap-3">
+      <Popover>
+        <PopoverTrigger asChild>
           <Button
-            variant="ghost"
-            size="sm"
-            onClick={clearDates}
-            className="flex items-center gap-1 text-slate-500 hover:text-slate-700"
+            variant="outline"
+            className={cn(
+              "w-full justify-start text-left font-normal",
+              !dateRange && "text-muted-foreground"
+            )}
           >
-            <X className="h-3 w-3" />
-            Clear dates
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            {dateRange?.from ? (
+              dateRange.to ? (
+                <>
+                  {format(dateRange.from, "MMM dd")} -{" "}
+                  {format(dateRange.to, "MMM dd")}
+                </>
+              ) : (
+                format(dateRange.from, "MMM dd, y")
+              )
+            ) : (
+              <span>Pick dates</span>
+            )}
           </Button>
-        )}
-      </div>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            initialFocus
+            mode="range"
+            defaultMonth={dateRange?.from}
+            selected={dateRange}
+            onSelect={handleDateRangeChange}
+            numberOfMonths={2}
+          />
+        </PopoverContent>
+      </Popover>
 
       {(dateFrom || dateTo) && (
-        <div className="mt-2">
-          <span className="text-xs text-slate-500">
-            Showing shifts
-            {dateFrom && ` from ${format(dateFrom, "dd MMM yyyy")}`}
-            {dateTo && ` until ${format(dateTo, "dd MMM yyyy")}`}
-          </span>
-        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={clearDates}
+          className="flex items-center gap-1 text-slate-500 hover:text-slate-700 flex-shrink-0"
+        >
+          <X className="h-3 w-3" />
+        </Button>
       )}
     </div>
   );

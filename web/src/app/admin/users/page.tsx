@@ -33,6 +33,7 @@ type UserWithStats = {
   firstName: string | null;
   lastName: string | null;
   phone: string | null;
+  profilePhotoUrl: string | null;
   role: "ADMIN" | "VOLUNTEER";
   createdAt: Date;
   _count: {
@@ -90,6 +91,7 @@ export default async function AdminUsersPage({
           firstName: true,
           lastName: true,
           phone: true,
+          profilePhotoUrl: true,
           role: true,
           createdAt: true,
           _count: {
@@ -354,7 +356,10 @@ export default async function AdminUsersPage({
                   >
                     <div className="flex items-center gap-4 flex-1">
                       <Avatar className="h-10 w-10">
-                        <AvatarImage src="" alt={getDisplayName(user)} />
+                        <AvatarImage
+                          src={user.profilePhotoUrl || ""}
+                          alt={getDisplayName(user)}
+                        />
                         <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-medium">
                           {getUserInitials(user)}
                         </AvatarFallback>

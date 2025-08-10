@@ -11,6 +11,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { SelectField } from "@/components/ui/select-field";
 import { PageHeader } from "@/components/page-header";
+import {
+  CalendarIcon,
+  ClockIcon,
+  MapPinIcon,
+  UsersIcon,
+  FileTextIcon,
+  PlusIcon,
+} from "lucide-react";
 
 const LOCATIONS = ["Wellington", "Glenn Innes", "Onehunga"] as const;
 
@@ -90,98 +98,215 @@ export default async function NewShiftPage() {
   });
 
   return (
-    <div className="max-w-2xl mx-auto p-4">
-      <PageHeader title="Create shift" description="Add a new upcoming shift.">
-        <div className="flex justify-end mt-6">
-          <Button asChild variant="secondary">
-            <Link href="/admin/shifts">Back to shifts</Link>
+    <div className="max-w-4xl mx-auto p-6">
+      <PageHeader
+        title="Create shift"
+        description="Schedule a new volunteer shift with all the essential details."
+        actions={
+          <Button asChild variant="outline" size="sm">
+            <Link href="/admin/shifts">← Back to shifts</Link>
           </Button>
-        </div>
-      </PageHeader>
+        }
+      />
 
-      <Card>
-        <CardContent className="p-4">
-          <form action={createShift} className="space-y-4">
-            <div>
-              <Label htmlFor="shiftTypeId" className="block text-sm mb-1">
-                Shift type
-              </Label>
-              <SelectField
-                name="shiftTypeId"
-                id="shiftTypeId"
-                placeholder="Select a shift type..."
-                required
-                options={shiftTypes.map((t: (typeof shiftTypes)[number]) => ({
-                  value: t.id,
-                  label: t.name,
-                }))}
-                className="w-full"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div>
-                <Label htmlFor="date" className="block text-sm mb-1">
-                  Date
-                </Label>
-                <Input type="date" name="date" id="date" required />
+      <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50">
+        <CardHeader className="pb-6">
+          <CardTitle className="flex items-center gap-2 text-xl font-semibold">
+            Shift Details
+          </CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Fill in the information below to create a new volunteer shift.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-8">
+          <form action={createShift} className="space-y-8">
+            {/* Shift Type Section */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 mb-4">
+                <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                  Shift Type
+                </h3>
               </div>
               <div>
-                <Label htmlFor="startTime" className="block text-sm mb-1">
-                  Start time
-                </Label>
-                <Input type="time" name="startTime" id="startTime" required />
-              </div>
-              <div>
-                <Label htmlFor="endTime" className="block text-sm mb-1">
-                  End time
-                </Label>
-                <Input type="time" name="endTime" id="endTime" required />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div>
-                <Label htmlFor="location" className="block text-sm mb-1">
-                  Location
+                <Label
+                  htmlFor="shiftTypeId"
+                  className="text-sm font-medium mb-2 block"
+                >
+                  Select shift type *
                 </Label>
                 <SelectField
-                  name="location"
-                  id="location"
-                  placeholder="Select a location..."
+                  name="shiftTypeId"
+                  id="shiftTypeId"
+                  placeholder="Choose the type of volunteer work..."
                   required
-                  options={LOCATIONS.map((loc) => ({ value: loc, label: loc }))}
+                  options={shiftTypes.map((t: (typeof shiftTypes)[number]) => ({
+                    value: t.id,
+                    label: t.name,
+                  }))}
                   className="w-full"
                 />
               </div>
-              <div>
-                <Label htmlFor="capacity" className="block text-sm mb-1">
-                  Capacity
-                </Label>
-                <Input
-                  type="number"
-                  name="capacity"
-                  id="capacity"
-                  min={1}
-                  step={1}
-                  placeholder="e.g. 6"
-                  required
-                />
+            </div>
+
+            {/* Date & Time Section */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 mb-4">
+                <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                  Schedule
+                </h3>
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="date"
+                    className="text-sm font-medium flex items-center gap-2"
+                  >
+                    <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                    Date *
+                  </Label>
+                  <Input
+                    type="date"
+                    name="date"
+                    id="date"
+                    required
+                    className="h-11"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="startTime"
+                    className="text-sm font-medium flex items-center gap-2"
+                  >
+                    <ClockIcon className="h-4 w-4 text-muted-foreground" />
+                    Start time *
+                  </Label>
+                  <Input
+                    type="time"
+                    name="startTime"
+                    id="startTime"
+                    required
+                    className="h-11"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="endTime"
+                    className="text-sm font-medium flex items-center gap-2"
+                  >
+                    <ClockIcon className="h-4 w-4 text-muted-foreground" />
+                    End time *
+                  </Label>
+                  <Input
+                    type="time"
+                    name="endTime"
+                    id="endTime"
+                    required
+                    className="h-11"
+                  />
+                </div>
               </div>
             </div>
 
-            <div>
-              <Label htmlFor="notes" className="block text-sm mb-1">
-                Notes (optional)
-              </Label>
-              <Textarea name="notes" id="notes" rows={3} />
+            {/* Location & Capacity Section */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 mb-4">
+                <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                  Location & Capacity
+                </h3>
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="location"
+                    className="text-sm font-medium flex items-center gap-2"
+                  >
+                    <MapPinIcon className="h-4 w-4 text-muted-foreground" />
+                    Location *
+                  </Label>
+                  <SelectField
+                    name="location"
+                    id="location"
+                    placeholder="Choose a location..."
+                    required
+                    options={LOCATIONS.map((loc) => ({
+                      value: loc,
+                      label: loc,
+                    }))}
+                    className="w-full"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="capacity"
+                    className="text-sm font-medium flex items-center gap-2"
+                  >
+                    <UsersIcon className="h-4 w-4 text-muted-foreground" />
+                    Volunteer capacity *
+                  </Label>
+                  <Input
+                    type="number"
+                    name="capacity"
+                    id="capacity"
+                    min={1}
+                    step={1}
+                    placeholder="e.g. 6"
+                    required
+                    className="h-11"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Maximum number of volunteers needed
+                  </p>
+                </div>
+              </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-2">
-              <Button asChild variant="secondary">
+            {/* Notes Section */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 mb-4">
+                <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                  Additional Information
+                </h3>
+              </div>
+              <div className="space-y-2">
+                <Label
+                  htmlFor="notes"
+                  className="text-sm font-medium flex items-center gap-2"
+                >
+                  <FileTextIcon className="h-4 w-4 text-muted-foreground" />
+                  Notes (optional)
+                </Label>
+                <Textarea
+                  name="notes"
+                  id="notes"
+                  rows={4}
+                  placeholder="Add any special instructions, requirements, or additional details for volunteers..."
+                  className="resize-none"
+                />
+                <p className="text-xs text-muted-foreground">
+                  These notes will be visible to volunteers when they view the
+                  shift details.
+                </p>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t">
+              <Button
+                asChild
+                variant="outline"
+                size="lg"
+                className="order-2 sm:order-1"
+              >
                 <Link href="/admin/shifts">Cancel</Link>
               </Button>
-              <Button type="submit">Create shift</Button>
+              <Button
+                type="submit"
+                size="lg"
+                className="order-1 sm:order-2 bg-primary hover:bg-primary/90"
+              >
+                <PlusIcon className="h-4 w-4 mr-2" />
+                Create shift
+              </Button>
             </div>
           </form>
         </CardContent>
