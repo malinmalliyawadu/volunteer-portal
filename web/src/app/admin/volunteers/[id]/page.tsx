@@ -4,7 +4,13 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -21,6 +27,7 @@ import {
   ChevronLeft,
 } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
+import { cn } from "@/lib/utils";
 
 interface AdminVolunteerPageProps {
   params: Promise<{ id: string }>;
@@ -175,100 +182,98 @@ export default async function AdminVolunteerPage({
   };
 
   return (
-    <div className="min-h-screen">
-      <div className="max-w-7xl mx-auto p-4">
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto max-w-7xl p-4 space-y-6">
         <PageHeader
           title="Volunteer Profile"
           description="Comprehensive view of volunteer information and activity"
         >
-          <div className="flex justify-start mt-6">
-            <Button asChild variant="outline" size="sm" className="gap-2">
-              <Link href="/admin/shifts">
-                <ChevronLeft className="h-4 w-4" />
-                Back to Shifts
-              </Link>
-            </Button>
-          </div>
+          <Button asChild variant="outline" size="sm" className="gap-2 mt-6">
+            <Link href="/admin/shifts">
+              <ChevronLeft className="h-4 w-4" />
+              Back to Shifts
+            </Link>
+          </Button>
         </PageHeader>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Profile Info */}
           <div className="lg:col-span-1 space-y-6">
             {/* Basic Information */}
-            <Card className="shadow-sm border-slate-200 h-fit">
-              <CardContent className="p-6">
-                <div className="text-center">
-                  <div className="flex justify-center mx-auto mb-4">
-                    <Avatar className="h-24 w-24 border-4 border-white shadow-lg">
-                      <AvatarImage
-                        src={volunteer.profilePhotoUrl || ""}
-                        alt={volunteer.name || "Volunteer"}
-                      />
-                      <AvatarFallback className="text-xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                        {volunteerInitials}
-                      </AvatarFallback>
-                    </Avatar>
-                  </div>
+            <Card>
+              <CardContent className="text-center">
+                <div className="flex justify-center mb-4">
+                  <Avatar className="h-24 w-24 border-4 border-background shadow-lg">
+                    <AvatarImage
+                      src={volunteer.profilePhotoUrl || ""}
+                      alt={volunteer.name || "Volunteer"}
+                    />
+                    <AvatarFallback className="text-xl font-bold bg-gradient-to-br from-primary to-primary/80 text-primary-foreground">
+                      {volunteerInitials}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
 
-                  <h2 className="text-2xl font-bold text-slate-900 mb-2">
-                    {volunteer.name || "Volunteer"}
-                  </h2>
+                <h2 className="text-2xl font-bold mb-2">
+                  {volunteer.name || "Volunteer"}
+                </h2>
 
-                  <div className="flex items-center justify-center gap-2 text-slate-600 mb-4">
-                    <Mail className="h-4 w-4" />
-                    <span className="text-sm">{volunteer.email}</span>
-                  </div>
+                <div className="flex items-center justify-center gap-2 text-muted-foreground mb-4">
+                  <Mail className="h-4 w-4" />
+                  <span className="text-sm">{volunteer.email}</span>
+                </div>
 
-                  {volunteer.pronouns && (
-                    <p className="text-sm text-slate-500 mb-4">
-                      Pronouns: {volunteer.pronouns}
-                    </p>
-                  )}
+                {volunteer.pronouns && (
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Pronouns: {volunteer.pronouns}
+                  </p>
+                )}
 
-                  <div className="flex flex-wrap gap-2 justify-center mb-6">
-                    <Badge className="bg-blue-100 text-blue-800 border-blue-200">
-                      <User className="h-3 w-3 mr-1" />
-                      {volunteer.role === "ADMIN"
-                        ? "Administrator"
-                        : "Volunteer"}
-                    </Badge>
+                <div className="flex flex-wrap gap-2 justify-center mb-6">
+                  <Badge variant="secondary">
+                    <User className="h-3 w-3 mr-1" />
+                    {volunteer.role === "ADMIN" ? "Administrator" : "Volunteer"}
+                  </Badge>
+                  <Badge
+                    variant="outline"
+                    className="border-green-500/20 text-green-700 bg-green-50"
+                  >
+                    <Heart className="h-3 w-3 mr-1" />
+                    Active Member
+                  </Badge>
+                  {volunteer.volunteerAgreementAccepted && (
                     <Badge
                       variant="outline"
-                      className="border-green-200 text-green-700"
+                      className="border-emerald-500/20 text-emerald-700 bg-emerald-50"
                     >
-                      <Heart className="h-3 w-3 mr-1" />
-                      Active Member
+                      <Shield className="h-3 w-3 mr-1" />
+                      Agreement Signed
                     </Badge>
-                    {volunteer.volunteerAgreementAccepted && (
-                      <Badge
-                        variant="outline"
-                        className="border-emerald-200 text-emerald-700"
-                      >
-                        <Shield className="h-3 w-3 mr-1" />
-                        Agreement Signed
-                      </Badge>
-                    )}
-                  </div>
+                  )}
+                </div>
 
-                  {/* Quick Stats */}
-                  <div className="grid grid-cols-3 gap-4 pt-4 border-t border-slate-100">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-slate-900">
-                        {totalShifts}
-                      </div>
-                      <div className="text-xs text-slate-500">Total Shifts</div>
+                {/* Quick Stats */}
+                <div className="grid grid-cols-3 gap-4 pt-4 border-t">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold">{totalShifts}</div>
+                    <div className="text-xs text-muted-foreground">
+                      Total Shifts
                     </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-blue-600">
-                        {upcomingShifts}
-                      </div>
-                      <div className="text-xs text-slate-500">Upcoming</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-primary">
+                      {upcomingShifts}
                     </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-green-600">
-                        {completedShifts}
-                      </div>
-                      <div className="text-xs text-slate-500">Completed</div>
+                    <div className="text-xs text-muted-foreground">
+                      Upcoming
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-600">
+                      {completedShifts}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Completed
                     </div>
                   </div>
                 </div>
@@ -276,33 +281,31 @@ export default async function AdminVolunteerPage({
             </Card>
 
             {/* Contact Information */}
-            <Card className="shadow-sm border-slate-200 h-fit">
+            <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-slate-900">
-                  <Phone className="h-5 w-5 text-blue-600" />
+                <CardTitle className="flex items-center gap-2">
+                  <Phone className="h-5 w-5 text-primary" />
                   Contact Information
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 gap-4">
-                  <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
-                    <Phone className="h-4 w-4 text-slate-500" />
-                    <div>
-                      <label className="text-sm font-medium text-slate-700">
-                        Phone
-                      </label>
-                      <p className="text-sm text-slate-600">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                    <Phone className="h-4 w-4 text-muted-foreground" />
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium">Phone</label>
+                      <p className="text-sm text-muted-foreground">
                         {volunteer.phone || "Not provided"}
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
-                    <Calendar className="h-4 w-4 text-slate-500" />
-                    <div>
-                      <label className="text-sm font-medium text-slate-700">
+                  <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium">
                         Date of Birth
                       </label>
-                      <p className="text-sm text-slate-600">
+                      <p className="text-sm text-muted-foreground">
                         {volunteer.dateOfBirth
                           ? format(volunteer.dateOfBirth, "dd MMM yyyy")
                           : "Not provided"}
@@ -314,35 +317,29 @@ export default async function AdminVolunteerPage({
             </Card>
 
             {/* Emergency Contact */}
-            <Card className="shadow-sm border-slate-200 h-fit">
+            <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-slate-900">
+                <CardTitle className="flex items-center gap-2">
                   <Heart className="h-5 w-5 text-red-500" />
                   Emergency Contact
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700">
-                    Name
-                  </label>
-                  <p className="text-sm text-slate-600">
+                  <label className="text-sm font-medium">Name</label>
+                  <p className="text-sm text-muted-foreground">
                     {volunteer.emergencyContactName || "Not provided"}
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700">
-                    Relationship
-                  </label>
-                  <p className="text-sm text-slate-600">
+                  <label className="text-sm font-medium">Relationship</label>
+                  <p className="text-sm text-muted-foreground">
                     {volunteer.emergencyContactRelationship || "Not provided"}
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700">
-                    Phone
-                  </label>
-                  <p className="text-sm text-slate-600">
+                  <label className="text-sm font-medium">Phone</label>
+                  <p className="text-sm text-muted-foreground">
                     {volunteer.emergencyContactPhone || "Not provided"}
                   </p>
                 </div>
@@ -353,38 +350,36 @@ export default async function AdminVolunteerPage({
           {/* Right Column - Detailed Info */}
           <div className="lg:col-span-2 space-y-6">
             {/* Availability & Preferences */}
-            <Card className="shadow-sm border-slate-200 h-fit">
+            <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-slate-900">
+                <CardTitle className="flex items-center gap-2">
                   <MapPin className="h-5 w-5 text-green-600" />
                   Availability & Preferences
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div>
-                  <label className="text-sm font-medium text-slate-700 mb-3 block">
-                    Available Days
-                  </label>
+                <div className="space-y-3">
+                  <label className="text-sm font-medium">Available Days</label>
                   <div className="flex flex-wrap gap-2">
                     {availableDays.length > 0 ? (
                       availableDays.map((day: string) => (
                         <Badge
                           key={day}
                           variant="outline"
-                          className="border-blue-200 text-blue-700"
+                          className="border-primary/20 text-primary bg-primary/5"
                         >
                           {dayLabels[day] || day}
                         </Badge>
                       ))
                     ) : (
-                      <span className="text-sm text-slate-500 italic">
+                      <span className="text-sm text-muted-foreground italic">
                         Not specified
                       </span>
                     )}
                   </div>
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-slate-700 mb-3 block">
+                <div className="space-y-3">
+                  <label className="text-sm font-medium">
                     Available Locations
                   </label>
                   <div className="flex flex-wrap gap-2">
@@ -393,24 +388,24 @@ export default async function AdminVolunteerPage({
                         <Badge
                           key={location}
                           variant="outline"
-                          className="border-green-200 text-green-700"
+                          className="border-green-500/20 text-green-700 bg-green-50"
                         >
                           <MapPin className="h-3 w-3 mr-1" />
                           {locationLabels[location] || location}
                         </Badge>
                       ))
                     ) : (
-                      <span className="text-sm text-slate-500 italic">
+                      <span className="text-sm text-muted-foreground italic">
                         Not specified
                       </span>
                     )}
                   </div>
                 </div>
-                <div className="pt-4 border-t border-slate-100">
-                  <label className="text-sm font-medium text-slate-700">
+                <div className="pt-4 border-t space-y-1">
+                  <label className="text-sm font-medium">
                     How did they hear about us?
                   </label>
-                  <p className="text-sm text-slate-600 mt-1">
+                  <p className="text-sm text-muted-foreground">
                     {volunteer.howDidYouHearAboutUs
                       ? hearAboutLabels[volunteer.howDidYouHearAboutUs] ||
                         volunteer.howDidYouHearAboutUs
@@ -421,44 +416,40 @@ export default async function AdminVolunteerPage({
             </Card>
 
             {/* Additional Information */}
-            <Card className="shadow-sm border-slate-200 h-fit">
+            <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-slate-900">
+                <CardTitle className="flex items-center gap-2">
                   <Shield className="h-5 w-5 text-purple-600" />
                   Additional Information
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="p-4 bg-slate-50 rounded-lg">
-                    <label className="text-sm font-medium text-slate-700">
+                  <div className="p-4 bg-muted/50 rounded-lg space-y-1">
+                    <label className="text-sm font-medium">
                       Medical Conditions
                     </label>
-                    <p className="text-sm text-slate-600 mt-1">
+                    <p className="text-sm text-muted-foreground">
                       {volunteer.medicalConditions || "None specified"}
                     </p>
                   </div>
-                  <div className="p-4 bg-slate-50 rounded-lg">
-                    <label className="text-sm font-medium text-slate-700">
+                  <div className="p-4 bg-muted/50 rounded-lg space-y-1">
+                    <label className="text-sm font-medium">
                       Willing to provide reference
                     </label>
-                    <p className="text-sm text-slate-600 mt-1">
+                    <p className="text-sm text-muted-foreground">
                       {volunteer.willingToProvideReference ? "Yes" : "No"}
                     </p>
                   </div>
-                  <div className="p-4 bg-slate-50 rounded-lg">
-                    <label className="text-sm font-medium text-slate-700">
-                      Member since
-                    </label>
-                    <p className="text-sm text-slate-600 mt-1">
+                  <div className="p-4 bg-muted/50 rounded-lg space-y-1">
+                    <label className="text-sm font-medium">Member since</label>
+                    <p className="text-sm text-muted-foreground">
                       {format(volunteer.createdAt, "dd MMM yyyy")}
                     </p>
                   </div>
-                  <div className="p-4 bg-slate-50 rounded-lg">
-                    <label className="text-sm font-medium text-slate-700">
-                      Newsletter
-                    </label>
-                    <p className="text-sm text-slate-600 mt-1">
+                  <div className="p-4 bg-muted/50 rounded-lg space-y-1">
+                    <label className="text-sm font-medium">Newsletter</label>
+                    <p className="text-sm text-muted-foreground">
                       {volunteer.emailNewsletterSubscription
                         ? "Subscribed"
                         : "Not subscribed"}
@@ -469,32 +460,33 @@ export default async function AdminVolunteerPage({
             </Card>
 
             {/* Shift History with Location Filter */}
-            <Card className="shadow-sm border-slate-200 h-fit">
+            <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2 text-slate-900">
+                  <div className="flex items-center gap-2">
                     <Clock className="h-5 w-5 text-indigo-600" />
-                    Shift History
+                    <CardTitle>Shift History</CardTitle>
                     {selectedLocation && (
                       <Badge
                         variant="outline"
-                        className="ml-2 border-indigo-200 text-indigo-700"
+                        className="border-indigo-500/20 text-indigo-700 bg-indigo-50"
                       >
                         <Filter className="h-3 w-3 mr-1" />
                         {selectedLocation}
                       </Badge>
                     )}
-                  </CardTitle>
+                  </div>
                   <div className="flex items-center gap-2">
                     {/* Location Filter Buttons */}
-                    <div className="flex items-center gap-1 bg-slate-100 rounded-lg p-1">
+                    <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
                       <Link
                         href={`/admin/volunteers/${id}`}
-                        className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                        className={cn(
+                          "px-3 py-1 text-xs font-medium rounded-md transition-colors",
                           !selectedLocation
-                            ? "bg-white text-slate-900 shadow-sm"
-                            : "text-slate-600 hover:text-slate-900"
-                        }`}
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                        )}
                       >
                         All
                       </Link>
@@ -502,11 +494,12 @@ export default async function AdminVolunteerPage({
                         <Link
                           key={location}
                           href={`/admin/volunteers/${id}?location=${location}`}
-                          className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                          className={cn(
+                            "px-3 py-1 text-xs font-medium rounded-md transition-colors",
                             selectedLocation === location
-                              ? "bg-white text-slate-900 shadow-sm"
-                              : "text-slate-600 hover:text-slate-900"
-                          }`}
+                              ? "bg-background text-foreground shadow-sm"
+                              : "text-muted-foreground hover:text-foreground"
+                          )}
                         >
                           {location}
                         </Link>
@@ -518,8 +511,8 @@ export default async function AdminVolunteerPage({
               <CardContent>
                 {volunteer.signups.length === 0 ? (
                   <div className="text-center py-8">
-                    <Clock className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-                    <p className="text-slate-500">
+                    <Clock className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
+                    <p className="text-muted-foreground">
                       {selectedLocation
                         ? `No shift signups found for ${selectedLocation}`
                         : "No shift signups yet"}
@@ -532,24 +525,21 @@ export default async function AdminVolunteerPage({
                       .map((signup: (typeof volunteer.signups)[0]) => (
                         <div
                           key={signup.id}
-                          className="flex items-center justify-between p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
+                          className="flex items-center justify-between p-4 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors"
                         >
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
-                              <h4 className="font-semibold text-slate-900">
+                              <h4 className="font-semibold">
                                 {signup.shift.shiftType.name}
                               </h4>
                               {signup.shift.location && (
-                                <Badge
-                                  variant="outline"
-                                  className="border-slate-300 text-slate-600"
-                                >
+                                <Badge variant="outline">
                                   <MapPin className="h-3 w-3 mr-1" />
                                   {signup.shift.location}
                                 </Badge>
                               )}
                             </div>
-                            <div className="flex items-center gap-4 text-sm text-slate-600">
+                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
                               <div className="flex items-center gap-1">
                                 <Calendar className="h-3 w-3" />
                                 {format(signup.shift.start, "EEE dd MMM yyyy")}
@@ -563,13 +553,19 @@ export default async function AdminVolunteerPage({
                           </div>
                           <div className="flex items-center gap-2">
                             <Badge
-                              className={
+                              variant={
                                 signup.status === "CONFIRMED"
-                                  ? "bg-green-100 text-green-800 border-green-200"
+                                  ? "default"
                                   : signup.status === "WAITLISTED"
-                                  ? "bg-yellow-100 text-yellow-800 border-yellow-200"
-                                  : "bg-gray-100 text-gray-800 border-gray-200"
+                                  ? "secondary"
+                                  : "outline"
                               }
+                              className={cn(
+                                signup.status === "CONFIRMED" &&
+                                  "bg-green-100 text-green-800 border-green-200 hover:bg-green-100",
+                                signup.status === "WAITLISTED" &&
+                                  "bg-yellow-100 text-yellow-800 border-yellow-200 hover:bg-yellow-100"
+                              )}
                             >
                               {signup.status === "CONFIRMED" && "Confirmed"}
                               {signup.status === "WAITLISTED" && "Waitlisted"}
@@ -578,7 +574,7 @@ export default async function AdminVolunteerPage({
                             {signup.shift.start < now && (
                               <Badge
                                 variant="outline"
-                                className="border-slate-300 text-slate-500"
+                                className="text-muted-foreground"
                               >
                                 Past
                               </Badge>
@@ -587,8 +583,8 @@ export default async function AdminVolunteerPage({
                         </div>
                       ))}
                     {volunteer.signups.length > 10 && (
-                      <div className="text-center py-4 border-t border-slate-100">
-                        <p className="text-sm text-slate-500">
+                      <div className="text-center py-4 border-t">
+                        <p className="text-sm text-muted-foreground">
                           Showing 10 most recent of {volunteer.signups.length}{" "}
                           total shifts
                           {selectedLocation && ` in ${selectedLocation}`}
