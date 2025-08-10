@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CancelSignupButton } from "./cancel-signup-button";
 import { PageHeader } from "@/components/page-header";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Clock,
   MapPin,
@@ -23,6 +24,9 @@ import {
   Users,
 } from "lucide-react";
 
+const LOCATIONS = ["Wellington", "Glenn Innes", "Onehunga"] as const;
+type LocationOption = (typeof LOCATIONS)[number];
+
 export default async function MyShiftsPage({
   searchParams,
 }: {
@@ -36,6 +40,21 @@ export default async function MyShiftsPage({
 
   const params = await searchParams;
   const now = new Date();
+
+  // Normalize and validate selected location
+  const rawLocation = Array.isArray(params.location)
+    ? params.location[0]
+    : params.location;
+  const selectedLocation: LocationOption | undefined = LOCATIONS.includes(
+    (rawLocation as LocationOption) ?? ("" as LocationOption)
+  )
+    ? (rawLocation as LocationOption)
+    : undefined;
+
+  // Create location filter for queries
+  const locationFilter = selectedLocation
+    ? { shift: { location: selectedLocation } }
+    : {};
 
   const uPage = Math.max(
     1,
@@ -78,21 +97,30 @@ export default async function MyShiftsPage({
     prisma.signup.count({
       where: {
         userId: userId!,
-        shift: { end: { gte: now } },
+        shift: {
+          end: { gte: now },
+          ...(selectedLocation ? { location: selectedLocation } : {}),
+        },
         status: { not: "CANCELED" },
       },
     }),
     prisma.signup.count({
       where: {
         userId: userId!,
-        shift: { end: { lt: now } },
+        shift: {
+          end: { lt: now },
+          ...(selectedLocation ? { location: selectedLocation } : {}),
+        },
         status: { not: "CANCELED" },
       },
     }),
     prisma.signup.findMany({
       where: {
         userId: userId!,
-        shift: { end: { gte: now } },
+        shift: {
+          end: { gte: now },
+          ...(selectedLocation ? { location: selectedLocation } : {}),
+        },
         status: { not: "CANCELED" },
       },
       include: { shift: { include: { shiftType: true } } },
@@ -103,7 +131,10 @@ export default async function MyShiftsPage({
     prisma.signup.findMany({
       where: {
         userId: userId!,
-        shift: { end: { lt: now } },
+        shift: {
+          end: { lt: now },
+          ...(selectedLocation ? { location: selectedLocation } : {}),
+        },
         status: { not: "CANCELED" },
       },
       include: { shift: { include: { shiftType: true } } },
@@ -134,18 +165,26 @@ export default async function MyShiftsPage({
     const isFirst = page <= 1;
     const isLast = page >= totalPages;
     const basePath = "/shifts/mine";
-    const query = (nextPage: number) =>
-      type === "u"
-        ? {
-            uPage: String(nextPage),
-            pPage: String(otherPage),
-            uSize: String(size),
-          }
-        : {
-            uPage: String(otherPage),
-            pPage: String(nextPage),
-            pSize: String(size),
-          };
+    const query = (nextPage: number) => {
+      const baseQuery =
+        type === "u"
+          ? {
+              uPage: String(nextPage),
+              pPage: String(otherPage),
+              uSize: String(size),
+            }
+          : {
+              uPage: String(otherPage),
+              pPage: String(nextPage),
+              pSize: String(size),
+            };
+
+      // Preserve location filter if set
+      if (selectedLocation) {
+        return { ...baseQuery, location: selectedLocation };
+      }
+      return baseQuery;
+    };
 
     return (
       <div className="flex items-center gap-3">
@@ -218,11 +257,40 @@ export default async function MyShiftsPage({
   return (
     <div className="min-h-screen">
       <div className="max-w-6xl mx-auto py-4 animate-fade-in">
-        <div className="mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
           <PageHeader
             title="My Shifts"
             description="View your upcoming and past volunteer shifts."
+            className="flex-1"
           />
+
+          {/* Compact location filter using tabs */}
+          <div className="flex flex-col gap-2">
+            <span className="text-sm font-medium text-muted-foreground">
+              Filter by location:
+            </span>
+            <Tabs value={selectedLocation || "all"} className="w-fit">
+              <TabsList className="bg-accent-subtle/30">
+                <TabsTrigger value="all" asChild>
+                  <Link href={{ pathname: "/shifts/mine", query: {} }}>
+                    All
+                  </Link>
+                </TabsTrigger>
+                {LOCATIONS.map((loc) => (
+                  <TabsTrigger key={loc} value={loc} asChild>
+                    <Link
+                      href={{
+                        pathname: "/shifts/mine",
+                        query: { location: loc },
+                      }}
+                    >
+                      {loc}
+                    </Link>
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
+          </div>
         </div>
 
         {/* Upcoming Shifts Section */}

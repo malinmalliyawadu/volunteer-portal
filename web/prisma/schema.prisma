@@ -18,7 +18,7 @@ model User {
   pronouns                     String?
   profilePhotoUrl              String?
   hashedPassword               String
-  role                         Role                   @default("VOLUNTEER")
+  role                         Role                   @default(VOLUNTEER)
   emergencyContactName         String?
   emergencyContactRelationship String?
   emergencyContactPhone        String?
@@ -28,7 +28,7 @@ model User {
   availableDays                String?
   availableLocations           String?
   emailNewsletterSubscription  Boolean                @default(true)
-  notificationPreference       NotificationPreference @default("EMAIL")
+  notificationPreference       NotificationPreference @default(EMAIL)
   volunteerAgreementAccepted   Boolean                @default(false)
   healthSafetyPolicyAccepted   Boolean                @default(false)
   createdAt                    DateTime               @default(now())
@@ -64,7 +64,7 @@ model Signup {
   id        String       @id @default(cuid())
   userId    String
   shiftId   String
-  status    SignupStatus @default("CONFIRMED")
+  status    SignupStatus @default(CONFIRMED)
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
   shift     Shift        @relation(fields: [shiftId], references: [id])

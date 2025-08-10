@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const LOCATIONS = ["Wellington", "Glenn Innes", "Onehunga"] as const;
 type LocationOption = (typeof LOCATIONS)[number];
@@ -232,46 +233,36 @@ export default async function AdminDashboardPage({
   return (
     <div className="animate-fade-in">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <PageHeader
-          title={`Admin Dashboard${
-            selectedLocation ? ` - ${selectedLocation}` : ""
-          }`}
-          description={`Overview of volunteer portal activity and management tools${
-            selectedLocation ? ` for ${selectedLocation}` : ""
-          }.`}
-        >
-          {/* Location filter */}
-          <div className="mt-6 p-6 bg-card-bg rounded-xl border border-border">
-            <div className="flex flex-wrap gap-3 items-center">
-              <span className="text-sm font-medium text-foreground mr-2">
-                Filter by location:
-              </span>
-              <Button
-                asChild
-                variant={!selectedLocation ? "default" : "secondary"}
-                size="sm"
-                className={!selectedLocation ? "btn-primary" : ""}
-              >
-                <Link href={{ pathname: "/admin", query: {} }}>
-                  All locations
-                </Link>
-              </Button>
-              {LOCATIONS.map((loc) => (
-                <Button
-                  asChild
-                  key={loc}
-                  variant={selectedLocation === loc ? "default" : "secondary"}
-                  size="sm"
-                  className={selectedLocation === loc ? "btn-primary" : ""}
-                >
-                  <Link href={{ pathname: "/admin", query: { location: loc } }}>
-                    {loc}
-                  </Link>
-                </Button>
-              ))}
-            </div>
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
+          <PageHeader
+            title="Admin Dashboard"
+            description="Overview of volunteer portal activity and management tools."
+            className="flex-1"
+          />
+
+          {/* Compact location filter using tabs */}
+          <div className="flex flex-col gap-2">
+            <span className="text-sm font-medium text-muted-foreground">
+              Filter by location:
+            </span>
+            <Tabs value={selectedLocation || "all"} className="w-fit">
+              <TabsList className="bg-accent-subtle">
+                <TabsTrigger value="all" asChild>
+                  <Link href={{ pathname: "/admin", query: {} }}>All</Link>
+                </TabsTrigger>
+                {LOCATIONS.map((loc) => (
+                  <TabsTrigger key={loc} value={loc} asChild>
+                    <Link
+                      href={{ pathname: "/admin", query: { location: loc } }}
+                    >
+                      {loc}
+                    </Link>
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
           </div>
-        </PageHeader>
+        </div>
 
         {/* Quick Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

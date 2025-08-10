@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ShiftSignupDialog } from "@/components/shift-signup-dialog";
 import { PageHeader } from "@/components/page-header";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const LOCATIONS = ["Wellington", "Glenn Innes", "Onehunga"] as const;
 
@@ -185,95 +186,76 @@ export default async function ShiftsPage({
 
   return (
     <div className="max-w-6xl mx-auto py-4 animate-fade-in">
-      <PageHeader
-        title="Volunteer Shifts"
-        description={`Find and sign up for upcoming shifts${
-          selectedLocation
-            ? ` in ${selectedLocation}`
-            : isUsingProfileFilter
-            ? ` in your preferred locations`
-            : ""
-        }.`}
-      >
-        {/* Location filter */}
-        <div className="mt-6 p-6 bg-card-bg rounded-xl border border-border">
-          {isUsingProfileFilter && (
-            <div className="mb-4 p-3 bg-primary/10 rounded-lg border border-primary/20">
-              <p className="text-sm text-primary font-medium flex items-center gap-2">
-                <span>📍</span>
-                Showing shifts in your preferred locations:{" "}
-                {userPreferredLocations.join(", ")}
-              </p>
-              <p className="text-xs text-primary/80 mt-1">
-                You can override this by selecting a specific location below, or{" "}
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
+        <PageHeader
+          title="Volunteer Shifts"
+          description={`Find and sign up for upcoming volunteer opportunities${
+            selectedLocation
+              ? ` in ${selectedLocation}`
+              : isUsingProfileFilter
+              ? ` in your preferred locations`
+              : ""
+          }.`}
+          className="flex-1"
+        />
+
+        {/* Compact location filter using tabs */}
+        <div className="flex flex-col gap-2">
+          <span className="text-sm font-medium text-muted-foreground">
+            Filter by location:
+          </span>
+          <Tabs
+            value={
+              selectedLocation || (isUsingProfileFilter ? "preferences" : "all")
+            }
+            className="w-fit"
+          >
+            <TabsList>
+              {userPreferredLocations.length > 0 && (
+                <TabsTrigger value="preferences" asChild>
+                  <Link href={{ pathname: "/shifts", query: {} }}>
+                    Your preferences
+                  </Link>
+                </TabsTrigger>
+              )}
+              <TabsTrigger value="all" asChild>
                 <Link
-                  href="/profile/edit"
-                  className="underline hover:text-primary"
+                  href={{ pathname: "/shifts", query: { showAll: "true" } }}
                 >
-                  update your preferences
+                  All
                 </Link>
-                .
-              </p>
-            </div>
-          )}
-          <div className="flex flex-wrap gap-3 items-center">
-            <span className="text-sm font-medium text-foreground mr-2">
-              Filter by location:
-            </span>
-            {userPreferredLocations.length > 0 && (
-              <Button
-                asChild
-                variant={
-                  !selectedLocation && !showAll && isUsingProfileFilter
-                    ? "default"
-                    : "secondary"
-                }
-                size="sm"
-                className={
-                  !selectedLocation && !showAll && isUsingProfileFilter
-                    ? "btn-primary"
-                    : ""
-                }
-              >
-                <Link href={{ pathname: "/shifts", query: {} }}>
-                  Your preferences
-                </Link>
-              </Button>
-            )}
-            {LOCATIONS.map((loc) => (
-              <Button
-                asChild
-                key={loc}
-                variant={selectedLocation === loc ? "default" : "secondary"}
-                size="sm"
-                className={selectedLocation === loc ? "btn-primary" : ""}
-              >
-                <Link href={{ pathname: "/shifts", query: { location: loc } }}>
-                  {loc}
-                </Link>
-              </Button>
-            ))}
-            <Button
-              asChild
-              variant={
-                (!selectedLocation && !isUsingProfileFilter) || showAll
-                  ? "default"
-                  : "secondary"
-              }
-              size="sm"
-              className={
-                (!selectedLocation && !isUsingProfileFilter) || showAll
-                  ? "btn-primary"
-                  : ""
-              }
-            >
-              <Link href={{ pathname: "/shifts", query: { showAll: "true" } }}>
-                All locations
-              </Link>
-            </Button>
-          </div>
+              </TabsTrigger>
+              {LOCATIONS.map((loc) => (
+                <TabsTrigger key={loc} value={loc} asChild>
+                  <Link
+                    href={{ pathname: "/shifts", query: { location: loc } }}
+                  >
+                    {loc}
+                  </Link>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
         </div>
-      </PageHeader>
+      </div>
+
+      {/* Profile filter notification - moved to a smaller, less prominent position */}
+      {isUsingProfileFilter && (
+        <div className="mb-6 p-3 bg-primary/10 rounded-lg border border-primary/20">
+          <p className="text-sm text-primary font-medium flex items-center gap-2">
+            <span>📍</span>
+            Showing shifts in your preferred locations:{" "}
+            {userPreferredLocations.join(", ")}
+          </p>
+          <p className="text-xs text-primary/80 mt-1">
+            You can override this by selecting a specific location above, or{" "}
+            <Link href="/profile/edit" className="underline hover:text-primary">
+              update your preferences
+            </Link>
+            .
+          </p>
+        </div>
+      )}
 
       {shifts.length === 0 ? (
         <div className="text-center py-16">
