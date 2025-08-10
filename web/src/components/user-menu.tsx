@@ -33,7 +33,7 @@ export function UserMenu({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+      <DropdownMenuTrigger>
         <Button
           variant="ghost"
           className="relative h-10 w-auto px-3 bg-white/10 text-white border border-white/20 hover:bg-white/20 hover:text-white rounded-full transition-all duration-200"
@@ -68,7 +68,7 @@ export function UserMenu({
           </div>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-64 p-2">
+      <DropdownMenuContent align="end" sideOffset={8} className="w-64 p-2">
         <div className="flex items-center gap-3 p-3 rounded-lg bg-primary/5">
           <Avatar className="w-10 h-10 border-2 border-primary/20">
             <AvatarImage
