@@ -1,0 +1,359 @@
+---
+description: 
+globs: **/README.md,**/docs/**/*.md
+alwaysApply: false
+---
+# README & Project Documentation
+
+## README Structure Standards
+- Include project overview, setup instructions, and development guide
+- Document environment variables and configuration
+- Provide examples for common operations
+- Include troubleshooting section
+- Keep README up-to-date with recent changes
+
+### Standard README Template
+```markdown
+# Volunteer Portal
+
+A comprehensive platform for managing volunteers, shifts, and community engagement.
+
+## Features
+
+✨ **Core Features**
+- Volunteer registration and profile management
+- Shift scheduling and assignment
+- Achievement tracking and gamification
+- Role-based access control (Admin, Manager, Volunteer)
+- Email notifications and reminders
+
+🚀 **Technical Features**
+- Next.js 15 with App Router
+- TypeScript for type safety
+- Prisma ORM with PostgreSQL
+- shadcn/ui component library
+- NextAuth.js authentication
+- Vitest for testing
+
+## Quick Start
+
+### Prerequisites
+- Node.js 18+ 
+- PostgreSQL 14+
+- Git
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/org/volunteer-portal.git
+   cd volunteer-portal
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env.local
+   # Edit .env.local with your configuration
+   ```
+
+4. **Set up the database**
+   ```bash
+   npx prisma migrate dev
+   npx prisma db seed
+   ```
+
+5. **Start the development server**
+   ```bash
+   npm run dev
+   ```
+
+Visit http://localhost:3000 to see the application.
+
+## Environment Variables
+
+| Variable | Description | Required | Default |
+|----------|-------------|----------|---------|
+| `DATABASE_URL` | PostgreSQL connection string | Yes | - |
+| `NEXTAUTH_SECRET` | Secret for JWT tokens | Yes | - |
+| `NEXTAUTH_URL` | Base URL for authentication | Yes | `http://localhost:3000` |
+| `EMAIL_SERVER_HOST` | SMTP server hostname | No | - |
+| `EMAIL_SERVER_PORT` | SMTP server port | No | `587` |
+| `EMAIL_FROM` | Default sender email | No | `noreply@example.com` |
+
+### Example .env.local
+```bash
+DATABASE_URL="postgresql://user:password@localhost:5432/volunteer_portal"
+NEXTAUTH_SECRET="your-secret-key-here"
+NEXTAUTH_URL="http://localhost:3000"
+EMAIL_SERVER_HOST="smtp.gmail.com"
+EMAIL_SERVER_PORT=587
+EMAIL_FROM="volunteers@yourorg.com"
+```
+
+## Development
+
+### Available Scripts
+
+```bash
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run start        # Start production server
+npm run lint         # Run ESLint
+npm run test         # Run tests with Vitest
+npm run test:watch   # Run tests in watch mode
+npm run db:migrate   # Run database migrations
+npm run db:seed      # Seed database with sample data
+npm run db:studio    # Open Prisma Studio
+```
+
+### Project Structure
+```
+volunteer-portal/
+├── app/                 # Next.js App Router pages
+│   ├── api/            # API routes
+│   ├── (auth)/         # Authentication pages
+│   └── dashboard/      # Main application pages
+├── components/         # Reusable UI components
+│   ├── ui/            # shadcn/ui components
+│   └── forms/         # Form components
+├── lib/               # Utility libraries
+│   ├── db/           # Database utilities
+│   ├── auth/         # Authentication logic
+│   └── email/        # Email services
+├── prisma/           # Database schema and migrations
+└── public/           # Static assets
+```
+
+### Code Style & Standards
+- Follow TypeScript strict mode
+- Use Prettier for code formatting
+- Follow Next.js and React best practices
+- Write tests for business logic
+- Document complex functions with JSDoc
+
+## API Documentation
+
+The API follows RESTful conventions with consistent response formats.
+
+### Authentication
+All protected endpoints require a valid JWT token:
+```bash
+Authorization: Bearer <jwt_token>
+```
+
+### Response Format
+```json
+{
+  "success": true,
+  "data": { /* response data */ },
+  "message": "Optional success message"
+}
+```
+
+### Error Format
+```json
+{
+  "success": false,
+  "error": "Error message",
+  "code": "ERROR_CODE",
+  "details": [ /* validation errors */ ]
+}
+```
+
+For detailed API documentation, visit `/api/docs` when running the development server.
+
+## Testing
+
+We use Vitest for unit and integration testing.
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run specific test file
+npm test volunteer.test.ts
+```
+
+### Test Structure
+- Unit tests: Test individual functions and components
+- Integration tests: Test API routes and database interactions
+- Component tests: Test React components with user interactions
+
+## Deployment
+
+### Production Build
+```bash
+npm run build
+npm start
+```
+
+### Environment Setup
+1. Set up PostgreSQL database
+2. Configure environment variables
+3. Run database migrations
+4. Deploy to your preferred platform (Vercel, Railway, etc.)
+
+### Database Migrations
+```bash
+# Generate migration from schema changes
+npx prisma migrate dev --name migration_name
+
+# Deploy migrations to production
+npx prisma migrate deploy
+
+# Reset database (development only)
+npx prisma migrate reset
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes following our coding standards
+4. Add tests for new functionality
+5. Commit your changes (`git commit -m 'Add amazing feature'`)
+6. Push to the branch (`git push origin feature/amazing-feature`)
+7. Open a Pull Request
+
+### Pull Request Guidelines
+- Include clear description of changes
+- Add tests for new features
+- Update documentation if needed
+- Ensure all tests pass
+- Follow conventional commit format
+
+## Troubleshooting
+
+### Common Issues
+
+**Database Connection Issues**
+```bash
+# Check if PostgreSQL is running
+pg_isready -h localhost -p 5432
+
+# Reset database and migrations
+npx prisma migrate reset
+```
+
+**Build Errors**
+```bash
+# Clear Next.js cache
+rm -rf .next
+
+# Reinstall dependencies
+rm -rf node_modules package-lock.json
+npm install
+```
+
+**Authentication Issues**
+```bash
+# Verify NEXTAUTH_SECRET is set
+echo $NEXTAUTH_SECRET
+
+# Check NEXTAUTH_URL matches your domain
+echo $NEXTAUTH_URL
+```
+
+### Getting Help
+- Check existing [Issues](mdc:https:/github.com/org/volunteer-portal/issues)
+- Review [Documentation](mdc:https:/github.com/org/volunteer-portal/wiki)
+- Contact the team at volunteers@yourorg.com
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](mdc:LICENSE) file for details.
+
+## Acknowledgments
+
+- Built with [Next.js](mdc:https:/nextjs.org)
+- UI components from [shadcn/ui](mdc:https:/ui.shadcn.com)
+- Icons from [Lucide](mdc:https:/lucide.dev)
+```
+
+## CHANGELOG Standards
+- Follow semantic versioning (MAJOR.MINOR.PATCH)
+- Document breaking changes prominently
+- Include migration guides for major updates
+- Group changes by type (Added, Changed, Deprecated, Removed, Fixed, Security)
+
+### CHANGELOG Template
+```markdown
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](mdc:https:/keepachangelog.com/en/1.0.0),
+and this project adheres to [Semantic Versioning](mdc:https:/semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### Added
+- New features that have been added
+
+### Changed
+- Changes in existing functionality
+
+### Deprecated
+- Soon-to-be removed features
+
+### Removed
+- Features removed in this release
+
+### Fixed
+- Bug fixes
+
+### Security
+- Vulnerability fixes
+
+## [1.2.0] - 2024-01-15
+
+### Added
+- Volunteer skill tracking and verification system
+- Bulk shift assignment for administrators
+- Email notification preferences for volunteers
+- Achievement badge system with point tracking
+
+### Changed
+- **BREAKING**: Updated volunteer registration API to require emergency contact
+- Improved shift calendar UI with better mobile responsiveness
+- Enhanced search functionality with fuzzy matching
+
+### Fixed
+- Fixed timezone handling in shift scheduling
+- Resolved memory leak in real-time notifications
+- Fixed duplicate email notifications for shift reminders
+
+### Security
+- Updated authentication middleware to prevent token replay attacks
+- Added rate limiting to API endpoints
+
+## [1.1.0] - 2024-01-01
+
+### Added
+- Initial volunteer portal with basic functionality
+- User authentication and role-based access
+- Shift scheduling and assignment
+- Basic reporting and analytics
+
+[Unreleased]: https://github.com/org/volunteer-portal/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/org/volunteer-portal/compare/v1.1.0...v1.2.0
+[1.1.0]: https://github.com/org/volunteer-portal/releases/tag/v1.1.0
+```
+
+## Documentation Maintenance
+- Review and update README with each feature release
+- Validate all setup instructions regularly
+- Update screenshots and examples
+- Ensure all links and references are current
+- Test installation steps on clean environments

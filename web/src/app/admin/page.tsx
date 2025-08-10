@@ -359,6 +359,9 @@ export default async function AdminDashboardPage({
                 <Link href="/admin/shifts">Manage All Shifts</Link>
               </Button>
               <Button asChild variant="outline" className="w-full">
+                <Link href="/admin/users">Manage Users</Link>
+              </Button>
+              <Button asChild variant="outline" className="w-full">
                 <Link href="/shifts">View Public Shifts</Link>
               </Button>
             </CardContent>

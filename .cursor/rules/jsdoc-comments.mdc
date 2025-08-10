@@ -1,0 +1,107 @@
+---
+description: 
+globs: **/*.ts,**/*.tsx
+alwaysApply: false
+---
+# JSDoc & Code Comments
+
+## JSDoc Standards
+- Use JSDoc comments for all exported functions, classes, and complex logic
+- Include parameter descriptions, return types, and examples
+- Document async functions with proper error handling info
+- Use `@example` blocks for complex functions
+
+```tsx
+/**
+ * Registers a new volunteer and sends welcome email
+ * @param volunteerData - The volunteer registration information
+ * @param sendEmail - Whether to send welcome email (default: true)
+ * @returns Promise resolving to the created volunteer with status
+ * @throws {ValidationError} When volunteer data is invalid
+ * @throws {EmailError} When email sending fails
+ * 
+ * @example
+ * ```tsx
+ * const volunteer = await registerVolunteer({
+ *   name: "John Doe",
+ *   email: "john@example.com",
+ *   phone: "555-0123"
+ * });
+ * ```
+ */
+async function registerVolunteer(
+  volunteerData: CreateVolunteerInput,
+  sendEmail: boolean = true
+): Promise<ApiResponse<Volunteer>>
+```
+
+## React Component Documentation
+- Document props with TypeScript interfaces and JSDoc comments
+- Include usage examples in JSDoc
+- Document accessibility considerations
+- Explain complex interaction patterns
+
+```tsx
+interface VolunteerCardProps {
+  /** Volunteer data to display */
+  volunteer: Volunteer;
+  /** Whether to show admin actions (default: false) */
+  showActions?: boolean;
+  /** Callback when volunteer is selected */
+  onSelect?: (volunteer: Volunteer) => void;
+  /** Custom CSS classes */
+  className?: string;
+}
+
+/**
+ * Displays volunteer information in a card format
+ * 
+ * @example
+ * ```tsx
+ * <VolunteerCard 
+ *   volunteer={volunteer} 
+ *   showActions={isAdmin}
+ *   onSelect={handleVolunteerSelect}
+ * />
+ * ```
+ */
+export function VolunteerCard({ volunteer, showActions = false, onSelect, className }: VolunteerCardProps) {
+  // Implementation
+}
+```
+
+## Inline Comments Best Practices
+- Use single-line comments for business logic explanations
+- Explain WHY, not WHAT (code should be self-explanatory)
+- Add TODO/FIXME comments with issue numbers when applicable
+- Use comments to explain complex algorithms or domain-specific logic
+
+```tsx
+// Calculate volunteer capacity based on shift requirements and current assignments
+// This accounts for skill matching and availability constraints
+const availableVolunteers = volunteers.filter(volunteer => {
+  // TODO: Add skill-based filtering (#123)
+  return volunteer.status === 'ACTIVE' && 
+         !hasConflictingShift(volunteer, shift);
+});
+```
+
+## Hook Documentation
+- Document custom hooks with clear purpose and usage
+- Explain return values and side effects
+- Include dependency requirements
+
+```tsx
+/**
+ * Manages volunteer shift assignments with optimistic updates
+ * @param volunteerId - ID of the volunteer
+ * @returns Object containing shift data, loading state, and assignment functions
+ * 
+ * @example
+ * ```tsx
+ * const { shifts, isLoading, assignShift, unassignShift } = useVolunteerShifts(volunteer.id);
+ * ```
+ */
+function useVolunteerShifts(volunteerId: string) {
+  // Implementation
+}

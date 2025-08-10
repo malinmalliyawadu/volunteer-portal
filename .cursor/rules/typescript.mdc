@@ -1,0 +1,22 @@
+---
+description: 
+globs: **/*.ts,**/*.tsx
+alwaysApply: false
+---
+# TypeScript Best Practices
+
+## TypeScript Standards
+- Use TypeScript for all files (`.ts`, `.tsx`)
+- Prefer interfaces over types for object shapes
+- Use strict type checking - NO `any` types
+- Implement proper error boundaries with typed error states
+- Use generic types for reusable components
+- Prefer `const assertions` and `satisfies` operator when appropriate
+
+## Naming Conventions
+- Use PascalCase for components and interfaces
+- Use camelCase for functions and variables
+- Use kebab-case for file names
+- Use UPPER_SNAKE_CASE for constants
+- Prefix custom hooks with "use"
+- Suffix type definitions with "Type" when needed

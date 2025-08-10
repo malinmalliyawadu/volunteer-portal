@@ -1,0 +1,56 @@
+---
+description: 
+globs: **/*.tsx
+alwaysApply: false
+---
+# React Components - shadcn/ui First
+
+## shadcn/ui Priority Rules
+- **ALWAYS** check shadcn/ui components first before creating custom ones
+- Use existing components: Button, Input, Card, Dialog, Select, Badge, Avatar, etc.
+- Follow shadcn/ui composition patterns
+- Use the `cn()` utility for conditional styling
+- Maintain consistent component APIs with shadcn/ui patterns
+
+## Common shadcn/ui Components:
+- `Button` with variants (default, destructive, outline, secondary, ghost, link)
+- `Input`, `Textarea`, `Select` for forms
+- `Card`, `CardHeader`, `CardContent`, `CardFooter` for layouts
+- `Dialog`, `AlertDialog` for modals
+- `Badge` for status indicators
+- `Avatar` for user profiles
+- `DropdownMenu` for actions
+- `Popover` for overlays
+- `Tabs` for navigation
+- `Table` for data display
+- `Form` components for validation
+
+## React Patterns
+- Use functional components with hooks
+- Implement proper error handling and loading states
+- Use React Server Components by default for Next.js 15
+- Mark client components with "use client" only when necessary
+- Prefer `useCallback` and `useMemo` for performance optimization
+- Use proper dependency arrays in useEffect
+
+## Component Structure
+```tsx
+// Exports first
+export interface ComponentProps {
+  // props definition
+}
+
+// Main component
+export function Component({ ...props }: ComponentProps) {
+  // implementation
+}
+
+// Default export last
+export default Component
+```
+
+## Styling with Tailwind
+- Use semantic color classes (`primary`, `secondary`, `destructive`, `muted`)
+- Follow mobile-first responsive design
+- Use consistent spacing scale (4, 8, 12, 16, 24, 32, 48, 64)
+- Prefer flexbox and grid for layouts

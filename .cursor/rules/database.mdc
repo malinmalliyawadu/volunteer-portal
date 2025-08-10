@@ -1,0 +1,92 @@
+---
+description: 
+globs: **/prisma/**/*.prisma,**/lib/prisma.ts
+alwaysApply: false
+---
+# Database & Prisma
+
+## Prisma Schema Best Practices
+- Use descriptive model names in PascalCase
+- Implement proper relations and constraints
+- Use enums for status fields
+- Include `createdAt` and `updatedAt` timestamps
+- Use meaningful field names
+- Implement soft deletes where appropriate
+
+## Model Structure Pattern
+```prisma
+model Volunteer {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  status    VolunteerStatus @default(ACTIVE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  shifts    ShiftAssignment[]
+  
+  @@map("volunteers")
+}
+
+enum VolunteerStatus {
+  ACTIVE
+  INACTIVE
+  PENDING
+}
+```
+
+## Database Operations
+- Use proper error handling for all database operations
+- Implement transactions for multi-step operations
+- Use proper indexing for performance
+- Handle unique constraint violations gracefully
+- Use proper filtering and pagination
+
+## Query Patterns
+```tsx
+// Safe query with error handling
+async function getVolunteer(id: string) {
+  try {
+    const volunteer = await prisma.volunteer.findUnique({
+      where: { id },
+      include: {
+        shifts: {
+          include: {
+            shift: true
+          }
+        }
+      }
+    })
+    
+    if (!volunteer) {
+      throw new Error("Volunteer not found")
+    }
+    
+    return volunteer
+  } catch (error) {
+    console.error("Database error:", error)
+    throw error
+  }
+}
+```
+
+## Transaction Pattern
+```tsx
+async function createVolunteerWithShift(volunteerData, shiftData) {
+  return await prisma.$transaction(async (tx) => {
+    const volunteer = await tx.volunteer.create({
+      data: volunteerData
+    })
+    
+    const assignment = await tx.shiftAssignment.create({
+      data: {
+        volunteerId: volunteer.id,
+        ...shiftData
+      }
+    })
+    
+    return { volunteer, assignment }
+  })
+}
+```

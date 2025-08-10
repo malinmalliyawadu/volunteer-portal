@@ -8,6 +8,13 @@ import { UserMenu } from "@/components/user-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
 import { Session } from "next-auth";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ChevronDown } from "lucide-react";
 
 interface SiteHeaderProps {
   session: Session | null;
@@ -105,13 +112,39 @@ export function SiteHeader({
 
             {(session?.user as { role?: "ADMIN" } | undefined)?.role ===
             "ADMIN" ? (
-              <Button
-                asChild
-                variant="ghost"
-                className={getLinkClassName("/admin/shifts")}
-              >
-                <Link href="/admin/shifts">Admin</Link>
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className={cn(
+                      "text-white/90 hover:text-white hover:bg-white/10",
+                      (pathname.startsWith("/admin") ||
+                        pathname === "/admin") &&
+                        "text-white bg-white/20 font-medium"
+                    )}
+                  >
+                    Admin
+                    <ChevronDown className="ml-1 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem asChild>
+                    <Link href="/admin" className="cursor-pointer">
+                      Dashboard
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/admin/shifts" className="cursor-pointer">
+                      Manage Shifts
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/admin/users" className="cursor-pointer">
+                      Manage Users
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : null}
           </div>
 

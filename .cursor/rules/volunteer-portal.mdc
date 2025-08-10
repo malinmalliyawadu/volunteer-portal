@@ -1,0 +1,105 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Volunteer Portal - Domain Specific Rules
+
+## Volunteer Management Patterns
+- Use consistent data models for volunteers, shifts, achievements
+- Implement proper role-based UI rendering (admin vs volunteer views)
+- Use optimistic updates for better UX in shift assignments
+- Implement proper notification systems for shift changes
+
+## Shift Scheduling
+- Use date-fns for all date manipulation and formatting
+- Implement proper timezone handling (store UTC, display local)
+- Use react-day-picker or shadcn/ui calendar components
+- Handle shift conflicts gracefully with clear error messages
+- Validate shift capacity and volunteer availability
+
+## Achievement System
+- Use shadcn/ui Badge components for achievement display
+- Implement progress indicators with shadcn/ui Progress
+- Use animations for milestone celebrations (framer-motion)
+- Store achievement data with proper timestamps in Prisma
+- Track volunteer hours and participation metrics
+
+## Role-Based Access Control
+```tsx
+// Component pattern for role-based rendering
+interface RoleGuardProps {
+  roles: ('admin' | 'volunteer')[]
+  children: React.ReactNode
+  fallback?: React.ReactNode
+}
+
+function RoleGuard({ roles, children, fallback }: RoleGuardProps) {
+  const { user } = useSession()
+  
+  if (!user || !roles.includes(user.role)) {
+    return fallback || <div>Access denied</div>
+  }
+  
+  return <>{children}</>
+}
+```
+
+## Data Display Patterns
+```tsx
+// Use shadcn/ui Table for volunteer lists
+<Table>
+  <TableHeader>
+    <TableRow>
+      <TableHead>Name</TableHead>
+      <TableHead>Status</TableHead>
+      <TableHead>Actions</TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    {volunteers.map((volunteer) => (
+      <TableRow key={volunteer.id}>
+        <TableCell>{volunteer.name}</TableCell>
+        <TableCell>
+          <Badge variant={getStatusVariant(volunteer.status)}>
+            {volunteer.status}
+          </Badge>
+        </TableCell>
+        <TableCell>
+          <DropdownMenu>
+            {/* Actions */}
+          </DropdownMenu>
+        </TableCell>
+      </TableRow>
+    ))}
+  </TableBody>
+</Table>
+```
+
+## Notification Patterns
+- Use sonner for toast notifications
+- Implement email notifications for important events
+- Use shadcn/ui Alert for important messages
+- Show success feedback for all user actions
+
+## Form Validation for Volunteer Portal
+```tsx
+// Volunteer registration schema
+const volunteerRegistrationSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Invalid email address"),
+  phone: z.string().min(10, "Phone number required"),
+  availability: z.array(z.enum(['MORNING', 'AFTERNOON', 'EVENING'])),
+  emergencyContact: z.object({
+    name: z.string().min(1, "Emergency contact name required"),
+    phone: z.string().min(10, "Emergency contact phone required"),
+  }),
+})
+```
+
+## Performance Optimizations
+- Use React.memo for volunteer list components
+- Implement virtual scrolling for large volunteer/shift lists
+- Use proper pagination for data tables
+- Cache frequently accessed volunteer data
+- Optimize image loading for volunteer profile photos
