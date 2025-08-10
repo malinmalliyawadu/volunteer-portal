@@ -33,7 +33,7 @@ export function SiteHeader({
 
   const getLinkClassName = (path: string) => {
     return cn(
-      "text-white/90 hover:text-white hover:bg-white/10",
+      "text-white/90 hover:text-white hover:bg-white/10 transition-all duration-200 ease-in-out hover:scale-105 active:scale-95",
       isActive(path) && "text-white bg-white/20 font-medium"
     );
   };
@@ -48,14 +48,17 @@ export function SiteHeader({
           aria-label="Main"
           className="max-w-6xl mx-auto px-4 py-6 flex items-center gap-3"
         >
-          <Link href="/" className="flex items-center gap-2 cursor-pointer">
+          <Link
+            href="/"
+            className="flex items-center gap-2 cursor-pointer group"
+          >
             <Image
               src="/logo.svg"
               alt="Everybody Eats"
               width={240}
               height={88}
               priority
-              className="h-12 w-auto"
+              className="h-12 w-auto transition-transform duration-200 ease-in-out group-hover:scale-105 group-active:scale-95"
             />
             <span className="sr-only">Everybody Eats logo</span>
           </Link>

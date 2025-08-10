@@ -54,6 +54,10 @@ export default async function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <title>Volunteer Portal - Everybody Eats</title>
+        <link href="/favicon.jpg" rel="shortcut icon" type="image/x-icon" />
+      </head>
       <body
         className={`${libreFranklin.variable} ${fraunces.variable} antialiased`}
       >
