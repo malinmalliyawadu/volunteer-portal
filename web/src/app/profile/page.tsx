@@ -6,6 +6,7 @@ import { format, differenceInHours } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import Link from "next/link";
 import { PageHeader } from "@/components/page-header";
 
@@ -26,6 +27,7 @@ export default async function ProfilePage() {
         phone: true,
         dateOfBirth: true,
         pronouns: true,
+        profilePhotoUrl: true,
         emergencyContactName: true,
         emergencyContactRelationship: true,
         emergencyContactPhone: true,
@@ -60,33 +62,6 @@ export default async function ProfilePage() {
     ? JSON.parse(userProfile.availableLocations)
     : [];
 
-  // Create edit URL with current data
-  const editUrl = `/profile/edit?${new URLSearchParams({
-    firstName: userProfile?.firstName || "",
-    lastName: userProfile?.lastName || "",
-    email: userProfile?.email || "",
-    phone: userProfile?.phone || "",
-    dateOfBirth: userProfile?.dateOfBirth?.toISOString() || "",
-    pronouns: userProfile?.pronouns || "",
-    emergencyContactName: userProfile?.emergencyContactName || "",
-    emergencyContactRelationship:
-      userProfile?.emergencyContactRelationship || "",
-    emergencyContactPhone: userProfile?.emergencyContactPhone || "",
-    medicalConditions: userProfile?.medicalConditions || "",
-    willingToProvideReference:
-      userProfile?.willingToProvideReference?.toString() || "false",
-    howDidYouHearAboutUs: userProfile?.howDidYouHearAboutUs || "",
-    availableDays: JSON.stringify(availableDays),
-    availableLocations: JSON.stringify(availableLocations),
-    emailNewsletterSubscription:
-      userProfile?.emailNewsletterSubscription?.toString() || "true",
-    notificationPreference: userProfile?.notificationPreference || "EMAIL",
-    volunteerAgreementAccepted:
-      userProfile?.volunteerAgreementAccepted?.toString() || "false",
-    healthSafetyPolicyAccepted:
-      userProfile?.healthSafetyPolicyAccepted?.toString() || "false",
-  }).toString()}`;
-
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-8 animate-fade-in">
       <PageHeader
@@ -101,12 +76,16 @@ export default async function ProfilePage() {
             <CardContent className="p-8">
               <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
                 <div className="relative">
-                  <div className="w-24 h-24 bg-gradient-to-br from-primary to-primary-700 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg">
-                    {userInitials}
-                  </div>
-                  <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-accent rounded-full flex items-center justify-center">
-                    <span className="text-lg">🌟</span>
-                  </div>
+                  <Avatar className="w-36 h-36 shadow-lg">
+                    <AvatarImage
+                      src={userProfile?.profilePhotoUrl || undefined}
+                      alt="Profile"
+                      className="object-cover"
+                    />
+                    <AvatarFallback className="text-2xl font-bold bg-gradient-to-br from-primary to-primary-700 text-white">
+                      {userInitials}
+                    </AvatarFallback>
+                  </Avatar>
                 </div>
 
                 <div className="flex-1 text-center md:text-left">
@@ -144,7 +123,10 @@ export default async function ProfilePage() {
 
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" asChild>
-                    <Link href={editUrl} className="flex items-center gap-2">
+                    <Link
+                      href="/profile/edit"
+                      className="flex items-center gap-2"
+                    >
                       <svg
                         className="w-4 h-4"
                         fill="none"

@@ -84,10 +84,10 @@ export const authOptions: NextAuthOptions = {
         });
         if (dbUser) {
           t.name = dbUser.name;
-          t.phone = dbUser.phone;
+          t.phone = dbUser.phone || undefined;
           t.role = dbUser.role;
-          t.firstName = dbUser.firstName;
-          t.lastName = dbUser.lastName;
+          t.firstName = dbUser.firstName || undefined;
+          t.lastName = dbUser.lastName || undefined;
         }
       }
 

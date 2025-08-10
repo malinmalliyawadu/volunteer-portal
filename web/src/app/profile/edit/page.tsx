@@ -19,6 +19,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { PolicyContent } from "@/components/markdown-content";
+import { ProfileImageUpload } from "@/components/ui/profile-image-upload";
 import { useToast } from "@/hooks/use-toast";
 import {
   ArrowLeft,
@@ -33,29 +34,6 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
-
-interface EditProfilePageProps {
-  searchParams: Promise<{
-    firstName?: string;
-    lastName?: string;
-    email?: string;
-    phone?: string;
-    dateOfBirth?: string;
-    pronouns?: string;
-    emergencyContactName?: string;
-    emergencyContactRelationship?: string;
-    emergencyContactPhone?: string;
-    medicalConditions?: string;
-    willingToProvideReference?: string;
-    howDidYouHearAboutUs?: string;
-    availableDays?: string;
-    availableLocations?: string;
-    emailNewsletterSubscription?: string;
-    notificationPreference?: string;
-    volunteerAgreementAccepted?: string;
-    healthSafetyPolicyAccepted?: string;
-  }>;
-}
 
 const daysOfWeek = [
   { value: "monday", label: "Monday" },
@@ -93,10 +71,9 @@ const hearAboutUsOptions = [
   { value: "other", label: "Other" },
 ];
 
-export default function EditProfilePage({
-  searchParams,
-}: EditProfilePageProps) {
+export default function EditProfilePage() {
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [currentSection, setCurrentSection] = useState(0);
   const [volunteerAgreementOpen, setVolunteerAgreementOpen] = useState(false);
   const [healthSafetyPolicyOpen, setHealthSafetyPolicyOpen] = useState(false);
@@ -163,6 +140,7 @@ export default function EditProfilePage({
     phone: "",
     dateOfBirth: "",
     pronouns: "none",
+    profilePhotoUrl: "",
     emergencyContactName: "",
     emergencyContactRelationship: "",
     emergencyContactPhone: "",
@@ -177,45 +155,59 @@ export default function EditProfilePage({
     healthSafetyPolicyAccepted: false,
   });
 
-  // Load data from search params on mount
+  // Load data from API on mount
   useEffect(() => {
-    searchParams.then((params) => {
-      setFormData({
-        firstName: params.firstName || "",
-        lastName: params.lastName || "",
-        email: params.email || "",
-        phone: params.phone || "",
-        dateOfBirth: params.dateOfBirth
-          ? new Date(params.dateOfBirth).toISOString().split("T")[0]
-          : "",
-        pronouns: params.pronouns || "none",
-        emergencyContactName: params.emergencyContactName || "",
-        emergencyContactRelationship: params.emergencyContactRelationship || "",
-        emergencyContactPhone: params.emergencyContactPhone || "",
-        medicalConditions: params.medicalConditions || "",
-        willingToProvideReference: params.willingToProvideReference === "true",
-        howDidYouHearAboutUs: params.howDidYouHearAboutUs || "not_specified",
-        availableDays: params.availableDays
-          ? JSON.parse(params.availableDays)
-          : [],
-        availableLocations: params.availableLocations
-          ? JSON.parse(params.availableLocations)
-          : [],
-        emailNewsletterSubscription:
-          params.emailNewsletterSubscription !== "false",
-        notificationPreference:
-          (params.notificationPreference as
-            | "EMAIL"
-            | "SMS"
-            | "BOTH"
-            | "NONE") || "EMAIL",
-        volunteerAgreementAccepted:
-          params.volunteerAgreementAccepted === "true",
-        healthSafetyPolicyAccepted:
-          params.healthSafetyPolicyAccepted === "true",
-      });
-    });
-  }, [searchParams]);
+    const loadProfileData = async () => {
+      try {
+        const response = await fetch("/api/profile");
+        if (response.ok) {
+          const profileData = await response.json();
+          setFormData({
+            firstName: profileData.firstName || "",
+            lastName: profileData.lastName || "",
+            email: profileData.email || "",
+            phone: profileData.phone || "",
+            dateOfBirth: profileData.dateOfBirth
+              ? new Date(profileData.dateOfBirth).toISOString().split("T")[0]
+              : "",
+            pronouns: profileData.pronouns || "none",
+            profilePhotoUrl: profileData.profilePhotoUrl || "",
+            emergencyContactName: profileData.emergencyContactName || "",
+            emergencyContactRelationship:
+              profileData.emergencyContactRelationship || "",
+            emergencyContactPhone: profileData.emergencyContactPhone || "",
+            medicalConditions: profileData.medicalConditions || "",
+            willingToProvideReference:
+              profileData.willingToProvideReference || false,
+            howDidYouHearAboutUs:
+              profileData.howDidYouHearAboutUs || "not_specified",
+            availableDays: profileData.availableDays || [],
+            availableLocations: profileData.availableLocations || [],
+            emailNewsletterSubscription:
+              profileData.emailNewsletterSubscription !== false,
+            notificationPreference:
+              profileData.notificationPreference || "EMAIL",
+            volunteerAgreementAccepted:
+              profileData.volunteerAgreementAccepted || false,
+            healthSafetyPolicyAccepted:
+              profileData.healthSafetyPolicyAccepted || false,
+          });
+        }
+      } catch (error) {
+        console.error("Failed to load profile data:", error);
+        toast({
+          title: "Error loading profile",
+          description:
+            "Failed to load your profile data. Please refresh the page.",
+          variant: "destructive",
+        });
+      } finally {
+        setInitialLoading(false);
+      }
+    };
+
+    loadProfileData();
+  }, []); // Removed toast from dependencies
 
   const sections = [
     {
@@ -286,11 +278,12 @@ export default function EditProfilePage({
       }
 
       toast({
-        title: "Profile updated successfully!",
-        description: "Your profile has been updated and saved.",
+        title: "Profile saved successfully!",
+        description:
+          "Your changes have been saved. You can continue editing or go back to your profile.",
       });
 
-      router.push("/profile");
+      // Removed router.push("/profile") to allow continued editing
     } catch (error) {
       toast({
         title: "Error updating profile",
@@ -430,6 +423,23 @@ export default function EditProfilePage({
                   disabled={loading}
                 />
               </div>
+            </div>
+            <div className="space-y-2">
+              <ProfileImageUpload
+                currentImage={formData.profilePhotoUrl}
+                onImageChange={(url: string | null) =>
+                  handleInputChange("profilePhotoUrl", url)
+                }
+                disabled={loading}
+                toast={toast}
+                fallbackText={
+                  formData.firstName && formData.lastName
+                    ? `${formData.firstName.charAt(
+                        0
+                      )}${formData.lastName.charAt(0)}`.toUpperCase()
+                    : "?"
+                }
+              />
             </div>
           </div>
         );
@@ -883,140 +893,159 @@ export default function EditProfilePage({
           </div>
         </PageHeader>
 
-        {/* Progress Indicator */}
-        <div className="bg-white rounded-xl shadow-sm border border-border p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">Profile Setup Progress</h2>
-            <Badge variant="outline" className="text-xs">
-              Step {currentSection + 1} of {sections.length}
-            </Badge>
-          </div>
-          <div className="flex items-center space-x-2 mb-4">
-            {sections.map((section, index) => {
-              const Icon = section.icon;
-              return (
-                <div
-                  key={section.id}
-                  className={`flex-1 flex items-center ${
-                    index === sections.length - 1 ? "grow-0" : ""
-                  }`}
-                >
-                  <div
-                    className={`flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 cursor-pointer hover:scale-105 ${
-                      index === currentSection
-                        ? `${section.color} text-white shadow-lg`
-                        : index < currentSection
-                        ? "bg-green-500 text-white hover:bg-green-600"
-                        : "bg-muted text-muted-foreground hover:bg-muted/80"
-                    }`}
-                    onClick={() => setCurrentSection(index)}
-                    title={`Go to ${section.title}`}
-                  >
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  {index < sections.length - 1 && (
-                    <div
-                      className={`flex-1 h-1 mx-2 rounded-full transition-all duration-200 ${
-                        index < currentSection ? "bg-green-500" : "bg-muted"
-                      }`}
-                    />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-          <div className="text-center mb-4">
-            <h3 className="font-medium text-foreground">
-              {sections[currentSection].title}
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              {sections[currentSection].description}
-            </p>
-          </div>
-
-          {/* Section Navigation Tabs */}
-          <div className="flex flex-wrap gap-2 justify-center">
-            {sections.map((section, index) => (
-              <button
-                key={section.id}
-                onClick={() => setCurrentSection(index)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-200 ${
-                  index === currentSection
-                    ? "bg-primary text-white shadow-sm"
-                    : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
-              >
-                {section.title}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Form Content */}
-        <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-          <CardHeader className="pb-6">
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-3 text-xl">
-                {React.createElement(sections[currentSection].icon, {
-                  className: "h-6 w-6",
-                })}
-                {sections[currentSection].title}
-              </CardTitle>
-              {/* Always visible save button */}
-              <Button
-                onClick={handleSubmit}
-                disabled={loading}
-                size="sm"
-                className="flex items-center gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
-              >
-                <Save className="h-4 w-4" />
-                {loading ? "Saving..." : "Save"}
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-8">
-              <div className="min-h-[400px]">{renderCurrentSection()}</div>
-
-              {/* Navigation Buttons */}
-              <div className="flex items-center justify-between pt-6 border-t border-border">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={prevSection}
-                  disabled={currentSection === 0 || loading}
-                  className="flex items-center gap-2"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  Previous
-                </Button>
-
-                <div className="flex gap-3">
-                  {currentSection < sections.length - 1 ? (
-                    <Button
-                      type="button"
-                      onClick={nextSection}
-                      disabled={loading}
-                      className="flex items-center gap-2"
-                    >
-                      Next
-                      <ArrowLeft className="h-4 w-4 rotate-180" />
-                    </Button>
-                  ) : (
-                    <Button
-                      type="submit"
-                      disabled={loading}
-                      className="flex items-center gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
-                    >
-                      <Save className="h-4 w-4" />
-                      {loading ? "Saving..." : "Save Profile"}
-                    </Button>
-                  )}
+        {initialLoading ? (
+          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+            <CardContent className="p-8">
+              <div className="flex items-center justify-center py-12">
+                <div className="flex items-center gap-3">
+                  <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                  <p className="text-muted-foreground">
+                    Loading your profile...
+                  </p>
                 </div>
               </div>
-            </form>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            {/* Progress Indicator */}
+            <div className="bg-white rounded-xl shadow-sm border border-border p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold">
+                  Profile Setup Progress
+                </h2>
+                <Badge variant="outline" className="text-xs">
+                  Step {currentSection + 1} of {sections.length}
+                </Badge>
+              </div>
+              <div className="flex items-center space-x-2 mb-4">
+                {sections.map((section, index) => {
+                  const Icon = section.icon;
+                  return (
+                    <div
+                      key={section.id}
+                      className={`flex-1 flex items-center ${
+                        index === sections.length - 1 ? "grow-0" : ""
+                      }`}
+                    >
+                      <div
+                        className={`flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 cursor-pointer hover:scale-105 ${
+                          index === currentSection
+                            ? `${section.color} text-white shadow-lg`
+                            : index < currentSection
+                            ? "bg-green-500 text-white hover:bg-green-600"
+                            : "bg-muted text-muted-foreground hover:bg-muted/80"
+                        }`}
+                        onClick={() => setCurrentSection(index)}
+                        title={`Go to ${section.title}`}
+                      >
+                        <Icon className="h-5 w-5" />
+                      </div>
+                      {index < sections.length - 1 && (
+                        <div
+                          className={`flex-1 h-1 mx-2 rounded-full transition-all duration-200 ${
+                            index < currentSection ? "bg-green-500" : "bg-muted"
+                          }`}
+                        />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="text-center mb-4">
+                <h3 className="font-medium text-foreground">
+                  {sections[currentSection].title}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {sections[currentSection].description}
+                </p>
+              </div>
+
+              {/* Section Navigation Tabs */}
+              <div className="flex flex-wrap gap-2 justify-center">
+                {sections.map((section, index) => (
+                  <button
+                    key={section.id}
+                    onClick={() => setCurrentSection(index)}
+                    className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-200 ${
+                      index === currentSection
+                        ? "bg-primary text-white shadow-sm"
+                        : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
+                    }`}
+                  >
+                    {section.title}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Form Content */}
+            <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+              <CardHeader className="pb-6">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-3 text-xl">
+                    {React.createElement(sections[currentSection].icon, {
+                      className: "h-6 w-6",
+                    })}
+                    {sections[currentSection].title}
+                  </CardTitle>
+                  {/* Always visible save button */}
+                  <Button
+                    onClick={handleSubmit}
+                    disabled={loading}
+                    size="sm"
+                    className="flex items-center gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                  >
+                    <Save className="h-4 w-4" />
+                    {loading ? "Saving..." : "Save"}
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-8">
+                  <div className="min-h-[400px]">{renderCurrentSection()}</div>
+
+                  {/* Navigation Buttons */}
+                  <div className="flex items-center justify-between pt-6 border-t border-border">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={prevSection}
+                      disabled={currentSection === 0 || loading}
+                      className="flex items-center gap-2"
+                    >
+                      <ArrowLeft className="h-4 w-4" />
+                      Previous
+                    </Button>
+
+                    <div className="flex gap-3">
+                      {currentSection < sections.length - 1 ? (
+                        <Button
+                          type="button"
+                          onClick={nextSection}
+                          disabled={loading}
+                          className="flex items-center gap-2"
+                        >
+                          Next
+                          <ArrowLeft className="h-4 w-4 rotate-180" />
+                        </Button>
+                      ) : (
+                        <Button
+                          type="submit"
+                          disabled={loading}
+                          className="flex items-center gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                        >
+                          <Save className="h-4 w-4" />
+                          {loading ? "Saving..." : "Save Profile"}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          </>
+        )}
       </div>
     </div>
   );

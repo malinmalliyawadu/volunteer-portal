@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,9 +16,14 @@ import {
 type UserMenuProps = {
   userName: string;
   userEmail?: string;
+  profilePhotoUrl?: string | null;
 };
 
-export function UserMenu({ userName, userEmail }: UserMenuProps) {
+export function UserMenu({
+  userName,
+  userEmail,
+  profilePhotoUrl,
+}: UserMenuProps) {
   const initials = userName
     .split(" ")
     .map((name) => name.charAt(0))
@@ -33,9 +39,16 @@ export function UserMenu({ userName, userEmail }: UserMenuProps) {
           className="relative h-10 w-auto px-3 bg-white/10 text-white border border-white/20 hover:bg-white/20 hover:text-white rounded-full transition-all duration-200"
         >
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center text-sm font-semibold backdrop-blur-sm -ml-2">
-              {initials}
-            </div>
+            <Avatar className="w-8 h-8 -ml-2 border border-white/20">
+              <AvatarImage
+                src={profilePhotoUrl || undefined}
+                alt="Profile"
+                className="object-cover"
+              />
+              <AvatarFallback className="text-sm font-semibold bg-white/20 text-white backdrop-blur-sm">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
             <span className="hidden sm:block text-sm font-medium">
               {userName}
             </span>
@@ -57,9 +70,16 @@ export function UserMenu({ userName, userEmail }: UserMenuProps) {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-64 p-2">
         <div className="flex items-center gap-3 p-3 rounded-lg bg-primary/5">
-          <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary-700 rounded-full flex items-center justify-center text-white font-semibold">
-            {initials}
-          </div>
+          <Avatar className="w-10 h-10 border-2 border-primary/20">
+            <AvatarImage
+              src={profilePhotoUrl || undefined}
+              alt="Profile"
+              className="object-cover"
+            />
+            <AvatarFallback className="bg-gradient-to-br from-primary to-primary-700 text-white font-semibold">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
           <div className="flex-1 min-w-0">
             <DropdownMenuLabel className="p-0 font-semibold text-foreground">
               {userName}

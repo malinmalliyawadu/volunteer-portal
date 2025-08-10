@@ -5,6 +5,7 @@ import Image from "next/image";
 import "./globals.css";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
+import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/button";
 import { UserMenu } from "@/components/user-menu";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -31,6 +32,27 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const session = await getServerSession(authOptions);
+
+  // Fetch user profile data including profile photo
+  let userProfile = null;
+  if (session?.user?.email) {
+    userProfile = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: {
+        profilePhotoUrl: true,
+        name: true,
+        firstName: true,
+        lastName: true,
+      },
+    });
+  }
+
+  // Use profile name if available, otherwise fall back to session name/email
+  const displayName =
+    userProfile?.name ||
+    (session?.user as { name?: string | null })?.name ||
+    (session?.user as { email?: string | null })?.email ||
+    "Account";
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -118,20 +140,12 @@ export default async function RootLayout({
                   <ThemeToggle />
                   {session?.user ? (
                     <UserMenu
-                      userName={
-                        ((
-                          session.user as {
-                            name?: string | null;
-                            email?: string | null;
-                          }
-                        )?.name ??
-                          (session.user as { email?: string | null })?.email ??
-                          "Account") as string
-                      }
+                      userName={displayName}
                       userEmail={
                         (session.user as { email?: string | null })?.email ??
                         undefined
                       }
+                      profilePhotoUrl={userProfile?.profilePhotoUrl}
                     />
                   ) : (
                     <Button

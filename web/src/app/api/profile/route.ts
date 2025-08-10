@@ -11,6 +11,7 @@ const updateProfileSchema = z.object({
   phone: z.string().optional(),
   dateOfBirth: z.string().optional(),
   pronouns: z.string().optional(),
+  profilePhotoUrl: z.string().nullable().optional(),
   emergencyContactName: z.string().optional(),
   emergencyContactRelationship: z.string().optional(),
   emergencyContactPhone: z.string().optional(),
@@ -110,6 +111,8 @@ export async function PUT(req: Request) {
       updateData.phone = validatedData.phone || null;
     if (validatedData.pronouns !== undefined)
       updateData.pronouns = validatedData.pronouns || null;
+    if (validatedData.profilePhotoUrl !== undefined)
+      updateData.profilePhotoUrl = validatedData.profilePhotoUrl || null;
     if (validatedData.emergencyContactName !== undefined)
       updateData.emergencyContactName =
         validatedData.emergencyContactName || null;
@@ -182,6 +185,7 @@ export async function PUT(req: Request) {
         phone: true,
         dateOfBirth: true,
         pronouns: true,
+        profilePhotoUrl: true,
         role: true,
         emergencyContactName: true,
         emergencyContactRelationship: true,
