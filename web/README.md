@@ -1,8 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🌐 Everybody Eats Volunteer Portal - Web Frontend
 
-## Getting Started
+A modern Next.js application for managing volunteers at Everybody Eats, an innovative charitable restaurant that transforms rescued food into quality 3-course meals on a pay-what-you-can basis.
 
-First, run the development server:
+## ✨ Features
+
+- 🙋‍♀️ **Volunteer Management**: Registration, profile management, and volunteer tracking
+- 📅 **Shift Scheduling**: Browse and sign up for volunteer shifts
+- 🏆 **Achievement System**: Gamified volunteer experience with milestones and badges
+- 👥 **Role-based Access**: Separate interfaces for volunteers and administrators
+- 🎨 **Responsive Design**: Modern UI built with Tailwind CSS and Radix UI components
+- 🔐 **Authentication**: Secure login with NextAuth.js
+- 🗄️ **Database**: SQLite with Prisma ORM for data management
+
+## 🛠️ Tech Stack
+
+- ⚛️ **Framework**: Next.js 15.4.6 (App Router)
+- 📝 **Language**: TypeScript
+- 🎨 **Styling**: Tailwind CSS v4
+- 🧩 **UI Components**: Radix UI + Custom shadcn/ui components
+- 🗄️ **Database**: SQLite with Prisma ORM
+- 🔐 **Authentication**: NextAuth.js
+- ⚡ **State Management**: React hooks and server components
+- 🚀 **Deployment Ready**: Optimized for Vercel
+
+## 🚀 Getting Started
+
+### 📋 Prerequisites
+
+- 📦 Node.js 18+
+- 📦 npm, yarn, pnpm, or bun
+
+### 🔧 Installation
+
+1. **📥 Install dependencies:**
+
+```bash
+npm install
+# or
+yarn install
+# or
+pnpm install
+```
+
+2. **🗄️ Set up the database:**
+
+```bash
+# Run database migrations
+npm run prisma:migrate
+
+# Seed the database with initial data
+npm run prisma:seed
+```
+
+3. **⚙️ Set up environment variables:**
+   Create a `.env.local` file in the root directory with your configuration.
+
+4. **🏃‍♂️ Run the development server:**
 
 ```bash
 npm run dev
@@ -14,23 +67,42 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to see the volunteer portal. 🌐
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 💻 Development
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- 📱 **Main App**: Edit pages in `src/app/` - the app uses Next.js App Router
+- 🧩 **Components**: Reusable UI components in `src/components/`
+- 🗄️ **Database**: Schema defined in `prisma/schema.prisma`
+- 🎨 **Styling**: Global styles in `src/app/globals.css`
 
-## Learn More
+### 📜 Available Scripts
 
-To learn more about Next.js, take a look at the following resources:
+- 🏃‍♂️ `npm run dev` - Start development server
+- 🏗️ `npm run build` - Build for production
+- ▶️ `npm run start` - Start production server
+- 🔍 `npm run lint` - Run ESLint
+- 🗄️ `npm run prisma:migrate` - Run database migrations
+- 🌱 `npm run prisma:seed` - Seed database with sample data
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📁 Project Structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- 📱 `/src/app/` - Next.js app router pages and API routes
+- 🧩 `/src/components/` - Reusable React components
+- 🛠️ `/src/lib/` - Utility functions and configurations
+- 📝 `/src/types/` - TypeScript type definitions
+- 🗄️ `/prisma/` - Database schema and migrations
+- 🖼️ `/public/` - Static assets
 
-## Deploy on Vercel
+## 🤝 Contributing
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+This application helps coordinate volunteers for Everybody Eats' mission to reduce food waste, food insecurity, and social isolation in Aotearoa/New Zealand. 🌱
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📚 Learn More
+
+To learn more about the technologies used:
+
+- 📖 [Next.js Documentation](https://nextjs.org/docs) - Learn about Next.js features and API
+- 🗄️ [Prisma Documentation](https://www.prisma.io/docs) - Database toolkit and ORM
+- 🎨 [Tailwind CSS](https://tailwindcss.com/docs) - Utility-first CSS framework
+- 🧩 [Radix UI](https://www.radix-ui.com/) - Low-level UI primitives
