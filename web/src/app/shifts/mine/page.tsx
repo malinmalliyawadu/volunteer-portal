@@ -162,7 +162,7 @@ export default async function MyShiftsPage({
             </Link>
           </Button>
         )}
-        <div className="flex items-center gap-1 px-3 py-2 text-sm text-muted-foreground bg-muted/50 rounded-md">
+        <div className="flex items-center gap-1 px-3 py-2 text-sm text-muted-foreground rounded-md">
           <span className="font-medium text-foreground">{page}</span>
           <span>of</span>
           <span className="font-medium text-foreground">{totalPages}</span>

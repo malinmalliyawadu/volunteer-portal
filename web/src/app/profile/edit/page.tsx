@@ -279,11 +279,10 @@ export default function EditProfilePage() {
 
       toast({
         title: "Profile saved successfully!",
-        description:
-          "Your changes have been saved. You can continue editing or go back to your profile.",
+        description: "Your changes have been saved.",
       });
 
-      // Removed router.push("/profile") to allow continued editing
+      router.push("/profile");
     } catch (error) {
       toast({
         title: "Error updating profile",

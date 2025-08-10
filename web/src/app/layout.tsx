@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { UserMenu } from "@/components/user-menu";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Toaster } from "sonner";
 
 const libreFranklin = Libre_Franklin({
   variable: "--font-libre-franklin",
@@ -169,6 +170,7 @@ export default async function RootLayout({
               </div>
             </div>
           </footer>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

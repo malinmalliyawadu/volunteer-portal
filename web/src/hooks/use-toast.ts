@@ -1,22 +1,19 @@
-// Simple toast implementation using browser alerts
-// This can be enhanced with a proper toast library later
+import { toast as sonnerToast } from "sonner";
 
-type ToastVariant = "default" | "destructive";
-
-interface ToastProps {
+interface ToastOptions {
   title: string;
   description?: string;
-  variant?: ToastVariant;
+  variant?: "default" | "destructive";
 }
 
 export function useToast() {
-  const toast = ({ title, description, variant = "default" }: ToastProps) => {
+  const toast = ({ title, description, variant = "default" }: ToastOptions) => {
     const message = description ? `${title}\n${description}` : title;
 
     if (variant === "destructive") {
-      alert(`Error: ${message}`);
+      sonnerToast.error(title, description ? { description } : undefined);
     } else {
-      alert(message);
+      sonnerToast.success(title, description ? { description } : undefined);
     }
   };
 

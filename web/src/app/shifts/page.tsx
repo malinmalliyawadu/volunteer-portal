@@ -107,6 +107,22 @@ export default async function ShiftsPage({
 }) {
   const session = await getServerSession(authOptions);
 
+  // Load user's profile data to get location preferences
+  let userProfile = null;
+  if (session?.user?.email) {
+    userProfile = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: {
+        availableLocations: true,
+      },
+    });
+  }
+
+  // Parse user's preferred locations
+  const userPreferredLocations = userProfile?.availableLocations
+    ? JSON.parse(userProfile.availableLocations)
+    : [];
+
   const params = await searchParams;
 
   // Normalize and validate selected location
@@ -119,12 +135,37 @@ export default async function ShiftsPage({
     ? (rawLocation as LocationOption)
     : undefined;
 
+  // Check if user wants to see all locations (override profile preferences)
+  const showAll = params.showAll === "true";
+
+  // Determine filter locations
+  let filterLocations: string[] = [];
+  let isUsingProfileFilter = false;
+
+  if (selectedLocation) {
+    // Explicit location selected via URL parameter
+    filterLocations = [selectedLocation];
+  } else if (showAll) {
+    // User explicitly wants to see all locations
+    filterLocations = [];
+    isUsingProfileFilter = false;
+  } else if (userPreferredLocations.length > 0) {
+    // No explicit location, use user's profile preferences
+    filterLocations = userPreferredLocations.filter((loc: string) =>
+      LOCATIONS.includes(loc as LocationOption)
+    );
+    isUsingProfileFilter = true;
+  }
+  // If no selection and no preferences, show all locations (empty filter)
+
   const shifts = await prisma.shift.findMany({
     orderBy: { start: "asc" },
     include: { shiftType: true, signups: true },
     where: {
       start: { gte: new Date() },
-      ...(selectedLocation ? { location: selectedLocation } : {}),
+      ...(filterLocations.length > 0
+        ? { location: { in: filterLocations } }
+        : {}),
     },
   });
 
@@ -147,25 +188,58 @@ export default async function ShiftsPage({
       <PageHeader
         title="Volunteer Shifts"
         description={`Find and sign up for upcoming shifts${
-          selectedLocation ? ` in ${selectedLocation}` : ""
+          selectedLocation
+            ? ` in ${selectedLocation}`
+            : isUsingProfileFilter
+            ? ` in your preferred locations`
+            : ""
         }.`}
       >
         {/* Location filter */}
         <div className="mt-6 p-6 bg-card-bg rounded-xl border border-border">
+          {isUsingProfileFilter && (
+            <div className="mb-4 p-3 bg-primary/10 rounded-lg border border-primary/20">
+              <p className="text-sm text-primary font-medium flex items-center gap-2">
+                <span>📍</span>
+                Showing shifts in your preferred locations:{" "}
+                {userPreferredLocations.join(", ")}
+              </p>
+              <p className="text-xs text-primary/80 mt-1">
+                You can override this by selecting a specific location below, or{" "}
+                <Link
+                  href="/profile/edit"
+                  className="underline hover:text-primary"
+                >
+                  update your preferences
+                </Link>
+                .
+              </p>
+            </div>
+          )}
           <div className="flex flex-wrap gap-3 items-center">
             <span className="text-sm font-medium text-foreground mr-2">
               Filter by location:
             </span>
-            <Button
-              asChild
-              variant={!selectedLocation ? "default" : "secondary"}
-              size="sm"
-              className={!selectedLocation ? "btn-primary" : ""}
-            >
-              <Link href={{ pathname: "/shifts", query: {} }}>
-                All locations
-              </Link>
-            </Button>
+            {userPreferredLocations.length > 0 && (
+              <Button
+                asChild
+                variant={
+                  !selectedLocation && !showAll && isUsingProfileFilter
+                    ? "default"
+                    : "secondary"
+                }
+                size="sm"
+                className={
+                  !selectedLocation && !showAll && isUsingProfileFilter
+                    ? "btn-primary"
+                    : ""
+                }
+              >
+                <Link href={{ pathname: "/shifts", query: {} }}>
+                  Your preferences
+                </Link>
+              </Button>
+            )}
             {LOCATIONS.map((loc) => (
               <Button
                 asChild
@@ -179,6 +253,24 @@ export default async function ShiftsPage({
                 </Link>
               </Button>
             ))}
+            <Button
+              asChild
+              variant={
+                (!selectedLocation && !isUsingProfileFilter) || showAll
+                  ? "default"
+                  : "secondary"
+              }
+              size="sm"
+              className={
+                (!selectedLocation && !isUsingProfileFilter) || showAll
+                  ? "btn-primary"
+                  : ""
+              }
+            >
+              <Link href={{ pathname: "/shifts", query: { showAll: "true" } }}>
+                All locations
+              </Link>
+            </Button>
           </div>
         </div>
       </PageHeader>
@@ -203,9 +295,32 @@ export default async function ShiftsPage({
           <h3 className="text-xl font-semibold mb-2">No shifts available</h3>
           <p className="text-muted-foreground">
             No upcoming shifts
-            {selectedLocation ? ` in ${selectedLocation}` : ""}. Check back
-            later for new opportunities.
+            {selectedLocation
+              ? ` in ${selectedLocation}`
+              : isUsingProfileFilter
+              ? ` in your preferred locations`
+              : ""}
+            . Check back later for new opportunities.
           </p>
+          {isUsingProfileFilter && (
+            <p className="text-muted-foreground mt-2">
+              Try{" "}
+              <Link
+                href="/shifts"
+                className="text-primary underline hover:text-primary/80"
+              >
+                viewing all locations
+              </Link>{" "}
+              or{" "}
+              <Link
+                href="/profile/edit"
+                className="text-primary underline hover:text-primary/80"
+              >
+                updating your location preferences
+              </Link>
+              .
+            </p>
+          )}
         </div>
       ) : (
         <div className="space-y-10">
