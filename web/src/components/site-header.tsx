@@ -124,13 +124,22 @@ export function SiteHeader({
                 profilePhotoUrl={userProfile?.profilePhotoUrl}
               />
             ) : (
-              <Button
-                asChild
-                variant="outline"
-                className="bg-transparent text-white border-white/40 hover:bg-white/10 hover:text-white"
-              >
-                <Link href="/login">Login</Link>
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  asChild
+                  variant="outline"
+                  className="bg-transparent text-white border-white/40 hover:bg-white/10 hover:text-white"
+                >
+                  <Link href="/register">Join Us</Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="bg-transparent text-white border-white/40 hover:bg-white/10 hover:text-white"
+                >
+                  <Link href="/login">Login</Link>
+                </Button>
+              </div>
             )}
           </div>
         </nav>

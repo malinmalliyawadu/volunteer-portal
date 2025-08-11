@@ -4,73 +4,32 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { SelectField } from "@/components/ui/select-field";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { PolicyContent } from "@/components/markdown-content";
-import { ProfileImageUpload } from "@/components/ui/profile-image-upload";
 import { useToast } from "@/hooks/use-toast";
 import {
   ArrowLeft,
   Save,
   User,
   Phone,
-  Calendar,
   Shield,
   MapPin,
   Bell,
-  FileText,
-  ExternalLink,
 } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
+import {
+  PersonalInfoStep,
+  EmergencyContactStep,
+  MedicalInfoStep,
+  AvailabilityStep,
+  CommunicationStep,
+  UserProfileFormData,
+} from "@/components/forms/user-profile-form";
 
-const daysOfWeek = [
-  { value: "monday", label: "Monday" },
-  { value: "tuesday", label: "Tuesday" },
-  { value: "wednesday", label: "Wednesday" },
-  { value: "thursday", label: "Thursday" },
-  { value: "friday", label: "Friday" },
-  { value: "saturday", label: "Saturday" },
-  { value: "sunday", label: "Sunday" },
-];
-
-const pronounOptions = [
-  { value: "none", label: "Prefer not to say" },
-  { value: "she/her", label: "She/Her" },
-  { value: "he/him", label: "He/Him" },
-  { value: "they/them", label: "They/Them" },
-  { value: "other", label: "Other" },
-];
-
-const notificationOptions = [
-  { value: "EMAIL", label: "Email only" },
-  { value: "SMS", label: "Text message only" },
-  { value: "BOTH", label: "Both email and text" },
-  { value: "NONE", label: "No notifications" },
-];
-
-const hearAboutUsOptions = [
-  { value: "not_specified", label: "Select an option" },
-  { value: "social_media", label: "Social Media" },
-  { value: "friend_family", label: "Friend or Family" },
-  { value: "website", label: "Website" },
-  { value: "search_engine", label: "Search Engine" },
-  { value: "community_event", label: "Community Event" },
-  { value: "volunteer_center", label: "Volunteer Center" },
-  { value: "other", label: "Other" },
-];
-
+/**
+ * Multi-section profile editing page
+ * Uses shared form components to maintain consistency with registration
+ */
 export default function EditProfilePage() {
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -118,12 +77,10 @@ export default function EditProfilePage() {
           setLocationOptions(locations);
         } else {
           console.error("Failed to load locations");
-          // Fallback to empty array if API fails
           setLocationOptions([]);
         }
       } catch (error) {
         console.error("Failed to load locations:", error);
-        // Fallback to empty array if API fails
         setLocationOptions([]);
       }
     };
@@ -132,8 +89,8 @@ export default function EditProfilePage() {
     loadLocationOptions();
   }, []);
 
-  // Initialize form data with URL parameters or defaults
-  const [formData, setFormData] = useState({
+  // Profile form data - same interface as registration but without account fields
+  const [formData, setFormData] = useState<UserProfileFormData>({
     firstName: "",
     lastName: "",
     email: "",
@@ -147,10 +104,10 @@ export default function EditProfilePage() {
     medicalConditions: "",
     willingToProvideReference: false,
     howDidYouHearAboutUs: "not_specified",
-    availableDays: [] as string[],
-    availableLocations: [] as string[],
+    availableDays: [],
+    availableLocations: [],
     emailNewsletterSubscription: true,
-    notificationPreference: "EMAIL" as "EMAIL" | "SMS" | "BOTH" | "NONE",
+    notificationPreference: "EMAIL",
     volunteerAgreementAccepted: false,
     healthSafetyPolicyAccepted: false,
   });
@@ -207,7 +164,7 @@ export default function EditProfilePage() {
     };
 
     loadProfileData();
-  }, []); // Removed toast from dependencies
+  }, [toast]);
 
   const sections = [
     {
@@ -295,7 +252,7 @@ export default function EditProfilePage() {
     }
   };
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -333,522 +290,54 @@ export default function EditProfilePage() {
     switch (currentSection) {
       case 0: // Personal Information
         return (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="firstName" className="text-sm font-medium">
-                  First Name *
-                </Label>
-                <Input
-                  id="firstName"
-                  value={formData.firstName}
-                  onChange={(e) =>
-                    handleInputChange("firstName", e.target.value)
-                  }
-                  placeholder="Your first name"
-                  disabled={loading}
-                  className="h-11"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="lastName" className="text-sm font-medium">
-                  Last Name *
-                </Label>
-                <Input
-                  id="lastName"
-                  value={formData.lastName}
-                  onChange={(e) =>
-                    handleInputChange("lastName", e.target.value)
-                  }
-                  placeholder="Your last name"
-                  disabled={loading}
-                  className="h-11"
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium">
-                Email Address *
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => handleInputChange("email", e.target.value)}
-                placeholder="your.email@example.com"
-                disabled={loading}
-                className="h-11"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="phone" className="text-sm font-medium">
-                Phone Number
-              </Label>
-              <Input
-                id="phone"
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => handleInputChange("phone", e.target.value)}
-                placeholder="(123) 456-7890"
-                disabled={loading}
-                className="h-11"
-              />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="dateOfBirth" className="text-sm font-medium">
-                  Date of Birth
-                </Label>
-                <Input
-                  id="dateOfBirth"
-                  type="date"
-                  value={formData.dateOfBirth}
-                  onChange={(e) =>
-                    handleInputChange("dateOfBirth", e.target.value)
-                  }
-                  disabled={loading}
-                  className="h-11"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="pronouns" className="text-sm font-medium">
-                  Pronouns
-                </Label>
-                <SelectField
-                  name="pronouns"
-                  id="pronouns"
-                  options={pronounOptions}
-                  defaultValue={formData.pronouns}
-                  disabled={loading}
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <ProfileImageUpload
-                currentImage={formData.profilePhotoUrl}
-                onImageChange={(url: string | null) =>
-                  handleInputChange("profilePhotoUrl", url)
-                }
-                disabled={loading}
-                toast={toast}
-                fallbackText={
-                  formData.firstName && formData.lastName
-                    ? `${formData.firstName.charAt(
-                        0
-                      )}${formData.lastName.charAt(0)}`.toUpperCase()
-                    : "?"
-                }
-              />
-            </div>
-          </div>
+          <PersonalInfoStep
+            formData={formData}
+            onInputChange={handleInputChange}
+            loading={loading}
+            isRegistration={false}
+            toast={toast}
+          />
         );
-
       case 1: // Emergency Contact
         return (
-          <div className="space-y-6">
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
-              <div className="flex items-start space-x-3">
-                <Shield className="h-5 w-5 text-amber-600 mt-0.5" />
-                <div>
-                  <h4 className="text-sm font-medium text-amber-800">
-                    Important
-                  </h4>
-                  <p className="text-sm text-amber-700">
-                    This information is kept confidential and used only in case
-                    of emergencies during volunteer activities.
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label
-                htmlFor="emergencyContactName"
-                className="text-sm font-medium"
-              >
-                Emergency Contact Name
-              </Label>
-              <Input
-                id="emergencyContactName"
-                value={formData.emergencyContactName}
-                onChange={(e) =>
-                  handleInputChange("emergencyContactName", e.target.value)
-                }
-                placeholder="Full name of emergency contact"
-                disabled={loading}
-                className="h-11"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label
-                htmlFor="emergencyContactRelationship"
-                className="text-sm font-medium"
-              >
-                Relationship
-              </Label>
-              <Input
-                id="emergencyContactRelationship"
-                value={formData.emergencyContactRelationship}
-                onChange={(e) =>
-                  handleInputChange(
-                    "emergencyContactRelationship",
-                    e.target.value
-                  )
-                }
-                placeholder="e.g., Parent, Spouse, Sibling, Friend"
-                disabled={loading}
-                className="h-11"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label
-                htmlFor="emergencyContactPhone"
-                className="text-sm font-medium"
-              >
-                Emergency Contact Phone
-              </Label>
-              <Input
-                id="emergencyContactPhone"
-                type="tel"
-                value={formData.emergencyContactPhone}
-                onChange={(e) =>
-                  handleInputChange("emergencyContactPhone", e.target.value)
-                }
-                placeholder="(123) 456-7890"
-                disabled={loading}
-                className="h-11"
-              />
-            </div>
-          </div>
+          <EmergencyContactStep
+            formData={formData}
+            onInputChange={handleInputChange}
+            loading={loading}
+          />
         );
-
       case 2: // Medical & References
         return (
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <Label
-                htmlFor="medicalConditions"
-                className="text-sm font-medium"
-              >
-                Medical Conditions & Allergies
-              </Label>
-              <Textarea
-                id="medicalConditions"
-                value={formData.medicalConditions}
-                onChange={(e) =>
-                  handleInputChange("medicalConditions", e.target.value)
-                }
-                placeholder="Please list any medical conditions, allergies, or dietary restrictions that may be relevant to your volunteer work. Leave blank if none."
-                disabled={loading}
-                rows={4}
-                className="resize-none"
-              />
-              <p className="text-xs text-muted-foreground">
-                This information helps us ensure your safety and accommodate any
-                special needs.
-              </p>
-            </div>
-            <div className="space-y-4">
-              <div className="flex items-start space-x-3 p-4 rounded-lg border border-border bg-muted/20">
-                <input
-                  type="checkbox"
-                  id="willingToProvideReference"
-                  checked={formData.willingToProvideReference}
-                  onChange={(e) =>
-                    handleInputChange(
-                      "willingToProvideReference",
-                      e.target.checked
-                    )
-                  }
-                  disabled={loading}
-                  className="h-4 w-4 mt-1"
-                />
-                <div>
-                  <Label
-                    htmlFor="willingToProvideReference"
-                    className="text-sm font-medium"
-                  >
-                    I am willing to provide references if requested
-                  </Label>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    References may be requested for certain volunteer positions
-                    or activities.
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label
-                htmlFor="howDidYouHearAboutUs"
-                className="text-sm font-medium"
-              >
-                How did you hear about us?
-              </Label>
-              <SelectField
-                name="howDidYouHearAboutUs"
-                id="howDidYouHearAboutUs"
-                options={hearAboutUsOptions}
-                defaultValue={formData.howDidYouHearAboutUs}
-                disabled={loading}
-              />
-            </div>
-          </div>
+          <MedicalInfoStep
+            formData={formData}
+            onInputChange={handleInputChange}
+            loading={loading}
+          />
         );
-
       case 3: // Availability & Preferences
         return (
-          <div className="space-y-8">
-            <div className="space-y-4">
-              <div>
-                <Label className="text-sm font-medium mb-3 block">
-                  Typically available on days
-                </Label>
-                <p className="text-xs text-muted-foreground mb-4">
-                  Select the days you're generally available to volunteer. This
-                  helps us match you with suitable shifts.
-                </p>
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {daysOfWeek.map((day) => (
-                  <div
-                    key={day.value}
-                    className={`flex items-center space-x-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                      formData.availableDays.includes(day.value)
-                        ? "bg-primary/10 border-primary"
-                        : "bg-background border-border hover:bg-muted/50"
-                    }`}
-                    onClick={() => !loading && handleDayToggle(day.value)}
-                  >
-                    <input
-                      type="checkbox"
-                      id={`day-${day.value}`}
-                      checked={formData.availableDays.includes(day.value)}
-                      onChange={() => handleDayToggle(day.value)}
-                      disabled={loading}
-                      className="h-4 w-4"
-                    />
-                    <Label
-                      htmlFor={`day-${day.value}`}
-                      className="text-sm font-medium cursor-pointer"
-                    >
-                      {day.label}
-                    </Label>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <Label className="text-sm font-medium mb-3 block">
-                  Locations you are able to volunteer
-                </Label>
-                <p className="text-xs text-muted-foreground mb-4">
-                  Choose the locations where you can volunteer. You can select
-                  multiple options.
-                </p>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {locationOptions.map((location) => (
-                  <div
-                    key={location.value}
-                    className={`flex items-center space-x-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                      formData.availableLocations.includes(location.value)
-                        ? "bg-primary/10 border-primary"
-                        : "bg-background border-border hover:bg-muted/50"
-                    }`}
-                    onClick={() =>
-                      !loading && handleLocationToggle(location.value)
-                    }
-                  >
-                    <input
-                      type="checkbox"
-                      id={`location-${location.value}`}
-                      checked={formData.availableLocations.includes(
-                        location.value
-                      )}
-                      onChange={() => handleLocationToggle(location.value)}
-                      disabled={loading}
-                      className="h-4 w-4"
-                    />
-                    <Label
-                      htmlFor={`location-${location.value}`}
-                      className="text-sm font-medium cursor-pointer"
-                    >
-                      {location.label}
-                    </Label>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          <AvailabilityStep
+            formData={formData}
+            onDayToggle={handleDayToggle}
+            onLocationToggle={handleLocationToggle}
+            loading={loading}
+            locationOptions={locationOptions}
+          />
         );
-
       case 4: // Communication & Agreements
         return (
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <div className="flex items-start space-x-3 p-4 rounded-lg border border-border bg-muted/20">
-                <input
-                  type="checkbox"
-                  id="emailNewsletterSubscription"
-                  checked={formData.emailNewsletterSubscription}
-                  onChange={(e) =>
-                    handleInputChange(
-                      "emailNewsletterSubscription",
-                      e.target.checked
-                    )
-                  }
-                  disabled={loading}
-                  className="h-4 w-4 mt-1"
-                />
-                <div>
-                  <Label
-                    htmlFor="emailNewsletterSubscription"
-                    className="text-sm font-medium"
-                  >
-                    Subscribe to email newsletter
-                  </Label>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Stay updated with news, events, and volunteer opportunities.
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label
-                htmlFor="notificationPreference"
-                className="text-sm font-medium"
-              >
-                Receive shift notifications by
-              </Label>
-              <SelectField
-                name="notificationPreference"
-                id="notificationPreference"
-                options={notificationOptions}
-                defaultValue={formData.notificationPreference}
-                disabled={loading}
-              />
-              <p className="text-xs text-muted-foreground">
-                Choose how you'd like to receive notifications about shift
-                updates and reminders.
-              </p>
-            </div>
-            <div className="space-y-4 pt-6 border-t border-border">
-              <h3 className="text-sm font-medium flex items-center gap-2">
-                <FileText className="h-4 w-4" />
-                Required Agreements
-              </h3>
-              <div className="space-y-4">
-                <div className="flex items-start space-x-3 p-4 rounded-lg border border-border bg-muted/20">
-                  <input
-                    type="checkbox"
-                    id="volunteerAgreementAccepted"
-                    checked={formData.volunteerAgreementAccepted}
-                    onChange={(e) =>
-                      handleInputChange(
-                        "volunteerAgreementAccepted",
-                        e.target.checked
-                      )
-                    }
-                    disabled={loading}
-                    className="h-4 w-4 mt-1"
-                  />
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Label
-                        htmlFor="volunteerAgreementAccepted"
-                        className="text-sm font-medium cursor-pointer"
-                      >
-                        I have read and agree with the
-                      </Label>
-                      <Dialog
-                        open={volunteerAgreementOpen}
-                        onOpenChange={setVolunteerAgreementOpen}
-                      >
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="link"
-                            className="p-0 h-auto text-sm font-medium text-primary underline"
-                          >
-                            Volunteer Agreement
-                            <ExternalLink className="h-3 w-3 ml-1" />
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                          <DialogHeader>
-                            <DialogTitle>Volunteer Agreement</DialogTitle>
-                            <DialogDescription>
-                              Please read the complete volunteer agreement
-                              below.
-                            </DialogDescription>
-                          </DialogHeader>
-                          <PolicyContent content={volunteerAgreementContent} />
-                        </DialogContent>
-                      </Dialog>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      This agreement outlines your responsibilities and
-                      expectations as a volunteer.
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-3 p-4 rounded-lg border border-border bg-muted/20">
-                  <input
-                    type="checkbox"
-                    id="healthSafetyPolicyAccepted"
-                    checked={formData.healthSafetyPolicyAccepted}
-                    onChange={(e) =>
-                      handleInputChange(
-                        "healthSafetyPolicyAccepted",
-                        e.target.checked
-                      )
-                    }
-                    disabled={loading}
-                    className="h-4 w-4 mt-1"
-                  />
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Label
-                        htmlFor="healthSafetyPolicyAccepted"
-                        className="text-sm font-medium cursor-pointer"
-                      >
-                        I have read and agree with the
-                      </Label>
-                      <Dialog
-                        open={healthSafetyPolicyOpen}
-                        onOpenChange={setHealthSafetyPolicyOpen}
-                      >
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="link"
-                            className="p-0 h-auto text-sm font-medium text-primary underline"
-                          >
-                            Health and Safety policy
-                            <ExternalLink className="h-3 w-3 ml-1" />
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                          <DialogHeader>
-                            <DialogTitle>Health and Safety Policy</DialogTitle>
-                            <DialogDescription>
-                              Please read the complete health and safety policy
-                              below.
-                            </DialogDescription>
-                          </DialogHeader>
-                          <PolicyContent content={healthSafetyPolicyContent} />
-                        </DialogContent>
-                      </Dialog>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      This policy ensures the safety and well-being of all
-                      volunteers and participants.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <CommunicationStep
+            formData={formData}
+            onInputChange={handleInputChange}
+            loading={loading}
+            volunteerAgreementContent={volunteerAgreementContent}
+            healthSafetyPolicyContent={healthSafetyPolicyContent}
+            volunteerAgreementOpen={volunteerAgreementOpen}
+            setVolunteerAgreementOpen={setVolunteerAgreementOpen}
+            healthSafetyPolicyOpen={healthSafetyPolicyOpen}
+            setHealthSafetyPolicyOpen={setHealthSafetyPolicyOpen}
+          />
         );
-
       default:
         return null;
     }

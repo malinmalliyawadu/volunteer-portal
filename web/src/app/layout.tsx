@@ -73,7 +73,7 @@ export default async function RootLayout({
             displayName={displayName}
           />
           <main className="max-w-6xl mx-auto p-4">{children}</main>
-          <SiteFooter />
+          <SiteFooter session={session} />
           <Toaster />
         </ThemeProvider>
       </body>

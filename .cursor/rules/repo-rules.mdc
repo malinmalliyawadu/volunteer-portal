@@ -5,3 +5,4 @@ alwaysApply: true
 ---
 Make sure npm commands are run from the web folder
 Never run `npm run dev` yourself - let the user do it
+Documentation should be added for significant features in the `web/docs` folder

@@ -61,7 +61,7 @@ export default async function Home() {
                 size="lg"
                 className="btn-outline"
               >
-                <Link href="/login">Volunteer login</Link>
+                <Link href="/register">Join as volunteer</Link>
               </Button>
             </div>
           </div>
@@ -197,7 +197,7 @@ export default async function Home() {
                   <Link href="/shifts">Browse Available Shifts</Link>
                 </Button>
                 <Button asChild variant="outline" size="lg">
-                  <Link href="/login">Volunteer Login</Link>
+                  <Link href="/register">Join as Volunteer</Link>
                 </Button>
               </>
             )}
@@ -239,9 +239,14 @@ export default async function Home() {
               communities. Join us in our mission to ensure everybody eats.
             </p>
             {!session?.user && (
-              <Button asChild size="lg" className="btn-primary">
-                <Link href="/login">Get Started</Link>
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button asChild size="lg" className="btn-primary">
+                  <Link href="/register">Get Started</Link>
+                </Button>
+                <Button asChild variant="outline" size="lg">
+                  <Link href="/login">Sign In</Link>
+                </Button>
+              </div>
             )}
           </div>
         </div>
