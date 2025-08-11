@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SignupActions } from "@/components/signup-actions";
 import { FilterControls } from "@/components/filter-controls";
+import { DeleteShiftDialog } from "@/components/delete-shift-dialog";
 import {
   Calendar,
   Clock,
@@ -20,8 +21,12 @@ import {
   ChevronRight,
   User,
   X,
+  Edit,
+  CheckCircle,
+  Trash2,
 } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const LOCATIONS = ["Wellington", "Glenn Innes", "Onehunga"] as const;
 
@@ -56,6 +61,12 @@ export default async function AdminShiftsPage({
 
   const params = await searchParams;
   const now = new Date();
+
+  // Handle success messages
+  const created = params.created;
+  const updated = params.updated;
+  const deleted = params.deleted;
+  const isPastEdit = params.past;
 
   // Get location filter from search params
   const rawLocation = Array.isArray(params.location)
@@ -260,6 +271,28 @@ export default async function AdminShiftsPage({
 
   function ShiftCard({ s }: { s: ShiftWithAll }) {
     const { confirmed, pending, waitlisted, remaining } = counts(s);
+
+    async function deleteShift() {
+      "use server";
+
+      try {
+        // First delete all signups for this shift
+        await prisma.signup.deleteMany({
+          where: { shiftId: s.id },
+        });
+
+        // Then delete the shift
+        await prisma.shift.delete({
+          where: { id: s.id },
+        });
+      } catch {
+        // Handle error - could redirect to error page or show toast
+        console.error("Failed to delete shift");
+      }
+
+      redirect("/admin/shifts?deleted=1");
+    }
+
     return (
       <Card className="shadow-sm border-slate-200 hover:shadow-md transition-shadow">
         <CardContent className="p-6">
@@ -300,6 +333,46 @@ export default async function AdminShiftsPage({
 
             <div className="text-right">
               <div className="space-y-2">
+                <div className="flex items-center gap-2 mb-3">
+                  <Button
+                    asChild
+                    variant="ghost"
+                    size="sm"
+                    className="text-slate-500 hover:text-slate-700 h-8 px-2"
+                  >
+                    <Link href={`/admin/shifts/${s.id}/edit`}>
+                      <Edit className="h-3 w-3 mr-1" />
+                      Edit
+                    </Link>
+                  </Button>
+                  <DeleteShiftDialog
+                    shiftId={s.id}
+                    shiftName={s.shiftType.name}
+                    shiftDate={format(s.start, "EEEE, MMMM d, yyyy")}
+                    hasSignups={
+                      s.signups.filter(
+                        (signup: ShiftWithAll["signups"][number]) =>
+                          signup.status !== "CANCELED"
+                      ).length > 0
+                    }
+                    signupCount={
+                      s.signups.filter(
+                        (signup: ShiftWithAll["signups"][number]) =>
+                          signup.status !== "CANCELED"
+                      ).length
+                    }
+                    onDelete={deleteShift}
+                  >
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50 h-8 px-2"
+                    >
+                      <Trash2 className="h-3 w-3 mr-1" />
+                      Delete
+                    </Button>
+                  </DeleteShiftDialog>
+                </div>
                 <div className="flex items-center gap-2">
                   <Badge
                     variant="outline"
@@ -481,6 +554,38 @@ export default async function AdminShiftsPage({
             </Button>
           }
         />
+
+        {/* Success Messages */}
+        {created && (
+          <Alert className="mb-6 border-green-200 bg-green-50">
+            <CheckCircle className="h-4 w-4 text-green-600" />
+            <AlertDescription className="text-green-800">
+              {created === "1"
+                ? "Shift created successfully!"
+                : `${created} shifts created successfully!`}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {updated && (
+          <Alert className="mb-6 border-green-200 bg-green-50">
+            <CheckCircle className="h-4 w-4 text-green-600" />
+            <AlertDescription className="text-green-800">
+              Shift updated successfully!
+              {isPastEdit && " (Note: This was a past shift)"}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {deleted && (
+          <Alert className="mb-6 border-green-200 bg-green-50">
+            <CheckCircle className="h-4 w-4 text-green-600" />
+            <AlertDescription className="text-green-800">
+              Shift deleted successfully! All associated signups have been
+              removed.
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Filters */}
         <div className="mb-6">
