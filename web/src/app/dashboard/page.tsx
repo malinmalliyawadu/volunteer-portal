@@ -111,6 +111,8 @@ export default async function DashboardPage() {
     }),
   ]);
 
+  console.log("totalShifts", totalShifts);
+
   // Define types for better type safety
   type CompletedSignup = (typeof completedShifts)[number];
 

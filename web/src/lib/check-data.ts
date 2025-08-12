@@ -9,7 +9,7 @@ async function checkData() {
       select: { id: true, email: true, role: true, createdAt: true },
     });
     console.log(`👥 Users (${users.length}):`);
-    users.forEach((user: any) => {
+    users.forEach((user) => {
       console.log(
         `  - ${user.email} (${
           user.role
@@ -24,7 +24,7 @@ async function checkData() {
       take: 10,
     });
     console.log(`\n📅 Recent Shifts (${shifts.length}):`);
-    shifts.forEach((shift: any) => {
+    shifts.forEach((shift) => {
       console.log(
         `  - ${shift.shiftType.name} on ${shift.start.toDateString()} (${
           shift.start.toTimeString().split(" ")[0]
@@ -42,7 +42,7 @@ async function checkData() {
       take: 10,
     });
     console.log(`\n✍️ Recent Signups (${signups.length}):`);
-    signups.forEach((signup: any) => {
+    signups.forEach((signup) => {
       console.log(
         `  - ${signup.user.email} → ${signup.shift.shiftType.name} (${
           signup.status
@@ -52,7 +52,7 @@ async function checkData() {
 
     // Check completed shifts by user
     console.log(`\n🎯 Completed shifts by user:`);
-    for (const user of users.filter((u: any) => u.role === "VOLUNTEER")) {
+    for (const user of users.filter((u) => u.role === "VOLUNTEER")) {
       const completedShifts = await prisma.signup.count({
         where: {
           userId: user.id,

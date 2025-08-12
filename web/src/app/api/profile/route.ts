@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 
 const updateProfileSchema = z.object({
   firstName: z.string().optional(),
@@ -98,7 +99,7 @@ export async function PUT(req: Request) {
     const validatedData = updateProfileSchema.parse(body);
 
     // Prepare update data
-    const updateData: any = {};
+    const updateData: Prisma.UserUpdateInput = {};
 
     // Handle simple string/boolean fields
     if (validatedData.firstName !== undefined)

@@ -20,7 +20,6 @@ import {
   History,
   Timer,
   CheckCircle,
-  AlertCircle,
   Users,
 } from "lucide-react";
 
@@ -50,11 +49,6 @@ export default async function MyShiftsPage({
   )
     ? (rawLocation as LocationOption)
     : undefined;
-
-  // Create location filter for queries
-  const locationFilter = selectedLocation
-    ? { shift: { location: selectedLocation } }
-    : {};
 
   const uPage = Math.max(
     1,

@@ -30,7 +30,6 @@ interface DeleteShiftDialogProps {
 }
 
 export function DeleteShiftDialog({
-  shiftId,
   shiftName,
   shiftDate,
   hasSignups,

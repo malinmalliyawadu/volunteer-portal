@@ -281,6 +281,7 @@ export default function RegisterPage() {
         callbackUrl: "/profile/edit?oauth=true", // Redirect to profile completion
       });
     } catch (error) {
+      console.error("OAuth sign in error:", error);
       toast({
         title: "Authentication failed",
         description: "Please try again or use email registration.",
@@ -427,12 +428,6 @@ export default function RegisterPage() {
         ? prev.availableLocations.filter((l) => l !== location)
         : [...prev.availableLocations, location],
     }));
-  };
-
-  const nextStep = () => {
-    if (validateCurrentStep() && currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
-    }
   };
 
   const prevStep = () => {

@@ -15,13 +15,12 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Camera, Upload, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 import "react-image-crop/dist/ReactCrop.css";
+import Image from "next/image";
 
 interface ProfileImageUploadProps {
   currentImage?: string | null;
@@ -128,7 +127,7 @@ export function ProfileImageUpload({
   toast,
 }: ProfileImageUploadProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [, setSelectedFile] = useState<File | null>(null);
   const [imageSrc, setImageSrc] = useState<string>("");
   const [crop, setCrop] = useState<Crop>();
   const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
@@ -250,7 +249,7 @@ export function ProfileImageUpload({
             )}
           >
             {currentImage ? (
-              <img
+              <Image
                 key={`profile-img-${imageKey}`}
                 src={currentImage}
                 alt="Profile"
@@ -316,7 +315,7 @@ export function ProfileImageUpload({
                       minWidth={100}
                       minHeight={100}
                     >
-                      <img
+                      <Image
                         ref={imgRef}
                         alt="Crop preview"
                         src={imageSrc}

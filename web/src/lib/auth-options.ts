@@ -9,6 +9,25 @@ import bcrypt from "bcrypt";
 
 type AppRole = "ADMIN" | "VOLUNTEER";
 
+// Extend NextAuth types
+declare module "next-auth" {
+  interface User {
+    role?: AppRole;
+    phone?: string | null;
+    firstName?: string | null;
+    lastName?: string | null;
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    role?: AppRole;
+    phone?: string | null;
+    firstName?: string | null;
+    lastName?: string | null;
+  }
+}
+
 type TokenWithProfile = JWT & {
   role?: AppRole;
   phone?: string;
@@ -71,7 +90,7 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account }) {
       // Handle OAuth sign-in
       if (account?.provider !== "credentials" && user?.email) {
         try {
@@ -112,11 +131,11 @@ export const authOptions: NextAuthOptions = {
           }
 
           // Update the user object with database info for the session
-          (user as any).id = existingUser.id;
-          (user as any).role = existingUser.role;
-          (user as any).phone = existingUser.phone;
-          (user as any).firstName = existingUser.firstName;
-          (user as any).lastName = existingUser.lastName;
+          user.id = existingUser.id;
+          user.role = existingUser.role;
+          user.phone = existingUser.phone;
+          user.firstName = existingUser.firstName;
+          user.lastName = existingUser.lastName;
         } catch (error) {
           console.error("Error handling OAuth sign-in:", error);
           return false;
@@ -125,25 +144,24 @@ export const authOptions: NextAuthOptions = {
       return true;
     },
     async jwt({ token, user, trigger, session }) {
-      const t = token as TokenWithProfile;
       if (user) {
         const u = user as {
           role?: AppRole;
-          phone?: string;
-          firstName?: string;
-          lastName?: string;
+          phone?: string | null;
+          firstName?: string | null;
+          lastName?: string | null;
         };
-        t.role = u.role;
-        t.phone = u.phone;
-        t.firstName = u.firstName;
-        t.lastName = u.lastName;
+        token.role = u.role;
+        token.phone = u.phone;
+        token.firstName = u.firstName;
+        token.lastName = u.lastName;
       }
 
       // Handle session updates (like profile changes)
       if (trigger === "update" && session) {
         // Update token with fresh user data from database
         const dbUser = await prisma.user.findUnique({
-          where: { id: t.sub },
+          where: { id: token.sub },
           select: {
             name: true,
             phone: true,
@@ -153,15 +171,15 @@ export const authOptions: NextAuthOptions = {
           },
         });
         if (dbUser) {
-          t.name = dbUser.name;
-          t.phone = dbUser.phone || undefined;
-          t.role = dbUser.role;
-          t.firstName = dbUser.firstName || undefined;
-          t.lastName = dbUser.lastName || undefined;
+          token.name = dbUser.name;
+          token.phone = dbUser.phone || undefined;
+          token.role = dbUser.role;
+          token.firstName = dbUser.firstName || undefined;
+          token.lastName = dbUser.lastName || undefined;
         }
       }
 
-      return t;
+      return token;
     },
     async session({ session, token }) {
       const t = token as TokenWithProfile & { sub?: string };

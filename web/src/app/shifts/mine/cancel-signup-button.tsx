@@ -61,9 +61,9 @@ export function CancelSignupButton({
         <DialogHeader>
           <DialogTitle>Cancel Shift Signup</DialogTitle>
           <DialogDescription>
-            Are you sure you want to cancel your signup for "{shiftName}"? This
-            action cannot be undone, but you may be able to sign up again if
-            spots are still available.
+            Are you sure you want to cancel your signup for &quot;{shiftName}
+            &quot;? This action cannot be undone, but you may be able to sign up
+            again if spots are still available.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>

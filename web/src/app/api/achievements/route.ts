@@ -38,7 +38,7 @@ export async function GET() {
 
     // Calculate total points
     const totalPoints = userAchievements.reduce(
-      (sum: number, ua: any) => sum + ua.achievement.points,
+      (sum: number, ua) => sum + ua.achievement.points,
       0
     );
 

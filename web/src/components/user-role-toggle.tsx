@@ -93,13 +93,13 @@ export function UserRoleToggle({ userId, currentRole }: UserRoleToggleProps) {
           <DialogDescription>
             {targetRole === "ADMIN" ? (
               <>
-                You're about to promote this user to{" "}
+                You&apos;re about to promote this user to{" "}
                 <strong>Administrator</strong>. Administrators have full access
                 to manage users, shifts, and system settings.
               </>
             ) : (
               <>
-                You're about to change this user's role to{" "}
+                You&apos;re about to change this user&apos;s role to{" "}
                 <strong>Volunteer</strong>. They will lose administrative
                 privileges and only be able to sign up for shifts.
               </>

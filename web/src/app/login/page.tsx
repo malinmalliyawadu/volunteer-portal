@@ -82,6 +82,7 @@ export default function LoginPage() {
         callbackUrl: "/",
       });
     } catch (error) {
+      console.error("OAuth sign in error:", error);
       setError("Authentication failed. Please try again.");
       setOauthLoading(null);
     }

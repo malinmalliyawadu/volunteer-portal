@@ -62,7 +62,6 @@ export default async function AdminDashboardPage({
     nextShift,
     shiftsNeedingAttention,
     monthlyStats,
-    allLocations,
   ] = await Promise.all([
     // User counts
     prisma.user.count(),
@@ -182,16 +181,6 @@ export default async function AdminDashboardPage({
 
   const [monthlyShifts, monthlySignups, newUsersThisMonth] = monthlyStats;
 
-  // Get unique locations from the database
-  const availableLocations = allLocations
-    .map((shift: { location: string | null }) => shift.location)
-    .filter((location: string | null): location is string => location !== null)
-    .filter(
-      (location: string, index: number, array: string[]) =>
-        array.indexOf(location) === index
-    )
-    .sort();
-
   // Define types for better type safety
   type ShiftWithSignups = {
     id: string;
@@ -220,15 +209,6 @@ export default async function AdminDashboardPage({
       return fillRate < 0.5;
     }
   );
-
-  // Function to create URL with location filter
-  function createLocationUrl(location?: string) {
-    const url = new URL("/admin", "http://localhost");
-    if (location) {
-      url.searchParams.set("location", location);
-    }
-    return url.pathname + url.search;
-  }
 
   return (
     <div className="animate-fade-in">

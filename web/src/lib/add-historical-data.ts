@@ -131,12 +131,12 @@ async function addHistoricalData() {
     });
 
     console.log(`\n🏆 Total achievements unlocked: ${userAchievements.length}`);
-    userAchievements.forEach((ua: any) => {
+    userAchievements.forEach((ua) => {
       console.log(`  🎯 ${ua.achievement.name} (${ua.achievement.points} pts)`);
     });
 
     const totalPoints = userAchievements.reduce(
-      (sum: number, ua: any) => sum + ua.achievement.points,
+      (sum: number, ua) => sum + ua.achievement.points,
       0
     );
     console.log(`🎯 Total points: ${totalPoints}`);

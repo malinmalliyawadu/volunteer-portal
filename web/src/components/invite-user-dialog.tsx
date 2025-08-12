@@ -89,7 +89,8 @@ export function InviteUserDialog({ children }: InviteUserDialogProps) {
           </DialogTitle>
           <DialogDescription>
             Send an invitation email to a new volunteer or administrator.
-            They'll receive an email with instructions to set up their account.
+            They&apos;ll receive an email with instructions to set up their
+            account.
           </DialogDescription>
         </DialogHeader>
 

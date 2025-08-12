@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { format, formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { redirect } from "next/navigation";
@@ -21,6 +21,7 @@ import {
   Filter,
   ChevronRight,
 } from "lucide-react";
+import { Prisma } from "@prisma/client";
 
 interface AdminUsersPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -64,7 +65,7 @@ export default async function AdminUsersPage({
   const roleFilter = Array.isArray(params.role) ? params.role[0] : params.role;
 
   // Build where clause for filtering
-  const whereClause: any = {};
+  const whereClause: Prisma.UserWhereInput = {};
 
   if (searchQuery) {
     whereClause.OR = [

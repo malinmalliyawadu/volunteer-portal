@@ -50,6 +50,7 @@ export function DateFilter({ rawDateFrom, rawDateTo }: DateFilterProps) {
     }
   } catch (error) {
     // Invalid date format, ignore
+    console.error("Invalid date format:", error);
   }
 
   const dateRange: DateRange | undefined =
