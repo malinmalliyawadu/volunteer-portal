@@ -10,7 +10,7 @@ A modern Next.js application for managing volunteers at Everybody Eats, an innov
 - 👥 **Role-based Access**: Separate interfaces for volunteers and administrators
 - 🎨 **Responsive Design**: Modern UI built with Tailwind CSS and Radix UI components
 - 🔐 **Authentication**: Secure login with NextAuth.js
-- 🗄️ **Database**: SQLite with Prisma ORM for data management
+- 🗄️ **Database**: PostgreSQL with Prisma ORM for data management
 
 ## 🛠️ Tech Stack
 
@@ -18,10 +18,10 @@ A modern Next.js application for managing volunteers at Everybody Eats, an innov
 - 📝 **Language**: TypeScript
 - 🎨 **Styling**: Tailwind CSS v4
 - 🧩 **UI Components**: Radix UI + Custom shadcn/ui components
-- 🗄️ **Database**: SQLite with Prisma ORM
+- 🗄️ **Database**: PostgreSQL with Prisma ORM
 - 🔐 **Authentication**: NextAuth.js
 - ⚡ **State Management**: React hooks and server components
-- 🚀 **Deployment Ready**: Optimized for Vercel
+- 🚀 **Deployment Ready**: Optimized for Vercel and Supabase
 
 ## 🚀 Getting Started
 
