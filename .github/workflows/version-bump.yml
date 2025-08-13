@@ -177,7 +177,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create "v${{ steps.bump-version.outputs.new_version }}" \
-            --title "Release v${{ steps.bump-version.outputs.new_version }}" \
+            --title "v${{ steps.bump-version.outputs.new_version }}" \
             --notes-file changelog_entry.md \
             --target main
 
