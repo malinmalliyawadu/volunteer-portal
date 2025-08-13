@@ -176,13 +176,14 @@ export default async function AdminVolunteerPage({
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" data-testid="admin-volunteer-profile-page">
       <div className="mx-auto max-w-7xl p-4 space-y-6">
         <PageHeader
           title="Volunteer Profile"
           description="Comprehensive view of volunteer information and activity"
+          data-testid="page-header"
         >
-          <Button asChild variant="outline" size="sm" className="gap-2 mt-6">
+          <Button asChild variant="outline" size="sm" className="gap-2 mt-6" data-testid="back-to-shifts-button">
             <Link href="/admin/shifts">
               <ChevronLeft className="h-4 w-4" />
               Back to Shifts
@@ -194,7 +195,7 @@ export default async function AdminVolunteerPage({
           {/* Left Column - Profile Info */}
           <div className="lg:col-span-1 space-y-6">
             {/* Basic Information */}
-            <Card>
+            <Card data-testid="basic-information-card">
               <CardContent className="text-center">
                 <div className="flex justify-center mb-4">
                   <Avatar className="h-24 w-24 border-4 border-background shadow-lg">
@@ -208,11 +209,11 @@ export default async function AdminVolunteerPage({
                   </Avatar>
                 </div>
 
-                <h2 className="text-2xl font-bold mb-2">
+                <h2 className="text-2xl font-bold mb-2" data-testid="volunteer-name">
                   {volunteer.name || "Volunteer"}
                 </h2>
 
-                <div className="flex items-center justify-center gap-2 text-muted-foreground mb-4">
+                <div className="flex items-center justify-center gap-2 text-muted-foreground mb-4" data-testid="volunteer-email">
                   <Mail className="h-4 w-4" />
                   <span className="text-sm">{volunteer.email}</span>
                 </div>
@@ -247,7 +248,7 @@ export default async function AdminVolunteerPage({
                 </div>
 
                 {/* Quick Stats */}
-                <div className="grid grid-cols-3 gap-4 pt-4 border-t">
+                <div className="grid grid-cols-3 gap-4 pt-4 border-t" data-testid="volunteer-stats">
                   <div className="text-center">
                     <div className="text-2xl font-bold">{totalShifts}</div>
                     <div className="text-xs text-muted-foreground">
@@ -275,7 +276,7 @@ export default async function AdminVolunteerPage({
             </Card>
 
             {/* Contact Information */}
-            <Card>
+            <Card data-testid="contact-information-card">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Phone className="h-5 w-5 text-primary" />
@@ -311,7 +312,7 @@ export default async function AdminVolunteerPage({
             </Card>
 
             {/* Emergency Contact */}
-            <Card>
+            <Card data-testid="emergency-contact-card">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Heart className="h-5 w-5 text-red-500" />
@@ -344,7 +345,7 @@ export default async function AdminVolunteerPage({
           {/* Right Column - Detailed Info */}
           <div className="lg:col-span-2 space-y-6">
             {/* Availability & Preferences */}
-            <Card>
+            <Card data-testid="availability-preferences-card">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <MapPin className="h-5 w-5 text-green-600" />
@@ -410,7 +411,7 @@ export default async function AdminVolunteerPage({
             </Card>
 
             {/* Additional Information */}
-            <Card>
+            <Card data-testid="additional-information-card">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Shield className="h-5 w-5 text-purple-600" />
@@ -454,7 +455,7 @@ export default async function AdminVolunteerPage({
             </Card>
 
             {/* Shift History with Location Filter */}
-            <Card>
+            <Card data-testid="shift-history-card">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -504,7 +505,7 @@ export default async function AdminVolunteerPage({
               </CardHeader>
               <CardContent>
                 {volunteer.signups.length === 0 ? (
-                  <div className="text-center py-8">
+                  <div className="text-center py-8" data-testid="shift-history-empty-state">
                     <Clock className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
                     <p className="text-muted-foreground">
                       {selectedLocation
@@ -513,7 +514,7 @@ export default async function AdminVolunteerPage({
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-3" data-testid="shift-history-list">
                     {volunteer.signups
                       .slice(0, 10)
                       .map((signup: (typeof volunteer.signups)[0]) => (
