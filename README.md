@@ -1,5 +1,8 @@
 # 🍽️ Everybody Eats Volunteer Portal
 
+[![CI](https://github.com/malin/volunteer-portal/actions/workflows/ci.yml/badge.svg)](https://github.com/malin/volunteer-portal/actions/workflows/ci.yml)
+[![E2E Tests](https://github.com/malin/volunteer-portal/actions/workflows/e2e-tests.yml/badge.svg)](https://github.com/malin/volunteer-portal/actions/workflows/e2e-tests.yml)
+
 A comprehensive volunteer management system for Everybody Eats, an innovative charitable restaurant that transforms rescued food into quality 3-course meals on a pay-what-you-can basis.
 
 ## 🚀 Project Overview

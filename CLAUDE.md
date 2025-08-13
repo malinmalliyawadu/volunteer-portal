@@ -26,8 +26,9 @@ npm run prisma:deploy    # Deploy migrations to production
 ### Testing
 ```bash
 cd web
-npx playwright test              # Run all Playwright e2e tests
-npx playwright test --ui         # Run tests with UI mode
+npm run test:e2e                # Run all Playwright e2e tests
+npm run test:e2e:ui              # Run tests with UI mode
+npm run test:e2e:ci              # Run tests in CI mode (Chromium only)
 npx playwright test test.spec.ts # Run specific test file
 ```
 
