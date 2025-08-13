@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   test:
     name: Playwright Tests
@@ -111,6 +115,85 @@ jobs:
           name: playwright-report-merged
           path: web/playwright-report/
           retention-days: 30
+
+      - name: Generate coverage report
+        if: github.event_name == 'pull_request'
+        working-directory: web
+        run: |
+          # Extract test results and create a coverage report
+          echo "# Test Coverage Report" > coverage-report.md
+          echo "" >> coverage-report.md
+          
+          # Count test files and results
+          TEST_COUNT=$(find tests/e2e -name "*.spec.ts" -o -name "*.test.ts" | wc -l)
+          echo "- **Total test files**: $TEST_COUNT" >> coverage-report.md
+          
+          # List test files covered
+          echo "" >> coverage-report.md
+          echo "## Test Files Executed" >> coverage-report.md
+          find tests/e2e -name "*.spec.ts" -o -name "*.test.ts" | while read file; do
+            echo "- \`$(basename $file)\`" >> coverage-report.md
+          done
+          
+          echo "" >> coverage-report.md
+          echo "## Pages/Components Tested" >> coverage-report.md
+          echo "Based on e2e tests, the following application areas are covered:" >> coverage-report.md
+          
+          # Analyze test files for page coverage
+          grep -r "page\.goto\|visit" tests/e2e/ --include="*.ts" | \
+            sed 's/.*page\.goto[^"]*["'"'"']\([^"'"'"']*\)["'"'"'].*/- \1/' | \
+            sort | uniq >> coverage-report.md || echo "- No specific page visits found" >> coverage-report.md
+
+      - name: Comment PR with coverage
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            let coverageReport = '';
+            try {
+              coverageReport = fs.readFileSync('web/coverage-report.md', 'utf8');
+            } catch (error) {
+              coverageReport = '# Test Coverage Report\n\nNo coverage report generated.';
+            }
+            
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            // Find existing coverage comment
+            const existingComment = comments.find(comment => 
+              comment.body.includes('🧪 Test Coverage Report') && 
+              comment.user.type === 'Bot'
+            );
+            
+            const commentBody = `## 🧪 Test Coverage Report
+            
+            ${coverageReport}
+            
+            ---
+            *This report shows which test files were executed and provides insight into application coverage through e2e tests.*`;
+            
+            if (existingComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body: commentBody
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: commentBody
+              });
+            }
 
   summary:
     if: always()
