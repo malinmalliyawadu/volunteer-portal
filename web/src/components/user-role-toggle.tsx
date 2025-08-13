@@ -65,7 +65,7 @@ export function UserRoleToggle({ userId, currentRole }: UserRoleToggleProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-1 h-8">
+        <Button variant="outline" size="sm" className="gap-1 h-8" data-testid={`role-toggle-button-${userId}`}>
           {currentRole === "ADMIN" ? (
             <>
               <Shield className="h-3 w-3" />
@@ -80,9 +80,9 @@ export function UserRoleToggle({ userId, currentRole }: UserRoleToggleProps) {
           <ChevronDown className="h-3 w-3" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[420px]">
+      <DialogContent className="sm:max-w-[420px]" data-testid="role-change-dialog">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2" data-testid="role-change-dialog-title">
             {targetRole === "ADMIN" ? (
               <Shield className="h-5 w-5 text-purple-600" />
             ) : (
@@ -108,7 +108,7 @@ export function UserRoleToggle({ userId, currentRole }: UserRoleToggleProps) {
         </DialogHeader>
 
         <div className="flex flex-col gap-4 py-4">
-          <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+          <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg" data-testid="current-role-display">
             <div className="flex items-center gap-3">
               <span className="text-sm font-medium">Current Role:</span>
               <Badge
@@ -134,7 +134,7 @@ export function UserRoleToggle({ userId, currentRole }: UserRoleToggleProps) {
             </div>
           </div>
 
-          <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+          <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg" data-testid="new-role-display">
             <div className="flex items-center gap-3">
               <span className="text-sm font-medium">New Role:</span>
               <Badge
@@ -167,6 +167,7 @@ export function UserRoleToggle({ userId, currentRole }: UserRoleToggleProps) {
             variant="outline"
             onClick={() => setOpen(false)}
             disabled={isLoading}
+            data-testid="role-change-cancel-button"
           >
             Cancel
           </Button>
@@ -178,6 +179,7 @@ export function UserRoleToggle({ userId, currentRole }: UserRoleToggleProps) {
                 ? "bg-purple-600 hover:bg-purple-700 text-white"
                 : "btn-primary"
             }
+            data-testid="role-change-confirm-button"
           >
             {isLoading ? (
               <>

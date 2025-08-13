@@ -185,7 +185,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center animate-fade-in">
+    <div className="min-h-[80vh] flex items-center justify-center animate-fade-in" data-testid="login-page">
       <div className="w-full max-w-md">
         <div className="text-center">
           <PageHeader
@@ -195,11 +195,11 @@ export default function LoginPage() {
           />
         </div>
 
-        <Card className="animate-slide-up">
+        <Card className="animate-slide-up" data-testid="login-form-card">
           <CardContent className="p-8">
             {/* OAuth Providers */}
             {oauthProviders.length > 0 && (
-              <div className="space-y-3 mb-6">
+              <div className="space-y-3 mb-6" data-testid="oauth-providers">
                 <div className="text-center">
                   <p className="text-sm text-muted-foreground mb-4">
                     Sign in with your preferred method
@@ -214,6 +214,7 @@ export default function LoginPage() {
                       provider.id
                     )}`}
                     variant="outline"
+                    data-testid={`oauth-${provider.id}-button`}
                   >
                     {oauthLoading === provider.id ? (
                       <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
@@ -228,7 +229,7 @@ export default function LoginPage() {
                   </Button>
                 ))}
 
-                <div className="relative my-6">
+                <div className="relative my-6" data-testid="oauth-divider">
                   <div className="absolute inset-0 flex items-center">
                     <span className="w-full border-t border-border" />
                   </div>
@@ -241,8 +242,8 @@ export default function LoginPage() {
               </div>
             )}
 
-            <form onSubmit={onSubmit} className="space-y-6">
-              <div className="space-y-2">
+            <form onSubmit={onSubmit} className="space-y-6" data-testid="login-form">
+              <div className="space-y-2" data-testid="email-field">
                 <Label htmlFor="email" className="text-sm font-medium">
                   Email address
                 </Label>
@@ -255,10 +256,11 @@ export default function LoginPage() {
                   required
                   className="focus-ring"
                   disabled={isLoading || oauthLoading !== null}
+                  data-testid="email-input"
                 />
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2" data-testid="password-field">
                 <Label htmlFor="password" className="text-sm font-medium">
                   Password
                 </Label>
@@ -271,11 +273,12 @@ export default function LoginPage() {
                   required
                   className="focus-ring"
                   disabled={isLoading || oauthLoading !== null}
+                  data-testid="password-input"
                 />
               </div>
 
               {successMessage && (
-                <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">
+                <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm" data-testid="success-message">
                   <div className="flex items-center gap-2">
                     <svg
                       className="w-4 h-4"
@@ -296,7 +299,7 @@ export default function LoginPage() {
               )}
 
               {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm" data-testid="error-message">
                   <div className="flex items-center gap-2">
                     <svg
                       className="w-4 h-4"
@@ -321,6 +324,7 @@ export default function LoginPage() {
                 className="w-full btn-primary"
                 size="lg"
                 disabled={isLoading || oauthLoading !== null}
+                data-testid="login-submit-button"
               >
                 {isLoading ? (
                   <div className="flex items-center gap-2">
@@ -345,17 +349,17 @@ export default function LoginPage() {
               </Button>
             </form>
 
-            <div className="mt-6 pt-6 border-t border-border">
+            <div className="mt-6 pt-6 border-t border-border" data-testid="login-footer">
               <div className="text-center mb-4">
                 <p className="text-sm text-muted-foreground">
                   Don&apos;t have an account yet?
                 </p>
-                <Button asChild variant="outline" className="mt-2">
+                <Button asChild variant="outline" className="mt-2" data-testid="register-link">
                   <Link href="/register">Create Volunteer Account</Link>
                 </Button>
               </div>
 
-              <div className="bg-accent/10 rounded-lg p-4 text-center">
+              <div className="bg-accent/10 rounded-lg p-4 text-center" data-testid="demo-credentials">
                 <p className="text-sm font-medium text-primary mb-3">
                   Demo Credentials
                 </p>
@@ -365,6 +369,7 @@ export default function LoginPage() {
                     className="w-full btn-secondary"
                     size="sm"
                     disabled={isLoading || oauthLoading !== null}
+                    data-testid="quick-login-volunteer-button"
                   >
                     Login as Volunteer
                   </Button>
@@ -373,6 +378,7 @@ export default function LoginPage() {
                     className="w-full btn-secondary"
                     size="sm"
                     disabled={isLoading || oauthLoading !== null}
+                    data-testid="quick-login-admin-button"
                   >
                     Login as Admin
                   </Button>
