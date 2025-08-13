@@ -132,8 +132,8 @@ $CHANGELOG_ENTRY" > CHANGELOG.md
       - name: Commit version bump
         if: steps.version-type.outputs.bump_type != 'skip'
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
           
           git add web/package.json
           if [ -f CHANGELOG.md ]; then
