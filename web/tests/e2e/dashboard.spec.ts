@@ -1,7 +1,8 @@
 import { test, expect } from './base';
+import type { Page } from '@playwright/test';
 
 // Helper function to login
-async function loginAsVolunteer(page: any) {
+async function loginAsVolunteer(page: Page) {
   await page.goto('/login');
   const volunteerLoginButton = page.getByRole('button', { name: /login as volunteer/i });
   await volunteerLoginButton.click();
