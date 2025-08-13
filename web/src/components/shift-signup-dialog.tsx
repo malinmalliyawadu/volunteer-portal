@@ -87,12 +87,12 @@ export function ShiftSignupDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" data-testid="shift-signup-dialog">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2" data-testid="signup-dialog-title">
             {isWaitlist ? "🎯 Join Waitlist" : "✨ Confirm Signup"}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription data-testid="signup-dialog-description">
             {isWaitlist
               ? "Join the waitlist for this shift. You'll be notified if a spot becomes available."
               : "Please confirm that you want to sign up for this volunteer shift."}
@@ -101,23 +101,23 @@ export function ShiftSignupDialog({
 
         <div className="space-y-4 py-4">
           {/* Shift Details */}
-          <div className="rounded-lg border p-4 bg-muted/50">
-            <h3 className="font-semibold text-lg mb-2">
+          <div className="rounded-lg border p-4 bg-muted/50" data-testid="signup-shift-details">
+            <h3 className="font-semibold text-lg mb-2" data-testid="signup-shift-name">
               {shift.shiftType.name}
             </h3>
 
             {shift.shiftType.description && (
-              <p className="text-sm text-muted-foreground mb-3">
+              <p className="text-sm text-muted-foreground mb-3" data-testid="signup-shift-description">
                 {shift.shiftType.description}
               </p>
             )}
 
             <div className="space-y-2 text-sm">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2" data-testid="signup-shift-date">
                 <span className="font-medium">📅 Date:</span>
                 <span>{format(shift.start, "EEEE, dd MMMM yyyy")}</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2" data-testid="signup-shift-time">
                 <span className="font-medium">🕐 Time:</span>
                 <span>
                   {format(shift.start, "h:mm a")} -{" "}
@@ -128,12 +128,12 @@ export function ShiftSignupDialog({
                 </Badge>
               </div>
               {shift.location && (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2" data-testid="signup-shift-location">
                   <span className="font-medium">📍 Location:</span>
                   <span>{shift.location}</span>
                 </div>
               )}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2" data-testid="signup-shift-capacity">
                 <span className="font-medium">👥 Capacity:</span>
                 <span>
                   {confirmedCount}/{shift.capacity} confirmed
@@ -148,7 +148,7 @@ export function ShiftSignupDialog({
           </div>
 
           {/* Approval Process Info */}
-          <div className="rounded-lg border p-4 bg-blue-50 border-blue-200">
+          <div className="rounded-lg border p-4 bg-blue-50 border-blue-200" data-testid="signup-approval-info">
             <div className="flex items-start gap-2">
               <span className="text-blue-600 text-lg">ℹ️</span>
               <div className="text-sm">
@@ -170,6 +170,7 @@ export function ShiftSignupDialog({
             variant="outline"
             onClick={() => setOpen(false)}
             disabled={isSubmitting}
+            data-testid="cancel-signup-dialog-button"
           >
             Cancel
           </Button>
@@ -177,6 +178,7 @@ export function ShiftSignupDialog({
             onClick={handleSignup}
             disabled={isSubmitting}
             className="min-w-[120px]"
+            data-testid="confirm-signup-button"
           >
             {isSubmitting ? (
               <span className="flex items-center gap-2">
