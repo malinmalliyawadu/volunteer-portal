@@ -118,6 +118,27 @@ E2e tests in `/web/tests/e2e/` cover:
 - Volunteer shift signups
 - Profile management
 
+**Test ID Guidelines**:
+- Use `data-testid` attributes for reliable element selection in tests
+- Prefer testids over text-based selectors to avoid strict mode violations
+- Use descriptive, hierarchical naming: `section-element-type` (e.g., `personal-info-heading`, `emergency-contact-section`)
+- Add testids to:
+  - Section headings and containers
+  - Interactive elements (buttons, links, forms)
+  - Key content areas that tests need to verify
+  - Elements that might have duplicate text content
+
+Example testid usage:
+```tsx
+<h2 data-testid="personal-info-heading">Personal Information</h2>
+<div data-testid="personal-info-section">
+  <span data-testid="personal-info-name-label">Name</span>
+</div>
+<Button data-testid="browse-shifts-button" asChild>
+  <Link href="/shifts">Browse Shifts</Link>
+</Button>
+```
+
 Run tests before committing changes that affect user flows.
 
 ## Development Tips

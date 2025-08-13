@@ -100,7 +100,7 @@ export default async function ProfilePage() {
                   )}
 
                   <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-                    <Badge className="badge-primary">
+                    <Badge className="badge-primary" data-testid="user-role">
                       {userProfile?.role === "ADMIN"
                         ? "Administrator"
                         : "Volunteer"}
@@ -171,7 +171,7 @@ export default async function ProfilePage() {
                     </svg>
                   </div>
                   <div>
-                    <h2 className="text-xl font-semibold">
+                    <h2 className="text-xl font-semibold" data-testid="personal-info-heading">
                       Personal Information
                     </h2>
                     <p className="text-sm text-muted-foreground">
@@ -180,9 +180,9 @@ export default async function ProfilePage() {
                   </div>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-4" data-testid="personal-info-section">
                   <div className="flex justify-between items-center py-3 border-b border-border">
-                    <span className="text-sm font-medium text-muted-foreground">
+                    <span className="text-sm font-medium text-muted-foreground" data-testid="personal-info-name-label">
                       Name
                     </span>
                     <span className="font-medium">
@@ -190,7 +190,7 @@ export default async function ProfilePage() {
                     </span>
                   </div>
                   <div className="flex justify-between items-center py-3 border-b border-border">
-                    <span className="text-sm font-medium text-muted-foreground">
+                    <span className="text-sm font-medium text-muted-foreground" data-testid="personal-info-email-label">
                       Email
                     </span>
                     <span className="font-medium">
@@ -216,7 +216,7 @@ export default async function ProfilePage() {
                     </div>
                   )}
                   <div className="flex justify-between items-center py-3">
-                    <span className="text-sm font-medium text-muted-foreground">
+                    <span className="text-sm font-medium text-muted-foreground" data-testid="personal-info-account-type-label">
                       Account Type
                     </span>
                     <span className="font-medium">
@@ -252,18 +252,18 @@ export default async function ProfilePage() {
                     </svg>
                   </div>
                   <div>
-                    <h2 className="text-xl font-semibold">Emergency Contact</h2>
+                    <h2 className="text-xl font-semibold" data-testid="emergency-contact-heading">Emergency Contact</h2>
                     <p className="text-sm text-muted-foreground">
                       Emergency contact information
                     </p>
                   </div>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-4" data-testid="emergency-contact-section">
                   {userProfile?.emergencyContactName ? (
                     <>
                       <div className="flex justify-between items-center py-3 border-b border-border">
-                        <span className="text-sm font-medium text-muted-foreground">
+                        <span className="text-sm font-medium text-muted-foreground" data-testid="emergency-contact-name-label">
                           Name
                         </span>
                         <span className="font-medium">
@@ -323,14 +323,14 @@ export default async function ProfilePage() {
                     </svg>
                   </div>
                   <div>
-                    <h2 className="text-xl font-semibold">Availability</h2>
+                    <h2 className="text-xl font-semibold" data-testid="availability-heading">Availability</h2>
                     <p className="text-sm text-muted-foreground">
                       When and where you can volunteer
                     </p>
                   </div>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-4" data-testid="availability-section">
                   {availableDays.length > 0 && (
                     <div>
                       <span className="text-sm font-medium text-muted-foreground">
@@ -407,18 +407,19 @@ export default async function ProfilePage() {
                     </svg>
                   </div>
                   <div>
-                    <h2 className="text-xl font-semibold">Quick Actions</h2>
+                    <h2 className="text-xl font-semibold" data-testid="quick-actions-heading">Quick Actions</h2>
                     <p className="text-sm text-muted-foreground">
                       Manage your volunteer experience
                     </p>
                   </div>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-3" data-testid="quick-actions-section">
                   <Button
                     asChild
                     variant="outline"
                     className="w-full justify-start"
+                    data-testid="browse-shifts-button"
                   >
                     <Link href="/shifts" className="flex items-center gap-3">
                       <svg
@@ -442,6 +443,7 @@ export default async function ProfilePage() {
                     asChild
                     variant="outline"
                     className="w-full justify-start"
+                    data-testid="view-schedule-button"
                   >
                     <Link
                       href="/shifts/mine"
