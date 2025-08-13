@@ -23,21 +23,21 @@ export default async function Home() {
   }
 
   return (
-    <div className="animate-fade-in">
-      <section className="section-hero">
+    <div className="animate-fade-in" data-testid="home-page">
+      <section className="section-hero" data-testid="hero-section">
         <div className="max-w-6xl mx-auto px-4 py-20 grid gap-8 md:grid-cols-2 md:items-center">
           <div className="animate-slide-up">
-            <h1 className="text-5xl md:text-6xl font-bold leading-tight mb-6 text-foreground">
+            <h1 className="text-5xl md:text-6xl font-bold leading-tight mb-6 text-foreground" data-testid="hero-title">
               Making a difference one plate at a time
             </h1>
-            <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
+            <p className="text-lg text-muted-foreground mb-8 leading-relaxed" data-testid="hero-description">
               Everybody Eats is an innovative, charitable restaurant,
               transforming rescued food into quality 3-course meals on a
               pay-what-you-can basis. Join us and be part of reducing food
               waste, food insecurity and social isolation in Aotearoa.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button asChild size="lg" className="btn-primary group">
+            <div className="flex flex-col sm:flex-row gap-4" data-testid="hero-actions">
+              <Button asChild size="lg" className="btn-primary group" data-testid="hero-browse-shifts-button">
                 <Link href="/shifts" className="flex items-center gap-2">
                   <span>Browse volunteer shifts</span>
                   <svg
@@ -60,6 +60,7 @@ export default async function Home() {
                 variant="outline"
                 size="lg"
                 className="btn-outline"
+                data-testid="hero-join-volunteer-button"
               >
                 <Link href="/register">Join as volunteer</Link>
               </Button>
@@ -81,6 +82,7 @@ export default async function Home() {
                   className="object-cover rounded-2xl"
                   priority
                   sizes="(max-width: 768px) 100vw, 50vw"
+                  data-testid="hero-image"
                 />
               </div>
             </div>
@@ -88,12 +90,13 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="section-content py-16">
+      <section className="section-content py-16" data-testid="features-section">
         <div className="max-w-6xl mx-auto px-4">
           <div className="grid md:grid-cols-3 gap-8">
             <div
               className="text-center p-6 card animate-slide-up"
               style={{ animationDelay: "0.3s" }}
+              data-testid="feature-community-impact"
             >
               <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg
@@ -120,6 +123,7 @@ export default async function Home() {
             <div
               className="text-center p-6 card animate-slide-up"
               style={{ animationDelay: "0.4s" }}
+              data-testid="feature-flexible-scheduling"
             >
               <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg
@@ -148,6 +152,7 @@ export default async function Home() {
             <div
               className="text-center p-6 card animate-slide-up"
               style={{ animationDelay: "0.5s" }}
+              data-testid="feature-meaningful-work"
             >
               <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg
@@ -174,44 +179,44 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="section-content py-16">
+      <section className="section-content py-16" data-testid="cta-section">
         <div className="max-w-4xl mx-auto text-center space-y-8">
           <PageHeader
             title="Welcome to Everybody Eats Volunteer Portal"
             description="Join our community of volunteers and help make a difference by signing up for volunteer shifts."
           />
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center" data-testid="cta-buttons">
             {session?.user ? (
               <>
-                <Button asChild size="lg" className="btn-primary">
+                <Button asChild size="lg" className="btn-primary" data-testid="cta-browse-shifts-authenticated">
                   <Link href="/shifts">Browse Available Shifts</Link>
                 </Button>
-                <Button asChild variant="outline" size="lg">
+                <Button asChild variant="outline" size="lg" data-testid="cta-dashboard-button">
                   <Link href="/dashboard">View My Dashboard</Link>
                 </Button>
               </>
             ) : (
               <>
-                <Button asChild size="lg" className="btn-primary">
+                <Button asChild size="lg" className="btn-primary" data-testid="cta-browse-shifts-unauthenticated">
                   <Link href="/shifts">Browse Available Shifts</Link>
                 </Button>
-                <Button asChild variant="outline" size="lg">
+                <Button asChild variant="outline" size="lg" data-testid="cta-join-volunteer-button">
                   <Link href="/register">Join as Volunteer</Link>
                 </Button>
               </>
             )}
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 mt-16">
-            <div className="card p-6">
+          <div className="grid md:grid-cols-3 gap-8 mt-16" data-testid="opportunities-grid">
+            <div className="card p-6" data-testid="opportunity-community-meals">
               <h3 className="text-xl font-semibold mb-4">🍽️ Community Meals</h3>
               <p className="text-muted-foreground">
                 Help prepare and serve meals for our community members in need.
               </p>
             </div>
 
-            <div className="card p-6">
+            <div className="card p-6" data-testid="opportunity-food-distribution">
               <h3 className="text-xl font-semibold mb-4">
                 📦 Food Distribution
               </h3>
@@ -221,7 +226,7 @@ export default async function Home() {
               </p>
             </div>
 
-            <div className="card p-6">
+            <div className="card p-6" data-testid="opportunity-event-support">
               <h3 className="text-xl font-semibold mb-4">🤝 Event Support</h3>
               <p className="text-muted-foreground">
                 Join our team for special events and community outreach
@@ -230,8 +235,8 @@ export default async function Home() {
             </div>
           </div>
 
-          <div className="mt-16 p-8 bg-primary-light rounded-xl">
-            <h2 className="text-2xl font-semibold mb-4">
+          <div className="mt-16 p-8 bg-primary-light rounded-xl" data-testid="final-cta-section">
+            <h2 className="text-2xl font-semibold mb-4" data-testid="final-cta-title">
               Ready to Make a Difference?
             </h2>
             <p className="text-muted-foreground mb-6">
@@ -239,11 +244,11 @@ export default async function Home() {
               communities. Join us in our mission to ensure everybody eats.
             </p>
             {!session?.user && (
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button asChild size="lg" className="btn-primary">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center" data-testid="final-cta-buttons">
+                <Button asChild size="lg" className="btn-primary" data-testid="final-get-started-button">
                   <Link href="/register">Get Started</Link>
                 </Button>
-                <Button asChild variant="outline" size="lg">
+                <Button asChild variant="outline" size="lg" data-testid="final-sign-in-button">
                   <Link href="/login">Sign In</Link>
                 </Button>
               </div>
