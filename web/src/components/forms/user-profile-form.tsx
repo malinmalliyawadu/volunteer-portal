@@ -300,6 +300,7 @@ export function PersonalInfoStep({
             options={pronounOptions}
             defaultValue={formData.pronouns}
             disabled={loading}
+            data-testid="pronouns-select"
           />
         </div>
       </div>
@@ -479,6 +480,7 @@ export function MedicalInfoStep({
           options={hearAboutUsOptions}
           defaultValue={formData.howDidYouHearAboutUs}
           disabled={loading}
+          data-testid="how-did-you-hear-select"
         />
       </div>
     </div>
@@ -531,6 +533,7 @@ export function AvailabilityStep({
                 onChange={() => onDayToggle(day.value)}
                 disabled={loading}
                 className="h-4 w-4"
+                data-testid={`available-day-${day.value}`}
               />
               <Label
                 htmlFor={`day-${day.value}`}
@@ -571,6 +574,7 @@ export function AvailabilityStep({
                 onChange={() => onLocationToggle(location.value)}
                 disabled={loading}
                 className="h-4 w-4"
+                data-testid={`available-location-${location.value.toLowerCase()}`}
               />
               <Label
                 htmlFor={`location-${location.value}`}
@@ -648,6 +652,7 @@ export function CommunicationStep({
           options={notificationOptions}
           defaultValue={formData.notificationPreference}
           disabled={loading}
+          data-testid="notification-preference-select"
         />
         <p className="text-xs text-muted-foreground">
           Choose how you&apos;d like to receive notifications about shift
