@@ -11,13 +11,13 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pull-requests: read
+      pull-requests: write
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
           fetch-depth: 0
 
       - name: Setup Node.js
@@ -163,6 +163,7 @@ jobs:
       - name: Push changes
         if: steps.version-type.outputs.bump_type != 'skip'
         run: |
+          git remote set-url origin git@github.com:malinmalliyawadu/volunteer-portal.git
           git push origin main "v${{ steps.bump-version.outputs.new_version }}"
 
       - name: Create GitHub Release
