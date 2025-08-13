@@ -140,7 +140,7 @@ $CHANGELOG_ENTRY" > CHANGELOG.md
             git add CHANGELOG.md
           fi
           
-          git commit -m "chore: bump version to ${{ steps.bump-version.outputs.new_version }}
+          git commit -m "chore: bump version to ${{ steps.bump-version.outputs.new_version }} [skip ci]
 
           - Updated from ${{ steps.bump-version.outputs.previous_version }} to ${{ steps.bump-version.outputs.new_version }}
           - Based on PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}
