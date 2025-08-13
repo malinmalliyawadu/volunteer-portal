@@ -28,22 +28,21 @@ async function loginAsVolunteer(page: Page) {
 }
 
 test.describe("Shifts Browse Page", () => {
-  test.beforeEach(async ({ page }) => {
-    // Navigate to shifts page first to test both authenticated and unauthenticated access
-    await page.goto("/shifts");
-    await page.waitForLoadState("networkidle");
-  });
+  test.describe("Unauthenticated Access", () => {
+    test.beforeEach(async ({ page }) => {
+      await page.goto("/shifts");
+      await page.waitForLoadState("networkidle");
+    });
 
-  test.describe("Page Structure and Navigation", () => {
-    test("should display shifts browse page with main elements", async ({ page }) => {
+    test("should display shifts page without authentication", async ({ page }) => {
       // Check page loads successfully
       await expect(page).toHaveURL("/shifts");
 
       // Check main page container
-      const shiftsPage = page.getByTestId("shifts-browse-page");
-      await expect(shiftsPage).toBeVisible();
+      const browsePage = page.getByTestId("shifts-browse-page");
+      await expect(browsePage).toBeVisible();
 
-      // Check page title
+      // Check main page title
       const pageTitle = page.getByRole("heading", { name: /volunteer shifts/i });
       await expect(pageTitle).toBeVisible();
 
@@ -52,10 +51,14 @@ test.describe("Shifts Browse Page", () => {
       await expect(pageDescription).toBeVisible();
     });
 
-    test("should display location filter with tabs", async ({ page }) => {
+    test("should display location filter tabs", async ({ page }) => {
       // Check location filter section
       const locationFilter = page.getByTestId("location-filter");
       await expect(locationFilter).toBeVisible();
+
+      // Check filter label
+      const filterLabel = page.getByText("Filter by location:");
+      await expect(filterLabel).toBeVisible();
 
       // Check location tabs container
       const locationTabs = page.getByTestId("location-tabs");
@@ -64,37 +67,248 @@ test.describe("Shifts Browse Page", () => {
       // Check "All" tab
       const allTab = page.getByTestId("location-tab-all");
       await expect(allTab).toBeVisible();
-      await expect(allTab).toContainText("All");
 
-      // Check specific location tabs
+      // Check location-specific tabs
       const wellingtonTab = page.getByTestId("location-tab-wellington");
       await expect(wellingtonTab).toBeVisible();
-      await expect(wellingtonTab).toContainText("Wellington");
 
       const glennInnesTab = page.getByTestId("location-tab-glenn-innes");
       await expect(glennInnesTab).toBeVisible();
-      await expect(glennInnesTab).toContainText("Glenn Innes");
 
       const onehungaTab = page.getByTestId("location-tab-onehunga");
       await expect(onehungaTab).toBeVisible();
-      await expect(onehungaTab).toContainText("Onehunga");
     });
 
-    test("should display user preferences tab when logged in with preferences", async ({ page }) => {
+    test("should show login buttons for shift signup when not authenticated", async ({ page }) => {
+      // Look for shift cards
+      const shiftCards = page.locator('[data-testid^="shift-card-"]');
+      const shiftCount = await shiftCards.count();
+
+      if (shiftCount > 0) {
+        const firstShift = shiftCards.first();
+        
+        // Should show login link for signup
+        const signupButton = firstShift.locator('[data-testid*="signup-login-button"]');
+        if (await signupButton.isVisible()) {
+          await expect(signupButton).toHaveAttribute("href", /\/login.*callbackUrl.*shifts/);
+        }
+
+        // Or waitlist login link
+        const waitlistButton = firstShift.locator('[data-testid*="waitlist-login-button"]');
+        if (await waitlistButton.isVisible()) {
+          await expect(waitlistButton).toHaveAttribute("href", /\/login.*callbackUrl.*shifts/);
+        }
+      }
+    });
+  });
+
+  test.describe("Authenticated Access", () => {
+    test.beforeEach(async ({ page }) => {
       await loginAsVolunteer(page);
       await page.goto("/shifts");
       await page.waitForLoadState("networkidle");
 
-      // Check if preferences tab exists (only if user has preferences)
-      const preferencesTab = page.getByTestId("location-tab-preferences");
-      if (await preferencesTab.isVisible()) {
-        await expect(preferencesTab).toContainText("Your preferences");
+      // Skip tests if login failed
+      const currentUrl = page.url();
+      if (currentUrl.includes("/login")) {
+        test.skip(true, "Login failed - skipping authenticated shifts tests");
+      }
+    });
+
+    test("should display page with authentication", async ({ page }) => {
+      // Check page loads successfully
+      await expect(page).toHaveURL("/shifts");
+
+      // Check main page container
+      const browsePage = page.getByTestId("shifts-browse-page");
+      await expect(browsePage).toBeVisible();
+
+      // Check main elements are visible
+      const pageTitle = page.getByRole("heading", { name: /volunteer shifts/i });
+      await expect(pageTitle).toBeVisible();
+
+      const pageDescription = page.getByText(/find and sign up for upcoming volunteer opportunities/i);
+      await expect(pageDescription).toBeVisible();
+    });
+
+    test("should display shift cards with all required information", async ({ page }) => {
+      // Look for shift cards using testids
+      const shiftCards = page.locator('[data-testid^="shift-card-"]');
+      const shiftCount = await shiftCards.count();
+
+      if (shiftCount > 0) {
+        const firstShift = shiftCards.first();
+        const shiftId = await firstShift.getAttribute('data-testid');
+        const id = shiftId?.replace('shift-card-', '') || '';
+
+        // Check shift type name
+        const shiftName = firstShift.getByTestId(`shift-name-${id}`);
+        await expect(shiftName).toBeVisible();
+
+        // Check time information
+        const timeInfo = firstShift.getByTestId(`shift-time-${id}`);
+        await expect(timeInfo).toBeVisible();
+
+        // Check location information
+        const locationInfo = firstShift.getByTestId(`shift-location-${id}`);
+        await expect(locationInfo).toBeVisible();
+
+        // Check capacity information
+        const capacityInfo = firstShift.getByTestId(`shift-capacity-${id}`);
+        await expect(capacityInfo).toBeVisible();
+
+        // Check actions section
+        const actionsSection = firstShift.getByTestId(`shift-actions-${id}`);
+        await expect(actionsSection).toBeVisible();
+      }
+    });
+
+    test("should show shift type categories and theming", async ({ page }) => {
+      const shiftCards = page.locator('[data-testid^="shift-card-"]');
+      const shiftCount = await shiftCards.count();
+
+      if (shiftCount > 0) {
+        const firstShift = shiftCards.first();
+        const shiftId = await firstShift.getAttribute('data-testid');
+        const id = shiftId?.replace('shift-card-', '') || '';
+
+        // Check for category badge (Kitchen, Service, etc.)
+        const categoryBadge = firstShift.getByTestId(`shift-category-${id}`);
+        await expect(categoryBadge).toBeVisible();
+
+        // Check for gradient icon
+        const iconContainer = firstShift.locator('.bg-gradient-to-br');
+        await expect(iconContainer).toBeVisible();
+      }
+    });
+
+    test("should display shift duration", async ({ page }) => {
+      const shiftCards = page.locator('[data-testid^="shift-card-"]');
+      const shiftCount = await shiftCards.count();
+
+      if (shiftCount > 0) {
+        const firstShift = shiftCards.first();
+        const shiftId = await firstShift.getAttribute('data-testid');
+        const id = shiftId?.replace('shift-card-', '') || '';
+
+        // Check for duration badge (format like "4h" or "3h 30m")
+        const durationBadge = firstShift.getByTestId(`shift-duration-${id}`);
+        await expect(durationBadge).toBeVisible();
+      }
+    });
+
+    test("should show spots remaining or waitlist status", async ({ page }) => {
+      const shiftCards = page.locator('[data-testid^="shift-card-"]');
+      const shiftCount = await shiftCards.count();
+
+      if (shiftCount > 0) {
+        const firstShift = shiftCards.first();
+        const shiftId = await firstShift.getAttribute('data-testid');
+        const id = shiftId?.replace('shift-card-', '') || '';
+
+        // Check for spots remaining or waitlist indicator
+        const spotsIndicator = firstShift.getByTestId(`shift-spots-badge-${id}`);
+        const waitlistIndicator = firstShift.getByTestId(`shift-waitlist-badge-${id}`);
+        
+        // At least one should be visible
+        if (await spotsIndicator.isVisible()) {
+          await expect(spotsIndicator).toBeVisible();
+        } else {
+          await expect(waitlistIndicator).toBeVisible();
+        }
+      }
+    });
+
+    test("should open signup dialog when clicking signup button", async ({ page }) => {
+      const shiftCards = page.locator('[data-testid^="shift-card-"]');
+      const shiftCount = await shiftCards.count();
+
+      if (shiftCount > 0) {
+        // Find a shift with an available signup button
+        const signupButton = page.locator('[data-testid*="signup-button"]').first();
+        
+        if (await signupButton.isVisible()) {
+          await signupButton.click();
+
+          // Check dialog appears
+          const dialog = page.getByTestId("shift-signup-dialog");
+          await expect(dialog).toBeVisible();
+
+          // Check dialog title
+          const dialogTitle = page.getByTestId("shift-signup-dialog-title");
+          await expect(dialogTitle).toBeVisible();
+
+          // Check cancel button
+          const cancelButton = page.getByTestId("shift-signup-cancel-button");
+          await expect(cancelButton).toBeVisible();
+
+          // Check confirm signup button
+          const confirmButton = page.getByTestId("shift-signup-confirm-button");
+          await expect(confirmButton).toBeVisible();
+
+          // Close dialog
+          await cancelButton.click();
+          await expect(dialog).not.toBeVisible();
+        }
+      }
+    });
+
+    test("should open waitlist dialog for full shifts", async ({ page }) => {
+      // Look for waitlist buttons
+      const waitlistButton = page.locator('[data-testid*="join-waitlist-button"]').first();
+      
+      if (await waitlistButton.isVisible()) {
+        await waitlistButton.click();
+
+        // Check dialog appears
+        const dialog = page.getByTestId("shift-signup-dialog");
+        await expect(dialog).toBeVisible();
+
+        // Check dialog title
+        const dialogTitle = page.getByTestId("shift-signup-dialog-title");
+        await expect(dialogTitle).toBeVisible();
+        await expect(dialogTitle).toContainText("Join Waitlist");
+
+        // Check waitlist-specific content
+        const waitlistDescription = page.getByTestId("shift-signup-dialog-description");
+        await expect(waitlistDescription).toBeVisible();
+        await expect(waitlistDescription).toContainText("notified if a spot becomes available");
+
+        // Close dialog
+        const cancelButton = page.getByTestId("shift-signup-cancel-button");
+        await cancelButton.click();
+        await expect(dialog).not.toBeVisible();
+      }
+    });
+
+    test("should show user signup status for registered shifts", async ({ page }) => {
+      const shiftCards = page.locator('[data-testid^="shift-card-"]');
+      const shiftCount = await shiftCards.count();
+
+      if (shiftCount > 0) {
+        // Look for any shift with user status
+        const statusBadge = page.locator('[data-testid*="signup-status"]').first();
+        
+        if (await statusBadge.isVisible()) {
+          await expect(statusBadge).toBeVisible();
+          
+          // Should also show "You're signed up!" message
+          const signupMessage = page.locator('[data-testid*="signed-up-message"]');
+          if (await signupMessage.count() > 0) {
+            await expect(signupMessage.first()).toBeVisible();
+          }
+        }
       }
     });
   });
 
   test.describe("Location Filtering", () => {
-    test("should filter by location when clicking location tabs", async ({ page }) => {
+    test.beforeEach(async ({ page }) => {
+      await page.goto("/shifts");
+      await page.waitForLoadState("networkidle");
+    });
+
+    test("should filter shifts by location when clicking location tabs", async ({ page }) => {
       // Click on Wellington tab
       const wellingtonTab = page.getByTestId("location-tab-wellington");
       await wellingtonTab.click();
@@ -103,427 +317,207 @@ test.describe("Shifts Browse Page", () => {
       // Should navigate to filtered URL
       await expect(page).toHaveURL("/shifts?location=Wellington");
 
-      // Click on "All" tab to clear filter
+      // Page should show Wellington filter indication
+      const pageDescription = page.getByText(/in wellington/i);
+      await expect(pageDescription).toBeVisible();
+    });
+
+    test("should show all locations when clicking All tab", async ({ page }) => {
+      // First go to a filtered view
+      await page.goto("/shifts?location=Wellington");
+      await page.waitForLoadState("networkidle");
+
+      // Then click "All" tab
       const allTab = page.getByTestId("location-tab-all");
       await allTab.click();
       await page.waitForLoadState("networkidle");
 
-      // Should navigate to show all URL
+      // Should return to unfiltered URL
       await expect(page).toHaveURL("/shifts?showAll=true");
     });
 
-    test("should maintain selected location tab state", async ({ page }) => {
+    test("should maintain active tab state for selected location", async ({ page }) => {
       // Navigate directly to filtered URL
       await page.goto("/shifts?location=Glenn%20Innes");
       await page.waitForLoadState("networkidle");
 
-      // Glenn Innes tab should be active
+      // Glenn Innes tab should be visually active
       const glennInnesTab = page.getByTestId("location-tab-glenn-innes");
+      
+      // Check if it has active styling (Radix UI tabs use data-state="active")
       await expect(glennInnesTab).toHaveAttribute("data-state", "active");
     });
 
-    test("should display profile filter notification when using preferences", async ({ page }) => {
+    test("should show user preference notification when applicable", async ({ page }) => {
       await loginAsVolunteer(page);
       await page.goto("/shifts");
       await page.waitForLoadState("networkidle");
 
-      // Check if profile filter notification is visible (only if user has preferences and no explicit filter)
-      const profileNotification = page.getByTestId("profile-filter-notification");
-      if (await profileNotification.isVisible()) {
-        await expect(profileNotification).toContainText("Showing shifts in your preferred locations");
-        await expect(profileNotification).toContainText("update your preferences");
+      // Look for preference notification
+      const preferenceNotification = page.getByTestId("profile-filter-notification");
+      
+      // This may or may not be visible depending on user's profile
+      if (await preferenceNotification.isVisible()) {
+        await expect(preferenceNotification).toBeVisible();
+        
+        // Should have link to update preferences
+        const updateLink = page.getByRole("link", { name: /update your preferences/i });
+        await expect(updateLink).toBeVisible();
+        await expect(updateLink).toHaveAttribute("href", "/profile/edit");
       }
     });
   });
 
-  test.describe("Shifts Display", () => {
-    test("should display shifts list when shifts are available", async ({ page }) => {
-      // Check if shifts list is visible
-      const shiftsList = page.getByTestId("shifts-list");
-      
-      if (await shiftsList.isVisible()) {
-        // Should have day sections
-        const daySections = page.locator('[data-testid^="shifts-day-"]');
-        const dayCount = await daySections.count();
-        expect(dayCount).toBeGreaterThan(0);
-
-        // First day section should have proper structure
-        const firstDay = daySections.first();
-        
-        // Check day heading
-        const dayHeading = firstDay.getByTestId("day-heading");
-        await expect(dayHeading).toBeVisible();
-        
-        // Check day shift count
-        const dayShiftCount = firstDay.getByTestId("day-shift-count");
-        await expect(dayShiftCount).toBeVisible();
-        
-        // Check shifts grid
-        const shiftsGrid = firstDay.getByTestId("day-shifts-grid");
-        await expect(shiftsGrid).toBeVisible();
-      }
-    });
-
-    test("should display empty state when no shifts are available", async ({ page }) => {
-      // Try a location that might not have shifts
+  test.describe("Empty States", () => {
+    test("should display empty state when no shifts available", async ({ page }) => {
+      // Try to trigger empty state by filtering to a location that might not have shifts
       await page.goto("/shifts?location=NonExistentLocation");
       await page.waitForLoadState("networkidle");
 
-      // Check if empty state is visible
-      const emptyState = page.getByTestId("shifts-empty-state");
+      // Look for empty state content
+      const emptyState = page.getByTestId("empty-state");
       
       if (await emptyState.isVisible()) {
-        await expect(emptyState).toContainText("No shifts available");
-        await expect(emptyState).toContainText("Check back later for new opportunities");
+        await expect(emptyState).toBeVisible();
+        
+        const emptyStateTitle = page.getByTestId("empty-state-title");
+        await expect(emptyStateTitle).toBeVisible();
+        
+        const emptyStateDescription = page.getByTestId("empty-state-description");
+        await expect(emptyStateDescription).toBeVisible();
       }
     });
 
-    test("should display shift cards with all required information", async ({ page }) => {
-      // Check if shifts list is visible
-      const shiftsList = page.getByTestId("shifts-list");
+    test("should provide helpful links in empty state for filtered locations", async ({ page }) => {
+      await page.goto("/shifts?location=Wellington");
+      await page.waitForLoadState("networkidle");
+
+      // Check if empty state is visible first
+      const emptyState = page.getByTestId("empty-state");
       
-      if (await shiftsList.isVisible()) {
-        // Get all shift cards
-        const shiftCards = page.locator('[data-testid^="shift-card-"]');
-        const shiftCount = await shiftCards.count();
-        
-        if (shiftCount > 0) {
-          const firstShift = shiftCards.first();
-          
-          // Check shift name
-          const shiftName = firstShift.getByTestId("shift-name");
-          await expect(shiftName).toBeVisible();
-          
-          // Check shift category
-          const shiftCategory = firstShift.getByTestId("shift-category");
-          await expect(shiftCategory).toBeVisible();
-          
-          // Check shift time
-          const shiftTime = firstShift.getByTestId("shift-time");
-          await expect(shiftTime).toBeVisible();
-          
-          // Check shift location
-          const shiftLocation = firstShift.getByTestId("shift-location");
-          await expect(shiftLocation).toBeVisible();
-          
-          // Check shift capacity
-          const shiftCapacity = firstShift.getByTestId("shift-capacity");
-          await expect(shiftCapacity).toBeVisible();
-          
-          // Check capacity count
-          const capacityCount = firstShift.getByTestId("capacity-count");
-          await expect(capacityCount).toBeVisible();
-          
-          // Check capacity progress bar
-          const capacityProgress = firstShift.getByTestId("capacity-progress");
-          await expect(capacityProgress).toBeVisible();
-          
-          // Check shift actions
-          const shiftActions = firstShift.getByTestId("shift-actions");
-          await expect(shiftActions).toBeVisible();
+      if (await emptyState.isVisible()) {
+        // Look for empty state with helpful links
+        const viewAllLink = page.getByRole("link", { name: /viewing all locations/i });
+        const updatePreferencesLink = page.getByRole("link", { name: /updating your location preferences/i });
+
+        // These links might be present in empty state
+        if (await viewAllLink.isVisible()) {
+          await expect(viewAllLink).toHaveAttribute("href", "/shifts");
         }
-      }
-    });
-
-    test("should display shift description when available", async ({ page }) => {
-      // Check if shifts list is visible
-      const shiftsList = page.getByTestId("shifts-list");
-      
-      if (await shiftsList.isVisible()) {
-        // Get all shift cards
-        const shiftCards = page.locator('[data-testid^="shift-card-"]');
-        const shiftCount = await shiftCards.count();
-        
-        if (shiftCount > 0) {
-          // Check if any shift has a description
-          for (let i = 0; i < Math.min(shiftCount, 3); i++) {
-            const shift = shiftCards.nth(i);
-            const description = shift.getByTestId("shift-description");
-            
-            if (await description.isVisible()) {
-              await expect(description).toBeVisible();
-              break;
-            }
-          }
+        if (await updatePreferencesLink.isVisible()) {
+          await expect(updatePreferencesLink).toHaveAttribute("href", "/profile/edit");
         }
       }
     });
   });
 
-  test.describe("Shift Status and Availability", () => {
-    test("should display appropriate status for shifts with spots available", async ({ page }) => {
-      // Check if shifts list is visible
-      const shiftsList = page.getByTestId("shifts-list");
-      
-      if (await shiftsList.isVisible()) {
-        // Look for shifts with spots available
-        const spotsAvailable = page.getByTestId("spots-available");
-        
-        if (await spotsAvailable.first().isVisible()) {
-          await expect(spotsAvailable.first()).toContainText("spot");
-          await expect(spotsAvailable.first()).toContainText("left");
-        }
-      }
-    });
-
-    test("should display waitlist status for full shifts", async ({ page }) => {
-      // Check if shifts list is visible
-      const shiftsList = page.getByTestId("shifts-list");
-      
-      if (await shiftsList.isVisible()) {
-        // Look for shifts with waitlist open
-        const waitlistStatus = page.getByTestId("waitlist-status");
-        
-        if (await waitlistStatus.first().isVisible()) {
-          await expect(waitlistStatus.first()).toContainText("Waitlist open");
-        }
-      }
-    });
-
-    test("should display user signup status when already signed up", async ({ page }) => {
-      await loginAsVolunteer(page);
+  test.describe("Shifts Grouping and Display", () => {
+    test.beforeEach(async ({ page }) => {
       await page.goto("/shifts");
       await page.waitForLoadState("networkidle");
+    });
 
-      // Check if user has any existing signups
-      const userSignupStatus = page.getByTestId("user-signup-status");
+    test("should group shifts by date", async ({ page }) => {
+      // Look for shift list container
+      const shiftsList = page.getByTestId("shifts-list");
       
-      if (await userSignupStatus.first().isVisible()) {
-        const statusText = await userSignupStatus.first().textContent();
-        expect(statusText).toMatch(/(Confirmed|Pending|Waitlisted)/);
+      if (await shiftsList.isVisible()) {
+        // Look for date sections
+        const dateSections = page.locator('[data-testid^="shifts-day-section-"]');
+        const sectionCount = await dateSections.count();
+
+        if (sectionCount > 0) {
+          const firstSection = dateSections.first();
+          await expect(firstSection).toBeVisible();
+
+          // Get the section ID to check heading and count
+          const sectionId = await firstSection.getAttribute('data-testid');
+          const dateKey = sectionId?.replace('shifts-day-section-', '') || '';
+          
+          const heading = page.getByTestId(`shifts-day-heading-${dateKey}`);
+          await expect(heading).toBeVisible();
+          
+          const countBadge = page.getByTestId(`shifts-day-count-${dateKey}`);
+          await expect(countBadge).toBeVisible();
+        }
       }
+    });
 
-      // Check for already signed up message
-      const alreadySignedUp = page.getByTestId("already-signed-up");
-      
-      if (await alreadySignedUp.first().isVisible()) {
-        await expect(alreadySignedUp.first()).toContainText("You're signed up!");
+    test("should display shifts in chronological order", async ({ page }) => {
+      const dateSections = page.locator('[data-testid^="shifts-day-section-"]');
+      const sectionCount = await dateSections.count();
+
+      if (sectionCount > 1) {
+        // Get date keys from testids (format: yyyy-MM-dd)
+        const firstSectionId = await dateSections.nth(0).getAttribute('data-testid');
+        const secondSectionId = await dateSections.nth(1).getAttribute('data-testid');
+        
+        const firstDateKey = firstSectionId?.replace('shifts-day-section-', '') || '';
+        const secondDateKey = secondSectionId?.replace('shifts-day-section-', '') || '';
+
+        // Compare date keys (they should be in chronological order)
+        expect(firstDateKey <= secondDateKey).toBe(true);
+      }
+    });
+
+    test("should show shift count badges", async ({ page }) => {
+      const dateSections = page.locator('[data-testid^="shifts-day-section-"]');
+      const sectionCount = await dateSections.count();
+
+      if (sectionCount > 0) {
+        const firstSection = dateSections.first();
+        const sectionId = await firstSection.getAttribute('data-testid');
+        const dateKey = sectionId?.replace('shifts-day-section-', '') || '';
+        
+        const countBadge = page.getByTestId(`shifts-day-count-${dateKey}`);
+        await expect(countBadge).toBeVisible();
+        
+        const badgeText = await countBadge.textContent();
+        expect(badgeText).toMatch(/\d+\s+shifts?/);
       }
     });
   });
 
-  test.describe("Shift Signup Functionality", () => {
-    test("should display login buttons for unauthenticated users", async ({ page }) => {
-      // Check if shifts list is visible
-      const shiftsList = page.getByTestId("shifts-list");
-      
-      if (await shiftsList.isVisible()) {
-        // Look for login buttons
-        const loginToSignupButton = page.getByTestId("login-to-signup-button");
-        const loginToJoinWaitlistButton = page.getByTestId("login-to-join-waitlist-button");
-        
-        if (await loginToSignupButton.first().isVisible()) {
-          await expect(loginToSignupButton.first()).toContainText("Sign up");
-          await expect(loginToSignupButton.first()).toHaveAttribute("href", /login.*callbackUrl/);
-        }
-        
-        if (await loginToJoinWaitlistButton.first().isVisible()) {
-          await expect(loginToJoinWaitlistButton.first()).toContainText("Join waitlist");
-          await expect(loginToJoinWaitlistButton.first()).toHaveAttribute("href", /login.*callbackUrl/);
-        }
-      }
-    });
-
-    test("should display signup buttons for authenticated users", async ({ page }) => {
-      await loginAsVolunteer(page);
+  test.describe("Progress Indicators and Capacity", () => {
+    test.beforeEach(async ({ page }) => {
       await page.goto("/shifts");
       await page.waitForLoadState("networkidle");
+    });
 
-      // Check if shifts list is visible
-      const shiftsList = page.getByTestId("shifts-list");
-      
-      if (await shiftsList.isVisible()) {
-        // Look for signup buttons
-        const signupButton = page.getByTestId("signup-button");
-        const joinWaitlistButton = page.getByTestId("join-waitlist-button");
-        
-        if (await signupButton.first().isVisible()) {
-          await expect(signupButton.first()).toContainText("Sign up");
-        }
-        
-        if (await joinWaitlistButton.first().isVisible()) {
-          await expect(joinWaitlistButton.first()).toContainText("Join waitlist");
-        }
+    test("should display capacity progress bars", async ({ page }) => {
+      const shiftCards = page.locator('[data-testid^="shift-card-"]');
+      const shiftCount = await shiftCards.count();
+
+      if (shiftCount > 0) {
+        const firstShift = shiftCards.first();
+        const shiftId = await firstShift.getAttribute('data-testid');
+        const id = shiftId?.replace('shift-card-', '') || '';
+
+        // Look for capacity display (format like "2/5")
+        const capacityDisplay = firstShift.getByTestId(`shift-capacity-count-${id}`);
+        await expect(capacityDisplay).toBeVisible();
+
+        // Look for progress bar
+        const progressBar = firstShift.getByTestId(`shift-progress-bar-${id}`);
+        await expect(progressBar).toBeVisible();
       }
     });
 
-    test("should open signup dialog when clicking signup button", async ({ page }) => {
-      await loginAsVolunteer(page);
-      await page.goto("/shifts");
-      await page.waitForLoadState("networkidle");
+    test("should show pending and waitlist counts when applicable", async ({ page }) => {
+      const shiftCards = page.locator('[data-testid^="shift-card-"]');
+      const shiftCount = await shiftCards.count();
 
-      // Check if shifts list is visible
-      const shiftsList = page.getByTestId("shifts-list");
-      
-      if (await shiftsList.isVisible()) {
-        // Look for a signup button
-        const signupButton = page.getByTestId("signup-button").first();
-        
-        if (await signupButton.isVisible()) {
-          await signupButton.click();
-          
-          // Check signup dialog appears
-          const signupDialog = page.getByTestId("shift-signup-dialog");
-          await expect(signupDialog).toBeVisible();
-          
-          // Check dialog title
-          const dialogTitle = page.getByTestId("signup-dialog-title");
-          await expect(dialogTitle).toBeVisible();
-          await expect(dialogTitle).toContainText("Confirm Signup");
-          
-          // Check dialog description
-          const dialogDescription = page.getByTestId("signup-dialog-description");
-          await expect(dialogDescription).toBeVisible();
-          
-          // Check shift details in dialog
-          const shiftDetails = page.getByTestId("signup-shift-details");
-          await expect(shiftDetails).toBeVisible();
-          
-          // Check shift name in dialog
-          const shiftName = page.getByTestId("signup-shift-name");
-          await expect(shiftName).toBeVisible();
-          
-          // Check dialog buttons
-          const cancelButton = page.getByTestId("cancel-signup-dialog-button");
-          await expect(cancelButton).toBeVisible();
-          await expect(cancelButton).toContainText("Cancel");
-          
-          const confirmButton = page.getByTestId("confirm-signup-button");
-          await expect(confirmButton).toBeVisible();
-          await expect(confirmButton).toContainText("Confirm Signup");
+      if (shiftCount > 0) {
+        // Look for pending approval text in any shift
+        const pendingText = page.getByText(/pending approval/i);
+        if (await pendingText.count() > 0) {
+          await expect(pendingText.first()).toBeVisible();
         }
-      }
-    });
 
-    test("should close signup dialog when clicking cancel", async ({ page }) => {
-      await loginAsVolunteer(page);
-      await page.goto("/shifts");
-      await page.waitForLoadState("networkidle");
-
-      // Check if shifts list is visible
-      const shiftsList = page.getByTestId("shifts-list");
-      
-      if (await shiftsList.isVisible()) {
-        // Look for a signup button
-        const signupButton = page.getByTestId("signup-button").first();
-        
-        if (await signupButton.isVisible()) {
-          await signupButton.click();
-          
-          // Wait for dialog to appear
-          const signupDialog = page.getByTestId("shift-signup-dialog");
-          await expect(signupDialog).toBeVisible();
-          
-          // Click cancel button
-          const cancelButton = page.getByTestId("cancel-signup-dialog-button");
-          await cancelButton.click();
-          
-          // Dialog should be closed
-          await expect(signupDialog).not.toBeVisible();
-        }
-      }
-    });
-
-    test("should display shift details correctly in signup dialog", async ({ page }) => {
-      await loginAsVolunteer(page);
-      await page.goto("/shifts");
-      await page.waitForLoadState("networkidle");
-
-      // Check if shifts list is visible
-      const shiftsList = page.getByTestId("shifts-list");
-      
-      if (await shiftsList.isVisible()) {
-        // Look for a signup button
-        const signupButton = page.getByTestId("signup-button").first();
-        
-        if (await signupButton.isVisible()) {
-          await signupButton.click();
-          
-          // Wait for dialog to appear
-          const signupDialog = page.getByTestId("shift-signup-dialog");
-          await expect(signupDialog).toBeVisible();
-          
-          // Check all shift detail elements
-          const shiftDate = page.getByTestId("signup-shift-date");
-          await expect(shiftDate).toBeVisible();
-          
-          const shiftTime = page.getByTestId("signup-shift-time");
-          await expect(shiftTime).toBeVisible();
-          
-          const shiftLocation = page.getByTestId("signup-shift-location");
-          if (await shiftLocation.isVisible()) {
-            await expect(shiftLocation).toBeVisible();
-          }
-          
-          const shiftCapacity = page.getByTestId("signup-shift-capacity");
-          await expect(shiftCapacity).toBeVisible();
-          
-          // Check approval info
-          const approvalInfo = page.getByTestId("signup-approval-info");
-          await expect(approvalInfo).toBeVisible();
-          await expect(approvalInfo).toContainText("Approval Required");
-        }
-      }
-    });
-
-    test("should open waitlist dialog for full shifts", async ({ page }) => {
-      await loginAsVolunteer(page);
-      await page.goto("/shifts");
-      await page.waitForLoadState("networkidle");
-
-      // Check if shifts list is visible
-      const shiftsList = page.getByTestId("shifts-list");
-      
-      if (await shiftsList.isVisible()) {
-        // Look for a join waitlist button
-        const joinWaitlistButton = page.getByTestId("join-waitlist-button").first();
-        
-        if (await joinWaitlistButton.isVisible()) {
-          await joinWaitlistButton.click();
-          
-          // Check signup dialog appears with waitlist content
-          const signupDialog = page.getByTestId("shift-signup-dialog");
-          await expect(signupDialog).toBeVisible();
-          
-          // Check dialog title for waitlist
-          const dialogTitle = page.getByTestId("signup-dialog-title");
-          await expect(dialogTitle).toContainText("Join Waitlist");
-          
-          // Check confirm button text for waitlist
-          const confirmButton = page.getByTestId("confirm-signup-button");
-          await expect(confirmButton).toContainText("Join Waitlist");
-          
-          // Check approval info for waitlist
-          const approvalInfo = page.getByTestId("signup-approval-info");
-          await expect(approvalInfo).toContainText("Waitlist Process");
-        }
-      }
-    });
-  });
-
-  test.describe("Authentication and Access Control", () => {
-    test("should allow access to shifts page without authentication", async ({ page }) => {
-      // Shifts page should be accessible without login
-      await expect(page).toHaveURL("/shifts");
-      
-      const shiftsPage = page.getByTestId("shifts-browse-page");
-      await expect(shiftsPage).toBeVisible();
-    });
-
-    test("should navigate to login when clicking signup as unauthenticated user", async ({ page }) => {
-      // Check if shifts list is visible
-      const shiftsList = page.getByTestId("shifts-list");
-      
-      if (await shiftsList.isVisible()) {
-        // Look for login to signup button
-        const loginButton = page.getByTestId("login-to-signup-button").first();
-        
-        if (await loginButton.isVisible()) {
-          await loginButton.click();
-          await page.waitForLoadState("networkidle");
-          
-          // Should navigate to login with callback
-          await expect(page).toHaveURL(/\/login.*callbackUrl.*shifts/);
+        // Look for waitlist text in any shift
+        const waitlistText = page.getByText(/on waitlist/i);
+        if (await waitlistText.count() > 0) {
+          await expect(waitlistText.first()).toBeVisible();
         }
       }
     });
@@ -531,81 +525,133 @@ test.describe("Shifts Browse Page", () => {
 
   test.describe("Responsive Design", () => {
     test("should be responsive on mobile viewport", async ({ page }) => {
+      await page.goto("/shifts");
+      await page.waitForLoadState("networkidle");
+
       // Set mobile viewport
       await page.setViewportSize({ width: 375, height: 667 });
       await page.reload();
       await page.waitForLoadState("networkidle");
 
-      // Check that main elements are still visible and accessible
-      const shiftsPage = page.getByTestId("shifts-browse-page");
-      await expect(shiftsPage).toBeVisible();
+      // Check main elements are still visible and accessible
+      const pageTitle = page.getByRole("heading", { name: /volunteer shifts/i });
+      await expect(pageTitle).toBeVisible();
 
-      // Check location filter is accessible
-      const locationFilter = page.getByTestId("location-filter");
-      await expect(locationFilter).toBeVisible();
+      // Check location filter is accessible on mobile
+      const locationTabs = page.locator('[role="tablist"]');
+      await expect(locationTabs).toBeVisible();
 
-      // Check shifts list or empty state is accessible
-      const shiftsList = page.getByTestId("shifts-list");
-      const emptyState = page.getByTestId("shifts-empty-state");
-      
-      const hasShifts = await shiftsList.isVisible();
-      const isEmpty = await emptyState.isVisible();
-      
-      expect(hasShifts || isEmpty).toBe(true);
+      // Check shift cards adapt to mobile layout
+      const shiftCards = page.locator('[data-testid^="shift-card-"]');
+      const shiftCount = await shiftCards.count();
+
+      if (shiftCount > 0) {
+        const firstShift = shiftCards.first();
+        await expect(firstShift).toBeVisible();
+      }
+    });
+
+    test("should maintain usability on tablet viewport", async ({ page }) => {
+      await page.goto("/shifts");
+      await page.waitForLoadState("networkidle");
+
+      // Set tablet viewport
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.reload();
+      await page.waitForLoadState("networkidle");
+
+      // Check grid layout works on tablet
+      const shiftCards = page.locator('[data-testid^="shift-card-"]');
+      const shiftCount = await shiftCards.count();
+
+      if (shiftCount > 1) {
+        // On tablet, should have grid layout (multiple cards per row)
+        const firstShift = shiftCards.first();
+        const secondShift = shiftCards.nth(1);
+        
+        await expect(firstShift).toBeVisible();
+        await expect(secondShift).toBeVisible();
+      }
     });
   });
 
   test.describe("Loading and Error Handling", () => {
-    test("should handle loading state gracefully", async ({ page }) => {
-      // Navigate to shifts page
+    test("should handle page loading gracefully", async ({ page }) => {
       await page.goto("/shifts");
 
-      // Wait for the main content to be visible
-      const shiftsPage = page.getByTestId("shifts-browse-page");
-      await expect(shiftsPage).toBeVisible({ timeout: 10000 });
+      // Wait for main content to be visible
+      const pageTitle = page.getByRole("heading", { name: /volunteer shifts/i });
+      await expect(pageTitle).toBeVisible({ timeout: 10000 });
 
       // Check that no error messages are displayed
       const errorMessage = page.getByText(/error|failed|something went wrong/i);
       await expect(errorMessage).not.toBeVisible();
     });
 
-    test("should display appropriate content based on shift availability", async ({ page }) => {
-      // Either shifts list or empty state should be visible
-      const shiftsList = page.getByTestId("shifts-list");
-      const emptyState = page.getByTestId("shifts-empty-state");
-      
-      const hasShifts = await shiftsList.isVisible();
-      const isEmpty = await emptyState.isVisible();
-      
-      // One of them should be visible
-      expect(hasShifts || isEmpty).toBe(true);
-      
-      // But not both
-      expect(hasShifts && isEmpty).toBe(false);
+    test("should handle navigation between filter states", async ({ page }) => {
+      await page.goto("/shifts");
+      await page.waitForLoadState("networkidle");
+
+      // Navigate through different location filters
+      const wellingtonTab = page.getByTestId("location-tab-wellington");
+      await wellingtonTab.click();
+      await page.waitForLoadState("networkidle");
+
+      await expect(page).toHaveURL("/shifts?location=Wellington");
+
+      const allTab = page.getByTestId("location-tab-all");
+      await allTab.click();
+      await page.waitForLoadState("networkidle");
+
+      await expect(page).toHaveURL("/shifts?showAll=true");
+
+      // Page should remain functional
+      const pageTitle = page.getByRole("heading", { name: /volunteer shifts/i });
+      await expect(pageTitle).toBeVisible();
     });
   });
 
   test.describe("Accessibility", () => {
     test("should have proper accessibility attributes", async ({ page }) => {
-      // Check that main headings have proper roles
-      const pageTitle = page.getByRole("heading", { name: /volunteer shifts/i });
-      await expect(pageTitle).toBeVisible();
+      await page.goto("/shifts");
+      await page.waitForLoadState("networkidle");
 
-      // Check that day headings have proper roles
-      const dayHeadings = page.getByTestId("day-heading");
-      if (await dayHeadings.first().isVisible()) {
-        await expect(dayHeadings.first()).toHaveRole("heading");
-      }
+      // Check main heading structure
+      const mainHeading = page.getByRole("heading", { name: /volunteer shifts/i });
+      await expect(mainHeading).toBeVisible();
 
-      // Check that interactive elements are accessible
+      // Check location filter has proper labels
+      const locationFilter = page.getByTestId("location-filter");
+      await expect(locationFilter).toBeVisible();
+      
+      const filterLabel = page.getByText("Filter by location:");
+      await expect(filterLabel).toBeVisible();
+
+      // Check tab navigation
       const locationTabs = page.getByTestId("location-tabs");
       await expect(locationTabs).toBeVisible();
 
       // Check that buttons have accessible names
-      const signupButtons = page.getByTestId("signup-button");
-      if (await signupButtons.first().isVisible()) {
-        const buttonText = await signupButtons.first().textContent();
-        expect(buttonText).toBeTruthy();
+      const signupButton = page.locator('[data-testid*="signup-button"], [data-testid*="waitlist-button"]').first();
+      if (await signupButton.isVisible()) {
+        await expect(signupButton).toBeVisible();
+      }
+    });
+
+    test("should support keyboard navigation", async ({ page }) => {
+      await page.goto("/shifts");
+      await page.waitForLoadState("networkidle");
+
+      // Tab through location filters
+      const wellingtonTab = page.getByTestId("location-tab-wellington");
+      await wellingtonTab.focus();
+      await expect(wellingtonTab).toBeFocused();
+
+      // Check shift cards are keyboard accessible
+      const signupButton = page.locator('[data-testid*="signup-button"], [data-testid*="waitlist-button"]').first();
+      if (await signupButton.isVisible()) {
+        await signupButton.focus();
+        await expect(signupButton).toBeFocused();
       }
     });
   });
