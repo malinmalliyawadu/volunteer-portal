@@ -1,0 +1,182 @@
+name: Automatic Version Bump
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+jobs:
+  version-bump:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: web/package-lock.json
+
+      - name: Determine version bump type
+        id: version-type
+        run: |
+          PR_LABELS='${{ toJson(github.event.pull_request.labels.*.name) }}'
+          echo "PR Labels: $PR_LABELS"
+          
+          if echo "$PR_LABELS" | grep -q "version:skip"; then
+            echo "bump_type=skip" >> $GITHUB_OUTPUT
+            echo "Version bump skipped due to version:skip label"
+          elif echo "$PR_LABELS" | grep -q "version:major"; then
+            echo "bump_type=major" >> $GITHUB_OUTPUT
+            echo "Major version bump detected"
+          elif echo "$PR_LABELS" | grep -q "version:minor"; then
+            echo "bump_type=minor" >> $GITHUB_OUTPUT
+            echo "Minor version bump detected"
+          elif echo "$PR_LABELS" | grep -q "version:patch"; then
+            echo "bump_type=patch" >> $GITHUB_OUTPUT
+            echo "Patch version bump detected"
+          else
+            echo "bump_type=patch" >> $GITHUB_OUTPUT
+            echo "Default patch version bump (no version label found)"
+          fi
+
+      - name: Bump version
+        if: steps.version-type.outputs.bump_type != 'skip'
+        id: bump-version
+        run: |
+          cd web
+          
+          # Get current version
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "Current version: $CURRENT_VERSION"
+          
+          # Split version into parts
+          IFS='.' read -ra VERSION_PARTS <<< "$CURRENT_VERSION"
+          MAJOR=${VERSION_PARTS[0]}
+          MINOR=${VERSION_PARTS[1]}
+          PATCH=${VERSION_PARTS[2]}
+          
+          # Determine new version based on bump type
+          case "${{ steps.version-type.outputs.bump_type }}" in
+            "major")
+              NEW_MAJOR=$((MAJOR + 1))
+              NEW_MINOR=0
+              NEW_PATCH=0
+              ;;
+            "minor")
+              NEW_MAJOR=$MAJOR
+              NEW_MINOR=$((MINOR + 1))
+              NEW_PATCH=0
+              ;;
+            "patch")
+              NEW_MAJOR=$MAJOR
+              NEW_MINOR=$MINOR
+              NEW_PATCH=$((PATCH + 1))
+              ;;
+          esac
+          
+          NEW_VERSION="${NEW_MAJOR}.${NEW_MINOR}.${NEW_PATCH}"
+          echo "New version: $NEW_VERSION"
+          
+          # Update package.json
+          npm version $NEW_VERSION --no-git-tag-version
+          
+          # Set outputs
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "previous_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Generate changelog entry
+        if: steps.version-type.outputs.bump_type != 'skip'
+        id: changelog
+        run: |
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          PR_AUTHOR="${{ github.event.pull_request.user.login }}"
+          PR_URL="${{ github.event.pull_request.html_url }}"
+          NEW_VERSION="${{ steps.bump-version.outputs.new_version }}"
+          DATE=$(date '+%Y-%m-%d')
+          
+          # Create changelog entry
+          CHANGELOG_ENTRY="## [${NEW_VERSION}] - ${DATE}
+
+### Changes
+- ${PR_TITLE} ([#${PR_NUMBER}](${PR_URL})) by @${PR_AUTHOR}
+
+"
+          
+          # Save changelog entry to file for use in release
+          echo "$CHANGELOG_ENTRY" > changelog_entry.md
+          
+          # If CHANGELOG.md exists, prepend the new entry
+          if [ -f CHANGELOG.md ]; then
+            # Create temporary file with new entry + existing changelog
+            echo "$CHANGELOG_ENTRY" > temp_changelog.md
+            cat CHANGELOG.md >> temp_changelog.md
+            mv temp_changelog.md CHANGELOG.md
+          else
+            # Create new CHANGELOG.md
+            echo "# Changelog
+
+All notable changes to this project will be documented in this file.
+
+$CHANGELOG_ENTRY" > CHANGELOG.md
+          fi
+
+      - name: Commit version bump
+        if: steps.version-type.outputs.bump_type != 'skip'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          git add web/package.json
+          if [ -f CHANGELOG.md ]; then
+            git add CHANGELOG.md
+          fi
+          
+          git commit -m "chore: bump version to ${{ steps.bump-version.outputs.new_version }}
+
+          - Updated from ${{ steps.bump-version.outputs.previous_version }} to ${{ steps.bump-version.outputs.new_version }}
+          - Based on PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}
+          - Bump type: ${{ steps.version-type.outputs.bump_type }}
+          
+          🤖 Generated by automatic versioning workflow"
+
+      - name: Create Git tag
+        if: steps.version-type.outputs.bump_type != 'skip'
+        run: |
+          git tag -a "v${{ steps.bump-version.outputs.new_version }}" -m "Release v${{ steps.bump-version.outputs.new_version }}
+
+          Released from PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}
+          
+          🤖 Generated by automatic versioning workflow"
+
+      - name: Push changes
+        if: steps.version-type.outputs.bump_type != 'skip'
+        run: |
+          git push origin main
+          git push origin "v${{ steps.bump-version.outputs.new_version }}"
+
+      - name: Create GitHub Release
+        if: steps.version-type.outputs.bump_type != 'skip'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.bump-version.outputs.new_version }}
+          release_name: Release v${{ steps.bump-version.outputs.new_version }}
+          body_path: changelog_entry.md
+          draft: false
+          prerelease: false
+
+      - name: Log skipped version bump
+        if: steps.version-type.outputs.bump_type == 'skip'
+        run: |
+          echo "Version bump skipped for PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}"
+          echo "Reason: version:skip label present"

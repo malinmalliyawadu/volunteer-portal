@@ -149,6 +149,22 @@ Run tests before committing changes that affect user flows.
 4. **Session Checks**: Always verify session and role for protected operations
 5. **Database Queries**: Include necessary relations in Prisma queries to avoid N+1 problems
 
+## Versioning System
+
+This project uses automatic semantic versioning based on PR labels:
+
+- `version:major` - Breaking changes (1.0.0 → 2.0.0)
+- `version:minor` - New features, backward compatible (1.0.0 → 1.1.0)
+- `version:patch` - Bug fixes, small improvements (1.0.0 → 1.0.1)
+- `version:skip` - No version bump (documentation, tests, etc.)
+
+When PRs are merged to main, the GitHub Action automatically:
+- Updates `web/package.json` version
+- Creates Git tags and GitHub releases
+- Generates changelog entries
+
+See `VERSIONING.md` for detailed guidelines.
+
 ## Environment Variables
 
 Required in `.env.local`:

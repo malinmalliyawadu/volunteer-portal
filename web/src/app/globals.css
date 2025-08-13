@@ -7,12 +7,12 @@
   /* Everybody Eats brand-inspired palette */
   --ee-bg: #fffdf7; /* warm off-white */
   --ee-fg: #101418; /* near-black */
-  --ee-primary: #1d5337; /* brand green */
+  --ee-primary: #0e3a23; /* brand green */
   --ee-primary-700: #256628; /* darker hover */
   --ee-primary-light: #e8f5e8; /* light green tint */
   --ee-accent: #f8fb69; /* brand accent */
   --ee-accent-subtle: #fcfd94; /* lighter accent */
-  --ee-muted: #6b7280; /* gray-500 */
+  --ee-muted: #fef3c7; /* light yellow for better readability and brand consistency */
   --ee-border: #e5e7eb; /* gray-200 */
   --ee-card-bg: #ffffff; /* pure white for cards */
   --ee-gradient-start: #1d5337;
