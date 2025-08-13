@@ -75,7 +75,10 @@ export function DateFilter({ rawDateFrom, rawDateTo }: DateFilterProps) {
   };
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-3" data-testid="date-range-filter">
+      {/* Hidden inputs for test compatibility */}
+      <input type="hidden" data-testid="date-from-filter" value={rawDateFrom || ""} readOnly />
+      <input type="hidden" data-testid="date-to-filter" value={rawDateTo || ""} readOnly />
       <Popover>
         <PopoverTrigger asChild>
           <Button
@@ -84,6 +87,7 @@ export function DateFilter({ rawDateFrom, rawDateTo }: DateFilterProps) {
               "w-full justify-start text-left font-normal",
               !dateRange && "text-muted-foreground"
             )}
+            data-testid="date-filter-trigger"
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
             {dateRange?.from ? (
@@ -100,7 +104,7 @@ export function DateFilter({ rawDateFrom, rawDateTo }: DateFilterProps) {
             )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
+        <PopoverContent className="w-auto p-0" align="start" data-testid="date-filter-popover">
           <Calendar
             initialFocus
             mode="range"
@@ -108,6 +112,7 @@ export function DateFilter({ rawDateFrom, rawDateTo }: DateFilterProps) {
             selected={dateRange}
             onSelect={handleDateRangeChange}
             numberOfMonths={2}
+            data-testid="date-filter-calendar"
           />
         </PopoverContent>
       </Popover>
@@ -118,6 +123,7 @@ export function DateFilter({ rawDateFrom, rawDateTo }: DateFilterProps) {
           size="sm"
           onClick={clearDates}
           className="flex items-center gap-1 text-slate-500 hover:text-slate-700 flex-shrink-0"
+          data-testid="clear-date-filter-button"
         >
           <X className="h-3 w-3" />
         </Button>

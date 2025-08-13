@@ -55,9 +55,9 @@ export function DeleteShiftDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" data-testid="delete-shift-dialog">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-red-600">
+          <DialogTitle className="flex items-center gap-2 text-red-600" data-testid="delete-shift-dialog-title">
             <Trash2Icon className="h-5 w-5" />
             Delete Shift
           </DialogTitle>
@@ -122,6 +122,7 @@ export function DeleteShiftDialog({
             onClick={() => setOpen(false)}
             disabled={isDeleting}
             className="order-2 sm:order-1"
+            data-testid="delete-shift-cancel-button"
           >
             Cancel
           </Button>
@@ -130,6 +131,7 @@ export function DeleteShiftDialog({
             onClick={handleDelete}
             disabled={isDeleting}
             className="order-1 sm:order-2"
+            data-testid="delete-shift-confirm-button"
           >
             {isDeleting ? (
               <>

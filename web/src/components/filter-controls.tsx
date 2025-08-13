@@ -165,7 +165,7 @@ export function FilterControls({
             value={selectedLocation || "all"}
             onValueChange={handleLocationChange}
           >
-            <SelectTrigger className="w-full">
+            <SelectTrigger className="w-full" data-testid="location-filter">
               <SelectValue placeholder="Select location..." />
             </SelectTrigger>
             <SelectContent>

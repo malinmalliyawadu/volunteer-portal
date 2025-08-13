@@ -293,7 +293,7 @@ export default async function NewShiftPage() {
   });
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    <div className="max-w-6xl mx-auto p-6" data-testid="create-shift-page">
       <PageHeader
         title="Create shifts"
         description="Schedule new volunteer shifts efficiently with single or bulk creation options."
@@ -335,7 +335,7 @@ export default async function NewShiftPage() {
             <CardContent className="space-y-8">
               <form action={createShift} className="space-y-8">
                 {/* Quick Templates */}
-                <div className="space-y-3">
+                <div className="space-y-3" data-testid="quick-templates-section">
                   <div className="flex items-center gap-2 mb-4">
                     <h3 className="font-medium text-gray-900 dark:text-gray-100">
                       Quick Templates
@@ -381,6 +381,7 @@ export default async function NewShiftPage() {
                         label: t.name,
                       }))}
                       className="w-full"
+                      data-testid="shift-type-select"
                     />
                   </div>
                 </div>
@@ -407,6 +408,7 @@ export default async function NewShiftPage() {
                         id="date"
                         required
                         className="h-11"
+                        data-testid="shift-date-input"
                       />
                     </div>
                     <div className="space-y-2">
@@ -423,6 +425,7 @@ export default async function NewShiftPage() {
                         id="startTime"
                         required
                         className="h-11"
+                        data-testid="shift-start-time-input"
                       />
                     </div>
                     <div className="space-y-2">
@@ -439,6 +442,7 @@ export default async function NewShiftPage() {
                         id="endTime"
                         required
                         className="h-11"
+                        data-testid="shift-end-time-input"
                       />
                     </div>
                   </div>
@@ -470,6 +474,7 @@ export default async function NewShiftPage() {
                           label: loc,
                         }))}
                         className="w-full"
+                        data-testid="shift-location-select"
                       />
                     </div>
                     <div className="space-y-2">
@@ -489,6 +494,7 @@ export default async function NewShiftPage() {
                         placeholder="e.g. 6"
                         required
                         className="h-11"
+                        data-testid="shift-capacity-input"
                       />
                       <p className="text-xs text-muted-foreground">
                         Maximum number of volunteers needed
@@ -518,6 +524,7 @@ export default async function NewShiftPage() {
                       rows={4}
                       placeholder="Add any special instructions, requirements, or additional details for volunteers..."
                       className="resize-none"
+                      data-testid="shift-notes-textarea"
                     />
                     <p className="text-xs text-muted-foreground">
                       These notes will be visible to volunteers when they view
@@ -533,6 +540,7 @@ export default async function NewShiftPage() {
                     variant="outline"
                     size="lg"
                     className="order-2 sm:order-1"
+                    data-testid="cancel-shift-creation-button"
                   >
                     <Link href="/admin/shifts">Cancel</Link>
                   </Button>
@@ -540,6 +548,7 @@ export default async function NewShiftPage() {
                     type="submit"
                     size="lg"
                     className="order-1 sm:order-2 bg-primary hover:bg-primary/90"
+                    data-testid="create-shift-button"
                   >
                     <PlusIcon className="h-4 w-4 mr-2" />
                     Create shift
@@ -579,6 +588,7 @@ export default async function NewShiftPage() {
                       label: t.name,
                     }))}
                     className="w-full"
+                    data-testid="bulk-shift-type-select"
                   />
                 </div>
 
@@ -596,6 +606,7 @@ export default async function NewShiftPage() {
                         id="startDate"
                         required
                         className="h-11"
+                        data-testid="bulk-start-date-input"
                       />
                     </div>
                     <div className="space-y-2">
@@ -606,6 +617,7 @@ export default async function NewShiftPage() {
                         id="endDate"
                         required
                         className="h-11"
+                        data-testid="bulk-end-date-input"
                       />
                     </div>
                   </div>
@@ -632,6 +644,7 @@ export default async function NewShiftPage() {
                           name={`day_${day}`}
                           id={`day_${day}`}
                           className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                          data-testid={`day-${day.toLowerCase()}-checkbox`}
                         />
                         <Label htmlFor={`day_${day}`} className="text-sm">
                           {day.slice(0, 3)}
@@ -657,6 +670,7 @@ export default async function NewShiftPage() {
                           name={`template_${name}`}
                           id={`template_${name}`}
                           className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary mt-1"
+                          data-testid={`template-${name.toLowerCase().replace(/\s+/g, '-')}-checkbox`}
                         />
                         <div className="flex-1">
                           <Label
@@ -695,6 +709,7 @@ export default async function NewShiftPage() {
                           label: loc,
                         }))}
                         className="w-full"
+                        data-testid="bulk-location-select"
                       />
                     </div>
                     <div className="space-y-2">

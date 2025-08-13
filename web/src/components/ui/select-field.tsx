@@ -18,6 +18,7 @@ type SelectFieldProps = {
   required?: boolean;
   disabled?: boolean;
   className?: string;
+  "data-testid"?: string;
 };
 
 export function SelectField({
@@ -29,6 +30,7 @@ export function SelectField({
   required,
   disabled,
   className,
+  "data-testid": dataTestId,
 }: SelectFieldProps) {
   // Filter out empty string values and convert them to a special "clear" value
   const processedOptions = options.map((opt) => ({
@@ -71,6 +73,7 @@ export function SelectField({
           id={id}
           className={className ?? "w-full"}
           aria-invalid={required && !value ? true : undefined}
+          data-testid={dataTestId}
         >
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>

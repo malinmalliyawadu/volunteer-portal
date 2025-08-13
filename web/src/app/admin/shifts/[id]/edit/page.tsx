@@ -219,7 +219,7 @@ export default async function EditShiftPage({
   const isPastShift = shift.start <= new Date();
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="max-w-4xl mx-auto p-6" data-testid="edit-shift-page">
       <PageHeader
         title="Edit shift"
         description={`Modify details for ${shift.shiftType.name} on ${format(
@@ -240,6 +240,7 @@ export default async function EditShiftPage({
                 variant="outline"
                 size="sm"
                 className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                data-testid="delete-shift-from-edit-button"
               >
                 <Trash2Icon className="h-4 w-4 mr-1" />
                 Delete
@@ -316,6 +317,7 @@ export default async function EditShiftPage({
                     label: t.name,
                   }))}
                   className="w-full"
+                  data-testid="edit-shift-type-select"
                 />
               </div>
             </div>
@@ -343,6 +345,7 @@ export default async function EditShiftPage({
                     required
                     defaultValue={defaultValues.date}
                     className="h-11"
+                    data-testid="edit-shift-date-input"
                   />
                 </div>
                 <div className="space-y-2">
@@ -360,6 +363,7 @@ export default async function EditShiftPage({
                     required
                     defaultValue={defaultValues.startTime}
                     className="h-11"
+                    data-testid="edit-shift-start-time-input"
                   />
                 </div>
                 <div className="space-y-2">
@@ -377,6 +381,7 @@ export default async function EditShiftPage({
                     required
                     defaultValue={defaultValues.endTime}
                     className="h-11"
+                    data-testid="edit-shift-end-time-input"
                   />
                 </div>
               </div>
@@ -409,6 +414,7 @@ export default async function EditShiftPage({
                       label: loc,
                     }))}
                     className="w-full"
+                    data-testid="edit-shift-location-select"
                   />
                 </div>
                 <div className="space-y-2">
@@ -429,6 +435,7 @@ export default async function EditShiftPage({
                     required
                     defaultValue={defaultValues.capacity}
                     className="h-11"
+                    data-testid="edit-shift-capacity-input"
                   />
                   <p className="text-xs text-muted-foreground">
                     {hasSignups
@@ -528,6 +535,7 @@ export default async function EditShiftPage({
                 variant="outline"
                 size="lg"
                 className="order-2 sm:order-1"
+                data-testid="cancel-edit-shift-button"
               >
                 <Link href="/admin/shifts">Cancel</Link>
               </Button>
@@ -535,6 +543,7 @@ export default async function EditShiftPage({
                 type="submit"
                 size="lg"
                 className="order-1 sm:order-2 bg-primary hover:bg-primary/90"
+                data-testid="update-shift-button"
               >
                 <EditIcon className="h-4 w-4 mr-2" />
                 Update shift
