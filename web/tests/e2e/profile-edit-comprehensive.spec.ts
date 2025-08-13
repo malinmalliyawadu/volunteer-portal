@@ -4,7 +4,7 @@ import type { Page } from "@playwright/test";
 // Test helpers for profile editing tests
 async function waitForPageLoad(page: Page) {
   await page.waitForLoadState("networkidle");
-  await page.waitForTimeout(500); // Buffer for animations and loading
+  await page.waitForTimeout(300); // Reduced timeout for faster tests
 }
 
 // Helper function to login as volunteer
@@ -13,9 +13,7 @@ async function loginAsVolunteer(page: Page) {
     await page.goto("/login");
     await page.waitForLoadState("domcontentloaded");
 
-    const volunteerLoginButton = page.getByRole("button", {
-      name: /login as volunteer/i,
-    });
+    const volunteerLoginButton = page.getByTestId("quick-login-volunteer-button");
     await volunteerLoginButton.waitFor({ state: "visible", timeout: 10000 });
     await volunteerLoginButton.click();
 
@@ -25,7 +23,7 @@ async function loginAsVolunteer(page: Page) {
     
     await page.waitForTimeout(1000);
   } catch (error) {
-    console.log("Error during login:", error);
+    console.log("Error during volunteer login:", error);
     test.skip(true, "Login failed - skipping profile edit tests");
   }
 }
