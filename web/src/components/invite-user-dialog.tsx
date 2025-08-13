@@ -81,9 +81,9 @@ export function InviteUserDialog({ children }: InviteUserDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-[480px]">
+      <DialogContent className="sm:max-w-[480px]" data-testid="invite-user-dialog">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2" data-testid="invite-user-dialog-title">
             <UserPlus className="h-5 w-5" />
             Invite New User
           </DialogTitle>
@@ -94,7 +94,7 @@ export function InviteUserDialog({ children }: InviteUserDialogProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6" data-testid="invite-user-form">
           {/* Email Field */}
           <div className="space-y-2">
             <Label htmlFor="email" className="text-sm font-medium">
@@ -110,6 +110,7 @@ export function InviteUserDialog({ children }: InviteUserDialogProps) {
                 placeholder="Enter email address"
                 className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 required
+                data-testid="invite-email-input"
               />
             </div>
           </div>
@@ -127,6 +128,7 @@ export function InviteUserDialog({ children }: InviteUserDialogProps) {
                 onChange={(e) => setFirstName(e.target.value)}
                 placeholder="First name"
                 className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                data-testid="invite-first-name-input"
               />
             </div>
             <div className="space-y-2">
@@ -140,6 +142,7 @@ export function InviteUserDialog({ children }: InviteUserDialogProps) {
                 onChange={(e) => setLastName(e.target.value)}
                 placeholder="Last name"
                 className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                data-testid="invite-last-name-input"
               />
             </div>
           </div>
@@ -153,9 +156,10 @@ export function InviteUserDialog({ children }: InviteUserDialogProps) {
                 setRole(value as "VOLUNTEER" | "ADMIN")
               }
               className="space-y-3"
+              data-testid="invite-role-selection"
             >
               <div className="flex items-center space-x-3 p-3 border border-border rounded-lg hover:bg-muted/50 transition-colors">
-                <RadioGroupItem value="VOLUNTEER" id="volunteer" />
+                <RadioGroupItem value="VOLUNTEER" id="volunteer" data-testid="invite-role-volunteer" />
                 <div className="flex-1">
                   <Label
                     htmlFor="volunteer"
@@ -169,7 +173,7 @@ export function InviteUserDialog({ children }: InviteUserDialogProps) {
                 </div>
               </div>
               <div className="flex items-center space-x-3 p-3 border border-border rounded-lg hover:bg-muted/50 transition-colors">
-                <RadioGroupItem value="ADMIN" id="admin" />
+                <RadioGroupItem value="ADMIN" id="admin" data-testid="invite-role-admin" />
                 <div className="flex-1">
                   <Label htmlFor="admin" className="font-medium cursor-pointer">
                     Administrator
@@ -189,6 +193,7 @@ export function InviteUserDialog({ children }: InviteUserDialogProps) {
               variant="outline"
               onClick={() => setOpen(false)}
               disabled={isLoading}
+              data-testid="invite-cancel-button"
             >
               Cancel
             </Button>
@@ -196,6 +201,7 @@ export function InviteUserDialog({ children }: InviteUserDialogProps) {
               type="submit"
               disabled={isLoading}
               className="btn-primary gap-2"
+              data-testid="invite-submit-button"
             >
               {isLoading ? (
                 <>
