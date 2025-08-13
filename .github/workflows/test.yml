@@ -111,3 +111,21 @@ jobs:
           name: playwright-report-merged
           path: web/playwright-report/
           retention-days: 30
+
+  summary:
+    if: always()
+    needs: [test, merge-reports]
+    runs-on: ubuntu-latest
+    name: Test Summary
+    steps:
+      - name: Check all jobs
+        run: |
+          if [[ "${{ needs.test.result }}" == "failure" || "${{ needs.merge-reports.result }}" == "failure" ]]; then
+            echo "❌ Tests failed"
+            exit 1
+          elif [[ "${{ needs.test.result }}" == "cancelled" || "${{ needs.merge-reports.result }}" == "cancelled" ]]; then
+            echo "🟡 Tests cancelled"
+            exit 1
+          else
+            echo "✅ All tests passed"
+          fi
