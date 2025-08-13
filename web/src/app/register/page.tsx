@@ -443,7 +443,7 @@ export default function RegisterPage() {
           <div className="space-y-6">
             {/* OAuth Providers */}
             {oauthProviders.length > 0 && (
-              <div className="space-y-4">
+              <div className="space-y-4" data-testid="oauth-providers">
                 <div className="text-center">
                   <p className="text-sm text-muted-foreground mb-4">
                     Quick registration with your existing account
@@ -460,6 +460,7 @@ export default function RegisterPage() {
                       )}`}
                       variant="outline"
                       type="button"
+                      data-testid={`oauth-${provider.id}-button`}
                     >
                       {oauthLoading === provider.id ? (
                         <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
@@ -475,7 +476,7 @@ export default function RegisterPage() {
                   ))}
                 </div>
 
-                <div className="relative my-6">
+                <div className="relative my-6" data-testid="oauth-divider">
                   <div className="absolute inset-0 flex items-center">
                     <span className="w-full border-t border-border" />
                   </div>
@@ -571,14 +572,14 @@ export default function RegisterPage() {
   }, []);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen" data-testid="register-page">
       <div className="max-w-4xl mx-auto p-6 space-y-8 animate-fade-in">
         <PageHeader
           title="Join Everybody Eats"
           description="Create your volunteer account and start making a difference in your community. The registration process takes about 5-10 minutes to complete."
         >
           <div className="flex justify-start mt-6">
-            <Button asChild variant="outline" size="sm" className="gap-2">
+            <Button asChild variant="outline" size="sm" className="gap-2" data-testid="login-link">
               <Link href="/login">
                 <ArrowLeft className="h-4 w-4" />
                 Already have an account? Sign in
@@ -588,15 +589,15 @@ export default function RegisterPage() {
         </PageHeader>
 
         {/* Progress Indicator */}
-        <div className="bg-white rounded-xl shadow-sm border border-border p-6">
+        <div className="bg-white rounded-xl shadow-sm border border-border p-6" data-testid="progress-indicator">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">Registration Progress</h2>
-            <Badge variant="outline" className="text-xs">
+            <h2 className="text-lg font-semibold" data-testid="progress-title">Registration Progress</h2>
+            <Badge variant="outline" className="text-xs" data-testid="step-counter">
               Step {currentStep + 1} of {steps.length}
             </Badge>
           </div>
 
-          <div className="flex items-center space-x-2 mb-4">
+          <div className="flex items-center space-x-2 mb-4" data-testid="progress-steps">
             {steps.map((step, index) => {
               const Icon = step.icon;
               return (
@@ -605,6 +606,7 @@ export default function RegisterPage() {
                   className={`flex-1 flex items-center ${
                     index === steps.length - 1 ? "grow-0" : ""
                   }`}
+                  data-testid={`progress-step-${index + 1}`}
                 >
                   <div
                     className={`flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 ${
@@ -614,6 +616,7 @@ export default function RegisterPage() {
                         ? "bg-green-500 text-white"
                         : "bg-muted text-muted-foreground"
                     }`}
+                    data-testid={`step-${index + 1}-icon`}
                   >
                     {index < currentStep ? (
                       <Check className="h-5 w-5" />
@@ -633,20 +636,20 @@ export default function RegisterPage() {
             })}
           </div>
 
-          <div className="text-center">
-            <h3 className="font-medium text-foreground">
+          <div className="text-center" data-testid="current-step-info">
+            <h3 className="font-medium text-foreground" data-testid="current-step-title">
               {steps[currentStep].title}
             </h3>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground" data-testid="current-step-description">
               {steps[currentStep].description}
             </p>
           </div>
         </div>
 
         {/* Form Content */}
-        <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+        <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm" data-testid="registration-form-card">
           <CardHeader className="pb-6">
-            <CardTitle className="flex items-center gap-3 text-xl">
+            <CardTitle className="flex items-center gap-3 text-xl" data-testid="form-step-title">
               {React.createElement(steps[currentStep].icon, {
                 className: "h-6 w-6",
               })}
@@ -654,17 +657,18 @@ export default function RegisterPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-8">
-              <div className="min-h-[400px]">{renderCurrentStep()}</div>
+            <form onSubmit={handleSubmit} className="space-y-8" data-testid="registration-form">
+              <div className="min-h-[400px]" data-testid="form-step-content">{renderCurrentStep()}</div>
 
               {/* Navigation Buttons */}
-              <div className="flex items-center justify-between pt-6 border-t border-border">
+              <div className="flex items-center justify-between pt-6 border-t border-border" data-testid="form-navigation">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={prevStep}
                   disabled={currentStep === 0 || loading}
                   className="flex items-center gap-2"
+                  data-testid="previous-button"
                 >
                   <ArrowLeft className="h-4 w-4" />
                   Previous
@@ -674,6 +678,7 @@ export default function RegisterPage() {
                   type="submit"
                   disabled={loading}
                   className="flex items-center gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                  data-testid="next-submit-button"
                 >
                   {loading ? (
                     <>

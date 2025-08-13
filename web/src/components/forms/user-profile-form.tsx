@@ -118,8 +118,8 @@ export function AccountStep({
   loading: boolean;
 }) {
   return (
-    <div className="space-y-6">
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+    <div className="space-y-6" data-testid="account-step">
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6" data-testid="welcome-message">
         <div className="flex items-start space-x-3">
           <UserPlus className="h-5 w-5 text-blue-600 mt-0.5" />
           <div>
@@ -134,7 +134,7 @@ export function AccountStep({
         </div>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-2" data-testid="email-field">
         <Label htmlFor="email" className="text-sm font-medium">
           Email Address *
         </Label>
@@ -147,10 +147,11 @@ export function AccountStep({
           disabled={loading}
           className="h-11"
           required
+          data-testid="email-input"
         />
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-2" data-testid="password-field">
         <Label htmlFor="password" className="text-sm font-medium">
           Password *
         </Label>
@@ -163,13 +164,14 @@ export function AccountStep({
           disabled={loading}
           className="h-11"
           required
+          data-testid="password-input"
         />
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-muted-foreground" data-testid="password-hint">
           Password must be at least 6 characters long
         </p>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-2" data-testid="confirm-password-field">
         <Label htmlFor="confirmPassword" className="text-sm font-medium">
           Confirm Password *
         </Label>
@@ -182,6 +184,7 @@ export function AccountStep({
           disabled={loading}
           className="h-11"
           required
+          data-testid="confirm-password-input"
         />
       </div>
     </div>

@@ -143,7 +143,7 @@ export default async function AdminUsersPage({
   }
 
   return (
-    <div className="animate-fade-in">
+    <div className="animate-fade-in" data-testid="admin-users-page">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <PageHeader
           title="User Management"
@@ -151,15 +151,15 @@ export default async function AdminUsersPage({
         >
           <div className="mt-6 flex flex-col gap-4">
             {/* Quick Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Card>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4" data-testid="user-stats-grid">
+              <Card data-testid="total-users-stat">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-blue-100 rounded-lg">
                       <Users className="h-5 w-5 text-blue-600" />
                     </div>
                     <div>
-                      <div className="text-2xl font-bold">{totalUsers}</div>
+                      <div className="text-2xl font-bold" data-testid="total-users-count">{totalUsers}</div>
                       <div className="text-sm text-muted-foreground">
                         Total Users
                       </div>
@@ -168,14 +168,14 @@ export default async function AdminUsersPage({
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card data-testid="volunteers-stat">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-green-100 rounded-lg">
                       <Users className="h-5 w-5 text-green-600" />
                     </div>
                     <div>
-                      <div className="text-2xl font-bold">
+                      <div className="text-2xl font-bold" data-testid="volunteers-count">
                         {totalVolunteers}
                       </div>
                       <div className="text-sm text-muted-foreground">
@@ -186,14 +186,14 @@ export default async function AdminUsersPage({
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card data-testid="admins-stat">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-purple-100 rounded-lg">
                       <Shield className="h-5 w-5 text-purple-600" />
                     </div>
                     <div>
-                      <div className="text-2xl font-bold">{totalAdmins}</div>
+                      <div className="text-2xl font-bold" data-testid="admins-count">{totalAdmins}</div>
                       <div className="text-sm text-muted-foreground">
                         Admins
                       </div>
@@ -202,14 +202,14 @@ export default async function AdminUsersPage({
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card data-testid="new-users-stat">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-orange-100 rounded-lg">
                       <UserPlus className="h-5 w-5 text-orange-600" />
                     </div>
                     <div>
-                      <div className="text-2xl font-bold">
+                      <div className="text-2xl font-bold" data-testid="new-users-count">
                         {newUsersThisMonth}
                       </div>
                       <div className="text-sm text-muted-foreground">
@@ -222,18 +222,19 @@ export default async function AdminUsersPage({
             </div>
 
             {/* Actions and Filters */}
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between p-6 bg-card-bg rounded-xl border border-border">
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between p-6 bg-card-bg rounded-xl border border-border" data-testid="filters-section">
               <div className="flex flex-col sm:flex-row gap-3 flex-1">
                 {/* Search */}
                 <div className="relative flex-1 max-w-md">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                  <form method="GET" className="contents">
+                  <form method="GET" className="contents" data-testid="search-form">
                     <input
                       type="text"
                       name="search"
                       placeholder="Search users..."
                       defaultValue={searchQuery || ""}
                       className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                      data-testid="search-input"
                     />
                     {roleFilter && (
                       <input type="hidden" name="role" value={roleFilter} />
@@ -242,7 +243,7 @@ export default async function AdminUsersPage({
                 </div>
 
                 {/* Role Filter */}
-                <div className="flex gap-2">
+                <div className="flex gap-2" data-testid="role-filter-buttons">
                   <Link
                     href={{
                       pathname: "/admin/users",
@@ -253,6 +254,7 @@ export default async function AdminUsersPage({
                       variant={!roleFilter ? "default" : "outline"}
                       size="sm"
                       className={!roleFilter ? "btn-primary" : ""}
+                      data-testid="filter-all-roles"
                     >
                       All Roles
                     </Button>
@@ -274,6 +276,7 @@ export default async function AdminUsersPage({
                       className={
                         roleFilter === "VOLUNTEER" ? "btn-primary" : ""
                       }
+                      data-testid="filter-volunteers"
                     >
                       Volunteers
                     </Button>
@@ -291,6 +294,7 @@ export default async function AdminUsersPage({
                       variant={roleFilter === "ADMIN" ? "default" : "outline"}
                       size="sm"
                       className={roleFilter === "ADMIN" ? "btn-primary" : ""}
+                      data-testid="filter-admins"
                     >
                       Admins
                     </Button>
@@ -300,7 +304,7 @@ export default async function AdminUsersPage({
 
               {/* Invite User Button */}
               <InviteUserDialog>
-                <Button className="btn-primary gap-2">
+                <Button className="btn-primary gap-2" data-testid="invite-user-button">
                   <UserPlus className="h-4 w-4" />
                   Invite User
                 </Button>
@@ -310,9 +314,9 @@ export default async function AdminUsersPage({
         </PageHeader>
 
         {/* Users Table */}
-        <Card>
+        <Card data-testid="users-table">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2" data-testid="users-table-title">
               <Users className="h-5 w-5" />
               Users
               {(searchQuery || roleFilter) && (
@@ -329,7 +333,7 @@ export default async function AdminUsersPage({
           </CardHeader>
           <CardContent>
             {users.length === 0 ? (
-              <div className="text-center py-12">
+              <div className="text-center py-12" data-testid="no-users-message">
                 <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-foreground mb-2">
                   No users found
@@ -341,7 +345,7 @@ export default async function AdminUsersPage({
                 </p>
                 {!searchQuery && !roleFilter && (
                   <InviteUserDialog>
-                    <Button className="btn-primary gap-2">
+                    <Button className="btn-primary gap-2" data-testid="invite-first-user-button">
                       <UserPlus className="h-4 w-4" />
                       Invite First User
                     </Button>
@@ -349,11 +353,12 @@ export default async function AdminUsersPage({
                 )}
               </div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-2" data-testid="users-list">
                 {users.map((user: UserWithStats) => (
                   <div
                     key={user.id}
                     className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors"
+                    data-testid={`user-row-${user.id}`}
                   >
                     <div className="flex items-center gap-4 flex-1">
                       <Avatar className="h-10 w-10">
@@ -368,7 +373,7 @@ export default async function AdminUsersPage({
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-medium text-foreground truncate">
+                          <h3 className="font-medium text-foreground truncate" data-testid={`user-name-${user.id}`}>
                             {getDisplayName(user)}
                           </h3>
                           <Badge
@@ -380,6 +385,7 @@ export default async function AdminUsersPage({
                                 ? "bg-purple-100 text-purple-800 border-purple-200"
                                 : "bg-blue-100 text-blue-800 border-blue-200"
                             }
+                            data-testid={`user-role-badge-${user.id}`}
                           >
                             {user.role === "ADMIN" ? "Admin" : "Volunteer"}
                           </Badge>
@@ -388,7 +394,7 @@ export default async function AdminUsersPage({
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           <div className="flex items-center gap-1">
                             <Mail className="h-3 w-3" />
-                            <span className="truncate">{user.email}</span>
+                            <span className="truncate" data-testid={`user-email-${user.id}`}>{user.email}</span>
                           </div>
                           {user.phone && (
                             <div className="flex items-center gap-1">
@@ -409,7 +415,7 @@ export default async function AdminUsersPage({
 
                       <div className="hidden sm:flex items-center gap-6 text-sm text-muted-foreground">
                         <div className="text-center">
-                          <div className="font-medium text-foreground">
+                          <div className="font-medium text-foreground" data-testid={`user-shifts-count-${user.id}`}>
                             {user._count.signups}
                           </div>
                           <div>Shifts</div>
@@ -427,6 +433,7 @@ export default async function AdminUsersPage({
                         variant="ghost"
                         size="sm"
                         className="h-8 w-8 p-0"
+                        data-testid={`view-user-details-${user.id}`}
                       >
                         <Link href={`/admin/volunteers/${user.id}`}>
                           <ChevronRight className="h-4 w-4" />
