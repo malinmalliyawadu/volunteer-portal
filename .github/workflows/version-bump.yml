@@ -165,15 +165,13 @@ $CHANGELOG_ENTRY" > CHANGELOG.md
 
       - name: Create GitHub Release
         if: steps.version-type.outputs.bump_type != 'skip'
-        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ steps.bump-version.outputs.new_version }}
-          release_name: Release v${{ steps.bump-version.outputs.new_version }}
-          body_path: changelog_entry.md
-          draft: false
-          prerelease: false
+        run: |
+          gh release create "v${{ steps.bump-version.outputs.new_version }}" \
+            --title "Release v${{ steps.bump-version.outputs.new_version }}" \
+            --notes-file changelog_entry.md \
+            --target main
 
       - name: Log skipped version bump
         if: steps.version-type.outputs.bump_type == 'skip'
