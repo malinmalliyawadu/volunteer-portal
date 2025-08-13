@@ -1,3 +1,9 @@
+## [0.1.2] - 2025-08-13
+
+### Changes
+- fix: update release title format in version-bump workflow ([#37](https://github.com/malinmalliyawadu/volunteer-portal/pull/37)) by @malinmalliyawadu
+
+
 # Changelog
 
   All notable changes to this project will be documented in this file.
