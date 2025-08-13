@@ -160,8 +160,7 @@ $CHANGELOG_ENTRY" > CHANGELOG.md
       - name: Push changes
         if: steps.version-type.outputs.bump_type != 'skip'
         run: |
-          git push origin main
-          git push origin "v${{ steps.bump-version.outputs.new_version }}"
+          git push origin main "v${{ steps.bump-version.outputs.new_version }}"
 
       - name: Create GitHub Release
         if: steps.version-type.outputs.bump_type != 'skip'
