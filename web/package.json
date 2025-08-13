@@ -10,6 +10,7 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:ci": "playwright test --project=chromium --reporter=list",
+    "test:e2e:coverage": "playwright test --project=chromium --reporter=json",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "prisma db seed",
     "prisma:generate": "prisma generate",
