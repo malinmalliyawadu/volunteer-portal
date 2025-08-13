@@ -3,27 +3,35 @@ import baseConfig from "./playwright.config";
 
 export default defineConfig({
   ...baseConfig,
-  // Override specific settings for coverage
-  reporter: process.env.CI ? [['json', { outputFile: 'test-results.json' }]] : "html",
   
+  // Override for coverage collection
+  reporter: [
+    ['html'],
+    ['json', { outputFile: 'test-results.json' }],
+    ['playwright-test-coverage', {
+      // Configuration for playwright-test-coverage
+      watermarks: {
+        statements: [50, 80],
+        functions: [50, 80],
+        branches: [50, 80],
+        lines: [50, 80]
+      }
+    }]
+  ],
+
   // Only run on Chromium for coverage to avoid duplicates
   projects: [
     {
       name: "chromium-coverage",
       use: { 
         ...devices["Desktop Chrome"],
-        // Enable code coverage for each page
-        contextOptions: {
-          // Add a script to enable coverage
-          recordVideo: undefined, // Disable video for coverage runs
-        }
       },
     }
   ],
 
   use: {
     ...baseConfig.use,
-    // Add global coverage setup
-    trace: 'off', // Disable trace for coverage runs to reduce overhead
+    // Disable trace for coverage runs to reduce overhead
+    trace: 'off',
   },
 });

@@ -137,64 +137,81 @@ jobs:
         if: github.event_name == 'pull_request'
         working-directory: web
         run: |
-          # Check if coverage data exists
-          if [ -f "coverage/coverage-final.json" ]; then
-            echo "Coverage data found, generating reports..."
+          # Check if playwright-test-coverage generated coverage data
+          if [ -f "coverage/coverage-summary.json" ]; then
+            echo "Coverage data found, generating report..."
             
-            # Generate detailed coverage reports
-            npx c8 report --reporter=lcov --reporter=json-summary --reporter=text
-            
-            # Create markdown summary
+            # Create markdown summary from playwright-test-coverage output
             echo "# 📊 Code Coverage Report" > coverage-report.md
             echo "" >> coverage-report.md
+            echo "## Coverage Summary" >> coverage-report.md
+            echo "" >> coverage-report.md
             
-            # Extract coverage summary if available
-            if [ -f "coverage/coverage-summary.json" ]; then
-              echo "## Coverage Summary" >> coverage-report.md
-              echo "" >> coverage-report.md
+            # Parse coverage summary and create table
+            node -e "
+              const fs = require('fs');
+              const summary = JSON.parse(fs.readFileSync('coverage/coverage-summary.json', 'utf8'));
+              const total = summary.total;
               
-              # Parse JSON and create table
-              node -e "
-                const fs = require('fs');
-                const summary = JSON.parse(fs.readFileSync('coverage/coverage-summary.json', 'utf8'));
-                const total = summary.total;
-                
-                console.log('| Metric | Coverage | Covered/Total |');
-                console.log('|--------|----------|---------------|');
-                console.log(\`| **Statements** | \${total.statements.pct}% | \${total.statements.covered}/\${total.statements.total} |\`);
-                console.log(\`| **Branches** | \${total.branches.pct}% | \${total.branches.covered}/\${total.branches.total} |\`);
-                console.log(\`| **Functions** | \${total.functions.pct}% | \${total.functions.covered}/\${total.functions.total} |\`);
-                console.log(\`| **Lines** | \${total.lines.pct}% | \${total.lines.covered}/\${total.lines.total} |\`);
-              " >> coverage-report.md
+              console.log('| Metric | Coverage | Covered/Total |');
+              console.log('|--------|----------|---------------|');
+              console.log(\`| **Statements** | \${total.statements.pct}% | \${total.statements.covered}/\${total.statements.total} |\`);
+              console.log(\`| **Branches** | \${total.branches.pct}% | \${total.branches.covered}/\${total.branches.total} |\`);
+              console.log(\`| **Functions** | \${total.functions.pct}% | \${total.functions.covered}/\${total.functions.total} |\`);
+              console.log(\`| **Lines** | \${total.lines.pct}% | \${total.lines.covered}/\${total.lines.total} |\`);
+            " >> coverage-report.md
+            
+            echo "" >> coverage-report.md
+            echo "## Files with Coverage" >> coverage-report.md
+            echo "" >> coverage-report.md
+            
+            # List files with coverage (limit to top 20 to avoid too long comments)
+            node -e "
+              const fs = require('fs');
+              const summary = JSON.parse(fs.readFileSync('coverage/coverage-summary.json', 'utf8'));
+              const files = Object.keys(summary).filter(key => key !== 'total').slice(0, 20);
               
-              echo "" >> coverage-report.md
-              echo "## Files with Coverage" >> coverage-report.md
-              echo "" >> coverage-report.md
-              
-              # List files with coverage
-              node -e "
-                const fs = require('fs');
-                const summary = JSON.parse(fs.readFileSync('coverage/coverage-summary.json', 'utf8'));
-                Object.keys(summary).filter(key => key !== 'total').forEach(file => {
+              if (files.length === 0) {
+                console.log('No individual file coverage data available.');
+              } else {
+                files.forEach(file => {
                   const fileCov = summary[file];
-                  console.log(\`- \\\`\${file}\\\` - \${fileCov.statements.pct}% statements\`);
+                  console.log(\`- \\\`\${file}\\\` - \${fileCov.statements.pct}% statements, \${fileCov.lines.pct}% lines\`);
                 });
-              " >> coverage-report.md
-              
-            else
-              echo "No detailed coverage summary available." >> coverage-report.md
-            fi
+                
+                if (Object.keys(summary).length - 1 > 20) {
+                  console.log(\`\n... and \${Object.keys(summary).length - 1 - 20} more files\`);
+                }
+              }
+            " >> coverage-report.md
+            
+          elif [ -f "coverage/lcov.info" ]; then
+            echo "LCOV coverage data found..."
+            echo "# 📊 Code Coverage Report" > coverage-report.md
+            echo "" >> coverage-report.md
+            echo "Coverage data was generated but summary is not available in the expected format." >> coverage-report.md
+            echo "Check the full coverage report in the artifacts." >> coverage-report.md
             
           else
             echo "# 📊 Code Coverage Report" > coverage-report.md
             echo "" >> coverage-report.md
-            echo "No coverage data was collected during test execution." >> coverage-report.md
+            echo "⚠️ No coverage data was collected during test execution." >> coverage-report.md
             echo "" >> coverage-report.md
             echo "This may be due to:" >> coverage-report.md
-            echo "- Tests not executing application code" >> coverage-report.md
-            echo "- Coverage collection not properly configured" >> coverage-report.md
-            echo "- Build optimization removing instrumentation" >> coverage-report.md
+            echo "- Tests not executing JavaScript application code" >> coverage-report.md
+            echo "- Coverage plugin not properly configured" >> coverage-report.md
+            echo "- Build optimizations removing instrumentation" >> coverage-report.md
           fi
+
+      - name: Upload coverage reports
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            web/coverage/
+            web/coverage-report.md
+          retention-days: 30
 
       - name: Comment PR with coverage
         if: github.event_name == 'pull_request'
