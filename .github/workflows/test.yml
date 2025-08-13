@@ -14,14 +14,14 @@ jobs:
       fail-fast: false
       matrix:
         shard: [1, 2, 3, 4]
-    
+
     services:
       postgres:
         image: postgres:15
         env:
-          POSTGRES_USER: testuser
-          POSTGRES_PASSWORD: testpass
-          POSTGRES_DB: testdb
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: volunteer-portal
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -37,8 +37,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
           cache-dependency-path: web/package-lock.json
 
       - name: Install dependencies
@@ -54,7 +54,7 @@ jobs:
       - name: Setup test database
         run: |
           cd web
-          cp .env.example .env.local || echo "DATABASE_URL=postgresql://testuser:testpass@localhost:5432/testdb" > .env.local
+          cp .env.example .env
           echo "NEXTAUTH_SECRET=test-secret-for-ci" >> .env.local
           echo "NEXTAUTH_URL=http://localhost:3000" >> .env.local
           npx prisma migrate deploy
@@ -86,8 +86,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
           cache-dependency-path: web/package-lock.json
 
       - name: Install dependencies
