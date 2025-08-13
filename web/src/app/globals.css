@@ -333,3 +333,12 @@ h6 {
     color: var(--ee-fg);
   }
 }
+
+/* Disable animations during e2e tests */
+.e2e-testing,
+.e2e-testing * {
+  animation-duration: 0s !important;
+  animation-delay: 0s !important;
+  transition-duration: 0s !important;
+  transition-delay: 0s !important;
+}

@@ -67,7 +67,9 @@ export default function LoginPage() {
 
     if (res?.error) {
       setError("Invalid credentials");
-    } else {
+    } else if (res?.ok) {
+      // Add a small delay to ensure session is established
+      await new Promise((resolve) => setTimeout(resolve, 500));
       window.location.href = "/";
     }
   }
@@ -117,7 +119,9 @@ export default function LoginPage() {
 
     if (res?.error) {
       setError("Login failed");
-    } else {
+    } else if (res?.ok) {
+      // Add a small delay to ensure session is established
+      await new Promise((resolve) => setTimeout(resolve, 500));
       window.location.href = "/";
     }
   }
