@@ -63,15 +63,15 @@ jobs:
       - name: Run Playwright tests
         run: |
           cd web
-          npx playwright test --shard=${{ matrix.shard }}/${{ strategy.job-total }} --project=chromium
+          npx playwright test --shard=${{ matrix.shard }}/${{ strategy.job-total }} --project=chromium --reporter=blob
 
-      - name: Upload test results
+      - name: Upload blob report
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-report-${{ matrix.shard }}
-          path: web/playwright-report/
-          retention-days: 30
+          name: blob-report-${{ matrix.shard }}
+          path: web/blob-report/
+          retention-days: 1
 
   merge-reports:
     if: always()
@@ -93,17 +93,17 @@ jobs:
           cd web
           npm ci
 
-      - name: Download all test results
+      - name: Download all blob reports
         uses: actions/download-artifact@v4
         with:
-          path: all-test-results
-          pattern: playwright-report-*
+          path: all-blob-reports
+          pattern: blob-report-*
           merge-multiple: true
 
       - name: Merge test reports
         run: |
           cd web
-          npx playwright merge-reports --reporter=html ../all-test-results
+          npx playwright merge-reports --reporter=html ../all-blob-reports
 
       - name: Upload merged report
         uses: actions/upload-artifact@v4
