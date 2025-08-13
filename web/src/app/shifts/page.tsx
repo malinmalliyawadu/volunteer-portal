@@ -185,7 +185,7 @@ export default async function ShiftsPage({
   const sortedKeys = Array.from(groups.keys()).sort();
 
   return (
-    <div className="max-w-6xl mx-auto py-4 animate-fade-in">
+    <div className="max-w-6xl mx-auto py-4 animate-fade-in" data-testid="shifts-browse-page">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
         <PageHeader
           title="Volunteer Shifts"
@@ -200,7 +200,7 @@ export default async function ShiftsPage({
         />
 
         {/* Compact location filter using tabs */}
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2" data-testid="location-filter">
           <span className="text-sm font-medium text-muted-foreground">
             Filter by location:
           </span>
@@ -210,15 +210,15 @@ export default async function ShiftsPage({
             }
             className="w-fit"
           >
-            <TabsList>
+            <TabsList data-testid="location-tabs">
               {userPreferredLocations.length > 0 && (
-                <TabsTrigger value="preferences" asChild>
+                <TabsTrigger value="preferences" asChild data-testid="location-tab-preferences">
                   <Link href={{ pathname: "/shifts", query: {} }}>
                     Your preferences
                   </Link>
                 </TabsTrigger>
               )}
-              <TabsTrigger value="all" asChild>
+              <TabsTrigger value="all" asChild data-testid="location-tab-all">
                 <Link
                   href={{ pathname: "/shifts", query: { showAll: "true" } }}
                 >
@@ -226,7 +226,7 @@ export default async function ShiftsPage({
                 </Link>
               </TabsTrigger>
               {LOCATIONS.map((loc) => (
-                <TabsTrigger key={loc} value={loc} asChild>
+                <TabsTrigger key={loc} value={loc} asChild data-testid={`location-tab-${loc.toLowerCase().replace(/\s+/g, '-')}`}>
                   <Link
                     href={{ pathname: "/shifts", query: { location: loc } }}
                   >
@@ -241,7 +241,7 @@ export default async function ShiftsPage({
 
       {/* Profile filter notification - moved to a smaller, less prominent position */}
       {isUsingProfileFilter && (
-        <div className="mb-6 p-3 bg-primary/10 rounded-lg border border-primary/20">
+        <div className="mb-6 p-3 bg-primary/10 rounded-lg border border-primary/20" data-testid="profile-filter-notification">
           <p className="text-sm text-primary font-medium flex items-center gap-2">
             <span>📍</span>
             Showing shifts in your preferred locations:{" "}
@@ -258,7 +258,7 @@ export default async function ShiftsPage({
       )}
 
       {shifts.length === 0 ? (
-        <div className="text-center py-16">
+        <div className="text-center py-16" data-testid="shifts-empty-state">
           <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg
               className="w-8 h-8 text-primary/60"
@@ -305,7 +305,7 @@ export default async function ShiftsPage({
           )}
         </div>
       ) : (
-        <div className="space-y-10">
+        <div className="space-y-10" data-testid="shifts-list">
           {sortedKeys.map((key, dayIndex) => {
             const dayShifts = groups.get(key)!;
             const heading = format(new Date(key), "EEEE, dd MMMM yyyy");
@@ -314,14 +314,15 @@ export default async function ShiftsPage({
                 key={key}
                 className="animate-slide-up"
                 style={{ animationDelay: `${dayIndex * 0.1}s` }}
+                data-testid={`shifts-day-${key}`}
               >
                 <div className="flex items-center gap-4 mb-6">
-                  <h2 className="text-2xl font-bold">{heading}</h2>
-                  <Badge variant="outline" className="badge-primary">
+                  <h2 className="text-2xl font-bold" data-testid="day-heading">{heading}</h2>
+                  <Badge variant="outline" className="badge-primary" data-testid="day-shift-count">
                     {dayShifts.length} shift{dayShifts.length !== 1 ? "s" : ""}
                   </Badge>
                 </div>
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3" data-testid="day-shifts-grid">
                   {dayShifts.map((s: ShiftWithRelations, shiftIndex) => {
                     let confirmedCount = 0;
                     let waitlistCount = 0;
@@ -361,6 +362,7 @@ export default async function ShiftsPage({
                             dayIndex * 0.1 + shiftIndex * 0.05
                           }s`,
                         }}
+                        data-testid={`shift-card-${s.id}`}
                       >
                         <CardContent className="p-6">
                           {/* Header with icon and title */}
@@ -373,11 +375,12 @@ export default async function ShiftsPage({
                                   {theme.icon}
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                  <h3 className="font-bold text-lg mb-1 group-hover:text-primary transition-colors line-clamp-1">
+                                  <h3 className="font-bold text-lg mb-1 group-hover:text-primary transition-colors line-clamp-1" data-testid="shift-name">
                                     {s.shiftType.name}
                                   </h3>
                                   <div
                                     className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${theme.bgColor} ${theme.textColor} border ${theme.borderColor}`}
+                                    data-testid="shift-category"
                                   >
                                     <span>{theme.emoji}</span>
                                     <span>{theme.category}</span>
@@ -387,7 +390,7 @@ export default async function ShiftsPage({
 
                               {/* Time and location info */}
                               <div className="space-y-2 mb-3">
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground" data-testid="shift-time">
                                   <div className="w-4 h-4 flex items-center justify-center">
                                     <svg
                                       className="w-4 h-4"
@@ -409,11 +412,12 @@ export default async function ShiftsPage({
                                   </span>
                                   <span
                                     className={`px-2 py-0.5 rounded-full text-xs font-medium ${theme.bgColor} ${theme.textColor}`}
+                                    data-testid="shift-duration"
                                   >
                                     {duration}
                                   </span>
                                 </div>
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground" data-testid="shift-location">
                                   <div className="w-4 h-4 flex items-center justify-center">
                                     <svg
                                       className="w-4 h-4"
@@ -451,6 +455,7 @@ export default async function ShiftsPage({
                                     ? "badge-accent"
                                     : "badge-accent"
                                 }
+                                data-testid="user-signup-status"
                               >
                                 {mySignup.status === "CONFIRMED"
                                   ? "✅ Confirmed"
@@ -463,7 +468,7 @@ export default async function ShiftsPage({
 
                           {/* Description */}
                           {s.shiftType.description && (
-                            <div className="mb-4 p-3 bg-white/50 rounded-lg border border-white/20">
+                            <div className="mb-4 p-3 bg-white/50 rounded-lg border border-white/20" data-testid="shift-description">
                               <p className="text-sm text-muted-foreground line-clamp-2">
                                 {s.shiftType.description}
                               </p>
@@ -471,7 +476,7 @@ export default async function ShiftsPage({
                           )}
 
                           {/* Enhanced capacity indicator */}
-                          <div className="mb-4">
+                          <div className="mb-4" data-testid="shift-capacity">
                             <div className="flex items-center justify-between text-sm mb-2">
                               <div className="flex items-center gap-2">
                                 <div className="w-4 h-4 flex items-center justify-center">
@@ -493,11 +498,11 @@ export default async function ShiftsPage({
                                   Volunteers
                                 </span>
                               </div>
-                              <span className="font-bold text-base">
+                              <span className="font-bold text-base" data-testid="capacity-count">
                                 {totalSignedUp}/{s.capacity}
                               </span>
                             </div>
-                            <div className="progress-bar bg-gray-200">
+                            <div className="progress-bar bg-gray-200" data-testid="capacity-progress">
                               <div
                                 className={`progress-fill bg-gradient-to-r ${theme.gradient}`}
                                 style={{
@@ -529,17 +534,19 @@ export default async function ShiftsPage({
                           </div>
 
                           {/* Action buttons */}
-                          <div className="flex items-center justify-between">
+                          <div className="flex items-center justify-between" data-testid="shift-actions">
                             {isFull ? (
                               <Badge
                                 variant="secondary"
                                 className="badge-outline"
+                                data-testid="waitlist-status"
                               >
                                 🎯 Waitlist open
                               </Badge>
                             ) : (
                               <Badge
                                 className={`${theme.bgColor} ${theme.textColor} border ${theme.borderColor}`}
+                                data-testid="spots-available"
                               >
                                 ✨ {remaining} spot{remaining !== 1 ? "s" : ""}{" "}
                                 left
@@ -547,7 +554,7 @@ export default async function ShiftsPage({
                             )}
 
                             {mySignup ? (
-                              <span className="text-sm text-muted-foreground font-medium">
+                              <span className="text-sm text-muted-foreground font-medium" data-testid="already-signed-up">
                                 You&apos;re signed up! 🎉
                               </span>
                             ) : isFull ? (
@@ -571,6 +578,7 @@ export default async function ShiftsPage({
                                     type="button"
                                     size="sm"
                                     className="btn-outline hover:scale-105 transition-transform"
+                                    data-testid="join-waitlist-button"
                                   >
                                     🎯 Join waitlist
                                   </Button>
@@ -580,6 +588,7 @@ export default async function ShiftsPage({
                                   asChild
                                   size="sm"
                                   className="btn-primary hover:scale-105 transition-transform"
+                                  data-testid="login-to-join-waitlist-button"
                                 >
                                   <Link
                                     href={{
@@ -610,6 +619,7 @@ export default async function ShiftsPage({
                                   type="button"
                                   size="sm"
                                   className={`btn-primary bg-gradient-to-r ${theme.gradient} hover:scale-105 transition-transform shadow-lg`}
+                                  data-testid="signup-button"
                                 >
                                   ✨ Sign up
                                 </Button>
@@ -619,6 +629,7 @@ export default async function ShiftsPage({
                                 asChild
                                 size="sm"
                                 className="btn-primary hover:scale-105 transition-transform"
+                                data-testid="login-to-signup-button"
                               >
                                 <Link
                                   href={{
