@@ -1,0 +1,131 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Playwright Tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6, 7, 8]
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: volunteer-portal
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd web
+          npm ci
+
+      - name: Install Playwright Browsers
+        run: |
+          cd web
+          npx playwright install --with-deps chromium
+
+      - name: Setup test database
+        run: |
+          cd web
+          cp .env.example .env
+          echo "NEXTAUTH_SECRET=test-secret-for-ci" >> .env.local
+          echo "NEXTAUTH_URL=http://localhost:3000" >> .env.local
+          npx prisma migrate deploy
+          npx prisma db seed
+
+      - name: Run Playwright tests
+        run: |
+          cd web
+          npx playwright test --shard=${{ matrix.shard }}/${{ strategy.job-total }} --project=chromium --reporter=blob
+
+      - name: Upload blob report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: blob-report-${{ matrix.shard }}
+          path: web/blob-report/
+          retention-days: 1
+
+  merge-reports:
+    if: always()
+    needs: [test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd web
+          npm ci
+
+      - name: Download all blob reports
+        uses: actions/download-artifact@v4
+        with:
+          path: all-blob-reports
+          pattern: blob-report-*
+          merge-multiple: true
+
+      - name: Merge test reports
+        run: |
+          cd web
+          npx playwright merge-reports --reporter=html ../all-blob-reports
+
+      - name: Upload merged report
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-merged
+          path: web/playwright-report/
+          retention-days: 30
+
+  summary:
+    if: always()
+    needs: [test, merge-reports]
+    runs-on: ubuntu-latest
+    name: Test Summary
+    steps:
+      - name: Check all jobs
+        run: |
+          if [[ "${{ needs.test.result }}" == "failure" || "${{ needs.merge-reports.result }}" == "failure" ]]; then
+            echo "❌ Tests failed"
+            exit 1
+          elif [[ "${{ needs.test.result }}" == "cancelled" || "${{ needs.merge-reports.result }}" == "cancelled" ]]; then
+            echo "🟡 Tests cancelled"
+            exit 1
+          else
+            echo "✅ All tests passed"
+          fi
