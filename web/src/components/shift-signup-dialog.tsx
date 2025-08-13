@@ -86,54 +86,54 @@ export function ShiftSignupDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+      <DialogTrigger asChild data-testid="shift-signup-trigger">{children}</DialogTrigger>
+      <DialogContent className="sm:max-w-md" data-testid="shift-signup-dialog">
+        <DialogHeader data-testid="shift-signup-dialog-header">
+          <DialogTitle className="flex items-center gap-2" data-testid="shift-signup-dialog-title">
             {isWaitlist ? "🎯 Join Waitlist" : "✨ Confirm Signup"}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription data-testid="shift-signup-dialog-description">
             {isWaitlist
               ? "Join the waitlist for this shift. You'll be notified if a spot becomes available."
               : "Please confirm that you want to sign up for this volunteer shift."}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="space-y-4 py-4" data-testid="shift-signup-dialog-content-body">
           {/* Shift Details */}
-          <div className="rounded-lg border p-4 bg-muted/50">
-            <h3 className="font-semibold text-lg mb-2">
+          <div className="rounded-lg border p-4 bg-muted/50" data-testid="shift-details-section">
+            <h3 className="font-semibold text-lg mb-2" data-testid="shift-details-name">
               {shift.shiftType.name}
             </h3>
 
             {shift.shiftType.description && (
-              <p className="text-sm text-muted-foreground mb-3">
+              <p className="text-sm text-muted-foreground mb-3" data-testid="shift-details-description">
                 {shift.shiftType.description}
               </p>
             )}
 
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center gap-2">
+            <div className="space-y-2 text-sm" data-testid="shift-details-info">
+              <div className="flex items-center gap-2" data-testid="shift-details-date">
                 <span className="font-medium">📅 Date:</span>
                 <span>{format(shift.start, "EEEE, dd MMMM yyyy")}</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2" data-testid="shift-details-time">
                 <span className="font-medium">🕐 Time:</span>
                 <span>
                   {format(shift.start, "h:mm a")} -{" "}
                   {format(shift.end, "h:mm a")}
                 </span>
-                <Badge variant="outline" className="text-xs">
+                <Badge variant="outline" className="text-xs" data-testid="shift-details-duration">
                   {duration}
                 </Badge>
               </div>
               {shift.location && (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2" data-testid="shift-details-location">
                   <span className="font-medium">📍 Location:</span>
                   <span>{shift.location}</span>
                 </div>
               )}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2" data-testid="shift-details-capacity">
                 <span className="font-medium">👥 Capacity:</span>
                 <span>
                   {confirmedCount}/{shift.capacity} confirmed
@@ -148,7 +148,7 @@ export function ShiftSignupDialog({
           </div>
 
           {/* Approval Process Info */}
-          <div className="rounded-lg border p-4 bg-blue-50 border-blue-200">
+          <div className="rounded-lg border p-4 bg-blue-50 border-blue-200" data-testid="approval-process-info">
             <div className="flex items-start gap-2">
               <span className="text-blue-600 text-lg">ℹ️</span>
               <div className="text-sm">
@@ -165,11 +165,12 @@ export function ShiftSignupDialog({
           </div>
         </div>
 
-        <DialogFooter className="flex gap-2">
+        <DialogFooter className="flex gap-2" data-testid="shift-signup-dialog-footer">
           <Button
             variant="outline"
             onClick={() => setOpen(false)}
             disabled={isSubmitting}
+            data-testid="shift-signup-cancel-button"
           >
             Cancel
           </Button>
@@ -177,9 +178,10 @@ export function ShiftSignupDialog({
             onClick={handleSignup}
             disabled={isSubmitting}
             className="min-w-[120px]"
+            data-testid="shift-signup-confirm-button"
           >
             {isSubmitting ? (
-              <span className="flex items-center gap-2">
+              <span className="flex items-center gap-2" data-testid="shift-signup-loading-text">
                 <span className="animate-spin">⏳</span>
                 {isWaitlist ? "Joining..." : "Signing up..."}
               </span>
