@@ -178,7 +178,13 @@ When PRs are merged to main, the GitHub Action automatically:
 - Creates Git tags and GitHub releases
 - Generates changelog entries
 
-See `VERSIONING.md` for detailed guidelines.
+**IMPORTANT**: When creating PRs, ALWAYS add the appropriate version label using `gh pr edit <PR_NUMBER> --add-label "version:TYPE"`. Choose the label based on:
+- Bug fixes, CI improvements, refactoring: `version:patch`
+- New features, enhancements: `version:minor`
+- Breaking changes: `version:major`
+- Documentation only: `version:skip`
+
+Example: `gh pr edit 33 --add-label "version:patch"`
 
 ## Environment Variables
 
