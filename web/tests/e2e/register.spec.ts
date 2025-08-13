@@ -4,7 +4,7 @@ import type { Page } from "@playwright/test";
 // Helper function to wait for page to load completely
 async function waitForPageLoad(page: Page) {
   await page.waitForLoadState("networkidle");
-  await page.waitForTimeout(500); // Small buffer for animations
+  await page.waitForTimeout(300); // Reduced timeout for faster tests
 }
 
 // Helper function to fill step 1 with valid data
@@ -167,13 +167,20 @@ test.describe("Registration Page", () => {
         const googleButton = page.getByTestId("oauth-google-button");
         
         if (await googleButton.isVisible()) {
-          // Click should not cause errors (though may not complete in test environment)
-          await googleButton.click();
+          // Intercept OAuth request to prevent actual OAuth flow in tests
+          await page.route("**/api/auth/signin/google*", route => {
+            route.fulfill({
+              status: 200,
+              contentType: "text/html",
+              body: "<html><body>OAuth test intercept</body></html>"
+            });
+          });
           
-          // Verify button shows loading state or navigation occurs
-          // In a real OAuth flow, this would redirect to provider
+          await googleButton.click();
           await page.waitForTimeout(1000);
         }
+      } else {
+        test.skip(true, "OAuth providers not configured in test environment");
       }
     });
   });
