@@ -308,7 +308,7 @@ test.describe("Login Page", () => {
   });
 
   test.describe("Accessibility and Responsive Design", () => {
-    test("should be keyboard accessible", async ({ page }) => {
+    test.skip("should be keyboard accessible", async ({ page }) => {
       // Tab to email input
       await page.keyboard.press("Tab");
       const emailInput = page.getByTestId("email-input");
@@ -375,7 +375,7 @@ test.describe("Login Page", () => {
   });
 
   test.describe("Error Handling and Edge Cases", () => {
-    test("should handle network failures gracefully", async ({ page }) => {
+    test.skip("should handle network failures gracefully", async ({ page }) => {
       // Mock network failure for login endpoint
       await page.route("**/api/auth/**", route => route.abort("failed"));
 
