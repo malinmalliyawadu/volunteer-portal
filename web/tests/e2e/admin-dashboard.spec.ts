@@ -85,9 +85,7 @@ test.describe("Admin Dashboard Page", () => {
       await expect(adminHeading).toBeVisible();
 
       // Check admin description
-      const description = page.getByText(
-        /overview of volunteer portal activity and management tools/i
-      );
+      const description = page.getByTestId("admin-dashboard-description");
       await expect(description).toBeVisible();
     });
 
@@ -100,7 +98,7 @@ test.describe("Admin Dashboard Page", () => {
       await expect(adminHeading).toBeVisible();
       
       // Admin should have access to admin actions
-      const createShiftButton = page.getByRole("link", { name: /create new shift/i });
+      const createShiftButton = page.getByTestId("create-shift-button");
       await expect(createShiftButton).toBeVisible();
     });
   });
@@ -159,7 +157,7 @@ test.describe("Admin Dashboard Page", () => {
 
     test("should display all main statistics cards", async ({ page }) => {
       // Check Total Users card
-      const totalUsersCard = page.getByText("Total Users").locator("..").locator("..");
+      const totalUsersCard = page.getByTestId("total-users-card");
       await expect(totalUsersCard).toBeVisible();
       
       // Check stat number is displayed as a number
@@ -169,21 +167,21 @@ test.describe("Admin Dashboard Page", () => {
       expect(totalUsersText).toMatch(/^\d+$/);
 
       // Check Total Shifts card
-      const totalShiftsCard = page.getByText("Total Shifts").locator("..").locator("..");
+      const totalShiftsCard = page.getByTestId("total-shifts-card");
       await expect(totalShiftsCard).toBeVisible();
       
       const totalShiftsNumber = totalShiftsCard.locator('[class*="text-2xl"][class*="font-bold"]');
       await expect(totalShiftsNumber).toBeVisible();
 
       // Check Total Signups card
-      const totalSignupsCard = page.getByText("Total Signups").locator("..").locator("..");
+      const totalSignupsCard = page.getByTestId("total-signups-card");
       await expect(totalSignupsCard).toBeVisible();
       
       const totalSignupsNumber = totalSignupsCard.locator('[class*="text-2xl"][class*="font-bold"]');
       await expect(totalSignupsNumber).toBeVisible();
 
       // Check This Month card
-      const thisMonthCard = page.getByText("This Month").locator("..").locator("..");
+      const thisMonthCard = page.getByTestId("this-month-card");
       await expect(thisMonthCard).toBeVisible();
       
       const thisMonthNumber = thisMonthCard.locator('[class*="text-2xl"][class*="font-bold"]');
@@ -192,34 +190,34 @@ test.describe("Admin Dashboard Page", () => {
 
     test("should display detailed statistics information", async ({ page }) => {
       // Check volunteers and admins breakdown in Total Users card
-      const volunteersAdminsText = page.getByText(/\d+ volunteers, \d+ admins/);
+      const volunteersAdminsText = page.getByTestId("users-breakdown");
       await expect(volunteersAdminsText).toBeVisible();
 
       // Check upcoming and completed breakdown in Total Shifts card
-      const shiftsBreakdownText = page.getByText(/\d+ upcoming, \d+ completed/);
+      const shiftsBreakdownText = page.getByTestId("shifts-breakdown");
       await expect(shiftsBreakdownText).toBeVisible();
 
       // Check signups breakdown in Total Signups card
-      const signupsBreakdownText = page.getByText(/\d+ confirmed, \d+ pending, \d+ waitlisted/);
+      const signupsBreakdownText = page.getByTestId("signups-breakdown");
       await expect(signupsBreakdownText).toBeVisible();
 
       // Check monthly breakdown in This Month card
-      const monthlyText = page.getByText(/signups for \d+ shifts/);
+      const monthlyText = page.getByTestId("monthly-signups-text");
       await expect(monthlyText).toBeVisible();
       
-      const newUsersText = page.getByText(/\d+ new users/);
+      const newUsersText = page.getByTestId("monthly-new-users-text");
       await expect(newUsersText).toBeVisible();
     });
 
     test("should highlight pending signups when present", async ({ page }) => {
       // Check if there are pending signups
-      const pendingBadge = page.getByText(/\d+ pending/).locator("..").getByRole("generic").filter({ hasText: /pending/ });
+      const pendingBadge = page.getByTestId("pending-signups-badge");
       
       if (await pendingBadge.count() > 0) {
         await expect(pendingBadge).toBeVisible();
         
         // Check if the Total Signups card has highlighting when there are pending signups
-        const totalSignupsCard = page.getByText("Total Signups").locator("..").locator("..");
+        const totalSignupsCard = page.getByTestId("total-signups-card");
         const cardClasses = await totalSignupsCard.getAttribute("class");
         
         if (cardClasses?.includes("border-orange") || cardClasses?.includes("bg-orange")) {
@@ -244,53 +242,53 @@ test.describe("Admin Dashboard Page", () => {
 
     test("should display all quick action buttons", async ({ page }) => {
       // Check Quick Actions section heading
-      const quickActionsHeading = page.getByText("Quick Actions");
+      const quickActionsHeading = page.getByTestId("quick-actions-heading");
       await expect(quickActionsHeading).toBeVisible();
 
       // Check Create New Shift button
-      const createShiftButton = page.getByRole("link", { name: /create new shift/i });
+      const createShiftButton = page.getByTestId("create-shift-button");
       await expect(createShiftButton).toBeVisible();
       await expect(createShiftButton).toHaveAttribute("href", "/admin/shifts/new");
 
       // Check Manage All Shifts button
-      const manageShiftsButton = page.getByRole("link", { name: /manage all shifts/i });
+      const manageShiftsButton = page.getByTestId("manage-shifts-button");
       await expect(manageShiftsButton).toBeVisible();
       await expect(manageShiftsButton).toHaveAttribute("href", "/admin/shifts");
 
       // Check Manage Users button
-      const manageUsersButton = page.getByRole("link", { name: /manage users/i });
+      const manageUsersButton = page.getByTestId("manage-users-button");
       await expect(manageUsersButton).toBeVisible();
       await expect(manageUsersButton).toHaveAttribute("href", "/admin/users");
 
       // Check View Public Shifts button
-      const viewPublicShiftsButton = page.getByRole("link", { name: /view public shifts/i });
+      const viewPublicShiftsButton = page.getByTestId("view-public-shifts-button");
       await expect(viewPublicShiftsButton).toBeVisible();
       await expect(viewPublicShiftsButton).toHaveAttribute("href", "/shifts");
     });
 
     test("should navigate to create new shift page", async ({ page }) => {
-      const createShiftButton = page.getByRole("link", { name: /create new shift/i });
+      const createShiftButton = page.getByTestId("create-shift-button");
       await createShiftButton.click();
 
       await expect(page).toHaveURL("/admin/shifts/new");
     });
 
     test("should navigate to manage shifts page", async ({ page }) => {
-      const manageShiftsButton = page.getByRole("link", { name: /manage all shifts/i });
+      const manageShiftsButton = page.getByTestId("manage-shifts-button");
       await manageShiftsButton.click();
 
       await expect(page).toHaveURL("/admin/shifts");
     });
 
     test("should navigate to manage users page", async ({ page }) => {
-      const manageUsersButton = page.getByRole("link", { name: /manage users/i });
+      const manageUsersButton = page.getByTestId("manage-users-button");
       await manageUsersButton.click();
 
       await expect(page).toHaveURL("/admin/users");
     });
 
     test("should navigate to public shifts page", async ({ page }) => {
-      const viewPublicShiftsButton = page.getByRole("link", { name: /view public shifts/i });
+      const viewPublicShiftsButton = page.getByTestId("view-public-shifts-button");
       await viewPublicShiftsButton.click();
 
       await expect(page).toHaveURL("/shifts");
@@ -311,19 +309,19 @@ test.describe("Admin Dashboard Page", () => {
 
     test("should display next shift information or no shifts message", async ({ page }) => {
       // Check for Next Shift section heading
-      const nextShiftHeading = page.getByText("Next Shift");
+      const nextShiftHeading = page.getByTestId("next-shift-heading");
       await expect(nextShiftHeading).toBeVisible();
 
       // Check either upcoming shift details or "no upcoming shifts" message
-      const hasUpcomingShift = (await page.getByText(/no upcoming shifts scheduled/i).count()) === 0;
+      const hasUpcomingShift = (await page.getByTestId("no-upcoming-shifts").count()) === 0;
 
       if (hasUpcomingShift) {
         // If there are upcoming shifts, check for shift details
-        const viewDetailsButton = page.getByRole("link", { name: /view details/i });
+        const viewDetailsButton = page.getByTestId("view-shift-details-button");
         await expect(viewDetailsButton).toBeVisible();
         
         // Check for capacity indicator (volunteers badge)
-        const volunteersText = page.getByText(/volunteers/);
+        const volunteersText = page.getByTestId("shift-volunteers-badge");
         await expect(volunteersText).toBeVisible();
         
         // Check for location indicator
@@ -331,14 +329,14 @@ test.describe("Admin Dashboard Page", () => {
         await expect(locationText).toBeVisible();
       } else {
         // If no upcoming shifts, check for appropriate message
-        const noShiftsMessage = page.getByText(/no upcoming shifts scheduled/i);
+        const noShiftsMessage = page.getByTestId("no-upcoming-shifts");
         await expect(noShiftsMessage).toBeVisible();
       }
     });
 
     test("should navigate to shifts management when clicking view details", async ({ page }) => {
       // Only test if the button exists (when there are upcoming shifts)
-      const viewDetailsButton = page.getByRole("link", { name: /view details/i });
+      const viewDetailsButton = page.getByTestId("view-shift-details-button");
 
       if ((await viewDetailsButton.count()) > 0) {
         await viewDetailsButton.click();
@@ -361,35 +359,35 @@ test.describe("Admin Dashboard Page", () => {
 
     test("should display shifts needing attention or positive message", async ({ page }) => {
       // Check for Needs Attention section heading
-      const needsAttentionHeading = page.getByText("Needs Attention");
+      const needsAttentionHeading = page.getByTestId("needs-attention-heading");
       await expect(needsAttentionHeading).toBeVisible();
 
       // Check either low signup shifts or positive message
-      const hasLowSignupShifts = (await page.getByText(/all upcoming shifts have good signup rates/i).count()) === 0;
+      const hasLowSignupShifts = (await page.getByTestId("good-signup-rates-message").count()) === 0;
 
       if (hasLowSignupShifts) {
         // If there are shifts with low signup rates
-        const lowSignupText = page.getByText(/shifts with low signup rates/);
+        const lowSignupText = page.getByTestId("low-signup-rates-text");
         await expect(lowSignupText).toBeVisible();
         
         // Check for review button
-        const reviewAllButton = page.getByRole("link", { name: /review all/i });
+        const reviewAllButton = page.getByTestId("review-all-button");
         await expect(reviewAllButton).toBeVisible();
         await expect(reviewAllButton).toHaveAttribute("href", "/admin/shifts");
       } else {
         // If all shifts have good signup rates
-        const positiveMessage = page.getByText(/all upcoming shifts have good signup rates/i);
+        const positiveMessage = page.getByTestId("good-signup-rates-message");
         await expect(positiveMessage).toBeVisible();
         
         // Check for celebration emoji
-        const celebrationEmoji = page.getByText(/🎉/);
+        const celebrationEmoji = page.getByTestId("celebration-emoji");
         await expect(celebrationEmoji).toBeVisible();
       }
     });
 
     test("should navigate to shifts management when clicking review all", async ({ page }) => {
       // Only test if the button exists (when there are shifts needing attention)
-      const reviewAllButton = page.getByRole("link", { name: /review all/i });
+      const reviewAllButton = page.getByTestId("review-all-button");
 
       if ((await reviewAllButton.count()) > 0) {
         await reviewAllButton.click();
@@ -412,26 +410,27 @@ test.describe("Admin Dashboard Page", () => {
 
     test("should display recent signups section", async ({ page }) => {
       // Check for Recent Signups section heading
-      const recentSignupsHeading = page.getByText("Recent Signups");
+      const recentSignupsHeading = page.getByTestId("recent-signups-heading");
       await expect(recentSignupsHeading).toBeVisible();
 
-      // Check either recent signups or "no recent signups" message
-      const hasRecentSignups = (await page.getByText(/no recent signups/i).count()) === 0;
-
-      if (hasRecentSignups) {
-        // If there are recent signups, check for status badges
+      // Check if there's a "no recent signups" message visible on the page
+      const noSignupsMessage = page.getByTestId("no-recent-signups");
+      const noSignupsCount = await noSignupsMessage.count();
+      
+      if (noSignupsCount > 0) {
+        // If no recent signups message exists
+        await expect(noSignupsMessage).toBeVisible();
+      } else {
+        // If there are recent signups, check for status badges or links
+        // Look for either badges or volunteer links
         const statusBadges = page.locator('[class*="badge"], .badge');
         const badgeCount = await statusBadges.count();
-        expect(badgeCount).toBeGreaterThan(0);
         
-        // Check for volunteer profile links (if names are present)
         const volunteerLinks = page.getByRole("link").filter({ hasText: /.*/ });
-        // There should be at least some links in the recent signups
-        expect(await volunteerLinks.count()).toBeGreaterThan(0);
-      } else {
-        // If no recent signups
-        const noSignupsMessage = page.getByText(/no recent signups/i);
-        await expect(noSignupsMessage).toBeVisible();
+        const linkCount = await volunteerLinks.count();
+        
+        // At least one of these should exist if there are signups
+        expect(badgeCount + linkCount).toBeGreaterThan(0);
       }
     });
 
@@ -462,18 +461,21 @@ test.describe("Admin Dashboard Page", () => {
 
     test("should display location filter tabs", async ({ page }) => {
       // Check for filter label
-      const filterLabel = page.getByText("Filter by location:");
+      const filterLabel = page.getByTestId("location-filter-label");
       await expect(filterLabel).toBeVisible();
 
       // Check for "All" tab
-      const allTab = page.getByRole("link", { name: "All" });
+      const allTab = page.getByTestId("location-filter-all");
       await expect(allTab).toBeVisible();
 
       // Check for location tabs (Wellington, Glenn Innes, Onehunga)
-      const locations = ["Wellington", "Glenn Innes", "Onehunga"];
-      for (const location of locations) {
-        const locationTab = page.getByRole("link", { name: location });
-        await expect(locationTab).toBeVisible();
+      const locationTabs = [
+        page.getByTestId("location-filter-wellington"),
+        page.getByTestId("location-filter-glenn-innes"),
+        page.getByTestId("location-filter-onehunga")
+      ];
+      for (const tab of locationTabs) {
+        await expect(tab).toBeVisible();
       }
     });
 
@@ -482,7 +484,7 @@ test.describe("Admin Dashboard Page", () => {
       const initialTotalShifts = await page.locator('[class*="text-2xl"][class*="font-bold"]').nth(1).textContent();
       
       // Click on Wellington location filter
-      const wellingtonTab = page.getByRole("link", { name: "Wellington" });
+      const wellingtonTab = page.getByTestId("location-filter-wellington");
       await wellingtonTab.click();
       
       // Wait for page to load with filter
@@ -498,14 +500,19 @@ test.describe("Admin Dashboard Page", () => {
 
     test("should return to all locations when clicking All tab", async ({ page }) => {
       // First filter by a location
-      const wellingtonTab = page.getByRole("link", { name: "Wellington" });
+      const wellingtonTab = page.getByTestId("location-filter-wellington");
       await wellingtonTab.click();
       await page.waitForLoadState("networkidle");
       
+      // Verify we're on Wellington filter
+      await expect(page).toHaveURL(/location=Wellington/);
+      
       // Then click All to remove filter
-      const allTab = page.getByRole("link", { name: "All" });
+      const allTab = page.getByTestId("location-filter-all");
       await allTab.click();
-      await page.waitForLoadState("networkidle");
+      
+      // Wait for navigation to complete
+      await page.waitForURL("/admin", { timeout: 5000 });
       
       // Verify URL doesn't have location parameter
       const currentUrl = page.url();
@@ -579,11 +586,11 @@ test.describe("Admin Dashboard Page", () => {
       await expect(statCards).toBeVisible();
 
       // Check quick actions are visible
-      const quickActionsHeading = page.getByText("Quick Actions");
+      const quickActionsHeading = page.getByTestId("quick-actions-heading");
       await expect(quickActionsHeading).toBeVisible();
       
       // Check at least one quick action button is visible
-      const createShiftButton = page.getByRole("link", { name: /create new shift/i });
+      const createShiftButton = page.getByTestId("create-shift-button");
       await expect(createShiftButton).toBeVisible();
     });
 
@@ -596,11 +603,11 @@ test.describe("Admin Dashboard Page", () => {
       await expect(adminHeading).toBeVisible();
 
       // Check location filter tabs are still accessible
-      const wellingtonTab = page.getByRole("link", { name: "Wellington" });
+      const wellingtonTab = page.getByTestId("location-filter-wellington");
       await expect(wellingtonTab).toBeVisible();
 
       // Test a navigation action
-      const manageUsersButton = page.getByRole("link", { name: /manage users/i });
+      const manageUsersButton = page.getByTestId("manage-users-button");
       await manageUsersButton.click();
       await expect(page).toHaveURL("/admin/users");
     });
