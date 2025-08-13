@@ -89,8 +89,8 @@ test.describe('Dashboard Page', () => {
   });
 
   test('should display next shift section', async ({ page }) => {
-    // Check for "Your Next Shift" section
-    const nextShiftHeading = page.getByRole('heading', { name: /your next shift/i });
+    // Check for "Your Next Shift" section - it's in a CardTitle, not a heading
+    const nextShiftHeading = page.getByText('Your Next Shift');
     await expect(nextShiftHeading).toBeVisible();
     
     // Check either upcoming shift details or "no upcoming shifts" message
@@ -108,8 +108,8 @@ test.describe('Dashboard Page', () => {
   });
 
   test('should display recent activity section', async ({ page }) => {
-    // Check for "Recent Activity" section
-    const recentActivityHeading = page.getByRole('heading', { name: /recent activity/i });
+    // Check for "Recent Activity" section - it's in a CardTitle, not a heading
+    const recentActivityHeading = page.getByText('Recent Activity');
     await expect(recentActivityHeading).toBeVisible();
     
     // Check either recent shifts or "no completed shifts" message
@@ -137,8 +137,8 @@ test.describe('Dashboard Page', () => {
   });
 
   test('should display impact and community stats', async ({ page }) => {
-    // Check for impact section
-    const impactHeading = page.getByRole('heading', { name: /your impact.*community/i });
+    // Check for impact section - it's in a CardTitle, not a heading
+    const impactHeading = page.getByText('Your Impact & Community');
     await expect(impactHeading).toBeVisible();
     
     // Check for estimated meals stat
@@ -155,8 +155,8 @@ test.describe('Dashboard Page', () => {
   });
 
   test('should display quick actions section', async ({ page }) => {
-    // Check for quick actions heading
-    const quickActionsHeading = page.getByRole('heading', { name: /quick actions/i });
+    // Check for quick actions heading - it's in a CardTitle, not a heading
+    const quickActionsHeading = page.getByText('Quick Actions');
     await expect(quickActionsHeading).toBeVisible();
     
     // Check all quick action buttons
@@ -211,7 +211,8 @@ test.describe('Dashboard Page', () => {
 
   test('should navigate to browse shifts from next shift section', async ({ page }) => {
     // Only test if the button exists (when there are no upcoming shifts)
-    const browseShiftsButton = page.getByRole('link', { name: /browse shifts/i });
+    // Be more specific to avoid the footer link
+    const browseShiftsButton = page.getByRole('main').getByRole('link', { name: /browse shifts/i });
     
     if (await browseShiftsButton.count() > 0) {
       await browseShiftsButton.click();
@@ -258,8 +259,8 @@ test.describe('Dashboard Page', () => {
     const statCards = page.locator('[class*="grid-cols-1"][class*="md:grid-cols-2"][class*="lg:grid-cols-4"]');
     await expect(statCards).toBeVisible();
     
-    // Check quick actions are visible
-    const quickActionsHeading = page.getByRole('heading', { name: /quick actions/i });
+    // Check quick actions are visible - use text instead of heading role
+    const quickActionsHeading = page.getByText('Quick Actions');
     await expect(quickActionsHeading).toBeVisible();
   });
 
