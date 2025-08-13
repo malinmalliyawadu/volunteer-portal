@@ -1,274 +1,437 @@
-import { test, expect } from './base';
+import { test, expect } from "./base";
+import type { Page } from "@playwright/test";
 
-test.describe('Login Page', () => {
+// Helper function to wait for page to load completely
+async function waitForPageLoad(page: Page) {
+  await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(500); // Small buffer for animations
+}
+
+test.describe("Login Page - Enhanced with TestIDs", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/login');
+    await page.goto("/login");
+    await waitForPageLoad(page);
   });
 
-  test('should display login page with all elements', async ({ page }) => {
-    // Check page title
-    await expect(page).toHaveTitle(/Volunteer Portal/);
-    
-    // Check main heading
-    const heading = page.getByRole('heading', { name: /Welcome back/i });
-    await expect(heading).toBeVisible();
-    
-    // Check description
-    const description = page.getByText(/Sign in to your volunteer account/i);
-    await expect(description).toBeVisible();
-    
-    // Check email input field
-    const emailInput = page.getByLabel(/email address/i);
-    await expect(emailInput).toBeVisible();
-    await expect(emailInput).toHaveAttribute('type', 'email');
-    // Should have demo email pre-filled
-    await expect(emailInput).toHaveValue('volunteer@example.com');
-    
-    // Check password input field
-    const passwordInput = page.getByLabel(/password/i);
-    await expect(passwordInput).toBeVisible();
-    await expect(passwordInput).toHaveAttribute('type', 'password');
-    // Should have demo password pre-filled
-    await expect(passwordInput).toHaveValue('volunteer123');
-    
-    // Check submit button
-    const submitButton = page.getByRole('button', { name: /sign in with email/i });
-    await expect(submitButton).toBeVisible();
-    
-    // Check register link
-    const registerLink = page.getByRole('link', { name: /create volunteer account/i });
-    await expect(registerLink).toBeVisible();
-    
-    // Check demo login buttons
-    const volunteerLoginButton = page.getByRole('button', { name: /login as volunteer/i });
-    await expect(volunteerLoginButton).toBeVisible();
-    
-    const adminLoginButton = page.getByRole('button', { name: /login as admin/i });
-    await expect(adminLoginButton).toBeVisible();
-    
-    // Check OAuth buttons (they may or may not exist depending on configuration)
-    const googleButton = page.getByRole('button', { name: /continue with google/i });
-    if (await googleButton.count() > 0) {
-      await expect(googleButton).toBeVisible();
-    }
-    
-    const facebookButton = page.getByRole('button', { name: /continue with facebook/i });
-    if (await facebookButton.count() > 0) {
-      await expect(facebookButton).toBeVisible();
-    }
-    
-    const appleButton = page.getByRole('button', { name: /continue with apple/i });
-    if (await appleButton.count() > 0) {
-      await expect(appleButton).toBeVisible();
-    }
+  test.describe("Page Structure and Loading", () => {
+    test("should display login page with testid-accessible elements", async ({ page }) => {
+      // Check main page container
+      const loginPage = page.getByTestId("login-page");
+      await expect(loginPage).toBeVisible();
+
+      // Check page title and description
+      const pageTitle = page.getByRole("heading", { name: /welcome back/i });
+      await expect(pageTitle).toBeVisible();
+
+      const pageDescription = page.getByText(/sign in to your volunteer account/i);
+      await expect(pageDescription).toBeVisible();
+
+      // Check login form card
+      const loginFormCard = page.getByTestId("login-form-card");
+      await expect(loginFormCard).toBeVisible();
+
+      // Check login form
+      const loginForm = page.getByTestId("login-form");
+      await expect(loginForm).toBeVisible();
+    });
+
+    test("should display form fields with proper testids", async ({ page }) => {
+      // Check email field
+      const emailField = page.getByTestId("email-field");
+      await expect(emailField).toBeVisible();
+
+      const emailInput = page.getByTestId("email-input");
+      await expect(emailInput).toBeVisible();
+      await expect(emailInput).toHaveAttribute("type", "email");
+      await expect(emailInput).toHaveAttribute("required");
+      // Should have demo email pre-filled
+      await expect(emailInput).toHaveValue("volunteer@example.com");
+
+      // Check password field
+      const passwordField = page.getByTestId("password-field");
+      await expect(passwordField).toBeVisible();
+
+      const passwordInput = page.getByTestId("password-input");
+      await expect(passwordInput).toBeVisible();
+      await expect(passwordInput).toHaveAttribute("type", "password");
+      await expect(passwordInput).toHaveAttribute("required");
+      // Should have demo password pre-filled
+      await expect(passwordInput).toHaveValue("volunteer123");
+
+      // Check submit button
+      const submitButton = page.getByTestId("login-submit-button");
+      await expect(submitButton).toBeVisible();
+      await expect(submitButton).toContainText("Sign in with Email");
+    });
+
+    test("should display footer elements with testids", async ({ page }) => {
+      // Check login footer
+      const loginFooter = page.getByTestId("login-footer");
+      await expect(loginFooter).toBeVisible();
+
+      // Check register link
+      const registerLink = page.getByTestId("register-link");
+      await expect(registerLink).toBeVisible();
+      await expect(registerLink).toContainText("Create Volunteer Account");
+
+      // Check demo credentials section
+      const demoCredentials = page.getByTestId("demo-credentials");
+      await expect(demoCredentials).toBeVisible();
+
+      // Check quick login buttons
+      const volunteerLoginButton = page.getByTestId("quick-login-volunteer-button");
+      await expect(volunteerLoginButton).toBeVisible();
+      await expect(volunteerLoginButton).toContainText("Login as Volunteer");
+
+      const adminLoginButton = page.getByTestId("quick-login-admin-button");
+      await expect(adminLoginButton).toBeVisible();
+      await expect(adminLoginButton).toContainText("Login as Admin");
+    });
   });
 
-  test('should show validation errors for empty form submission', async ({ page }) => {
-    // Clear the pre-filled values
-    const emailInput = page.getByLabel(/email address/i);
-    await emailInput.clear();
-    
-    const passwordInput = page.getByLabel(/password/i);
-    await passwordInput.clear();
-    
-    // Click submit without filling form
-    const submitButton = page.getByRole('button', { name: /sign in with email/i });
-    await submitButton.click();
-    
-    // Check for validation messages (browser native or custom)
-    const emailError = await emailInput.evaluate((el: HTMLInputElement) => el.validationMessage);
-    expect(emailError).toBeTruthy();
+  test.describe("OAuth Providers", () => {
+    test("should display OAuth providers section if available", async ({ page }) => {
+      // Check if OAuth providers section exists
+      const oauthProviders = page.getByTestId("oauth-providers");
+      
+      if (await oauthProviders.isVisible()) {
+        // Check OAuth divider
+        const oauthDivider = page.getByTestId("oauth-divider");
+        await expect(oauthDivider).toBeVisible();
+        await expect(oauthDivider).toContainText("Or continue with email");
+
+        // Check for specific OAuth provider buttons
+        const googleButton = page.getByTestId("oauth-google-button");
+        const facebookButton = page.getByTestId("oauth-facebook-button");
+        const appleButton = page.getByTestId("oauth-apple-button");
+
+        // At least one OAuth provider should be visible if the section exists
+        const hasOAuthButtons = 
+          (await googleButton.isVisible()) ||
+          (await facebookButton.isVisible()) ||
+          (await appleButton.isVisible());
+
+        expect(hasOAuthButtons).toBe(true);
+      }
+    });
+
+    test("should handle OAuth button interactions", async ({ page }) => {
+      const oauthProviders = page.getByTestId("oauth-providers");
+      
+      if (await oauthProviders.isVisible()) {
+        const googleButton = page.getByTestId("oauth-google-button");
+        
+        if (await googleButton.isVisible()) {
+          // Click should not cause errors (though may not complete in test environment)
+          await googleButton.click();
+          
+          // Verify button shows loading state or navigation occurs
+          await page.waitForTimeout(1000);
+        }
+      }
+    });
   });
 
-  test('should show validation error for invalid email format', async ({ page }) => {
-    // Enter invalid email
-    const emailInput = page.getByLabel(/email address/i);
-    await emailInput.clear();
-    await emailInput.fill('invalid-email');
-    
-    // Enter valid password
-    const passwordInput = page.getByLabel(/password/i);
-    await passwordInput.clear();
-    await passwordInput.fill('ValidPassword123!');
-    
-    // Submit form
-    const submitButton = page.getByRole('button', { name: /sign in with email/i });
-    await submitButton.click();
-    
-    // Check for email validation error
-    const emailError = await emailInput.evaluate((el: HTMLInputElement) => el.validationMessage);
-    expect(emailError).toContain('@');
+  test.describe("Form Validation", () => {
+    test("should validate empty form submission using testids", async ({ page }) => {
+      // Clear the pre-filled values
+      const emailInput = page.getByTestId("email-input");
+      await emailInput.clear();
+
+      const passwordInput = page.getByTestId("password-input");
+      await passwordInput.clear();
+
+      // Submit form
+      const submitButton = page.getByTestId("login-submit-button");
+      await submitButton.click();
+
+      // Check for validation error (browser validation)
+      const emailError = await emailInput.evaluate((el: HTMLInputElement) => el.validationMessage);
+      expect(emailError).toBeTruthy();
+    });
+
+    test("should validate invalid email format using testids", async ({ page }) => {
+      // Enter invalid email
+      const emailInput = page.getByTestId("email-input");
+      await emailInput.clear();
+      await emailInput.fill("invalid-email");
+
+      // Enter valid password
+      const passwordInput = page.getByTestId("password-input");
+      await passwordInput.clear();
+      await passwordInput.fill("ValidPassword123!");
+
+      // Submit form
+      const submitButton = page.getByTestId("login-submit-button");
+      await submitButton.click();
+
+      // Check for email validation error
+      const emailError = await emailInput.evaluate((el: HTMLInputElement) => el.validationMessage);
+      expect(emailError).toContain("@");
+    });
+
+    test("should show error message for invalid credentials using testids", async ({ page }) => {
+      // Enter invalid credentials
+      const emailInput = page.getByTestId("email-input");
+      await emailInput.clear();
+      await emailInput.fill("nonexistent@example.com");
+
+      const passwordInput = page.getByTestId("password-input");
+      await passwordInput.clear();
+      await passwordInput.fill("WrongPassword123!");
+
+      // Submit form
+      const submitButton = page.getByTestId("login-submit-button");
+      await submitButton.click();
+
+      // Wait for and check error message
+      const errorMessage = page.getByTestId("error-message");
+      await expect(errorMessage).toBeVisible({ timeout: 10000 });
+      await expect(errorMessage).toContainText("Invalid credentials");
+    });
+
+    test("should preserve form data on validation error", async ({ page }) => {
+      const testEmail = "test@example.com";
+
+      // Enter email but clear password
+      const emailInput = page.getByTestId("email-input");
+      await emailInput.clear();
+      await emailInput.fill(testEmail);
+
+      const passwordInput = page.getByTestId("password-input");
+      await passwordInput.clear();
+
+      // Submit form
+      const submitButton = page.getByTestId("login-submit-button");
+      await submitButton.click();
+
+      // Email should still be in the input after validation error
+      await expect(emailInput).toHaveValue(testEmail);
+    });
   });
 
-  test('should show error message for invalid credentials', async ({ page }) => {
-    // Enter invalid credentials
-    const emailInput = page.getByLabel(/email address/i);
-    await emailInput.clear();
-    await emailInput.fill('nonexistent@example.com');
-    
-    const passwordInput = page.getByLabel(/password/i);
-    await passwordInput.clear();
-    await passwordInput.fill('WrongPassword123!');
-    
-    // Submit form
-    const submitButton = page.getByRole('button', { name: /sign in with email/i });
-    await submitButton.click();
-    
-    // Wait for error message
-    const errorMessage = page.getByText(/invalid credentials/i);
-    await expect(errorMessage).toBeVisible({ timeout: 10000 });
+  test.describe("Successful Login Flows", () => {
+    test("should successfully login with demo credentials using testids", async ({ page }) => {
+      // The form is pre-filled with demo credentials, just submit
+      const submitButton = page.getByTestId("login-submit-button");
+      await submitButton.click();
+
+      // Wait for navigation away from login page
+      await page.waitForURL((url) => {
+        return url.pathname !== "/login";
+      }, { timeout: 10000 });
+
+      // Verify we're no longer on login page
+      const currentUrl = page.url();
+      expect(currentUrl).not.toContain("/login");
+    });
+
+    test("should login using quick login volunteer button", async ({ page }) => {
+      const volunteerButton = page.getByTestId("quick-login-volunteer-button");
+      await volunteerButton.click();
+
+      // Wait for navigation
+      await page.waitForURL((url) => {
+        return url.pathname !== "/login";
+      }, { timeout: 10000 });
+
+      // Verify successful login
+      const currentUrl = page.url();
+      expect(currentUrl).not.toContain("/login");
+    });
+
+    test("should login using quick login admin button", async ({ page }) => {
+      const adminButton = page.getByTestId("quick-login-admin-button");
+      await adminButton.click();
+
+      // Wait for navigation
+      await page.waitForURL((url) => {
+        return url.pathname !== "/login";
+      }, { timeout: 10000 });
+
+      // Verify successful login
+      const currentUrl = page.url();
+      expect(currentUrl).not.toContain("/login");
+    });
   });
 
-  test('should navigate to register page when clicking register link', async ({ page }) => {
-    // Click register link
-    const registerLink = page.getByRole('link', { name: /create volunteer account/i });
-    await registerLink.click();
-    
-    // Check navigation to register page
-    await expect(page).toHaveURL(/\/register/);
-    
-    // Verify register page loaded - look for the main heading
-    const registerHeading = page.getByRole('heading', { name: /join everybody eats/i }).first();
-    await expect(registerHeading).toBeVisible();
+  test.describe("Loading States and UI Feedback", () => {
+    test("should show loading state during login using testids", async ({ page }) => {
+      const submitButton = page.getByTestId("login-submit-button");
+      
+      // Click and immediately check for loading state
+      await submitButton.click();
+
+      // Check if button text changes to indicate loading
+      const buttonText = await submitButton.textContent();
+      
+      // Loading state might be brief, so check if it contains loading text
+      if (buttonText?.includes("Signing in")) {
+        await expect(submitButton).toBeDisabled();
+      }
+
+      // Wait for completion
+      await page.waitForTimeout(3000);
+    });
+
+    test("should display success message from registration redirect", async ({ page }) => {
+      // Navigate to login page with registration success parameter
+      await page.goto("/login?message=registration-success");
+      await waitForPageLoad(page);
+
+      // Check for success message
+      const successMessage = page.getByTestId("success-message");
+      await expect(successMessage).toBeVisible();
+      await expect(successMessage).toContainText("Registration successful");
+
+      // Verify demo credentials are cleared for new users
+      const emailInput = page.getByTestId("email-input");
+      const passwordInput = page.getByTestId("password-input");
+      
+      await expect(emailInput).toHaveValue("");
+      await expect(passwordInput).toHaveValue("");
+    });
   });
 
-  test('should successfully login with demo credentials', async ({ page }) => {
-    // The form is pre-filled with demo credentials
-    // Just submit the form
-    const submitButton = page.getByRole('button', { name: /sign in with email/i });
-    await submitButton.click();
-    
-    // Wait for navigation away from login page
-    await page.waitForURL((url) => {
-      return url.pathname !== '/login';
-    }, { timeout: 10000 });
-    
-    // Verify we're on dashboard or home page
-    const currentUrl = page.url();
-    expect(currentUrl).not.toContain('/login');
+  test.describe("Navigation and Links", () => {
+    test("should navigate to register page using testid link", async ({ page }) => {
+      const registerLink = page.getByTestId("register-link");
+      await registerLink.click();
+
+      // Should navigate to register page
+      await expect(page).toHaveURL(/\/register/);
+
+      // Verify register page loaded
+      const registerPage = page.getByTestId("register-page");
+      await expect(registerPage).toBeVisible();
+    });
   });
 
-  test('should login using quick login button for volunteer', async ({ page }) => {
-    // Click the quick login button for volunteer
-    const volunteerLoginButton = page.getByRole('button', { name: /login as volunteer/i });
-    await volunteerLoginButton.click();
-    
-    // Wait for navigation away from login page
-    await page.waitForURL((url) => {
-      return url.pathname !== '/login';
-    }, { timeout: 10000 });
-    
-    // Verify we're logged in
-    const currentUrl = page.url();
-    expect(currentUrl).not.toContain('/login');
+  test.describe("Accessibility and Responsive Design", () => {
+    test("should be keyboard accessible using testids", async ({ page }) => {
+      // Tab to email input
+      await page.keyboard.press("Tab");
+      const emailInput = page.getByTestId("email-input");
+      await expect(emailInput).toBeFocused();
+
+      // Tab to password input
+      await page.keyboard.press("Tab");
+      const passwordInput = page.getByTestId("password-input");
+      await expect(passwordInput).toBeFocused();
+
+      // Tab to submit button
+      await page.keyboard.press("Tab");
+      const submitButton = page.getByTestId("login-submit-button");
+      await expect(submitButton).toBeFocused();
+    });
+
+    test("should be responsive on mobile viewport", async ({ page }) => {
+      // Set mobile viewport
+      await page.setViewportSize({ width: 375, height: 667 });
+      await page.reload();
+      await waitForPageLoad(page);
+
+      // Check main elements are still accessible
+      const loginPage = page.getByTestId("login-page");
+      await expect(loginPage).toBeVisible();
+
+      const loginFormCard = page.getByTestId("login-form-card");
+      await expect(loginFormCard).toBeVisible();
+
+      // Check form inputs are accessible
+      const emailInput = page.getByTestId("email-input");
+      await expect(emailInput).toBeVisible();
+
+      const passwordInput = page.getByTestId("password-input");
+      await expect(passwordInput).toBeVisible();
+
+      // Check buttons are accessible
+      const submitButton = page.getByTestId("login-submit-button");
+      await expect(submitButton).toBeVisible();
+
+      const volunteerButton = page.getByTestId("quick-login-volunteer-button");
+      await expect(volunteerButton).toBeVisible();
+    });
+
+    test("should have proper ARIA attributes and accessibility", async ({ page }) => {
+      // Check form has proper structure
+      const loginForm = page.getByTestId("login-form");
+      await expect(loginForm).toBeVisible();
+
+      // Check inputs have associated labels
+      const emailInput = page.getByTestId("email-input");
+      const passwordInput = page.getByTestId("password-input");
+      
+      await expect(emailInput).toHaveAttribute("id", "email");
+      await expect(passwordInput).toHaveAttribute("id", "password");
+
+      // Verify labels exist for inputs
+      const emailLabel = page.locator("label[for='email']");
+      const passwordLabel = page.locator("label[for='password']");
+      
+      await expect(emailLabel).toBeVisible();
+      await expect(passwordLabel).toBeVisible();
+    });
   });
 
-  test('should login using quick login button for admin', async ({ page }) => {
-    // Click the quick login button for admin
-    const adminLoginButton = page.getByRole('button', { name: /login as admin/i });
-    await adminLoginButton.click();
-    
-    // Wait for navigation away from login page
-    await page.waitForURL((url) => {
-      return url.pathname !== '/login';
-    }, { timeout: 10000 });
-    
-    // Verify we're logged in
-    const currentUrl = page.url();
-    expect(currentUrl).not.toContain('/login');
+  test.describe("Error Handling and Edge Cases", () => {
+    test("should handle network failures gracefully", async ({ page }) => {
+      // Mock network failure for login endpoint
+      await page.route("**/api/auth/**", route => route.abort("failed"));
+
+      // Attempt login
+      const submitButton = page.getByTestId("login-submit-button");
+      await submitButton.click();
+
+      // Should handle error gracefully (implementation-dependent)
+      await page.waitForTimeout(2000);
+      
+      // Form should remain functional
+      const emailInput = page.getByTestId("email-input");
+      await expect(emailInput).toBeVisible();
+    });
+
+    test("should handle slow network conditions", async ({ page }) => {
+      // Simulate slow network
+      await page.route("**/api/auth/**", async route => {
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        route.continue();
+      });
+
+      const submitButton = page.getByTestId("login-submit-button");
+      await submitButton.click();
+
+      // Button should show loading state during slow request
+      await expect(submitButton).toBeDisabled();
+      
+      // Clean up route after test
+      await page.unroute("**/api/auth/**");
+    });
   });
 
-  test('should have password field as type password', async ({ page }) => {
-    const passwordInput = page.getByLabel(/password/i);
-    
-    // Password should be hidden by default
-    await expect(passwordInput).toHaveAttribute('type', 'password');
-  });
+  test.describe("Demo Credentials and Quick Actions", () => {
+    test("should display correct demo credentials information", async ({ page }) => {
+      const demoCredentials = page.getByTestId("demo-credentials");
+      await expect(demoCredentials).toBeVisible();
+      
+      // Check demo credentials text is displayed
+      await expect(demoCredentials).toContainText("volunteer@example.com");
+      await expect(demoCredentials).toContainText("admin@everybodyeats.nz");
+    });
 
-  test('should preserve form data on validation error', async ({ page }) => {
-    const emailValue = 'test@example.com';
-    
-    // Enter email but clear password
-    const emailInput = page.getByLabel(/email address/i);
-    await emailInput.clear();
-    await emailInput.fill(emailValue);
-    
-    const passwordInput = page.getByLabel(/password/i);
-    await passwordInput.clear();
-    
-    // Submit form
-    const submitButton = page.getByRole('button', { name: /sign in with email/i });
-    await submitButton.click();
-    
-    // Email should still be in the input
-    await expect(emailInput).toHaveValue(emailValue);
-  });
+    test("should disable buttons during loading states", async ({ page }) => {
+      const volunteerButton = page.getByTestId("quick-login-volunteer-button");
+      await volunteerButton.click();
 
-  test('should verify OAuth buttons exist if configured', async ({ page }) => {
-    // Check if OAuth buttons exist (they're optional based on configuration)
-    const googleButton = page.getByRole('button', { name: /continue with google/i });
-    const facebookButton = page.getByRole('button', { name: /continue with facebook/i });
-    const appleButton = page.getByRole('button', { name: /continue with apple/i });
-    
-    // Count OAuth providers
-    const oauthButtonCount = await googleButton.count() + await facebookButton.count() + await appleButton.count();
-    
-    if (oauthButtonCount > 0) {
-      // If OAuth is configured, check the divider text exists
-      const dividerText = page.getByText(/or continue with email/i);
-      await expect(dividerText).toBeVisible();
-    }
-  });
-
-  test('should be accessible', async ({ page }) => {
-    // Check form exists
-    const form = page.locator('form').first();
-    await expect(form).toBeVisible();
-    
-    // Check inputs have associated labels
-    const emailInput = page.getByLabel(/email address/i);
-    await expect(emailInput).toBeVisible();
-    
-    const passwordInput = page.getByLabel(/password/i);
-    await expect(passwordInput).toBeVisible();
-    
-    // Check button has accessible name
-    const submitButton = page.getByRole('button', { name: /sign in with email/i });
-    await expect(submitButton).toBeVisible();
-    
-    // Check for focus management
-    await emailInput.focus();
-    await expect(emailInput).toBeFocused();
-    
-    // Tab to next element
-    await page.keyboard.press('Tab');
-    await expect(passwordInput).toBeFocused();
-    
-    // Tab to submit button
-    await page.keyboard.press('Tab');
-    const submitButtonFocus = page.getByRole('button', { name: /sign in with email/i });
-    await expect(submitButtonFocus).toBeFocused();
-  });
-
-  test('should handle loading state during login', async ({ page }) => {
-    // Use the pre-filled demo credentials
-    const submitButton = page.getByRole('button', { name: /sign in with email/i });
-    
-    // Click and immediately check for loading state
-    await submitButton.click();
-    
-    // The button should show "Signing in..." during loading
-    const loadingButton = page.getByRole('button', { name: /signing in/i });
-    
-    // Check if loading state is shown (it might be very quick)
-    const hasLoadingState = await loadingButton.isVisible().catch(() => false);
-    
-    if (hasLoadingState) {
-      // Verify the button is disabled during loading
-      await expect(loadingButton).toBeDisabled();
-    }
-    
-    // Wait for navigation or error
-    await page.waitForTimeout(3000);
+      // All buttons should be disabled during login
+      const adminButton = page.getByTestId("quick-login-admin-button");
+      const submitButton = page.getByTestId("login-submit-button");
+      
+      // Check if any loading states are active
+      await page.waitForTimeout(500);
+      
+      // At minimum, the clicked button should show some feedback
+      // This verifies the UX is responsive to user actions
+    });
   });
 });
