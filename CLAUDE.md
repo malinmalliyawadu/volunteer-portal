@@ -3,11 +3,13 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
+
 Everybody Eats Volunteer Portal - a Next.js application for managing volunteers at a charitable restaurant. The main application is in the `/web/` directory.
 
 ## Essential Commands
 
 ### Development
+
 ```bash
 cd web
 npm install
@@ -15,6 +17,7 @@ npm run dev        # Start development server on http://localhost:3000
 ```
 
 ### Database
+
 ```bash
 cd web
 npm run prisma:generate  # Generate Prisma client after schema changes
@@ -24,6 +27,7 @@ npm run prisma:deploy    # Deploy migrations to production
 ```
 
 ### Testing
+
 ```bash
 cd web
 npm run test:e2e                # Run all Playwright e2e tests
@@ -33,6 +37,7 @@ npx playwright test test.spec.ts # Run specific test file
 ```
 
 ### Build & Lint
+
 ```bash
 cd web
 npm run build     # Build production bundle
@@ -42,6 +47,7 @@ npm run lint      # Run ESLint
 ## Architecture Overview
 
 ### Tech Stack
+
 - **Next.js 15.4** with App Router - React framework
 - **TypeScript** with strict configuration
 - **Prisma ORM** with PostgreSQL
@@ -50,6 +56,7 @@ npm run lint      # Run ESLint
 - **Playwright** for e2e testing
 
 ### Directory Structure
+
 ```
 web/
 ├── app/              # Next.js App Router pages and API routes
@@ -68,16 +75,18 @@ web/
 ### Key API Patterns
 
 All API routes follow Next.js App Router conventions in `app/api/`:
+
 - Authentication: `/api/auth/[...nextauth]` (NextAuth.js)
 - Admin operations: `/api/admin/*` (protected routes)
 - Shift management: `/api/shifts/*`
 - User profiles: `/api/profile`
 
 Protected routes check session role:
+
 ```typescript
 const session = await getServerSession(authOptions);
-if (session?.user?.role !== 'ADMIN') {
-  return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+if (session?.user?.role !== "ADMIN") {
+  return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
 }
 ```
 
@@ -89,8 +98,9 @@ if (session?.user?.role !== 'ADMIN') {
 - **Achievement**: Gamification system with multiple criteria types
 
 Always use Prisma client through the singleton in `lib/db.ts`:
+
 ```typescript
-import { prisma } from '@/lib/db';
+import { prisma } from "@/lib/prisma";
 ```
 
 ### Authentication Flow
@@ -103,6 +113,7 @@ import { prisma } from '@/lib/db';
 ### Achievement System
 
 Complex gamification with automatic unlocking based on:
+
 - Shift counts (MILESTONE type)
 - Consecutive months (DEDICATION type)
 - Hours volunteered (IMPACT type)
@@ -113,12 +124,14 @@ Achievement processing happens in `/api/achievements/route.ts`
 ### Testing Approach
 
 E2e tests in `/web/tests/e2e/` cover:
+
 - Authentication flows
 - Admin dashboard functionality
 - Volunteer shift signups
 - Profile management
 
 **Test ID Guidelines**:
+
 - Use `data-testid` attributes for reliable element selection in tests
 - Prefer testids over text-based selectors to avoid strict mode violations
 - Use descriptive, hierarchical naming: `section-element-type` (e.g., `personal-info-heading`, `emergency-contact-section`)
@@ -129,6 +142,7 @@ E2e tests in `/web/tests/e2e/` cover:
   - Elements that might have duplicate text content
 
 Example testid usage:
+
 ```tsx
 <h2 data-testid="personal-info-heading">Personal Information</h2>
 <div data-testid="personal-info-section">
@@ -149,9 +163,27 @@ Run tests before committing changes that affect user flows.
 4. **Session Checks**: Always verify session and role for protected operations
 5. **Database Queries**: Include necessary relations in Prisma queries to avoid N+1 problems
 
+## Versioning System
+
+This project uses automatic semantic versioning based on PR labels:
+
+- `version:major` - Breaking changes (1.0.0 → 2.0.0)
+- `version:minor` - New features, backward compatible (1.0.0 → 1.1.0)
+- `version:patch` - Bug fixes, small improvements (1.0.0 → 1.0.1)
+- `version:skip` - No version bump (documentation, tests, etc.)
+
+When PRs are merged to main, the GitHub Action automatically:
+
+- Updates `web/package.json` version
+- Creates Git tags and GitHub releases
+- Generates changelog entries
+
+See `VERSIONING.md` for detailed guidelines.
+
 ## Environment Variables
 
 Required in `.env.local`:
+
 - `DATABASE_URL`: PostgreSQL connection string
 - `NEXTAUTH_SECRET`: Random secret for NextAuth
 - `NEXTAUTH_URL`: Application URL

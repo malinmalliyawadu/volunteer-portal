@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Session } from "next-auth";
+import packageJson from "../../package.json";
 
 interface SiteFooterProps {
   session?: Session | null;
@@ -113,8 +114,10 @@ export function SiteFooter({ session }: SiteFooterProps) {
           <div className="text-sm text-slate-400">
             <p>© Everybody Eats {currentYear}. All rights reserved.</p>
           </div>
-          <div className="text-sm text-slate-400">
+          <div className="flex items-center gap-4 text-sm text-slate-400">
             <p>Making a difference, one meal at a time.</p>
+            <span className="hidden sm:inline text-slate-600">•</span>
+            <span className="text-xs text-slate-500">v{packageJson.version}</span>
           </div>
         </div>
       </div>
