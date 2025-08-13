@@ -122,33 +122,79 @@ jobs:
           path: web/playwright-report/
           retention-days: 30
 
+      - name: Run coverage tests
+        if: github.event_name == 'pull_request'
+        working-directory: web
+        run: |
+          # Run tests with coverage collection
+          npm run test:e2e:coverage
+        env:
+          DATABASE_URL: postgresql://postgres:password@localhost:5432/volunteer-portal
+          NEXTAUTH_URL: http://localhost:3000
+          NEXTAUTH_SECRET: test-secret-for-ci
+
       - name: Generate coverage report
         if: github.event_name == 'pull_request'
         working-directory: web
         run: |
-          # Extract test results and create a coverage report
-          echo "# Test Coverage Report" > coverage-report.md
-          echo "" >> coverage-report.md
-          
-          # Count test files and results
-          TEST_COUNT=$(find tests/e2e -name "*.spec.ts" -o -name "*.test.ts" | wc -l)
-          echo "- **Total test files**: $TEST_COUNT" >> coverage-report.md
-          
-          # List test files covered
-          echo "" >> coverage-report.md
-          echo "## Test Files Executed" >> coverage-report.md
-          find tests/e2e -name "*.spec.ts" -o -name "*.test.ts" | while read file; do
-            echo "- \`$(basename $file)\`" >> coverage-report.md
-          done
-          
-          echo "" >> coverage-report.md
-          echo "## Pages/Components Tested" >> coverage-report.md
-          echo "Based on e2e tests, the following application areas are covered:" >> coverage-report.md
-          
-          # Analyze test files for page coverage
-          grep -r "page\.goto\|visit" tests/e2e/ --include="*.ts" | \
-            sed 's/.*page\.goto[^"]*["'"'"']\([^"'"'"']*\)["'"'"'].*/- \1/' | \
-            sort | uniq >> coverage-report.md || echo "- No specific page visits found" >> coverage-report.md
+          # Check if coverage data exists
+          if [ -f "coverage/coverage-final.json" ]; then
+            echo "Coverage data found, generating reports..."
+            
+            # Generate detailed coverage reports
+            npx c8 report --reporter=lcov --reporter=json-summary --reporter=text
+            
+            # Create markdown summary
+            echo "# 📊 Code Coverage Report" > coverage-report.md
+            echo "" >> coverage-report.md
+            
+            # Extract coverage summary if available
+            if [ -f "coverage/coverage-summary.json" ]; then
+              echo "## Coverage Summary" >> coverage-report.md
+              echo "" >> coverage-report.md
+              
+              # Parse JSON and create table
+              node -e "
+                const fs = require('fs');
+                const summary = JSON.parse(fs.readFileSync('coverage/coverage-summary.json', 'utf8'));
+                const total = summary.total;
+                
+                console.log('| Metric | Coverage | Covered/Total |');
+                console.log('|--------|----------|---------------|');
+                console.log(\`| **Statements** | \${total.statements.pct}% | \${total.statements.covered}/\${total.statements.total} |\`);
+                console.log(\`| **Branches** | \${total.branches.pct}% | \${total.branches.covered}/\${total.branches.total} |\`);
+                console.log(\`| **Functions** | \${total.functions.pct}% | \${total.functions.covered}/\${total.functions.total} |\`);
+                console.log(\`| **Lines** | \${total.lines.pct}% | \${total.lines.covered}/\${total.lines.total} |\`);
+              " >> coverage-report.md
+              
+              echo "" >> coverage-report.md
+              echo "## Files with Coverage" >> coverage-report.md
+              echo "" >> coverage-report.md
+              
+              # List files with coverage
+              node -e "
+                const fs = require('fs');
+                const summary = JSON.parse(fs.readFileSync('coverage/coverage-summary.json', 'utf8'));
+                Object.keys(summary).filter(key => key !== 'total').forEach(file => {
+                  const fileCov = summary[file];
+                  console.log(\`- \\\`\${file}\\\` - \${fileCov.statements.pct}% statements\`);
+                });
+              " >> coverage-report.md
+              
+            else
+              echo "No detailed coverage summary available." >> coverage-report.md
+            fi
+            
+          else
+            echo "# 📊 Code Coverage Report" > coverage-report.md
+            echo "" >> coverage-report.md
+            echo "No coverage data was collected during test execution." >> coverage-report.md
+            echo "" >> coverage-report.md
+            echo "This may be due to:" >> coverage-report.md
+            echo "- Tests not executing application code" >> coverage-report.md
+            echo "- Coverage collection not properly configured" >> coverage-report.md
+            echo "- Build optimization removing instrumentation" >> coverage-report.md
+          fi
 
       - name: Comment PR with coverage
         if: github.event_name == 'pull_request'
@@ -172,16 +218,14 @@ jobs:
             
             // Find existing coverage comment
             const existingComment = comments.find(comment => 
-              comment.body.includes('🧪 Test Coverage Report') && 
+              comment.body.includes('📊 Code Coverage Report') && 
               comment.user.type === 'Bot'
             );
             
-            const commentBody = `## 🧪 Test Coverage Report
-            
-            ${coverageReport}
+            const commentBody = `${coverageReport}
             
             ---
-            *This report shows which test files were executed and provides insight into application coverage through e2e tests.*`;
+            *Generated from Playwright e2e tests with JavaScript coverage collection.*`;
             
             if (existingComment) {
               // Update existing comment
