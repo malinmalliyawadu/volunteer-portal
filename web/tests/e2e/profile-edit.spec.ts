@@ -7,9 +7,7 @@ async function loginAsVolunteer(page: Page) {
     await page.goto("/login");
     await page.waitForLoadState("domcontentloaded");
 
-    const volunteerLoginButton = page.getByRole("button", {
-      name: /login as volunteer/i,
-    });
+    const volunteerLoginButton = page.getByTestId("quick-login-volunteer-button");
     await volunteerLoginButton.waitFor({ state: "visible", timeout: 10000 });
     await volunteerLoginButton.click();
 
@@ -22,7 +20,7 @@ async function loginAsVolunteer(page: Page) {
     }
 
     // Use a shorter wait time to avoid timeouts
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(500);
   } catch (error) {
     console.log("Error during login:", error);
   }
