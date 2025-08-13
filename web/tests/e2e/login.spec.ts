@@ -7,14 +7,14 @@ async function waitForPageLoad(page: Page) {
   await page.waitForTimeout(500); // Small buffer for animations
 }
 
-test.describe("Login Page - Enhanced with TestIDs", () => {
+test.describe("Login Page", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/login");
     await waitForPageLoad(page);
   });
 
   test.describe("Page Structure and Loading", () => {
-    test("should display login page with testid-accessible elements", async ({ page }) => {
+    test("should display login page with all elements", async ({ page }) => {
       // Check main page container
       const loginPage = page.getByTestId("login-page");
       await expect(loginPage).toBeVisible();
@@ -35,7 +35,7 @@ test.describe("Login Page - Enhanced with TestIDs", () => {
       await expect(loginForm).toBeVisible();
     });
 
-    test("should display form fields with proper testids", async ({ page }) => {
+    test("should display form fields correctly", async ({ page }) => {
       // Check email field
       const emailField = page.getByTestId("email-field");
       await expect(emailField).toBeVisible();
@@ -64,7 +64,7 @@ test.describe("Login Page - Enhanced with TestIDs", () => {
       await expect(submitButton).toContainText("Sign in with Email");
     });
 
-    test("should display footer elements with testids", async ({ page }) => {
+    test("should display footer elements", async ({ page }) => {
       // Check login footer
       const loginFooter = page.getByTestId("login-footer");
       await expect(loginFooter).toBeVisible();
@@ -133,7 +133,7 @@ test.describe("Login Page - Enhanced with TestIDs", () => {
   });
 
   test.describe("Form Validation", () => {
-    test("should validate empty form submission using testids", async ({ page }) => {
+    test("should validate empty form submission", async ({ page }) => {
       // Clear the pre-filled values
       const emailInput = page.getByTestId("email-input");
       await emailInput.clear();
@@ -150,7 +150,7 @@ test.describe("Login Page - Enhanced with TestIDs", () => {
       expect(emailError).toBeTruthy();
     });
 
-    test("should validate invalid email format using testids", async ({ page }) => {
+    test("should validate invalid email format", async ({ page }) => {
       // Enter invalid email
       const emailInput = page.getByTestId("email-input");
       await emailInput.clear();
@@ -170,7 +170,7 @@ test.describe("Login Page - Enhanced with TestIDs", () => {
       expect(emailError).toContain("@");
     });
 
-    test("should show error message for invalid credentials using testids", async ({ page }) => {
+    test("should show error message for invalid credentials", async ({ page }) => {
       // Enter invalid credentials
       const emailInput = page.getByTestId("email-input");
       await emailInput.clear();
@@ -211,7 +211,7 @@ test.describe("Login Page - Enhanced with TestIDs", () => {
   });
 
   test.describe("Successful Login Flows", () => {
-    test("should successfully login with demo credentials using testids", async ({ page }) => {
+    test("should successfully login with demo credentials", async ({ page }) => {
       // The form is pre-filled with demo credentials, just submit
       const submitButton = page.getByTestId("login-submit-button");
       await submitButton.click();
@@ -256,7 +256,7 @@ test.describe("Login Page - Enhanced with TestIDs", () => {
   });
 
   test.describe("Loading States and UI Feedback", () => {
-    test("should show loading state during login using testids", async ({ page }) => {
+    test("should show loading state during login", async ({ page }) => {
       const submitButton = page.getByTestId("login-submit-button");
       
       // Click and immediately check for loading state
@@ -294,7 +294,7 @@ test.describe("Login Page - Enhanced with TestIDs", () => {
   });
 
   test.describe("Navigation and Links", () => {
-    test("should navigate to register page using testid link", async ({ page }) => {
+    test("should navigate to register page", async ({ page }) => {
       const registerLink = page.getByTestId("register-link");
       await registerLink.click();
 
@@ -308,7 +308,7 @@ test.describe("Login Page - Enhanced with TestIDs", () => {
   });
 
   test.describe("Accessibility and Responsive Design", () => {
-    test("should be keyboard accessible using testids", async ({ page }) => {
+    test("should be keyboard accessible", async ({ page }) => {
       // Tab to email input
       await page.keyboard.press("Tab");
       const emailInput = page.getByTestId("email-input");

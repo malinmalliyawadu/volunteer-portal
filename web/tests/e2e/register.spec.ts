@@ -53,14 +53,14 @@ async function navigateToStep(page: Page, stepNumber: number) {
   }
 }
 
-test.describe("Registration Page - Enhanced with TestIDs", () => {
+test.describe("Registration Page", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/register");
     await waitForPageLoad(page);
   });
 
   test.describe("Page Structure and Loading", () => {
-    test("should display registration page with testid-accessible elements", async ({ page }) => {
+    test("should display registration page with all elements", async ({ page }) => {
       // Check main page container
       const registerPage = page.getByTestId("register-page");
       await expect(registerPage).toBeVisible();
@@ -86,7 +86,7 @@ test.describe("Registration Page - Enhanced with TestIDs", () => {
       await expect(stepCounter).toContainText("Step 1 of 6");
     });
 
-    test("should display progress steps with proper testids", async ({ page }) => {
+    test("should display progress steps correctly", async ({ page }) => {
       // Check progress steps container
       const progressSteps = page.getByTestId("progress-steps");
       await expect(progressSteps).toBeVisible();
@@ -111,7 +111,7 @@ test.describe("Registration Page - Enhanced with TestIDs", () => {
       await expect(currentStepDescription).toContainText("Set up your login credentials");
     });
 
-    test("should display form card with testid-accessible elements", async ({ page }) => {
+    test("should display form card correctly", async ({ page }) => {
       // Check form card
       const formCard = page.getByTestId("registration-form-card");
       await expect(formCard).toBeVisible();
@@ -179,7 +179,7 @@ test.describe("Registration Page - Enhanced with TestIDs", () => {
   });
 
   test.describe("Step 1: Account Creation", () => {
-    test("should display account step form fields with testids", async ({ page }) => {
+    test("should display account step form fields correctly", async ({ page }) => {
       // Check account step container
       const accountStep = page.getByTestId("account-step");
       await expect(accountStep).toBeVisible();
@@ -222,7 +222,7 @@ test.describe("Registration Page - Enhanced with TestIDs", () => {
       await expect(confirmPasswordInput).toHaveAttribute("required");
     });
 
-    test("should validate required fields using testids", async ({ page }) => {
+    test("should validate required fields", async ({ page }) => {
       // Clear all fields to ensure they're empty
       const emailInput = page.getByTestId("email-input");
       const passwordInput = page.getByTestId("password-input");
@@ -255,7 +255,7 @@ test.describe("Registration Page - Enhanced with TestIDs", () => {
       await expect(stepCounter).toContainText("Step 1 of 6");
     });
 
-    test("should validate password mismatch using testids", async ({ page }) => {
+    test("should validate password mismatch", async ({ page }) => {
       // Fill email
       const emailInput = page.getByTestId("email-input");
       await emailInput.fill("test@example.com");
@@ -276,7 +276,7 @@ test.describe("Registration Page - Enhanced with TestIDs", () => {
       await expect(errorToast.first()).toBeVisible({ timeout: 5000 });
     });
 
-    test("should validate password length using testids", async ({ page }) => {
+    test("should validate password length", async ({ page }) => {
       // Fill email
       const emailInput = page.getByTestId("email-input");
       await emailInput.fill("test@example.com");
