@@ -100,7 +100,7 @@ export default async function ProfilePage() {
                   )}
 
                   <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-                    <Badge className="badge-primary">
+                    <Badge className="badge-primary" data-testid="user-role">
                       {userProfile?.role === "ADMIN"
                         ? "Administrator"
                         : "Volunteer"}

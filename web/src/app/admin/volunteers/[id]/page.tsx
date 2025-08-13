@@ -224,7 +224,7 @@ export default async function AdminVolunteerPage({
                 )}
 
                 <div className="flex flex-wrap gap-2 justify-center mb-6">
-                  <Badge variant="secondary">
+                  <Badge variant="default" data-testid="user-role">
                     <User className="h-3 w-3 mr-1" />
                     {volunteer.role === "ADMIN" ? "Administrator" : "Volunteer"}
                   </Badge>

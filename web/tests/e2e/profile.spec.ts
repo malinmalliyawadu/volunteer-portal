@@ -70,16 +70,16 @@ test.describe("Profile Page", () => {
 
   test("should display user information correctly", async ({ page }) => {
     // Check avatar is visible
-    const avatar = page.getByRole("img", { name: /profile/i }).or(
-      page.locator('[data-slot="avatar"], [class*="avatar"]').first()
-    );
-    if (await avatar.count() > 0) {
+    const avatar = page
+      .getByRole("img", { name: /profile/i })
+      .or(page.locator('[data-slot="avatar"], [class*="avatar"]').first());
+    if ((await avatar.count()) > 0) {
       await expect(avatar).toBeVisible();
     }
 
     // Check user name is displayed
     const userName = page.locator("h2").filter({ hasText: /volunteer|admin/i });
-    if (await userName.count() === 0) {
+    if ((await userName.count()) === 0) {
       // Fallback: look for any h2 that might contain the user name
       const anyH2 = page.locator("h2").first();
       await expect(anyH2).toBeVisible();
@@ -88,9 +88,7 @@ test.describe("Profile Page", () => {
     }
 
     // Check role badge
-    const roleBadge = page
-      .getByText("Administrator")
-      .or(page.getByText("Volunteer"));
+    const roleBadge = page.getByTestId("user-role");
     await expect(roleBadge).toBeVisible();
 
     // Check active member badge
@@ -124,12 +122,16 @@ test.describe("Profile Page", () => {
     await expect(emergencyHeading).toBeVisible();
 
     // Check section description
-    const emergencyDescription = page.getByText("Emergency contact information");
+    const emergencyDescription = page.getByText(
+      "Emergency contact information"
+    );
     await expect(emergencyDescription).toBeVisible();
 
     // Check either emergency contact info or empty state message
     const hasEmergencyContact =
-      (await page.getByText("No emergency contact information provided").count()) === 0;
+      (await page
+        .getByText("No emergency contact information provided")
+        .count()) === 0;
 
     if (hasEmergencyContact) {
       // If emergency contact exists, check for name field
@@ -168,8 +170,8 @@ test.describe("Profile Page", () => {
       const availableDaysLabel = page.getByText("Available Days:");
       const availableLocationsLabel = page.getByText("Available Locations:");
 
-      const hasDays = await availableDaysLabel.count() > 0;
-      const hasLocations = await availableLocationsLabel.count() > 0;
+      const hasDays = (await availableDaysLabel.count()) > 0;
+      const hasLocations = (await availableLocationsLabel.count()) > 0;
 
       expect(hasDays || hasLocations).toBe(true);
     } else {
@@ -291,9 +293,9 @@ test.describe("Profile Page", () => {
 
   test("should display badges correctly", async ({ page }) => {
     // Check role badge
-    const badges = page.locator('[class*="badge"]').or(
-      page.getByText("Administrator").or(page.getByText("Volunteer"))
-    );
+    const badges = page
+      .locator('[class*="badge"]')
+      .or(page.getByText("Administrator").or(page.getByText("Volunteer")));
     const badgeCount = await badges.count();
     expect(badgeCount).toBeGreaterThan(0);
 
@@ -303,7 +305,7 @@ test.describe("Profile Page", () => {
 
     // Check for agreement signed badge if present
     const agreementBadge = page.getByText("Agreement Signed");
-    if (await agreementBadge.count() > 0) {
+    if ((await agreementBadge.count()) > 0) {
       await expect(agreementBadge).toBeVisible();
     }
   });
@@ -326,7 +328,7 @@ test.describe("Profile Page", () => {
   }) => {
     // Check main landmark
     const main = page.locator("main").or(page.locator('[role="main"]'));
-    if (await main.count() > 0) {
+    if ((await main.count()) > 0) {
       await expect(main).toBeVisible();
     }
 
@@ -352,21 +354,21 @@ test.describe("Profile Page", () => {
 
   test("should display profile photo or initials", async ({ page }) => {
     // Check for avatar/profile image
-    const avatar = page.locator('[data-slot="avatar"]').or(
-      page.locator('[class*="avatar"]')
-    );
+    const avatar = page
+      .locator('[data-slot="avatar"]')
+      .or(page.locator('[class*="avatar"]'));
 
-    if (await avatar.count() > 0) {
+    if ((await avatar.count()) > 0) {
       await expect(avatar).toBeVisible();
 
       // Check if it has an image or shows initials
       const avatarImage = avatar.locator("img");
-      const avatarFallback = avatar.locator('[class*="fallback"]').or(
-        page.locator('[class*="Avatar"][class*="Fallback"]')
-      );
+      const avatarFallback = avatar
+        .locator('[class*="fallback"]')
+        .or(page.locator('[class*="Avatar"][class*="Fallback"]'));
 
-      const hasImage = await avatarImage.count() > 0;
-      const hasFallback = await avatarFallback.count() > 0;
+      const hasImage = (await avatarImage.count()) > 0;
+      const hasFallback = (await avatarFallback.count()) > 0;
 
       expect(hasImage || hasFallback).toBe(true);
     }
