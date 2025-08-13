@@ -249,7 +249,7 @@ export default async function MyShiftsPage({
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen" data-testid="my-shifts-page">
       <div className="max-w-6xl mx-auto py-4 animate-fade-in">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
           <PageHeader
@@ -259,19 +259,19 @@ export default async function MyShiftsPage({
           />
 
           {/* Compact location filter using tabs */}
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2" data-testid="location-filter">
             <span className="text-sm font-medium text-muted-foreground">
               Filter by location:
             </span>
             <Tabs value={selectedLocation || "all"} className="w-fit">
-              <TabsList className="bg-accent-subtle/30">
-                <TabsTrigger value="all" asChild>
+              <TabsList className="bg-accent-subtle/30" data-testid="location-tabs">
+                <TabsTrigger value="all" asChild data-testid="location-tab-all">
                   <Link href={{ pathname: "/shifts/mine", query: {} }}>
                     All
                   </Link>
                 </TabsTrigger>
                 {LOCATIONS.map((loc) => (
-                  <TabsTrigger key={loc} value={loc} asChild>
+                  <TabsTrigger key={loc} value={loc} asChild data-testid={`location-tab-${loc.toLowerCase().replace(/\s+/g, '-')}`}>
                     <Link
                       href={{
                         pathname: "/shifts/mine",
@@ -288,23 +288,24 @@ export default async function MyShiftsPage({
         </div>
 
         {/* Upcoming Shifts Section */}
-        <section className="mb-12">
+        <section className="mb-12" data-testid="upcoming-shifts-section">
           <div className="flex items-center gap-4 mb-6">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
                 <CalendarCheck className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </div>
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100" data-testid="upcoming-shifts-title">
                 Upcoming Shifts
               </h2>
             </div>
             <Badge
               variant="outline"
               className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800 px-3 py-1.5 text-sm font-semibold"
+              data-testid="upcoming-shifts-count"
             >
               {upcomingCount}
             </Badge>
-            <div className="ml-auto">
+            <div className="ml-auto" data-testid="upcoming-shifts-pagination">
               <Pagination
                 page={uPage}
                 totalPages={uTotalPages}
@@ -316,7 +317,7 @@ export default async function MyShiftsPage({
           </div>
 
           {upcoming.length === 0 ? (
-            <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/50 dark:to-indigo-950/50 border-blue-200 dark:border-blue-800">
+            <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/50 dark:to-indigo-950/50 border-blue-200 dark:border-blue-800" data-testid="upcoming-shifts-empty-state">
               <CardContent className="text-center">
                 <div className="flex flex-col items-center gap-4">
                   <div className="p-4 bg-blue-100 dark:bg-blue-900/30 rounded-full">
@@ -330,7 +331,7 @@ export default async function MyShiftsPage({
                       Ready to make a difference? Browse available volunteer
                       opportunities.
                     </div>
-                    <Button asChild className="gap-2">
+                    <Button asChild className="gap-2" data-testid="browse-shifts-button">
                       <Link href="/shifts">
                         <Calendar className="h-4 w-4" />
                         Browse Shifts
@@ -341,11 +342,12 @@ export default async function MyShiftsPage({
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-4" data-testid="upcoming-shifts-list">
               {upcoming.map((su: SignupWithRelations) => (
                 <Card
                   key={su.id}
                   className="hover:shadow-md transition-all duration-200 border-l-4 border-l-blue-500 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm"
+                  data-testid={`upcoming-shift-${su.id}`}
                 >
                   <CardContent className="">
                     <div className="flex items-start justify-between gap-6">
@@ -354,14 +356,16 @@ export default async function MyShiftsPage({
                           <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
                             <CalendarCheck className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                           </div>
-                          <h3 className="font-semibold text-lg text-slate-900 dark:text-slate-100 truncate">
+                          <h3 className="font-semibold text-lg text-slate-900 dark:text-slate-100 truncate" data-testid="shift-name">
                             {su.shift.shiftType.name}
                           </h3>
-                          <StatusBadge status={su.status} />
+                          <div data-testid="shift-status">
+                            <StatusBadge status={su.status} />
+                          </div>
                         </div>
 
                         <div className="space-y-2 ml-11">
-                          <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                          <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400" data-testid="shift-datetime">
                             <Clock className="h-4 w-4 text-slate-400" />
                             <span className="font-medium">
                               {format(su.shift.start, "EEE, dd MMM yyyy")}
@@ -372,7 +376,7 @@ export default async function MyShiftsPage({
                               {format(su.shift.end, "h:mm a")}
                             </span>
                           </div>
-                          <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                          <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400" data-testid="shift-location">
                             <MapPin className="h-4 w-4 text-slate-400" />
                             <span>
                               {su.shift.location ?? "Location to be confirmed"}
@@ -381,7 +385,7 @@ export default async function MyShiftsPage({
                         </div>
                       </div>
 
-                      <div className="flex-shrink-0">
+                      <div className="flex-shrink-0" data-testid="shift-actions">
                         <CancelSignupButton
                           shiftId={su.shift.id}
                           shiftName={su.shift.shiftType.name}
@@ -396,23 +400,24 @@ export default async function MyShiftsPage({
         </section>
 
         {/* Past Shifts Section */}
-        <section>
+        <section data-testid="past-shifts-section">
           <div className="flex items-center gap-4 mb-6">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg">
                 <History className="h-5 w-5 text-slate-600 dark:text-slate-400" />
               </div>
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100" data-testid="past-shifts-title">
                 Shift History
               </h2>
             </div>
             <Badge
               variant="outline"
               className="bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 px-3 py-1.5 text-sm font-semibold"
+              data-testid="past-shifts-count"
             >
               {pastCount}
             </Badge>
-            <div className="ml-auto">
+            <div className="ml-auto" data-testid="past-shifts-pagination">
               <Pagination
                 page={pPage}
                 totalPages={pTotalPages}
@@ -424,7 +429,7 @@ export default async function MyShiftsPage({
           </div>
 
           {past.length === 0 ? (
-            <Card className="bg-gradient-to-r from-slate-50 to-gray-50 dark:from-slate-900/50 dark:to-slate-800/50 border-slate-200 dark:border-slate-700">
+            <Card className="bg-gradient-to-r from-slate-50 to-gray-50 dark:from-slate-900/50 dark:to-slate-800/50 border-slate-200 dark:border-slate-700" data-testid="past-shifts-empty-state">
               <CardContent className="py-12 text-center">
                 <div className="flex flex-col items-center gap-4">
                   <div className="p-4 bg-slate-100 dark:bg-slate-800 rounded-full">
@@ -440,11 +445,12 @@ export default async function MyShiftsPage({
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-4" data-testid="past-shifts-list">
               {past.map((su: SignupWithRelations) => (
                 <Card
                   key={su.id}
                   className="hover:shadow-md transition-all duration-200 border-l-4 border-l-slate-400 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm opacity-90"
+                  data-testid={`past-shift-${su.id}`}
                 >
                   <CardContent className="p-6">
                     <div className="flex items-start gap-6">
@@ -453,14 +459,16 @@ export default async function MyShiftsPage({
                           <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg">
                             <CheckCircle className="h-4 w-4 text-slate-600 dark:text-slate-400" />
                           </div>
-                          <h3 className="font-semibold text-lg text-slate-900 dark:text-slate-100 truncate">
+                          <h3 className="font-semibold text-lg text-slate-900 dark:text-slate-100 truncate" data-testid="shift-name">
                             {su.shift.shiftType.name}
                           </h3>
-                          <StatusBadge status={su.status} />
+                          <div data-testid="shift-status">
+                            <StatusBadge status={su.status} />
+                          </div>
                         </div>
 
                         <div className="space-y-2 ml-11">
-                          <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                          <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400" data-testid="shift-datetime">
                             <Clock className="h-4 w-4 text-slate-400" />
                             <span className="font-medium">
                               {format(su.shift.start, "EEE, dd MMM yyyy")}
@@ -471,7 +479,7 @@ export default async function MyShiftsPage({
                               {format(su.shift.end, "h:mm a")}
                             </span>
                           </div>
-                          <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                          <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400" data-testid="shift-location">
                             <MapPin className="h-4 w-4 text-slate-400" />
                             <span>
                               {su.shift.location ??

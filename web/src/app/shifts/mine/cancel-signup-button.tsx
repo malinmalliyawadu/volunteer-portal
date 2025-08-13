@@ -53,14 +53,14 @@ export function CancelSignupButton({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" data-testid="cancel-shift-button">
           Cancel
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent data-testid="cancel-shift-dialog">
         <DialogHeader>
-          <DialogTitle>Cancel Shift Signup</DialogTitle>
-          <DialogDescription>
+          <DialogTitle data-testid="cancel-dialog-title">Cancel Shift Signup</DialogTitle>
+          <DialogDescription data-testid="cancel-dialog-description">
             Are you sure you want to cancel your signup for &quot;{shiftName}
             &quot;? This action cannot be undone, but you may be able to sign up
             again if spots are still available.
@@ -71,6 +71,7 @@ export function CancelSignupButton({
             variant="outline"
             onClick={() => setOpen(false)}
             disabled={isLoading}
+            data-testid="keep-signup-button"
           >
             Keep Signup
           </Button>
@@ -78,6 +79,7 @@ export function CancelSignupButton({
             variant="destructive"
             onClick={handleCancel}
             disabled={isLoading}
+            data-testid="confirm-cancel-button"
           >
             {isLoading ? "Canceling..." : "Cancel Signup"}
           </Button>
