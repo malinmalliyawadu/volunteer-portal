@@ -101,8 +101,8 @@ test.describe('Dashboard Page', () => {
       const viewAllShiftsButton = page.getByRole('link', { name: /view all my shifts/i });
       await expect(viewAllShiftsButton).toBeVisible();
     } else {
-      // If no upcoming shifts, check for browse shifts button
-      const browseShiftsButton = page.getByRole('link', { name: /browse shifts/i });
+      // If no upcoming shifts, check for browse shifts button (scope to main to avoid footer)
+      const browseShiftsButton = page.getByRole('main').getByRole('link', { name: /browse shifts/i });
       await expect(browseShiftsButton).toBeVisible();
     }
   });
