@@ -6,17 +6,8 @@ export default defineConfig({
   
   // Override for coverage collection
   reporter: [
-    ['html'],
     ['json', { outputFile: 'test-results.json' }],
-    ['playwright-test-coverage', {
-      // Configuration for playwright-test-coverage
-      watermarks: {
-        statements: [50, 80],
-        functions: [50, 80],
-        branches: [50, 80],
-        lines: [50, 80]
-      }
-    }]
+    ['html']
   ],
 
   // Only run on Chromium for coverage to avoid duplicates

@@ -132,6 +132,8 @@ jobs:
           DATABASE_URL: postgresql://postgres:password@localhost:5432/volunteer-portal
           NEXTAUTH_URL: http://localhost:3000
           NEXTAUTH_SECRET: test-secret-for-ci
+          NODE_ENV: test
+          COVERAGE: true
 
       - name: Generate coverage report
         if: github.event_name == 'pull_request'
