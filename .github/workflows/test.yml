@@ -50,6 +50,12 @@ jobs:
           cd web
           npm ci
 
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('web/package-lock.json') }}
+
       - name: Install Playwright Browsers
         run: |
           cd web
