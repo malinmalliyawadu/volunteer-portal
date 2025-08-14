@@ -348,7 +348,7 @@ export default async function AdminUsersPage({
         <section data-testid="users-section">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div className="flex items-center gap-3">
-              <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
+              <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent" data-testid="users-table-title">
                 Users
               </h2>
               <Badge
@@ -381,7 +381,7 @@ export default async function AdminUsersPage({
                   </h3>
                   <p className="text-slate-600 max-w-md mx-auto mb-6">
                     {searchQuery || roleFilter
-                      ? "No users found matching your filters. Try adjusting your search criteria."
+                      ? "No users found matching your filters. Try adjusting your search or filter criteria."
                       : "Get started by inviting your first user to the platform."}
                   </p>
                   {!searchQuery && !roleFilter && (
@@ -496,7 +496,8 @@ export default async function AdminUsersPage({
               </div>
             )}
           </CardContent>
-      </Card>
+        </Card>
+      </section>
     </PageContainer>
   );
 }
