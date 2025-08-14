@@ -1,3 +1,9 @@
+## [0.3.1] - 2025-08-14
+
+### Changes
+- fix: improve header navigation styling and layout ([#46](https://github.com/malinmalliyawadu/volunteer-portal/pull/46)) by @malinmalliyawadu
+
+
 ## [0.3.0] - 2025-08-14
 
 ### Changes
