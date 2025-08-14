@@ -155,114 +155,151 @@ function ShiftCard({
 
   return (
     <Card
-      className={`border-l-4 ${theme.borderColor} ${theme.bgColor} hover:shadow-md transition-all duration-200`}
+      className={`group relative overflow-hidden border-0 shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 ${theme.bgColor}`}
     >
-      <CardContent className="p-4">
-        <div className="flex justify-between items-start gap-4">
-          {/* Left side - Shift details */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-lg">{theme.emoji}</span>
-              <h3 className="font-semibold text-lg truncate">
-                {shift.shiftType.name}
-              </h3>
-              <Badge variant="outline" className="text-xs">
-                {duration}
-              </Badge>
-            </div>
+      {/* Gradient accent bar */}
+      <div
+        className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${theme.gradient}`}
+      />
 
-            {shift.shiftType.description && (
-              <p className="text-sm text-muted-foreground mb-2 line-clamp-1">
-                {shift.shiftType.description}
-              </p>
-            )}
-
-            <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
-              <div className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                <span>
-                  {format(shift.start, "h:mm a")} -{" "}
-                  {format(shift.end, "h:mm a")}
-                </span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Users className="h-3 w-3" />
-                <span>
-                  {confirmedCount + pendingCount}/{shift.capacity}
-                </span>
-                {remaining > 0 && (
-                  <span className="text-green-600 text-xs">
-                    ({remaining} left)
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Group bookings indicator */}
-            {shift.groupBookings.length > 0 && (
-              <div className="flex items-center gap-1 mb-2">
-                <Users className="h-3 w-3 text-purple-600" />
-                <span className="text-xs text-purple-600">
-                  {shift.groupBookings.length} group booking
-                  {shift.groupBookings.length !== 1 ? "s" : ""}
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* Right side - Actions */}
-          <div className="flex flex-col gap-2 items-end">
-            {mySignup ? (
-              <Badge
-                variant={
-                  mySignup.status === "CONFIRMED" ? "default" : "secondary"
-                }
-                className="whitespace-nowrap"
+      <CardContent className="p-6">
+        <div className="space-y-4">
+          {/* Header with emoji and title */}
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              <div
+                className={`p-2 rounded-xl bg-gradient-to-br ${theme.gradient} shadow-lg flex items-center justify-center text-white text-lg font-medium`}
               >
-                {mySignup.status === "CONFIRMED"
-                  ? "✅ Confirmed"
-                  : mySignup.status === "PENDING"
-                  ? "⏳ Pending"
-                  : "⏳ Waitlisted"}
-              </Badge>
-            ) : (
-              <div className="flex gap-1">
-                {session ? (
-                  <>
-                    <ShiftSignupDialog
-                      shift={{
-                        id: shift.id,
-                        start: shift.start,
-                        end: shift.end,
-                        location: shift.location,
-                        capacity: shift.capacity,
-                        shiftType: {
-                          name: shift.shiftType.name,
-                          description: shift.shiftType.description,
-                        },
-                      }}
-                      confirmedCount={confirmedCount}
-                      isWaitlist={isFull}
-                    >
-                      <Button
-                        size="sm"
-                        variant={isFull ? "outline" : "default"}
-                        className="text-xs px-2"
-                      >
-                        {isFull ? "🎯 Join Waitlist" : "✨ Sign Up"}
-                      </Button>
-                    </ShiftSignupDialog>
-                  </>
-                ) : (
-                  <>
-                    <Button asChild size="sm" className="text-xs px-2">
-                      <Link href="/login?callbackUrl=/shifts">✨ Sign Up</Link>
-                    </Button>
-                  </>
-                )}
+                {theme.emoji}
               </div>
-            )}
+              <div className="min-w-0 flex-1">
+                <h3 className="font-bold text-xl text-gray-900 truncate mb-1">
+                  {shift.shiftType.name}
+                </h3>
+                <div className="flex items-center gap-2">
+                  <Badge
+                    variant="secondary"
+                    className={`text-xs font-medium ${theme.textColor} ${theme.bgColor} border ${theme.borderColor}`}
+                  >
+                    {duration}
+                  </Badge>
+                  {mySignup && (
+                    <Badge
+                      variant={
+                        mySignup.status === "CONFIRMED"
+                          ? "default"
+                          : "secondary"
+                      }
+                      className={`text-xs font-medium ${
+                        mySignup.status === "CONFIRMED"
+                          ? "bg-green-100 text-green-700 border-green-200"
+                          : "bg-yellow-100 text-yellow-700 border-yellow-200"
+                      }`}
+                    >
+                      {mySignup.status === "CONFIRMED"
+                        ? "✅ Confirmed"
+                        : mySignup.status === "PENDING"
+                        ? "⏳ Pending"
+                        : "⏳ Waitlisted"}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
+
+          {/* Description */}
+          {shift.shiftType.description && (
+            <p className="text-sm text-gray-600 leading-relaxed line-clamp-2">
+              {shift.shiftType.description}
+            </p>
+          )}
+
+          {/* Time and capacity info */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex items-center gap-2 p-3 bg-white/50 rounded-lg">
+              <Clock className="h-4 w-4 text-gray-500" />
+              <div className="text-sm">
+                <div className="font-medium text-gray-900">
+                  {format(shift.start, "h:mm a")}
+                </div>
+                <div className="text-xs text-gray-500">
+                  to {format(shift.end, "h:mm a")}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 p-3 bg-white/50 rounded-lg">
+              <Users className="h-4 w-4 text-gray-500" />
+              <div className="text-sm">
+                <div className="font-medium text-gray-900">
+                  {confirmedCount + pendingCount}/{shift.capacity}
+                </div>
+                <div className="text-xs text-gray-500">
+                  {remaining > 0 ? (
+                    <span className="text-green-600 font-medium">
+                      {remaining} spots left
+                    </span>
+                  ) : (
+                    <span className="text-orange-600 font-medium">Full</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Group bookings indicator */}
+          {shift.groupBookings.length > 0 && (
+            <div className="flex items-center gap-2 p-3 bg-purple-50 rounded-lg border border-purple-100">
+              <Users className="h-4 w-4 text-purple-600" />
+              <span className="text-sm font-medium text-purple-700">
+                {shift.groupBookings.length} group booking
+                {shift.groupBookings.length !== 1 ? "s" : ""}
+              </span>
+            </div>
+          )}
+
+          {/* Action button */}
+          {!mySignup && (
+            <div className="pt-2">
+              {session ? (
+                <ShiftSignupDialog
+                  shift={{
+                    id: shift.id,
+                    start: shift.start,
+                    end: shift.end,
+                    location: shift.location,
+                    capacity: shift.capacity,
+                    shiftType: {
+                      name: shift.shiftType.name,
+                      description: shift.shiftType.description,
+                    },
+                  }}
+                  confirmedCount={confirmedCount}
+                  isWaitlist={isFull}
+                >
+                  <Button
+                    className={`w-full font-medium transition-all duration-200 ${
+                      isFull
+                        ? "bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 hover:border-orange-300"
+                        : "bg-gradient-to-r " +
+                          theme.gradient +
+                          " hover:shadow-lg transform hover:scale-[1.02] text-white"
+                    }`}
+                    variant={isFull ? "outline" : "default"}
+                  >
+                    {isFull ? "🎯 Join Waitlist" : "✨ Sign Up Now"}
+                  </Button>
+                </ShiftSignupDialog>
+              ) : (
+                <Button
+                  asChild
+                  className={`w-full font-medium bg-gradient-to-r ${theme.gradient} hover:shadow-lg transform hover:scale-[1.02] text-white transition-all duration-200`}
+                >
+                  <Link href="/login?callbackUrl=/shifts">✨ Sign Up Now</Link>
+                </Button>
+              )}
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -426,7 +463,7 @@ export default async function ShiftsPageRedesigned({
       {/* Profile filter notification */}
       {isUsingProfileFilter && (
         <div
-          className="mb-6 p-4 bg-primary/10 rounded-lg border border-primary/20"
+          className="mb-8 p-4 bg-primary/10 rounded-lg border border-primary/20"
           data-testid="profile-filter-notification"
         >
           <p className="text-sm text-primary font-medium flex items-center gap-2">
@@ -526,7 +563,7 @@ export default async function ShiftsPageRedesigned({
                         defaultOpen
                         className="space-y-4"
                       >
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between gap-8">
                           <CollapsibleTrigger asChild>
                             <Button
                               variant="ghost"
