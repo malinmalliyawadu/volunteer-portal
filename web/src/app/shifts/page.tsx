@@ -201,43 +201,45 @@ export default async function ShiftsPage({
         />
 
         {/* Compact location filter using tabs */}
-        <div className="flex flex-col gap-2" data-testid="location-filter">
+        <div className="flex flex-col gap-2 w-full sm:w-auto" data-testid="location-filter">
           <span className="text-sm font-medium text-muted-foreground">
             Filter by location:
           </span>
-          <Tabs
-            value={
-              selectedLocation || (isUsingProfileFilter ? "preferences" : "all")
-            }
-            className="w-fit"
-            data-testid="location-tabs"
-          >
-            <TabsList data-testid="location-tabs-list">
-              {userPreferredLocations.length > 0 && (
-                <TabsTrigger value="preferences" asChild data-testid="location-tab-preferences">
-                  <Link href={{ pathname: "/shifts", query: {} }}>
-                    Your preferences
-                  </Link>
-                </TabsTrigger>
-              )}
-              <TabsTrigger value="all" asChild data-testid="location-tab-all">
-                <Link
-                  href={{ pathname: "/shifts", query: { showAll: "true" } }}
-                >
-                  All
-                </Link>
-              </TabsTrigger>
-              {LOCATIONS.map((loc) => (
-                <TabsTrigger key={loc} value={loc} asChild data-testid={`location-tab-${loc.toLowerCase().replace(/\s+/g, '-')}`}>
+          <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+            <Tabs
+              value={
+                selectedLocation || (isUsingProfileFilter ? "preferences" : "all")
+              }
+              className="w-fit min-w-0"
+              data-testid="location-tabs"
+            >
+              <TabsList className="flex-nowrap" data-testid="location-tabs-list">
+                {userPreferredLocations.length > 0 && (
+                  <TabsTrigger value="preferences" asChild className="whitespace-nowrap" data-testid="location-tab-preferences">
+                    <Link href={{ pathname: "/shifts", query: {} }}>
+                      My locations
+                    </Link>
+                  </TabsTrigger>
+                )}
+                <TabsTrigger value="all" asChild className="whitespace-nowrap" data-testid="location-tab-all">
                   <Link
-                    href={{ pathname: "/shifts", query: { location: loc } }}
+                    href={{ pathname: "/shifts", query: { showAll: "true" } }}
                   >
-                    {loc}
+                    All
                   </Link>
                 </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
+                {LOCATIONS.map((loc) => (
+                  <TabsTrigger key={loc} value={loc} asChild className="whitespace-nowrap" data-testid={`location-tab-${loc.toLowerCase().replace(/\s+/g, '-')}`}>
+                    <Link
+                      href={{ pathname: "/shifts", query: { location: loc } }}
+                    >
+                      {loc}
+                    </Link>
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
+          </div>
         </div>
       </div>
 

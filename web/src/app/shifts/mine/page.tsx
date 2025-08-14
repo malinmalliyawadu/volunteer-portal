@@ -181,34 +181,34 @@ export default async function MyShiftsPage({
     };
 
     return (
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3">
         {isFirst ? (
-          <Button variant="outline" size="sm" disabled className="gap-2">
+          <Button variant="outline" size="sm" disabled className="gap-1 sm:gap-2 px-2 sm:px-3">
             <ChevronLeft className="h-4 w-4" />
-            Previous
+            <span className="hidden sm:inline">Previous</span>
           </Button>
         ) : (
-          <Button asChild variant="outline" size="sm" className="gap-2">
+          <Button asChild variant="outline" size="sm" className="gap-1 sm:gap-2 px-2 sm:px-3">
             <Link href={{ pathname: basePath, query: query(page - 1) }}>
               <ChevronLeft className="h-4 w-4" />
-              Previous
+              <span className="hidden sm:inline">Previous</span>
             </Link>
           </Button>
         )}
-        <div className="flex items-center gap-1 px-3 py-2 text-sm text-muted-foreground rounded-md">
+        <div className="flex items-center gap-1 px-2 sm:px-3 py-2 text-sm text-muted-foreground rounded-md">
           <span className="font-medium text-foreground">{page}</span>
           <span>of</span>
           <span className="font-medium text-foreground">{totalPages}</span>
         </div>
         {isLast ? (
-          <Button variant="outline" size="sm" disabled className="gap-2">
-            Next
+          <Button variant="outline" size="sm" disabled className="gap-1 sm:gap-2 px-2 sm:px-3">
+            <span className="hidden sm:inline">Next</span>
             <ChevronRight className="h-4 w-4" />
           </Button>
         ) : (
-          <Button asChild variant="outline" size="sm" className="gap-2">
+          <Button asChild variant="outline" size="sm" className="gap-1 sm:gap-2 px-2 sm:px-3">
             <Link href={{ pathname: basePath, query: query(page + 1) }}>
-              Next
+              <span className="hidden sm:inline">Next</span>
               <ChevronRight className="h-4 w-4" />
             </Link>
           </Button>
@@ -259,45 +259,48 @@ export default async function MyShiftsPage({
           />
 
           {/* Compact location filter using tabs */}
-          <div className="flex flex-col gap-2" data-testid="location-filter">
+          <div className="flex flex-col gap-2 w-full sm:w-auto" data-testid="location-filter">
             <span className="text-sm font-medium text-muted-foreground">
               Filter by location:
             </span>
-            <Tabs value={selectedLocation || "all"} className="w-fit">
-              <TabsList className="bg-muted" data-testid="location-tabs">
-                <TabsTrigger value="all" asChild data-testid="location-tab-all">
-                  <Link href={{ pathname: "/shifts/mine", query: {} }}>
-                    All
-                  </Link>
-                </TabsTrigger>
-                {LOCATIONS.map((loc) => (
-                  <TabsTrigger
-                    key={loc}
-                    value={loc}
-                    asChild
-                    data-testid={`location-tab-${loc
-                      .toLowerCase()
-                      .replace(/\s+/g, "-")}`}
-                  >
-                    <Link
-                      href={{
-                        pathname: "/shifts/mine",
-                        query: { location: loc },
-                      }}
-                    >
-                      {loc}
+            <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+              <Tabs value={selectedLocation || "all"} className="w-fit min-w-0">
+                <TabsList className="bg-muted flex-nowrap" data-testid="location-tabs">
+                  <TabsTrigger value="all" asChild className="whitespace-nowrap" data-testid="location-tab-all">
+                    <Link href={{ pathname: "/shifts/mine", query: {} }}>
+                      All
                     </Link>
                   </TabsTrigger>
-                ))}
-              </TabsList>
-            </Tabs>
+                  {LOCATIONS.map((loc) => (
+                    <TabsTrigger
+                      key={loc}
+                      value={loc}
+                      asChild
+                      className="whitespace-nowrap"
+                      data-testid={`location-tab-${loc
+                        .toLowerCase()
+                        .replace(/\s+/g, "-")}`}
+                    >
+                      <Link
+                        href={{
+                          pathname: "/shifts/mine",
+                          query: { location: loc },
+                        }}
+                      >
+                        {loc}
+                      </Link>
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </Tabs>
+            </div>
           </div>
         </div>
 
         {/* Upcoming Shifts Section */}
         <section className="mb-12" data-testid="upcoming-shifts-section">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
+            <div className="flex items-center gap-3 flex-1">
               <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
                 <CalendarCheck className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </div>
@@ -307,15 +310,15 @@ export default async function MyShiftsPage({
               >
                 Upcoming Shifts
               </h2>
+              <Badge
+                variant="outline"
+                className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800 px-3 py-1.5 text-sm font-semibold"
+                data-testid="upcoming-shifts-count"
+              >
+                {upcomingCount}
+              </Badge>
             </div>
-            <Badge
-              variant="outline"
-              className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800 px-3 py-1.5 text-sm font-semibold"
-              data-testid="upcoming-shifts-count"
-            >
-              {upcomingCount}
-            </Badge>
-            <div className="ml-auto" data-testid="upcoming-shifts-pagination">
+            <div className="flex justify-end" data-testid="upcoming-shifts-pagination">
               <Pagination
                 page={uPage}
                 totalPages={uTotalPages}
@@ -430,8 +433,8 @@ export default async function MyShiftsPage({
 
         {/* Past Shifts Section */}
         <section data-testid="past-shifts-section">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
+            <div className="flex items-center gap-3 flex-1">
               <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg">
                 <History className="h-5 w-5 text-slate-600 dark:text-slate-400" />
               </div>
@@ -441,15 +444,15 @@ export default async function MyShiftsPage({
               >
                 Shift History
               </h2>
+              <Badge
+                variant="outline"
+                className="bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 px-3 py-1.5 text-sm font-semibold"
+                data-testid="past-shifts-count"
+              >
+                {pastCount}
+              </Badge>
             </div>
-            <Badge
-              variant="outline"
-              className="bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 px-3 py-1.5 text-sm font-semibold"
-              data-testid="past-shifts-count"
-            >
-              {pastCount}
-            </Badge>
-            <div className="ml-auto" data-testid="past-shifts-pagination">
+            <div className="flex justify-end" data-testid="past-shifts-pagination">
               <Pagination
                 page={pPage}
                 totalPages={pTotalPages}
