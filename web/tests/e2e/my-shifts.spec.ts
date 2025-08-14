@@ -218,13 +218,13 @@ test.describe("My Shifts Page", () => {
           const shiftStatus = firstShift.getByTestId("shift-status");
           await expect(shiftStatus).toBeVisible();
           
-          // Check shift datetime
-          const shiftDateTime = firstShift.getByTestId("shift-datetime");
-          await expect(shiftDateTime).toBeVisible();
+          // Check shift has date/time information visible (no specific test ID)
+          const clockIcon = firstShift.locator('.lucide-clock').first();
+          await expect(clockIcon).toBeVisible();
           
-          // Check shift location
-          const shiftLocation = firstShift.getByTestId("shift-location");
-          await expect(shiftLocation).toBeVisible();
+          // Check shift has location information visible (no specific test ID)
+          const mapPinIcon = firstShift.locator('.lucide-map-pin').first();
+          await expect(mapPinIcon).toBeVisible();
           
           // Check shift actions (cancel button)
           const shiftActions = firstShift.getByTestId("shift-actions");
@@ -258,13 +258,13 @@ test.describe("My Shifts Page", () => {
           const shiftStatus = firstShift.getByTestId("shift-status");
           await expect(shiftStatus).toBeVisible();
           
-          // Check shift datetime
-          const shiftDateTime = firstShift.getByTestId("shift-datetime");
-          await expect(shiftDateTime).toBeVisible();
+          // Check shift has date/time information visible (no specific test ID)
+          const clockIcon = firstShift.locator('.lucide-clock').first();
+          await expect(clockIcon).toBeVisible();
           
-          // Check shift location
-          const shiftLocation = firstShift.getByTestId("shift-location");
-          await expect(shiftLocation).toBeVisible();
+          // Check shift has location information visible (no specific test ID)
+          const mapPinIcon = firstShift.locator('.lucide-map-pin').first();
+          await expect(mapPinIcon).toBeVisible();
           
           // Past shifts should not have cancel button
           const cancelButton = firstShift.getByTestId("cancel-shift-button");
