@@ -1,3 +1,9 @@
+## [0.4.0] - 2025-08-14
+
+### Changes
+- feat: standardize page layouts with reusable PageContainer component ([#47](https://github.com/malinmalliyawadu/volunteer-portal/pull/47)) by @malinmalliyawadu
+
+
 ## [0.3.1] - 2025-08-14
 
 ### Changes
