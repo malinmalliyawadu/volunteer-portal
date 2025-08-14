@@ -335,7 +335,10 @@ export default async function NewShiftPage() {
             <CardContent className="space-y-8">
               <form action={createShift} className="space-y-8">
                 {/* Quick Templates */}
-                <div className="space-y-3" data-testid="quick-templates-section">
+                <div
+                  className="space-y-3"
+                  data-testid="quick-templates-section"
+                >
                   <div className="flex items-center gap-2 mb-4">
                     <h3 className="font-medium text-gray-900 dark:text-gray-100">
                       Quick Templates
@@ -670,7 +673,9 @@ export default async function NewShiftPage() {
                           name={`template_${name}`}
                           id={`template_${name}`}
                           className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary mt-1"
-                          data-testid={`template-${name.toLowerCase().replace(/\s+/g, '-')}-checkbox`}
+                          data-testid={`template-${name
+                            .toLowerCase()
+                            .replace(/\s+/g, "-")}-checkbox`}
                         />
                         <div className="flex-1">
                           <Label

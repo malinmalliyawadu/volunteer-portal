@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
@@ -9,77 +9,68 @@ import { Badge } from "@/components/ui/badge";
 import { ShiftSignupDialog } from "@/components/shift-signup-dialog";
 import { PageHeader } from "@/components/page-header";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Calendar, Clock, MapPin, Users, ChevronDown } from "lucide-react";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { GroupBookingDialogWrapper } from "@/components/group-booking-dialog-wrapper";
 
 const LOCATIONS = ["Wellington", "Glenn Innes", "Onehunga"] as const;
-
 type LocationOption = (typeof LOCATIONS)[number];
 
 // Shift type theming configuration
 const SHIFT_THEMES = {
   Dishwasher: {
-    icon: "🍽️",
     gradient: "from-blue-500 to-cyan-500",
     bgColor: "bg-blue-50",
     borderColor: "border-blue-200",
     textColor: "text-blue-700",
-    category: "Kitchen",
     emoji: "🧽",
   },
   "FOH Set-Up & Service": {
-    icon: "🏪",
     gradient: "from-purple-500 to-pink-500",
     bgColor: "bg-purple-50",
     borderColor: "border-purple-200",
     textColor: "text-purple-700",
-    category: "Service",
     emoji: "✨",
   },
   "Front of House": {
-    icon: "🤝",
     gradient: "from-green-500 to-emerald-500",
     bgColor: "bg-green-50",
     borderColor: "border-green-200",
     textColor: "text-green-700",
-    category: "Service",
     emoji: "🌟",
   },
   "Kitchen Prep": {
-    icon: "🥕",
     gradient: "from-orange-500 to-amber-500",
     bgColor: "bg-orange-50",
     borderColor: "border-orange-200",
     textColor: "text-orange-700",
-    category: "Kitchen",
     emoji: "🔪",
   },
   "Kitchen Prep & Service": {
-    icon: "👨‍🍳",
     gradient: "from-red-500 to-pink-500",
     bgColor: "bg-red-50",
     borderColor: "border-red-200",
     textColor: "text-red-700",
-    category: "Kitchen",
     emoji: "🍳",
   },
   "Kitchen Service & Pack Down": {
-    icon: "🍜",
     gradient: "from-indigo-500 to-purple-500",
     bgColor: "bg-indigo-50",
     borderColor: "border-indigo-200",
     textColor: "text-indigo-700",
-    category: "Kitchen",
     emoji: "📦",
   },
 } as const;
 
-// Default theme for unknown shift types
 const DEFAULT_THEME = {
-  icon: "🤲",
   gradient: "from-gray-500 to-slate-500",
   bgColor: "bg-gray-50",
   borderColor: "border-gray-200",
   textColor: "text-gray-700",
-  category: "Volunteer",
   emoji: "❤️",
 };
 
@@ -94,39 +85,213 @@ function getDurationInHours(start: Date, end: Date): string {
   const hours = durationMs / (1000 * 60 * 60);
   const wholeHours = Math.floor(hours);
   const minutes = Math.round((hours - wholeHours) * 60);
-
-  if (minutes === 0) {
-    return `${wholeHours}h`;
-  }
-  return `${wholeHours}h ${minutes}m`;
+  return minutes === 0 ? `${wholeHours}h` : `${wholeHours}h ${minutes}m`;
 }
 
-export default async function ShiftsPage({
+interface ShiftWithRelations {
+  id: string;
+  start: Date;
+  end: Date;
+  location: string | null;
+  capacity: number;
+  notes: string | null;
+  shiftType: {
+    id: string;
+    name: string;
+    description: string | null;
+  };
+  signups: Array<{
+    id: string;
+    userId: string;
+    status: string;
+    user: {
+      id: string;
+      name: string | null;
+      email: string;
+    };
+  }>;
+  groupBookings: Array<{
+    id: string;
+    name: string;
+    status: string;
+    signups: Array<{
+      id: string;
+      userId: string;
+      status: string;
+    }>;
+  }>;
+}
+
+function ShiftCard({
+  shift,
+  currentUserId,
+  session,
+}: {
+  shift: ShiftWithRelations;
+  currentUserId?: string;
+  session: unknown;
+}) {
+  const theme = getShiftTheme(shift.shiftType.name);
+  const duration = getDurationInHours(shift.start, shift.end);
+
+  // Calculate signup counts
+  let confirmedCount = 0;
+  let pendingCount = 0;
+
+  for (const signup of shift.signups) {
+    if (signup.status === "CONFIRMED") confirmedCount += 1;
+    if (signup.status === "PENDING") pendingCount += 1;
+  }
+
+  const remaining = Math.max(0, shift.capacity - confirmedCount - pendingCount);
+  const isFull = remaining === 0;
+
+  // Check if user has existing signup
+  const mySignup = currentUserId
+    ? shift.signups.find(
+        (s) => s.userId === currentUserId && s.status !== "CANCELED"
+      )
+    : undefined;
+
+  return (
+    <Card
+      className={`border-l-4 ${theme.borderColor} ${theme.bgColor} hover:shadow-md transition-all duration-200`}
+    >
+      <CardContent className="p-4">
+        <div className="flex justify-between items-start gap-4">
+          {/* Left side - Shift details */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-lg">{theme.emoji}</span>
+              <h3 className="font-semibold text-lg truncate">
+                {shift.shiftType.name}
+              </h3>
+              <Badge variant="outline" className="text-xs">
+                {duration}
+              </Badge>
+            </div>
+
+            {shift.shiftType.description && (
+              <p className="text-sm text-muted-foreground mb-2 line-clamp-1">
+                {shift.shiftType.description}
+              </p>
+            )}
+
+            <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
+              <div className="flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                <span>
+                  {format(shift.start, "h:mm a")} -{" "}
+                  {format(shift.end, "h:mm a")}
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Users className="h-3 w-3" />
+                <span>
+                  {confirmedCount + pendingCount}/{shift.capacity}
+                </span>
+                {remaining > 0 && (
+                  <span className="text-green-600 text-xs">
+                    ({remaining} left)
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Group bookings indicator */}
+            {shift.groupBookings.length > 0 && (
+              <div className="flex items-center gap-1 mb-2">
+                <Users className="h-3 w-3 text-purple-600" />
+                <span className="text-xs text-purple-600">
+                  {shift.groupBookings.length} group booking
+                  {shift.groupBookings.length !== 1 ? "s" : ""}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Right side - Actions */}
+          <div className="flex flex-col gap-2 items-end">
+            {mySignup ? (
+              <Badge
+                variant={
+                  mySignup.status === "CONFIRMED" ? "default" : "secondary"
+                }
+                className="whitespace-nowrap"
+              >
+                {mySignup.status === "CONFIRMED"
+                  ? "✅ Confirmed"
+                  : mySignup.status === "PENDING"
+                  ? "⏳ Pending"
+                  : "⏳ Waitlisted"}
+              </Badge>
+            ) : (
+              <div className="flex gap-1">
+                {session ? (
+                  <>
+                    <ShiftSignupDialog
+                      shift={{
+                        id: shift.id,
+                        start: shift.start,
+                        end: shift.end,
+                        location: shift.location,
+                        capacity: shift.capacity,
+                        shiftType: {
+                          name: shift.shiftType.name,
+                          description: shift.shiftType.description,
+                        },
+                      }}
+                      confirmedCount={confirmedCount}
+                      isWaitlist={isFull}
+                    >
+                      <Button
+                        size="sm"
+                        variant={isFull ? "outline" : "default"}
+                        className="text-xs px-2"
+                      >
+                        {isFull ? "🎯 Join Waitlist" : "✨ Sign Up"}
+                      </Button>
+                    </ShiftSignupDialog>
+                  </>
+                ) : (
+                  <>
+                    <Button asChild size="sm" className="text-xs px-2">
+                      <Link href="/login?callbackUrl=/shifts">✨ Sign Up</Link>
+                    </Button>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+export default async function ShiftsPageRedesigned({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const session = await getServerSession(authOptions);
+  const params = await searchParams;
 
-  // Load user's profile data to get location preferences
-  let userProfile = null;
+  // Get current user
+  let currentUser = null;
   if (session?.user?.email) {
-    userProfile = await prisma.user.findUnique({
+    currentUser = await prisma.user.findUnique({
       where: { email: session.user.email },
-      select: {
-        availableLocations: true,
-      },
+      select: { id: true, availableLocations: true },
     });
   }
 
   // Parse user's preferred locations
-  const userPreferredLocations = userProfile?.availableLocations
-    ? JSON.parse(userProfile.availableLocations)
+  const userPreferredLocations = currentUser?.availableLocations
+    ? JSON.parse(currentUser.availableLocations)
     : [];
 
-  const params = await searchParams;
-
-  // Normalize and validate selected location
+  // Handle location filtering
   const rawLocation = Array.isArray(params.location)
     ? params.location[0]
     : params.location;
@@ -136,7 +301,6 @@ export default async function ShiftsPage({
     ? (rawLocation as LocationOption)
     : undefined;
 
-  // Check if user wants to see all locations (override profile preferences)
   const showAll = params.showAll === "true";
 
   // Determine filter locations
@@ -144,49 +308,63 @@ export default async function ShiftsPage({
   let isUsingProfileFilter = false;
 
   if (selectedLocation) {
-    // Explicit location selected via URL parameter
     filterLocations = [selectedLocation];
   } else if (showAll) {
-    // User explicitly wants to see all locations
     filterLocations = [];
-    isUsingProfileFilter = false;
   } else if (userPreferredLocations.length > 0) {
-    // No explicit location, use user's profile preferences
     filterLocations = userPreferredLocations.filter((loc: string) =>
       LOCATIONS.includes(loc as LocationOption)
     );
     isUsingProfileFilter = true;
   }
-  // If no selection and no preferences, show all locations (empty filter)
 
-  const shifts = await prisma.shift.findMany({
-    orderBy: { start: "asc" },
-    include: { shiftType: true, signups: true },
+  // Fetch shifts
+  const shifts = (await prisma.shift.findMany({
     where: {
       start: { gte: new Date() },
       ...(filterLocations.length > 0
         ? { location: { in: filterLocations } }
         : {}),
     },
-  });
+    orderBy: { start: "asc" },
+    include: {
+      shiftType: true,
+      signups: {
+        include: { user: { select: { id: true, name: true, email: true } } },
+      },
+      groupBookings: {
+        include: {
+          signups: true,
+        },
+      },
+    },
+  })) as ShiftWithRelations[];
 
-  type ShiftWithRelations = (typeof shifts)[number];
+  // Group shifts by date and location
+  const shiftsByDate = new Map<string, Map<string, ShiftWithRelations[]>>();
 
-  // Group shifts by calendar date (yyyy-MM-dd)
-  const groups = new Map<string, ShiftWithRelations[]>();
-  for (const s of shifts) {
-    const key = format(s.start, "yyyy-MM-dd");
-    const list = groups.get(key) ?? [];
-    list.push(s);
-    groups.set(key, list);
+  for (const shift of shifts) {
+    const dateKey = format(shift.start, "yyyy-MM-dd");
+    const locationKey = shift.location || "No location specified";
+
+    if (!shiftsByDate.has(dateKey)) {
+      shiftsByDate.set(dateKey, new Map());
+    }
+
+    const dateGroup = shiftsByDate.get(dateKey)!;
+    if (!dateGroup.has(locationKey)) {
+      dateGroup.set(locationKey, []);
+    }
+
+    dateGroup.get(locationKey)!.push(shift);
   }
 
-  // Sort group keys by date ascending
-  const sortedKeys = Array.from(groups.keys()).sort();
+  // Sort dates
+  const sortedDates = Array.from(shiftsByDate.keys()).sort();
 
   return (
-    <div className="max-w-6xl mx-auto py-4 animate-fade-in" data-testid="shifts-browse-page">
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
+    <div className="max-w-6xl mx-auto py-4" data-testid="shifts-browse-page">
+      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 mb-8">
         <PageHeader
           title="Volunteer Shifts"
           description={`Find and sign up for upcoming volunteer opportunities${
@@ -200,87 +378,87 @@ export default async function ShiftsPage({
           data-testid="shifts-page-header"
         />
 
-        {/* Compact location filter using tabs */}
-        <div className="flex flex-col gap-2 w-full sm:w-auto" data-testid="location-filter">
+        {/* Location filter */}
+        <div className="flex flex-col gap-3" data-testid="location-filter">
           <span className="text-sm font-medium text-muted-foreground">
             Filter by location:
           </span>
-          <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-            <Tabs
-              value={
-                selectedLocation || (isUsingProfileFilter ? "preferences" : "all")
-              }
-              className="w-fit min-w-0"
-              data-testid="location-tabs"
+          <Tabs
+            value={
+              selectedLocation || (isUsingProfileFilter ? "preferences" : "all")
+            }
+            className="w-fit"
+            data-testid="location-tabs"
+          >
+            <TabsList
+              className="flex-wrap h-auto"
+              data-testid="location-tabs-list"
             >
-              <TabsList className="flex-nowrap" data-testid="location-tabs-list">
-                {userPreferredLocations.length > 0 && (
-                  <TabsTrigger value="preferences" asChild className="whitespace-nowrap" data-testid="location-tab-preferences">
-                    <Link href={{ pathname: "/shifts", query: {} }}>
-                      My locations
-                    </Link>
-                  </TabsTrigger>
-                )}
-                <TabsTrigger value="all" asChild className="whitespace-nowrap" data-testid="location-tab-all">
-                  <Link
-                    href={{ pathname: "/shifts", query: { showAll: "true" } }}
-                  >
-                    All
-                  </Link>
+              {userPreferredLocations.length > 0 && (
+                <TabsTrigger
+                  value="preferences"
+                  asChild
+                  data-testid="location-tab-preferences"
+                >
+                  <Link href="/shifts">My Locations</Link>
                 </TabsTrigger>
-                {LOCATIONS.map((loc) => (
-                  <TabsTrigger key={loc} value={loc} asChild className="whitespace-nowrap" data-testid={`location-tab-${loc.toLowerCase().replace(/\s+/g, '-')}`}>
-                    <Link
-                      href={{ pathname: "/shifts", query: { location: loc } }}
-                    >
-                      {loc}
-                    </Link>
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </Tabs>
-          </div>
+              )}
+              <TabsTrigger value="all" asChild data-testid="location-tab-all">
+                <Link href="/shifts?showAll=true">All</Link>
+              </TabsTrigger>
+              {LOCATIONS.map((loc) => (
+                <TabsTrigger
+                  key={loc}
+                  value={loc}
+                  asChild
+                  data-testid={`location-tab-${loc
+                    .toLowerCase()
+                    .replace(/\s+/g, "-")}`}
+                >
+                  <Link href={`/shifts?location=${loc}`}>{loc}</Link>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
         </div>
       </div>
 
-      {/* Profile filter notification - moved to a smaller, less prominent position */}
+      {/* Profile filter notification */}
       {isUsingProfileFilter && (
-        <div className="mb-6 p-3 bg-primary/10 rounded-lg border border-primary/20" data-testid="profile-filter-notification">
+        <div
+          className="mb-6 p-4 bg-primary/10 rounded-lg border border-primary/20"
+          data-testid="profile-filter-notification"
+        >
           <p className="text-sm text-primary font-medium flex items-center gap-2">
-            <span>📍</span>
+            <MapPin className="h-4 w-4" />
             Showing shifts in your preferred locations:{" "}
             {userPreferredLocations.join(", ")}
           </p>
-          <p className="text-xs text-primary/80 mt-1">
-            You can override this by selecting a specific location above, or{" "}
+          <p className="text-xs text-primary/80 mt-2">
             <Link href="/profile/edit" className="underline hover:text-primary">
-              update your preferences
-            </Link>
-            .
+              Update your preferences
+            </Link>{" "}
+            or select a specific location above.
           </p>
         </div>
       )}
 
       {shifts.length === 0 ? (
-        <div className="text-center py-16" data-testid="empty-state">
-          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg
-              className="w-8 h-8 text-primary/60"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
+        <div className="text-center py-20" data-testid="empty-state">
+          <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Calendar className="w-10 h-10 text-primary/60" />
           </div>
-          <h3 className="text-xl font-semibold mb-2" data-testid="empty-state-title">No shifts available</h3>
-          <p className="text-muted-foreground" data-testid="empty-state-description">
-            No upcoming shifts
+          <h3
+            className="text-2xl font-semibold mb-3"
+            data-testid="empty-state-title"
+          >
+            No shifts available
+          </h3>
+          <p
+            className="text-muted-foreground max-w-md mx-auto"
+            data-testid="empty-state-description"
+          >
+            No upcoming shifts found
             {selectedLocation
               ? ` in ${selectedLocation}`
               : isUsingProfileFilter
@@ -289,366 +467,118 @@ export default async function ShiftsPage({
             . Check back later for new opportunities.
           </p>
           {isUsingProfileFilter && (
-            <p className="text-muted-foreground mt-2">
-              Try{" "}
-              <Link
-                href="/shifts"
-                className="text-primary underline hover:text-primary/80"
-              >
-                viewing all locations
-              </Link>{" "}
-              or{" "}
-              <Link
-                href="/profile/edit"
-                className="text-primary underline hover:text-primary/80"
-              >
-                updating your location preferences
-              </Link>
-              .
-            </p>
+            <div className="mt-4 space-x-4">
+              <Button asChild variant="outline">
+                <Link href="/shifts?showAll=true">View All Locations</Link>
+              </Button>
+              <Button asChild>
+                <Link href="/profile/edit">Update Preferences</Link>
+              </Button>
+            </div>
           )}
         </div>
       ) : (
-        <div className="space-y-10" data-testid="shifts-list">
-          {sortedKeys.map((key, dayIndex) => {
-            const dayShifts = groups.get(key)!;
-            const heading = format(new Date(key), "EEEE, dd MMMM yyyy");
+        <div className="space-y-8" data-testid="shifts-list">
+          {sortedDates.map((dateKey, dateIndex) => {
+            const locationGroups = shiftsByDate.get(dateKey)!;
+            const sortedLocations = Array.from(locationGroups.keys()).sort();
+            const dateObj = parseISO(dateKey);
+            const totalShiftsThisDate = Array.from(
+              locationGroups.values()
+            ).reduce((sum, shifts) => sum + shifts.length, 0);
+
             return (
               <section
-                key={key}
+                key={dateKey}
                 className="animate-slide-up"
-                style={{ animationDelay: `${dayIndex * 0.1}s` }}
-                data-testid={`shifts-day-section-${key}`}
+                style={{ animationDelay: `${dateIndex * 0.1}s` }}
+                data-testid={`shifts-date-section-${dateKey}`}
               >
+                {/* Date Header */}
                 <div className="flex items-center gap-4 mb-6">
-                  <h2 className="text-2xl font-bold" data-testid={`shifts-day-heading-${key}`}>{heading}</h2>
-                  <Badge variant="outline" className="badge-primary" data-testid={`shifts-day-count-${key}`}>
-                    {dayShifts.length} shift{dayShifts.length !== 1 ? "s" : ""}
-                  </Badge>
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg">
+                      <Calendar className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h2
+                        className="text-2xl font-bold"
+                        data-testid={`shifts-date-heading-${dateKey}`}
+                      >
+                        {format(dateObj, "EEEE, MMMM d, yyyy")}
+                      </h2>
+                      <p className="text-sm text-muted-foreground">
+                        {totalShiftsThisDate} shift
+                        {totalShiftsThisDate !== 1 ? "s" : ""} available
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3" data-testid={`shifts-grid-${key}`}>
-                  {dayShifts.map((s: ShiftWithRelations, shiftIndex) => {
-                    let confirmedCount = 0;
-                    let waitlistCount = 0;
-                    let pendingCount = 0;
-                    for (const signup of s.signups) {
-                      if (signup.status === "CONFIRMED") confirmedCount += 1;
-                      if (signup.status === "WAITLISTED") waitlistCount += 1;
-                      if (signup.status === "PENDING") pendingCount += 1;
-                      // Note: CANCELED signups are excluded from all counts
-                    }
-                    const totalSignedUp =
-                      confirmedCount + waitlistCount + pendingCount;
-                    const remaining = Math.max(0, s.capacity - totalSignedUp);
-                    const isFull = remaining === 0;
 
-                    // Determine if the current user is already signed up for this shift (excluding canceled)
-                    const currentUserId = (
-                      session?.user as { id?: string } | undefined
-                    )?.id;
-                    const mySignup = currentUserId
-                      ? s.signups.find(
-                          (su: (typeof s.signups)[number]) =>
-                            su.userId === currentUserId &&
-                            su.status !== "CANCELED"
-                        )
-                      : undefined;
-
-                    const theme = getShiftTheme(s.shiftType.name);
-                    const duration = getDurationInHours(s.start, s.end);
+                {/* Location Groups */}
+                <div className="space-y-6">
+                  {sortedLocations.map((locationKey) => {
+                    const locationShifts = locationGroups.get(locationKey)!;
 
                     return (
-                      <Card
-                        key={s.id}
-                        className={`group hover:shadow-xl transition-all duration-300 overflow-hidden animate-slide-up border-l-4 ${theme.borderColor} ${theme.bgColor} hover:scale-[1.02] py-0`}
-                        style={{
-                          animationDelay: `${
-                            dayIndex * 0.1 + shiftIndex * 0.05
-                          }s`,
-                        }}
-                        data-testid={`shift-card-${s.id}`}
+                      <Collapsible
+                        key={locationKey}
+                        defaultOpen
+                        className="space-y-4"
                       >
-                        <CardContent className="p-6">
-                          {/* Header with icon and title */}
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center gap-3 mb-2">
-                                <div
-                                  className={`w-12 h-12 rounded-xl bg-gradient-to-br ${theme.gradient} flex items-center justify-center text-white text-xl shadow-lg`}
-                                >
-                                  {theme.icon}
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                  <h3 className="font-bold text-lg mb-1 group-hover:text-primary transition-colors line-clamp-1" data-testid={`shift-name-${s.id}`}>
-                                    {s.shiftType.name}
-                                  </h3>
-                                  <div
-                                    className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${theme.bgColor} ${theme.textColor} border ${theme.borderColor}`}
-                                    data-testid={`shift-category-${s.id}`}
-                                  >
-                                    <span>{theme.emoji}</span>
-                                    <span>{theme.category}</span>
+                        <div className="flex items-center justify-between">
+                          <CollapsibleTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              className="flex-1 justify-start p-4 h-auto hover:bg-muted/50"
+                              data-testid={`location-toggle-${dateKey}-${locationKey
+                                .toLowerCase()
+                                .replace(/\s+/g, "-")}`}
+                            >
+                              <div className="flex items-center justify-between w-full">
+                                <div className="flex items-center gap-3">
+                                  <MapPin className="h-5 w-5 text-primary" />
+                                  <div className="text-left">
+                                    <h3 className="font-semibold text-lg">
+                                      {locationKey}
+                                    </h3>
+                                    <p className="text-sm text-muted-foreground">
+                                      {locationShifts.length} shift
+                                      {locationShifts.length !== 1 ? "s" : ""}
+                                    </p>
                                   </div>
                                 </div>
+                                <ChevronDown className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180" />
                               </div>
+                            </Button>
+                          </CollapsibleTrigger>
 
-                              {/* Time and location info */}
-                              <div className="space-y-2 mb-3">
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground" data-testid={`shift-time-${s.id}`}>
-                                  <div className="w-4 h-4 flex items-center justify-center">
-                                    <svg
-                                      className="w-4 h-4"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      viewBox="0 0 24 24"
-                                    >
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                                      />
-                                    </svg>
-                                  </div>
-                                  <span className="font-medium">
-                                    {format(s.start, "h:mm a")} -{" "}
-                                    {format(s.end, "h:mm a")}
-                                  </span>
-                                  <span
-                                    className={`px-2 py-0.5 rounded-full text-xs font-medium ${theme.bgColor} ${theme.textColor}`}
-                                    data-testid={`shift-duration-${s.id}`}
-                                  >
-                                    {duration}
-                                  </span>
-                                </div>
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground" data-testid={`shift-location-${s.id}`}>
-                                  <div className="w-4 h-4 flex items-center justify-center">
-                                    <svg
-                                      className="w-4 h-4"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      viewBox="0 0 24 24"
-                                    >
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                                      />
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                                      />
-                                    </svg>
-                                  </div>
-                                  <span className="font-medium">
-                                    {s.location}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                            {mySignup ? (
-                              <Badge
-                                variant="outline"
-                                className={
-                                  mySignup.status === "CONFIRMED"
-                                    ? "badge-primary"
-                                    : mySignup.status === "PENDING"
-                                    ? "badge-accent"
-                                    : "badge-accent"
-                                }
-                                data-testid={`shift-signup-status-${s.id}`}
-                              >
-                                {mySignup.status === "CONFIRMED"
-                                  ? "✅ Confirmed"
-                                  : mySignup.status === "PENDING"
-                                  ? "⏳ Pending Approval"
-                                  : "⏳ Waitlisted"}
-                              </Badge>
-                            ) : null}
-                          </div>
-
-                          {/* Description */}
-                          {s.shiftType.description && (
-                            <div className="mb-4 p-3 bg-white/50 rounded-lg border border-white/20" data-testid={`shift-description-${s.id}`}>
-                              <p className="text-sm text-muted-foreground line-clamp-2">
-                                {s.shiftType.description}
-                              </p>
-                            </div>
+                          {/* Group Booking Button at Location Level */}
+                          {session && (
+                            <GroupBookingDialogWrapper
+                              shifts={locationShifts}
+                              date={format(dateObj, "EEEE, MMMM d, yyyy")}
+                              location={locationKey}
+                              testId={`group-booking-${dateKey}-${locationKey
+                                .toLowerCase()
+                                .replace(/\s+/g, "-")}`}
+                            />
                           )}
+                        </div>
 
-                          {/* Enhanced capacity indicator */}
-                          <div className="mb-4" data-testid={`shift-capacity-${s.id}`}>
-                            <div className="flex items-center justify-between text-sm mb-2">
-                              <div className="flex items-center gap-2">
-                                <div className="w-4 h-4 flex items-center justify-center">
-                                  <svg
-                                    className="w-4 h-4 text-muted-foreground"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                                    />
-                                  </svg>
-                                </div>
-                                <span className="text-muted-foreground font-medium">
-                                  Volunteers
-                                </span>
-                              </div>
-                              <span className="font-bold text-base" data-testid={`shift-capacity-count-${s.id}`}>
-                                {totalSignedUp}/{s.capacity}
-                              </span>
-                            </div>
-                            <div className="progress-bar bg-gray-200" data-testid={`shift-progress-bar-${s.id}`}>
-                              <div
-                                className={`progress-fill bg-gradient-to-r ${theme.gradient}`}
-                                style={{
-                                  width: `${Math.min(
-                                    100,
-                                    Math.round(
-                                      (totalSignedUp / s.capacity) * 100
-                                    )
-                                  )}%`,
-                                }}
-                                data-testid={`shift-progress-fill-${s.id}`}
+                        <CollapsibleContent className="space-y-3 pl-4">
+                          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                            {locationShifts.map((shift) => (
+                              <ShiftCard
+                                key={shift.id}
+                                shift={shift}
+                                currentUserId={currentUser?.id}
+                                session={session}
                               />
-                            </div>
-                            {(pendingCount > 0 || waitlistCount > 0) && (
-                              <div className="text-xs text-muted-foreground mt-1 space-y-0.5">
-                                {pendingCount > 0 && (
-                                  <p className="flex items-center gap-1">
-                                    <span>⏳</span>
-                                    <span>{pendingCount} pending approval</span>
-                                  </p>
-                                )}
-                                {waitlistCount > 0 && (
-                                  <p className="flex items-center gap-1">
-                                    <span>🎯</span>
-                                    <span>{waitlistCount} on waitlist</span>
-                                  </p>
-                                )}
-                              </div>
-                            )}
+                            ))}
                           </div>
-
-                          {/* Action buttons */}
-                          <div className="flex items-center justify-between" data-testid={`shift-actions-${s.id}`}>
-                            {isFull ? (
-                              <Badge
-                                variant="secondary"
-                                className="badge-outline"
-                                data-testid={`shift-waitlist-badge-${s.id}`}
-                              >
-                                🎯 Waitlist open
-                              </Badge>
-                            ) : (
-                              <Badge
-                                className={`${theme.bgColor} ${theme.textColor} border ${theme.borderColor}`}
-                                data-testid={`shift-spots-badge-${s.id}`}
-                              >
-                                ✨ {remaining} spot{remaining !== 1 ? "s" : ""}{" "}
-                                left
-                              </Badge>
-                            )}
-
-                            {mySignup ? (
-                              <span className="text-sm text-muted-foreground font-medium" data-testid={`shift-signed-up-message-${s.id}`}>
-                                You&apos;re signed up! 🎉
-                              </span>
-                            ) : isFull ? (
-                              session ? (
-                                <ShiftSignupDialog
-                                  shift={{
-                                    id: s.id,
-                                    start: s.start,
-                                    end: s.end,
-                                    location: s.location,
-                                    capacity: s.capacity,
-                                    shiftType: {
-                                      name: s.shiftType.name,
-                                      description: s.shiftType.description,
-                                    },
-                                  }}
-                                  confirmedCount={confirmedCount}
-                                  isWaitlist={true}
-                                >
-                                  <Button
-                                    type="button"
-                                    size="sm"
-                                    className="btn-outline hover:scale-105 transition-transform"
-                                    data-testid={`shift-join-waitlist-button-${s.id}`}
-                                  >
-                                    🎯 Join waitlist
-                                  </Button>
-                                </ShiftSignupDialog>
-                              ) : (
-                                <Button
-                                  asChild
-                                  size="sm"
-                                  className="btn-primary hover:scale-105 transition-transform"
-                                  data-testid={`shift-join-waitlist-login-button-${s.id}`}
-                                >
-                                  <Link
-                                    href={{
-                                      pathname: "/login",
-                                      query: { callbackUrl: "/shifts" },
-                                    }}
-                                  >
-                                    🎯 Join waitlist
-                                  </Link>
-                                </Button>
-                              )
-                            ) : session ? (
-                              <ShiftSignupDialog
-                                shift={{
-                                  id: s.id,
-                                  start: s.start,
-                                  end: s.end,
-                                  location: s.location,
-                                  capacity: s.capacity,
-                                  shiftType: {
-                                    name: s.shiftType.name,
-                                    description: s.shiftType.description,
-                                  },
-                                }}
-                                confirmedCount={confirmedCount}
-                              >
-                                <Button
-                                  type="button"
-                                  size="sm"
-                                  className={`btn-primary bg-gradient-to-r ${theme.gradient} hover:scale-105 transition-transform shadow-lg`}
-                                  data-testid={`shift-signup-button-${s.id}`}
-                                >
-                                  ✨ Sign up
-                                </Button>
-                              </ShiftSignupDialog>
-                            ) : (
-                              <Button
-                                asChild
-                                size="sm"
-                                className="btn-primary hover:scale-105 transition-transform"
-                                data-testid={`shift-signup-login-button-${s.id}`}
-                              >
-                                <Link
-                                  href={{
-                                    pathname: "/login",
-                                    query: { callbackUrl: "/shifts" },
-                                  }}
-                                >
-                                  ✨ Sign up
-                                </Link>
-                              </Button>
-                            )}
-                          </div>
-                        </CardContent>
-                      </Card>
+                        </CollapsibleContent>
+                      </Collapsible>
                     );
                   })}
                 </div>
