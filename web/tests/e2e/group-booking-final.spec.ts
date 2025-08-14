@@ -339,7 +339,7 @@ test.describe("Group Booking Feature - Database Operations", () => {
       data: {
         name: `Limited Group ${uniqueId}`,
         shiftId: limitedShift.id,
-        leaderId: volunteerId,
+        leaderId: volunteer2Id, // Use different leader to avoid unique constraint
         status: "PENDING",
         maxMembers: 2 // This fits within capacity
       }
