@@ -1,3 +1,9 @@
+## [0.6.1] - 2025-08-14
+
+### Changes
+- Add comprehensive e2e tests for group booking feature ([#48](https://github.com/malinmalliyawadu/volunteer-portal/pull/48)) by @malinmalliyawadu
+
+
 ## [0.6.0] - 2025-08-14
 
 ### Changes
