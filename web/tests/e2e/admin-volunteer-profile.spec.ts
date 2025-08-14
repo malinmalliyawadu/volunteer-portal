@@ -580,8 +580,8 @@ test.describe("Admin Volunteer Profile View", () => {
       if (volunteerId) {
         await page.goto(`/admin/volunteers/${volunteerId}`);
 
-        // Wait for main content to be visible
-        const pageContent = page.locator(".mx-auto.max-w-7xl");
+        // Wait for main content to be visible (using new PageContainer structure)
+        const pageContent = page.getByTestId("admin-volunteer-profile-page");
         await expect(pageContent).toBeVisible({ timeout: 10000 });
 
         // Check that no error messages are displayed
