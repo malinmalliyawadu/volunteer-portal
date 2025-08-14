@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { SignupActions } from "@/components/signup-actions";
 import { FilterControls } from "@/components/filter-controls";
 import { DeleteShiftDialog } from "@/components/delete-shift-dialog";
+import { GroupBookingAdminActions } from "@/components/group-booking-admin-actions";
 import {
   Calendar,
   Clock,
@@ -475,7 +476,7 @@ export default async function AdminShiftsPage({
             </div>
           </div>
 
-          {s.signups.length === 0 ? (
+          {s.signups.length === 0 && s.groupBookings.length === 0 ? (
             <div
               className="text-center py-8 sm:py-10 bg-gradient-to-br from-slate-50 to-gray-50 rounded-xl border border-slate-100"
               data-testid={`no-signups-${s.id}`}
@@ -489,61 +490,231 @@ export default async function AdminShiftsPage({
               </p>
             </div>
           ) : (
-            <div
-              className="border-t border-slate-200 pt-4"
-              data-testid={`signups-list-${s.id}`}
-            >
-              <div className="mb-3">
-                <h4 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                  <Users className="h-4 w-4" />
-                  Volunteer Signups
-                  <span className="text-xs font-normal text-slate-500">
-                    ({s.signups.length} total)
-                  </span>
-                </h4>
-              </div>
-              <div className="hidden md:grid md:grid-cols-5 md:gap-4 text-xs uppercase tracking-wider text-slate-500 font-semibold pb-3 px-4 border-b border-slate-100">
-                <div>Volunteer</div>
-                <div>Email</div>
-                <div>Phone</div>
-                <div>Status</div>
-                <div>Actions</div>
-              </div>
-              <div className="space-y-1.5 mt-2">
-                {s.signups
-                  .slice()
-                  .sort(
-                    (
-                      a: ShiftWithAll["signups"][number],
-                      b: ShiftWithAll["signups"][number]
-                    ) => {
-                      type Status = ShiftWithAll["signups"][number]["status"];
-                      const order: Record<Status, number> = {
-                        PENDING: 0,
-                        CONFIRMED: 1,
-                        WAITLISTED: 2,
-                        CANCELED: 3,
-                      };
-                      const ao = order[a.status];
-                      const bo = order[b.status];
-                      if (ao !== bo) return ao - bo;
-                      return (a.user.name ?? a.user.email).localeCompare(
-                        b.user.name ?? b.user.email
-                      );
-                    }
-                  )
-                  .map((su: ShiftWithAll["signups"][number]) => (
-                    <SignupRow
-                      key={su.id}
-                      name={su.user.name}
-                      email={su.user.email}
-                      phone={su.user.phone}
-                      status={su.status}
-                      userId={su.user.id}
-                      signupId={su.id}
-                    />
-                  ))}
-              </div>
+            <div className="border-t border-slate-200 pt-4">
+              {/* Group Bookings Section */}
+              {s.groupBookings.length > 0 && (
+                <div className="mb-6" data-testid={`group-bookings-${s.id}`}>
+                  <div className="mb-3">
+                    <h4 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                      <Users className="h-4 w-4" />
+                      Group Bookings
+                      <span className="text-xs font-normal text-slate-500">
+                        ({s.groupBookings.length} groups)
+                      </span>
+                    </h4>
+                  </div>
+                  <div className="space-y-4">
+                    {s.groupBookings
+                      .slice()
+                      .sort((a, b) => {
+                        // Sort by status, then by name
+                        const statusOrder = {
+                          PENDING: 0,
+                          CONFIRMED: 1,
+                          PARTIAL: 2,
+                          WAITLISTED: 3,
+                          CANCELED: 4,
+                        };
+                        const aOrder = statusOrder[a.status as keyof typeof statusOrder];
+                        const bOrder = statusOrder[b.status as keyof typeof statusOrder];
+                        if (aOrder !== bOrder) return aOrder - bOrder;
+                        return a.name.localeCompare(b.name);
+                      })
+                      .map((groupBooking) => (
+                        <div
+                          key={groupBooking.id}
+                          className="border border-slate-200 rounded-lg p-4 bg-slate-50"
+                          data-testid={`group-booking-${groupBooking.id}`}
+                        >
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <h5 className="font-semibold text-slate-900">{groupBooking.name}</h5>
+                                <Badge 
+                                  variant="outline"
+                                  className={`text-xs ${
+                                    groupBooking.status === "PENDING" 
+                                      ? "bg-amber-50 text-amber-700 border-amber-200"
+                                      : groupBooking.status === "CONFIRMED"
+                                      ? "bg-green-50 text-green-700 border-green-200"
+                                      : groupBooking.status === "PARTIAL"
+                                      ? "bg-blue-50 text-blue-700 border-blue-200"
+                                      : groupBooking.status === "WAITLISTED"
+                                      ? "bg-yellow-50 text-yellow-700 border-yellow-200"
+                                      : "bg-gray-50 text-gray-700 border-gray-200"
+                                  }`}
+                                >
+                                  {groupBooking.status.toLowerCase()}
+                                </Badge>
+                              </div>
+                              <p className="text-sm text-slate-600 mb-1">
+                                Leader: {groupBooking.leader.name || groupBooking.leader.email}
+                              </p>
+                              {groupBooking.description && (
+                                <p className="text-sm text-slate-500 italic mb-2">
+                                  &quot;{groupBooking.description}&quot;
+                                </p>
+                              )}
+                              <p className="text-xs text-slate-500">
+                                {groupBooking.signups.length} members, {groupBooking.invitations.filter(inv => inv.status === "PENDING").length} pending invitations
+                              </p>
+                            </div>
+                            <GroupBookingAdminActions
+                              groupBookingId={groupBooking.id}
+                              status={groupBooking.status}
+                              groupName={groupBooking.name}
+                            />
+                          </div>
+                          
+                          {/* Group Members */}
+                          <div className="border-t border-slate-200 pt-3 mt-3">
+                            <div className="hidden md:grid md:grid-cols-5 md:gap-4 text-xs uppercase tracking-wider text-slate-500 font-semibold pb-2 px-2">
+                              <div>Member</div>
+                              <div>Email</div>
+                              <div>Phone</div>
+                              <div>Status</div>
+                              <div>Actions</div>
+                            </div>
+                            <div className="space-y-1">
+                              {groupBooking.signups
+                                .slice()
+                                .sort(
+                                  (a, b) => {
+                                    const statusOrder = {
+                                      PENDING: 0,
+                                      CONFIRMED: 1,
+                                      WAITLISTED: 2,
+                                      CANCELED: 3,
+                                    };
+                                    const aOrder = statusOrder[a.status as keyof typeof statusOrder];
+                                    const bOrder = statusOrder[b.status as keyof typeof statusOrder];
+                                    if (aOrder !== bOrder) return aOrder - bOrder;
+                                    return (a.user.name ?? a.user.email).localeCompare(
+                                      b.user.name ?? b.user.email
+                                    );
+                                  }
+                                )
+                                .map((su) => (
+                                  <div
+                                    key={su.id}
+                                    className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-5 md:gap-4 text-sm py-3 px-2 bg-white rounded-lg border border-slate-100"
+                                    data-testid={`group-member-${su.id}`}
+                                  >
+                                    <div className="flex items-center gap-2 sm:col-span-1">
+                                      <div className="h-6 w-6 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-xs">
+                                        {(su.user.name ?? su.user.email)?.[0]?.toUpperCase()}
+                                      </div>
+                                      <Link
+                                        href={`/admin/volunteers/${su.user.id}`}
+                                        className="font-medium text-slate-800 hover:text-blue-600 transition-colors flex items-center gap-1 min-w-0"
+                                      >
+                                        <span className="truncate">{su.user.name ?? "(No name)"}</span>
+                                        {groupBooking.leaderId === su.user.id && (
+                                          <Badge variant="outline" className="text-xs">Leader</Badge>
+                                        )}
+                                      </Link>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-slate-600 min-w-0">
+                                      <span className="sm:hidden text-xs text-slate-500">Email:</span>
+                                      <span className="truncate">{su.user.email}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-slate-600 min-w-0">
+                                      <span className="sm:hidden text-xs text-slate-500">Phone:</span>
+                                      <span className="truncate">{su.user.phone ?? "—"}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <span className="sm:hidden text-xs text-slate-500">Status:</span>
+                                      {su.status === "PENDING" && (
+                                        <Badge className="bg-gradient-to-r from-amber-50 to-orange-50 text-orange-700 border-orange-200 font-medium shadow-sm">
+                                          Pending
+                                        </Badge>
+                                      )}
+                                      {su.status === "CONFIRMED" && (
+                                        <Badge className="bg-gradient-to-r from-emerald-50 to-green-50 text-green-700 border-green-200 font-medium shadow-sm">
+                                          Confirmed
+                                        </Badge>
+                                      )}
+                                      {su.status === "WAITLISTED" && (
+                                        <Badge className="bg-gradient-to-r from-yellow-50 to-amber-50 text-yellow-700 border-yellow-200 font-medium shadow-sm">
+                                          Waitlisted
+                                        </Badge>
+                                      )}
+                                      {su.status === "CANCELED" && (
+                                        <Badge className="bg-gradient-to-r from-gray-50 to-slate-50 text-gray-600 border-gray-200 font-medium">
+                                          Canceled
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    <div className="flex justify-start sm:justify-end md:justify-start">
+                                      <SignupActions signupId={su.id} status={su.status} />
+                                    </div>
+                                  </div>
+                                ))}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Individual Signups Section */}
+              {s.signups.filter(signup => !signup.groupBookingId).length > 0 && (
+                <div data-testid={`individual-signups-${s.id}`}>
+                  <div className="mb-3">
+                    <h4 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                      <Users className="h-4 w-4" />
+                      Individual Signups
+                      <span className="text-xs font-normal text-slate-500">
+                        ({s.signups.filter(signup => !signup.groupBookingId).length} individuals)
+                      </span>
+                    </h4>
+                  </div>
+                  <div className="hidden md:grid md:grid-cols-5 md:gap-4 text-xs uppercase tracking-wider text-slate-500 font-semibold pb-3 px-4 border-b border-slate-100">
+                    <div>Volunteer</div>
+                    <div>Email</div>
+                    <div>Phone</div>
+                    <div>Status</div>
+                    <div>Actions</div>
+                  </div>
+                  <div className="space-y-1.5 mt-2">
+                    {s.signups
+                      .filter(signup => !signup.groupBookingId)
+                      .slice()
+                      .sort(
+                        (
+                          a: ShiftWithAll["signups"][number],
+                          b: ShiftWithAll["signups"][number]
+                        ) => {
+                          type Status = ShiftWithAll["signups"][number]["status"];
+                          const order: Record<Status, number> = {
+                            PENDING: 0,
+                            CONFIRMED: 1,
+                            WAITLISTED: 2,
+                            CANCELED: 3,
+                          };
+                          const ao = order[a.status];
+                          const bo = order[b.status];
+                          if (ao !== bo) return ao - bo;
+                          return (a.user.name ?? a.user.email).localeCompare(
+                            b.user.name ?? b.user.email
+                          );
+                        }
+                      )
+                      .map((su: ShiftWithAll["signups"][number]) => (
+                        <SignupRow
+                          key={su.id}
+                          name={su.user.name}
+                          email={su.user.email}
+                          phone={su.user.phone}
+                          status={su.status}
+                          userId={su.user.id}
+                          signupId={su.id}
+                        />
+                      ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </CardContent>
