@@ -1,3 +1,9 @@
+## [0.5.0] - 2025-08-14
+
+### Changes
+- feat: enhance admin user management page visual design ([#45](https://github.com/malinmalliyawadu/volunteer-portal/pull/45)) by @malinmalliyawadu
+
+
 ## [0.4.0] - 2025-08-14
 
 ### Changes
