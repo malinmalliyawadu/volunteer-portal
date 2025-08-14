@@ -1,3 +1,9 @@
+## [0.6.0] - 2025-08-14
+
+### Changes
+- feat: enhance my shifts page cards with modern visual design ([#44](https://github.com/malinmalliyawadu/volunteer-portal/pull/44)) by @malinmalliyawadu
+
+
 ## [0.5.0] - 2025-08-14
 
 ### Changes
