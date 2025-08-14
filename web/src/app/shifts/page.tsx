@@ -463,7 +463,7 @@ export default async function ShiftsPageRedesigned({
       {/* Profile filter notification */}
       {isUsingProfileFilter && (
         <div
-          className="mb-6 p-4 bg-primary/10 rounded-lg border border-primary/20"
+          className="mb-8 p-4 bg-primary/10 rounded-lg border border-primary/20"
           data-testid="profile-filter-notification"
         >
           <p className="text-sm text-primary font-medium flex items-center gap-2">
