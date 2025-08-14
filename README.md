@@ -3,7 +3,7 @@
 [![CI](https://github.com/malinmalliyawadu/volunteer-portal/actions/workflows/ci.yml/badge.svg)](https://github.com/malinmalliyawadu/volunteer-portal/actions/workflows/ci.yml)
 [![E2E Tests](https://github.com/malinmalliyawadu/volunteer-portal/actions/workflows/test.yml/badge.svg)](https://github.com/malinmalliyawadu/volunteer-portal/actions/workflows/test.yml)
 
-A comprehensive volunteer management system for Everybody Eats, an innovative charitable restaurant that transforms rescued food into quality 3-course meals on a pay-what-you-can basis.
+A comprehensive volunteer management system for [Everybody Eats](https://www.everybodyeats.nz), an innovative charitable restaurant that transforms rescued food into quality 3-course meals on a pay-what-you-can basis.
 
 ## 🚀 Project Overview
 

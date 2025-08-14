@@ -19,7 +19,6 @@ import {
   Filter,
   ChevronLeft,
   ChevronRight,
-  User,
   X,
   Edit,
   CheckCircle,
@@ -228,41 +227,53 @@ export default async function AdminShiftsPage({
     signupId: string;
   }) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-2 md:gap-4 text-sm py-3 px-1 hover:bg-slate-50 rounded-lg transition-colors" data-testid={`signup-row-${signupId}`}>
-        <div className="truncate">
+      <div
+        className="group grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-5 md:gap-4 text-sm py-4 px-3 sm:px-4 hover:bg-gradient-to-r hover:from-slate-50 hover:to-transparent rounded-xl transition-all duration-200 border border-transparent hover:border-slate-100"
+        data-testid={`signup-row-${signupId}`}
+      >
+        <div className="flex items-center gap-2 sm:col-span-1">
+          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-xs shadow-sm">
+            {(name ?? email)?.[0]?.toUpperCase()}
+          </div>
           <Link
             href={`/admin/volunteers/${userId}`}
-            className="font-medium text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-2"
+            className="font-medium text-slate-800 hover:text-blue-600 transition-colors flex items-center gap-1 min-w-0"
           >
-            <User className="h-3 w-3" />
-            {name ?? "(No name)"}
+            <span className="truncate">{name ?? "(No name)"}</span>
           </Link>
         </div>
-        <div className="truncate text-slate-600">{email}</div>
-        <div className="truncate text-slate-600">{phone ?? "—"}</div>
-        <div>
+        <div className="flex items-center gap-2 text-slate-600 min-w-0">
+          <span className="sm:hidden text-xs text-slate-500">Email:</span>
+          <span className="truncate">{email}</span>
+        </div>
+        <div className="flex items-center gap-2 text-slate-600 min-w-0">
+          <span className="sm:hidden text-xs text-slate-500">Phone:</span>
+          <span className="truncate">{phone ?? "—"}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="sm:hidden text-xs text-slate-500">Status:</span>
           {status === "PENDING" && (
-            <Badge className="bg-orange-100 text-orange-800 border-orange-200">
-              Pending Approval
+            <Badge className="bg-gradient-to-r from-amber-50 to-orange-50 text-orange-700 border-orange-200 font-medium shadow-sm">
+              Pending
             </Badge>
           )}
           {status === "CONFIRMED" && (
-            <Badge className="bg-green-100 text-green-800 border-green-200">
+            <Badge className="bg-gradient-to-r from-emerald-50 to-green-50 text-green-700 border-green-200 font-medium shadow-sm">
               Confirmed
             </Badge>
           )}
           {status === "WAITLISTED" && (
-            <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">
+            <Badge className="bg-gradient-to-r from-yellow-50 to-amber-50 text-yellow-700 border-yellow-200 font-medium shadow-sm">
               Waitlisted
             </Badge>
           )}
           {status === "CANCELED" && (
-            <Badge className="bg-gray-100 text-gray-800 border-gray-200">
+            <Badge className="bg-gradient-to-r from-gray-50 to-slate-50 text-gray-600 border-gray-200 font-medium">
               Canceled
             </Badge>
           )}
         </div>
-        <div>
+        <div className="flex justify-start sm:justify-end md:justify-start">
           <SignupActions signupId={signupId} status={status} />
         </div>
       </div>
@@ -294,143 +305,190 @@ export default async function AdminShiftsPage({
     }
 
     return (
-      <Card className="shadow-sm border-slate-200 hover:shadow-md transition-shadow" data-testid={`shift-card-${s.id}`}>
-        <CardContent className="p-6">
-          <div className="flex items-start justify-between mb-4">
+      <Card
+        className="group shadow-sm border-slate-200 hover:shadow-lg transition-all duration-300 hover:border-slate-300"
+        data-testid={`shift-card-${s.id}`}
+      >
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-3 mb-2">
-                <Calendar className="h-5 w-5 text-blue-600 flex-shrink-0" />
-                <h3 className="font-semibold text-lg text-slate-900 truncate" data-testid={`shift-name-${s.id}`}>
-                  {s.shiftType.name}
-                </h3>
-              </div>
-              <div className="space-y-2 mb-3">
-                <div className="flex items-center gap-2 text-sm text-slate-600" data-testid={`shift-time-${s.id}`}>
-                  <Clock className="h-3 w-3" />
-                  {format(s.start, "h:mm a")} - {format(s.end, "h:mm a")}
+              <div className="flex items-start gap-3 mb-3">
+                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0 shadow-md">
+                  <Calendar className="h-5 w-5 text-white" />
                 </div>
-                {s.location && (
-                  <Badge
-                    variant="outline"
-                    className="text-xs bg-slate-100 text-slate-700 border-slate-300"
-                    data-testid={`shift-location-${s.id}`}
+                <div className="flex-1 min-w-0">
+                  <h3
+                    className="font-bold text-lg sm:text-xl text-slate-900 mb-1"
+                    data-testid={`shift-name-${s.id}`}
                   >
-                    <MapPin className="h-3 w-3 mr-1" />
-                    {s.location}
-                  </Badge>
-                )}
-              </div>
-              <div className="flex items-center gap-4 text-sm text-slate-600 ml-8">
-                <div className="flex items-center gap-1" data-testid={`shift-date-${s.id}`}>
-                  <Calendar className="h-3 w-3" />
-                  {format(s.start, "EEE dd MMM, yyyy")}
-                </div>
-                <div className="flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  Duration: {getDurationInHours(s.start, s.end)}
+                    {s.shiftType.name}
+                  </h3>
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-sm">
+                    <div
+                      className="flex items-center gap-1.5 text-slate-600"
+                      data-testid={`shift-date-${s.id}`}
+                    >
+                      <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                      <span className="font-medium">
+                        {format(s.start, "EEE, MMM d, yyyy")}
+                      </span>
+                    </div>
+                    <div
+                      className="flex items-center gap-1.5 text-slate-600"
+                      data-testid={`shift-time-${s.id}`}
+                    >
+                      <Clock className="h-3.5 w-3.5 text-slate-400" />
+                      <span>
+                        {format(s.start, "h:mm a")} - {format(s.end, "h:mm a")}
+                      </span>
+                      <span className="text-slate-400">
+                        ({getDurationInHours(s.start, s.end)})
+                      </span>
+                    </div>
+                  </div>
+                  {s.location && (
+                    <div className="mt-2">
+                      <Badge
+                        variant="outline"
+                        className="bg-gradient-to-r from-slate-50 to-gray-50 text-slate-700 border-slate-200 font-medium"
+                        data-testid={`shift-location-${s.id}`}
+                      >
+                        <MapPin className="h-3.5 w-3.5 mr-1.5" />
+                        {s.location}
+                      </Badge>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
 
-            <div className="text-right">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 mb-3">
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-row sm:flex-col gap-2">
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 sm:flex-initial hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 transition-colors"
+                  data-testid={`edit-shift-${s.id}`}
+                >
+                  <Link href={`/admin/shifts/${s.id}/edit`}>
+                    <Edit className="h-3.5 w-3.5 mr-1.5" />
+                    Edit
+                  </Link>
+                </Button>
+                <DeleteShiftDialog
+                  shiftId={s.id}
+                  shiftName={s.shiftType.name}
+                  shiftDate={format(s.start, "EEEE, MMMM d, yyyy")}
+                  hasSignups={
+                    s.signups.filter(
+                      (signup: ShiftWithAll["signups"][number]) =>
+                        signup.status !== "CANCELED"
+                    ).length > 0
+                  }
+                  signupCount={
+                    s.signups.filter(
+                      (signup: ShiftWithAll["signups"][number]) =>
+                        signup.status !== "CANCELED"
+                    ).length
+                  }
+                  onDelete={deleteShift}
+                >
                   <Button
-                    asChild
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
-                    className="text-slate-500 hover:text-slate-700 h-8 px-2"
-                    data-testid={`edit-shift-${s.id}`}
+                    className="flex-1 sm:flex-initial text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-300 transition-colors"
+                    data-testid={`delete-shift-${s.id}`}
                   >
-                    <Link href={`/admin/shifts/${s.id}/edit`}>
-                      <Edit className="h-3 w-3 mr-1" />
-                      Edit
-                    </Link>
+                    <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                    Delete
                   </Button>
-                  <DeleteShiftDialog
-                    shiftId={s.id}
-                    shiftName={s.shiftType.name}
-                    shiftDate={format(s.start, "EEEE, MMMM d, yyyy")}
-                    hasSignups={
-                      s.signups.filter(
-                        (signup: ShiftWithAll["signups"][number]) =>
-                          signup.status !== "CANCELED"
-                      ).length > 0
-                    }
-                    signupCount={
-                      s.signups.filter(
-                        (signup: ShiftWithAll["signups"][number]) =>
-                          signup.status !== "CANCELED"
-                      ).length
-                    }
-                    onDelete={deleteShift}
-                  >
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-red-500 hover:text-red-700 hover:bg-red-50 h-8 px-2"
-                      data-testid={`delete-shift-${s.id}`}
-                    >
-                      <Trash2 className="h-3 w-3 mr-1" />
-                      Delete
-                    </Button>
-                  </DeleteShiftDialog>
-                </div>
-                <div className="flex items-center gap-2">
+                </DeleteShiftDialog>
+              </div>
+              <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
+                <Badge
+                  variant="outline"
+                  className="bg-gradient-to-r from-emerald-50 to-green-50 text-green-700 border-green-200 font-medium px-2.5 py-1"
+                  data-testid={`confirmed-signups-${s.id}`}
+                >
+                  <CheckCircle className="h-3.5 w-3.5 mr-1" />
+                  {confirmed} confirmed
+                </Badge>
+                {pending > 0 && (
                   <Badge
                     variant="outline"
-                    className="bg-green-50 text-green-700 border-green-200"
-                    data-testid={`confirmed-signups-${s.id}`}
+                    className="bg-gradient-to-r from-amber-50 to-orange-50 text-orange-700 border-orange-200 font-medium px-2.5 py-1"
+                    data-testid={`pending-signups-${s.id}`}
                   >
-                    ✓ {confirmed} confirmed
+                    <Clock className="h-3.5 w-3.5 mr-1" />
+                    {pending} pending
                   </Badge>
-                  {pending > 0 && (
-                    <Badge
-                      variant="outline"
-                      className="bg-orange-50 text-orange-700 border-orange-200"
-                      data-testid={`pending-signups-${s.id}`}
-                    >
-                      ⏳ {pending} pending
-                    </Badge>
-                  )}
-                  {waitlisted > 0 && (
-                    <Badge
-                      variant="outline"
-                      className="bg-yellow-50 text-yellow-700 border-yellow-200"
-                      data-testid={`waitlisted-signups-${s.id}`}
-                    >
-                      📋 {waitlisted} waitlisted
-                    </Badge>
-                  )}
-                </div>
-                <div className="text-sm text-slate-600" data-testid={`shift-capacity-${s.id}`}>
-                  {remaining > 0 ? (
-                    <span className="text-green-600 font-medium">
-                      {remaining} spots remaining
-                    </span>
-                  ) : (
-                    <span className="text-slate-500">Full</span>
-                  )}
-                </div>
+                )}
+                {waitlisted > 0 && (
+                  <Badge
+                    variant="outline"
+                    className="bg-gradient-to-r from-yellow-50 to-amber-50 text-yellow-700 border-yellow-200 font-medium px-2.5 py-1"
+                    data-testid={`waitlisted-signups-${s.id}`}
+                  >
+                    <Users className="h-3.5 w-3.5 mr-1" />
+                    {waitlisted} waitlist
+                  </Badge>
+                )}
+              </div>
+              <div
+                className="text-sm font-medium text-center sm:text-right"
+                data-testid={`shift-capacity-${s.id}`}
+              >
+                {remaining > 0 ? (
+                  <span className="inline-flex items-center gap-1.5 text-emerald-600">
+                    <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                    {remaining} spots available
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 text-slate-500">
+                    <div className="h-2 w-2 rounded-full bg-slate-400" />
+                    Fully booked
+                  </span>
+                )}
               </div>
             </div>
           </div>
 
           {s.signups.length === 0 ? (
-            <div className="text-center py-6 text-slate-500 bg-slate-50 rounded-lg" data-testid={`no-signups-${s.id}`}>
-              <Users className="h-8 w-8 mx-auto mb-2 text-slate-300" />
-              <p>No signups yet</p>
+            <div
+              className="text-center py-8 sm:py-10 bg-gradient-to-br from-slate-50 to-gray-50 rounded-xl border border-slate-100"
+              data-testid={`no-signups-${s.id}`}
+            >
+              <div className="h-12 w-12 mx-auto mb-3 rounded-full bg-white shadow-sm flex items-center justify-center">
+                <Users className="h-6 w-6 text-slate-400" />
+              </div>
+              <p className="text-slate-600 font-medium">No signups yet</p>
+              <p className="text-sm text-slate-500 mt-1">
+                Volunteers will appear here once they sign up
+              </p>
             </div>
           ) : (
-            <div className="border-t border-slate-100 pt-4" data-testid={`signups-list-${s.id}`}>
-              <div className="hidden md:grid md:grid-cols-5 md:gap-4 text-xs uppercase tracking-wide text-slate-500 font-medium pb-2 px-1">
+            <div
+              className="border-t border-slate-200 pt-4"
+              data-testid={`signups-list-${s.id}`}
+            >
+              <div className="mb-3">
+                <h4 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Volunteer Signups
+                  <span className="text-xs font-normal text-slate-500">
+                    ({s.signups.length} total)
+                  </span>
+                </h4>
+              </div>
+              <div className="hidden md:grid md:grid-cols-5 md:gap-4 text-xs uppercase tracking-wider text-slate-500 font-semibold pb-3 px-4 border-b border-slate-100">
                 <div>Volunteer</div>
                 <div>Email</div>
                 <div>Phone</div>
                 <div>Status</div>
                 <div>Actions</div>
               </div>
-              <div className="space-y-1">
+              <div className="space-y-1.5 mt-2">
                 {s.signups
                   .slice()
                   .sort(
@@ -515,28 +573,53 @@ export default async function AdminShiftsPage({
     return (
       <div className="flex items-center gap-2">
         {isFirst ? (
-          <Button variant="outline" size="sm" disabled className="opacity-50" data-testid={`${typePrefix}-prev-button`}>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled
+            className="opacity-50"
+            data-testid={`${typePrefix}-prev-button`}
+          >
             <ChevronLeft className="h-4 w-4 mr-1" />
             Previous
           </Button>
         ) : (
-          <Button asChild variant="outline" size="sm" data-testid={`${typePrefix}-prev-button`}>
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            data-testid={`${typePrefix}-prev-button`}
+          >
             <Link href={{ pathname: basePath, query: query(page - 1) }}>
               <ChevronLeft className="h-4 w-4 mr-1" />
               Previous
             </Link>
           </Button>
         )}
-        <span className="text-sm text-slate-600 px-3" data-testid={`${typePrefix}-page-info`}>
+        <span
+          className="text-sm text-slate-600 px-3"
+          data-testid={`${typePrefix}-page-info`}
+        >
           Page {page} of {totalPages}
         </span>
         {isLast ? (
-          <Button variant="outline" size="sm" disabled className="opacity-50" data-testid={`${typePrefix}-next-button`}>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled
+            className="opacity-50"
+            data-testid={`${typePrefix}-next-button`}
+          >
             Next
             <ChevronRight className="h-4 w-4 ml-1" />
           </Button>
         ) : (
-          <Button asChild variant="outline" size="sm" data-testid={`${typePrefix}-next-button`}>
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            data-testid={`${typePrefix}-next-button`}
+          >
             <Link href={{ pathname: basePath, query: query(page + 1) }}>
               Next
               <ChevronRight className="h-4 w-4 ml-1" />
@@ -549,12 +632,17 @@ export default async function AdminShiftsPage({
 
   return (
     <div className="min-h-screen" data-testid="admin-shifts-page">
-      <div className="max-w-7xl mx-auto p-4">
+      <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
         <PageHeader
           title="Admin · Shifts"
           description="Manage volunteer shifts and view signup details"
           actions={
-            <Button asChild size="sm" className="btn-primary gap-2" data-testid="create-shift-button">
+            <Button
+              asChild
+              size="sm"
+              className="btn-primary gap-2"
+              data-testid="create-shift-button"
+            >
               <Link href="/admin/shifts/new">
                 <Plus className="h-4 w-4" />
                 Create shift
@@ -565,7 +653,10 @@ export default async function AdminShiftsPage({
 
         {/* Success Messages */}
         {created && (
-          <Alert className="mb-6 border-green-200 bg-green-50" data-testid="shift-created-message">
+          <Alert
+            className="mb-6 border-green-200 bg-green-50"
+            data-testid="shift-created-message"
+          >
             <CheckCircle className="h-4 w-4 text-green-600" />
             <AlertDescription className="text-green-800">
               {created === "1"
@@ -576,7 +667,10 @@ export default async function AdminShiftsPage({
         )}
 
         {updated && (
-          <Alert className="mb-6 border-green-200 bg-green-50" data-testid="shift-updated-message">
+          <Alert
+            className="mb-6 border-green-200 bg-green-50"
+            data-testid="shift-updated-message"
+          >
             <CheckCircle className="h-4 w-4 text-green-600" />
             <AlertDescription className="text-green-800">
               Shift updated successfully!
@@ -586,7 +680,10 @@ export default async function AdminShiftsPage({
         )}
 
         {deleted && (
-          <Alert className="mb-6 border-green-200 bg-green-50" data-testid="shift-deleted-message">
+          <Alert
+            className="mb-6 border-green-200 bg-green-50"
+            data-testid="shift-deleted-message"
+          >
             <CheckCircle className="h-4 w-4 text-green-600" />
             <AlertDescription className="text-green-800">
               Shift deleted successfully! All associated signups have been
@@ -596,13 +693,15 @@ export default async function AdminShiftsPage({
         )}
 
         {/* Filters */}
-        <div className="mb-6" data-testid="filters-section">
-          <Card className="shadow-sm border-slate-200">
-            <CardHeader className="pb-4">
+        <div className="mb-8" data-testid="filters-section">
+          <Card className="shadow-md border-slate-200 bg-white/80 backdrop-blur-sm">
+            <CardHeader className="">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Filter className="h-5 w-5 text-slate-600" />
-                  Filters
+                <CardTitle className="text-lg font-semibold flex items-center gap-2.5">
+                  <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-sm">
+                    <Filter className="h-4 w-4 text-white" />
+                  </div>
+                  <span className="text-slate-800">Filters</span>
                 </CardTitle>
                 {(selectedLocation || dateFrom || dateTo) && (
                   <Button
@@ -633,14 +732,14 @@ export default async function AdminShiftsPage({
 
         {/* Upcoming Shifts */}
         <section className="mb-12" data-testid="upcoming-shifts-section">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-slate-900">
+              <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
                 Upcoming Shifts
               </h2>
               <Badge
                 variant="outline"
-                className="border-blue-200 text-blue-700"
+                className="bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border-blue-200 font-semibold px-2.5 py-1"
               >
                 {upcomingCount}
               </Badge>
@@ -655,17 +754,28 @@ export default async function AdminShiftsPage({
             </div>
           </div>
           {upcoming.length === 0 ? (
-            <Card className="shadow-sm border-slate-200">
-              <CardContent className="text-center py-12" data-testid="no-upcoming-shifts-message">
-                <Calendar className="h-16 w-16 text-slate-300 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-slate-900 mb-2">
+            <Card className="shadow-md border-slate-200 bg-white/80 backdrop-blur-sm">
+              <CardContent
+                className="text-center py-16"
+                data-testid="no-upcoming-shifts-message"
+              >
+                <div className="h-20 w-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-slate-100 to-gray-100 flex items-center justify-center shadow-inner">
+                  <Calendar className="h-10 w-10 text-slate-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-slate-800 mb-2">
                   No upcoming shifts
                 </h3>
-                <p className="text-slate-500">
+                <p className="text-slate-600 max-w-md mx-auto">
                   {selectedLocation || dateFrom || dateTo
-                    ? "No upcoming shifts found matching your filters"
-                    : "There are no upcoming shifts scheduled"}
+                    ? "No upcoming shifts found matching your filters. Try adjusting your search criteria."
+                    : "There are no upcoming shifts scheduled at the moment"}
                 </p>
+                <Button asChild className="mt-6" size="sm">
+                  <Link href="/admin/shifts/new">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create a shift
+                  </Link>
+                </Button>
               </CardContent>
             </Card>
           ) : (
@@ -679,14 +789,14 @@ export default async function AdminShiftsPage({
 
         {/* Historical Shifts */}
         <section data-testid="historical-shifts-section">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-slate-900">
+              <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
                 Historical Shifts
               </h2>
               <Badge
                 variant="outline"
-                className="border-slate-300 text-slate-600"
+                className="bg-gradient-to-r from-slate-50 to-gray-50 text-slate-700 border-slate-300 font-semibold px-2.5 py-1"
               >
                 {pastCount}
               </Badge>
@@ -701,16 +811,21 @@ export default async function AdminShiftsPage({
             </div>
           </div>
           {past.length === 0 ? (
-            <Card className="shadow-sm border-slate-200">
-              <CardContent className="text-center py-12" data-testid="no-historical-shifts-message">
-                <Clock className="h-16 w-16 text-slate-300 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-slate-900 mb-2">
+            <Card className="shadow-md border-slate-200 bg-white/80 backdrop-blur-sm">
+              <CardContent
+                className="text-center py-16"
+                data-testid="no-historical-shifts-message"
+              >
+                <div className="h-20 w-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-slate-100 to-gray-100 flex items-center justify-center shadow-inner">
+                  <Clock className="h-10 w-10 text-slate-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-slate-800 mb-2">
                   No historical shifts
                 </h3>
-                <p className="text-slate-500">
+                <p className="text-slate-600 max-w-md mx-auto">
                   {selectedLocation || dateFrom || dateTo
-                    ? "No past shifts found matching your filters"
-                    : "There are no past shifts to display"}
+                    ? "No past shifts found matching your filters. Try adjusting your search criteria."
+                    : "There are no past shifts to display yet"}
                 </p>
               </CardContent>
             </Card>
