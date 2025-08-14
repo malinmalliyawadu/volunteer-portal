@@ -1,3 +1,9 @@
+## [0.1.3] - 2025-08-14
+
+### Changes
+- Fix mobile responsiveness for shift pages navigation ([#39](https://github.com/malinmalliyawadu/volunteer-portal/pull/39)) by @malinmalliyawadu
+
+
 ## [0.1.2] - 2025-08-13
 
 ### Changes
