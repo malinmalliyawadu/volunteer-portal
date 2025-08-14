@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { DeleteShiftDialog } from "@/components/delete-shift-dialog";
+import { PageContainer } from "@/components/page-container";
 
 const LOCATIONS = ["Wellington", "Glenn Innes", "Onehunga"] as const;
 
@@ -219,7 +220,7 @@ export default async function EditShiftPage({
   const isPastShift = shift.start <= new Date();
 
   return (
-    <div className="max-w-4xl mx-auto p-6" data-testid="edit-shift-page">
+    <PageContainer testId="edit-shift-page">
       <PageHeader
         title="Edit shift"
         description={`Modify details for ${shift.shiftType.name} on ${format(
@@ -552,6 +553,6 @@ export default async function EditShiftPage({
           </form>
         </CardContent>
       </Card>
-    </div>
+    </PageContainer>
   );
 }

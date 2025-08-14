@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import Link from "next/link";
 import { PageHeader } from "@/components/page-header";
+import { PageContainer } from "@/components/page-container";
 
 export default async function ProfilePage() {
   const session = await getServerSession(authOptions);
@@ -61,7 +62,7 @@ export default async function ProfilePage() {
     : [];
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-8 animate-fade-in">
+    <PageContainer testId="profile-page">
       <PageHeader
         title="Your Profile"
         description="Manage your volunteer account and track your impact"
@@ -528,6 +529,6 @@ export default async function ProfilePage() {
           </CardContent>
         </Card>
       )}
-    </div>
+    </PageContainer>
   );
 }

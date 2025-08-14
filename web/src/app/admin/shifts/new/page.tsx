@@ -24,6 +24,7 @@ import {
   CalendarDaysIcon,
   RefreshCwIcon,
 } from "lucide-react";
+import { PageContainer } from "@/components/page-container";
 
 const LOCATIONS = ["Wellington", "Glenn Innes", "Onehunga"] as const;
 
@@ -293,7 +294,7 @@ export default async function NewShiftPage() {
   });
 
   return (
-    <div className="max-w-6xl mx-auto p-6" data-testid="create-shift-page">
+    <PageContainer testId="create-shift-page">
       <PageHeader
         title="Create shifts"
         description="Schedule new volunteer shifts efficiently with single or bulk creation options."
@@ -840,6 +841,6 @@ export default async function NewShiftPage() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </PageContainer>
   );
 }

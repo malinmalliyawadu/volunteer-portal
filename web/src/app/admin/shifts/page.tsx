@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { PageContainer } from "@/components/page-container";
 
 const LOCATIONS = ["Wellington", "Glenn Innes", "Onehunga"] as const;
 
@@ -651,9 +652,8 @@ export default async function AdminShiftsPage({
   }
 
   return (
-    <div className="min-h-screen" data-testid="admin-shifts-page">
-      <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
-        <PageHeader
+    <PageContainer testId="admin-shifts-page">
+      <PageHeader
           title="Admin · Shifts"
           description="Manage volunteer shifts and view signup details"
           actions={
@@ -856,8 +856,7 @@ export default async function AdminShiftsPage({
               ))}
             </div>
           )}
-        </section>
-      </div>
-    </div>
+      </section>
+    </PageContainer>
   );
 }

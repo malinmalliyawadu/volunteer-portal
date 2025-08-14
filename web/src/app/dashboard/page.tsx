@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import AchievementsCard from "@/components/achievements-card";
 import { PageHeader } from "@/components/page-header";
+import { PageContainer } from "@/components/page-container";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -140,7 +141,7 @@ export default async function DashboardPage() {
   )[0]?.[0];
 
   return (
-    <div className="animate-fade-in space-y-6 py-4">
+    <PageContainer testId="dashboard-page">
       <PageHeader
         title={`Welcome back${userName ? `, ${userName}` : ""}!`}
         description="Here's what's happening with your volunteer journey"
@@ -652,6 +653,6 @@ export default async function DashboardPage() {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </PageContainer>
   );
 }

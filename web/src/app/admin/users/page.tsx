@@ -22,6 +22,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { Prisma } from "@prisma/client";
+import { PageContainer } from "@/components/page-container";
 
 interface AdminUsersPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -143,9 +144,8 @@ export default async function AdminUsersPage({
   }
 
   return (
-    <div className="animate-fade-in" data-testid="admin-users-page">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <PageHeader
+    <PageContainer testId="admin-users-page">
+      <PageHeader
           title="User Management"
           description="Manage volunteers, administrators, and invite new users to the platform."
         >
@@ -445,8 +445,7 @@ export default async function AdminUsersPage({
               </div>
             )}
           </CardContent>
-        </Card>
-      </div>
-    </div>
+      </Card>
+    </PageContainer>
   );
 }

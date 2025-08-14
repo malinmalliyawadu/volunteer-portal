@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { cn } from "@/lib/utils";
+import { PageContainer } from "@/components/page-container";
 
 interface AdminVolunteerPageProps {
   params: Promise<{ id: string }>;
@@ -176,9 +177,8 @@ export default async function AdminVolunteerPage({
   };
 
   return (
-    <div className="min-h-screen bg-background" data-testid="admin-volunteer-profile-page">
-      <div className="mx-auto max-w-7xl p-4 space-y-6">
-        <PageHeader
+    <PageContainer testId="admin-volunteer-profile-page" className="bg-background">
+      <PageHeader
           title="Volunteer Profile"
           description="Comprehensive view of volunteer information and activity"
           data-testid="page-header"
@@ -591,8 +591,7 @@ export default async function AdminVolunteerPage({
               </CardContent>
             </Card>
           </div>
-        </div>
       </div>
-    </div>
+    </PageContainer>
   );
 }

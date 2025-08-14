@@ -22,6 +22,7 @@ import {
   CheckCircle,
   Users,
 } from "lucide-react";
+import { PageContainer } from "@/components/page-container";
 
 const LOCATIONS = ["Wellington", "Glenn Innes", "Onehunga"] as const;
 type LocationOption = (typeof LOCATIONS)[number];
@@ -249,9 +250,8 @@ export default async function MyShiftsPage({
   }
 
   return (
-    <div className="min-h-screen" data-testid="my-shifts-page">
-      <div className="max-w-6xl mx-auto py-4 animate-fade-in">
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
+    <PageContainer testId="my-shifts-page">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <PageHeader
             title="My Shifts"
             description="View your upcoming and past volunteer shifts."
@@ -541,8 +541,7 @@ export default async function MyShiftsPage({
               ))}
             </div>
           )}
-        </section>
-      </div>
-    </div>
+      </section>
+    </PageContainer>
   );
 }
