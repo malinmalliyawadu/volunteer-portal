@@ -37,7 +37,7 @@ export function SiteHeader({
   const getLinkClassName = (path: string) => {
     return cn(
       "text-white/90 hover:text-white hover:bg-white/10 backdrop-blur-sm transition-all duration-300 ease-out hover:scale-105 active:scale-95 rounded-lg px-3 py-2 font-medium relative overflow-hidden group border border-transparent hover:border-white/20",
-      isActive(path) && "text-white bg-white/20 backdrop-blur-sm border-white/30 shadow-lg"
+      isActive(path) && "text-white bg-white/15 backdrop-blur-sm shadow-lg font-medium"
     );
   };
 
@@ -88,7 +88,7 @@ export function SiteHeader({
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="ml-auto hidden lg:flex items-center gap-2">
+          <div className="hidden lg:flex items-center gap-2">
             {session?.user ? (
               <Button
                 asChild
@@ -192,7 +192,7 @@ export function SiteHeader({
                     href={isAdmin ? "/admin" : "/dashboard"}
                     className={cn(
                       "block px-4 py-3 rounded-lg text-white/90 hover:text-white hover:bg-white/10 transition-all duration-200",
-                      isActive(isAdmin ? "/admin" : "/dashboard") && "bg-white/20 text-white font-medium"
+                      isActive(isAdmin ? "/admin" : "/dashboard") && "bg-white/15 text-white font-medium"
                     )}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
@@ -203,7 +203,7 @@ export function SiteHeader({
                     href="/shifts"
                     className={cn(
                       "block px-4 py-3 rounded-lg text-white/90 hover:text-white hover:bg-white/10 transition-all duration-200",
-                      isActive("/shifts") && "bg-white/20 text-white font-medium"
+                      isActive("/shifts") && "bg-white/15 text-white font-medium"
                     )}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
@@ -215,7 +215,7 @@ export function SiteHeader({
                       href="/shifts/mine"
                       className={cn(
                         "block px-4 py-3 rounded-lg text-white/90 hover:text-white hover:bg-white/10 transition-all duration-200",
-                        isActive("/shifts/mine") && "bg-white/20 text-white font-medium"
+                        isActive("/shifts/mine") && "bg-white/15 text-white font-medium"
                       )}
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
@@ -229,7 +229,7 @@ export function SiteHeader({
                         href="/admin/shifts"
                         className={cn(
                           "block px-4 py-3 rounded-lg text-white/90 hover:text-white hover:bg-white/10 transition-all duration-200",
-                          isActive("/admin/shifts") && "bg-white/20 text-white font-medium"
+                          isActive("/admin/shifts") && "bg-white/15 text-white font-medium"
                         )}
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
@@ -239,7 +239,7 @@ export function SiteHeader({
                         href="/admin/users"
                         className={cn(
                           "block px-4 py-3 rounded-lg text-white/90 hover:text-white hover:bg-white/10 transition-all duration-200",
-                          isActive("/admin/users") && "bg-white/20 text-white font-medium"
+                          isActive("/admin/users") && "bg-white/15 text-white font-medium"
                         )}
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
@@ -269,7 +269,7 @@ export function SiteHeader({
                     href="/shifts"
                     className={cn(
                       "block px-4 py-3 rounded-lg text-white/90 hover:text-white hover:bg-white/10 transition-all duration-200",
-                      isActive("/shifts") && "bg-white/20 text-white font-medium"
+                      isActive("/shifts") && "bg-white/15 text-white font-medium"
                     )}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
