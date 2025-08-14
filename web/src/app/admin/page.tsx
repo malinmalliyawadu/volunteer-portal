@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PageContainer } from "@/components/page-container";
 
 const LOCATIONS = ["Wellington", "Glenn Innes", "Onehunga"] as const;
 type LocationOption = (typeof LOCATIONS)[number];
@@ -211,9 +212,8 @@ export default async function AdminDashboardPage({
   );
 
   return (
-    <div className="animate-fade-in">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
+    <PageContainer testId="admin-dashboard-page">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <PageHeader
             title="Admin Dashboard"
             description="Overview of volunteer portal activity and management tools."
@@ -244,10 +244,10 @@ export default async function AdminDashboardPage({
               </TabsList>
             </Tabs>
           </div>
-        </div>
+      </div>
 
-        {/* Quick Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      {/* Quick Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card data-testid="total-users-card">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -317,10 +317,10 @@ export default async function AdminDashboardPage({
               </p>
             </CardContent>
           </Card>
-        </div>
+      </div>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card>
             <CardHeader>
               <CardTitle data-testid="quick-actions-heading">Quick Actions</CardTitle>
@@ -437,10 +437,10 @@ export default async function AdminDashboardPage({
               )}
             </CardContent>
           </Card>
-        </div>
+      </div>
 
-        {/* Recent Activity */}
-        <Card>
+      {/* Recent Activity */}
+      <Card>
           <CardHeader>
             <CardTitle data-testid="recent-signups-heading">Recent Signups</CardTitle>
           </CardHeader>
@@ -497,8 +497,7 @@ export default async function AdminDashboardPage({
               <p className="text-muted-foreground text-sm" data-testid="no-recent-signups">No recent signups</p>
             )}
           </CardContent>
-        </Card>
-      </div>
-    </div>
+      </Card>
+    </PageContainer>
   );
 }

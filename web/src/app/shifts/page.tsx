@@ -16,6 +16,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { GroupBookingDialogWrapper } from "@/components/group-booking-dialog-wrapper";
+import { PageContainer } from "@/components/page-container";
 
 const LOCATIONS = ["Wellington", "Glenn Innes", "Onehunga"] as const;
 type LocationOption = (typeof LOCATIONS)[number];
@@ -400,8 +401,8 @@ export default async function ShiftsPageRedesigned({
   const sortedDates = Array.from(shiftsByDate.keys()).sort();
 
   return (
-    <div className="max-w-6xl mx-auto py-4" data-testid="shifts-browse-page">
-      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 mb-8">
+    <PageContainer testId="shifts-browse-page">
+      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
         <PageHeader
           title="Volunteer Shifts"
           description={`Find and sign up for upcoming volunteer opportunities${
@@ -624,6 +625,6 @@ export default async function ShiftsPageRedesigned({
           })}
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 }

@@ -24,8 +24,8 @@ export default async function Home() {
 
   return (
     <div className="animate-fade-in" data-testid="home-page">
-      <section className="section-hero" data-testid="hero-section">
-        <div className="max-w-6xl mx-auto px-4 py-20 grid gap-8 md:grid-cols-2 md:items-center">
+      <section className="section-hero py-14" data-testid="hero-section">
+        <div className="grid gap-8 md:grid-cols-2 md:items-center">
           <div className="animate-slide-up">
             <h1 className="text-5xl md:text-6xl font-bold leading-tight mb-6 text-foreground" data-testid="hero-title">
               Making a difference one plate at a time
@@ -90,8 +90,8 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="section-content py-16" data-testid="features-section">
-        <div className="max-w-6xl mx-auto px-4">
+      <section className="section-content py-10" data-testid="features-section">
+        <div>
           <div className="grid md:grid-cols-3 gap-8">
             <div
               className="text-center p-6 card animate-slide-up"
@@ -179,7 +179,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="section-content py-16" data-testid="cta-section">
+      <section className="section-content py-10" data-testid="cta-section">
         <div className="max-w-4xl mx-auto text-center space-y-8">
           <PageHeader
             title="Welcome to Everybody Eats Volunteer Portal"
