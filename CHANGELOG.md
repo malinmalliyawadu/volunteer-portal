@@ -1,3 +1,9 @@
+## [0.2.0] - 2025-08-14
+
+### Changes
+- feat: enhance admin shifts page visual design and mobile responsiveness ([#40](https://github.com/malinmalliyawadu/volunteer-portal/pull/40)) by @malinmalliyawadu
+
+
 ## [0.1.3] - 2025-08-14
 
 ### Changes
