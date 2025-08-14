@@ -73,12 +73,12 @@ export async function POST(req: Request) {
       );
     }
 
-    // Check if user already has an individual signup for this shift
+    // Check if user already has an active individual signup for this shift
     const existingSignup = await prisma.signup.findUnique({
       where: { userId_shiftId: { userId: user.id, shiftId } },
     });
 
-    if (existingSignup) {
+    if (existingSignup && existingSignup.status !== "CANCELED") {
       return NextResponse.json(
         { error: "You already have an individual signup for this shift. Cancel it first to create a group booking." },
         { status: 400 }

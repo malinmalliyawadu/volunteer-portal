@@ -77,7 +77,7 @@ export async function POST(req: Request) {
       }, { status: 400 });
     }
 
-    // Check if user already has a signup for this shift
+    // Check if user already has an active signup for this shift
     const existingSignup = await prisma.signup.findUnique({
       where: { 
         userId_shiftId: { 
@@ -87,7 +87,7 @@ export async function POST(req: Request) {
       },
     });
 
-    if (existingSignup) {
+    if (existingSignup && existingSignup.status !== "CANCELED") {
       return NextResponse.json({ 
         error: "You already have a signup for this shift",
       }, { status: 400 });
