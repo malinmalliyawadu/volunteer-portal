@@ -366,18 +366,21 @@ export default async function MyShiftsPage({
               {upcoming.map((su: SignupWithRelations) => (
                 <Card
                   key={su.id}
-                  className="hover:shadow-md transition-all duration-200 border-l-4 border-l-blue-500 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm"
+                  className="group relative overflow-hidden border-0 shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-blue-50/50 dark:bg-blue-950/30 backdrop-blur-sm"
                   data-testid={`upcoming-shift-${su.id}`}
                 >
-                  <CardContent className="">
+                  {/* Gradient accent bar */}
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-cyan-500" />
+                  
+                  <CardContent className="p-6">
                     <div className="flex items-start justify-between gap-6">
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-3 mb-3">
-                          <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
-                            <CalendarCheck className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="p-2 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 shadow-lg flex items-center justify-center text-white">
+                            <CalendarCheck className="h-4 w-4" />
                           </div>
                           <h3
-                            className="font-semibold text-lg text-slate-900 dark:text-slate-100 truncate"
+                            className="font-bold text-xl text-gray-900 dark:text-white truncate"
                             data-testid="shift-name"
                           >
                             {su.shift.shiftType.name}
@@ -387,35 +390,34 @@ export default async function MyShiftsPage({
                           </div>
                         </div>
 
-                        <div className="space-y-2 ml-11">
-                          <div
-                            className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400"
-                            data-testid="shift-datetime"
-                          >
-                            <Clock className="h-4 w-4 text-slate-400" />
-                            <span className="font-medium">
-                              {format(su.shift.start, "EEE, dd MMM yyyy")}
-                            </span>
-                            <span className="text-slate-400">•</span>
-                            <span>
-                              {format(su.shift.start, "h:mm a")} –{" "}
-                              {format(su.shift.end, "h:mm a")}
-                            </span>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div className="flex items-center gap-2 p-3 bg-white/60 dark:bg-slate-800/60 rounded-lg">
+                            <Clock className="h-4 w-4 text-gray-500" />
+                            <div className="text-sm">
+                              <div className="font-medium text-gray-900 dark:text-white">
+                                {format(su.shift.start, "EEE, dd MMM yyyy")}
+                              </div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400">
+                                {format(su.shift.start, "h:mm a")} – {format(su.shift.end, "h:mm a")}
+                              </div>
+                            </div>
                           </div>
-                          <div
-                            className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400"
-                            data-testid="shift-location"
-                          >
-                            <MapPin className="h-4 w-4 text-slate-400" />
-                            <span>
-                              {su.shift.location ?? "Location to be confirmed"}
-                            </span>
+                          <div className="flex items-center gap-2 p-3 bg-white/60 dark:bg-slate-800/60 rounded-lg">
+                            <MapPin className="h-4 w-4 text-gray-500" />
+                            <div className="text-sm">
+                              <div className="font-medium text-gray-900 dark:text-white">
+                                Location
+                              </div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400">
+                                {su.shift.location ?? "To be confirmed"}
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
 
                       <div
-                        className="flex-shrink-0"
+                        className="flex-shrink-0 flex flex-col gap-2"
                         data-testid="shift-actions"
                       >
                         <CancelSignupButton
@@ -487,18 +489,21 @@ export default async function MyShiftsPage({
               {past.map((su: SignupWithRelations) => (
                 <Card
                   key={su.id}
-                  className="hover:shadow-md transition-all duration-200 border-l-4 border-l-slate-400 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm opacity-90"
+                  className="group relative overflow-hidden border-0 shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-slate-50/50 dark:bg-slate-900/30 backdrop-blur-sm opacity-90"
                   data-testid={`past-shift-${su.id}`}
                 >
+                  {/* Gradient accent bar */}
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-slate-400 to-gray-500" />
+                  
                   <CardContent className="p-6">
                     <div className="flex items-start gap-6">
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-3 mb-3">
-                          <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg">
-                            <CheckCircle className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="p-2 rounded-xl bg-gradient-to-br from-slate-500 to-gray-600 shadow-lg flex items-center justify-center text-white">
+                            <CheckCircle className="h-4 w-4" />
                           </div>
                           <h3
-                            className="font-semibold text-lg text-slate-900 dark:text-slate-100 truncate"
+                            className="font-bold text-xl text-gray-900 dark:text-white truncate"
                             data-testid="shift-name"
                           >
                             {su.shift.shiftType.name}
@@ -508,30 +513,28 @@ export default async function MyShiftsPage({
                           </div>
                         </div>
 
-                        <div className="space-y-2 ml-11">
-                          <div
-                            className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400"
-                            data-testid="shift-datetime"
-                          >
-                            <Clock className="h-4 w-4 text-slate-400" />
-                            <span className="font-medium">
-                              {format(su.shift.start, "EEE, dd MMM yyyy")}
-                            </span>
-                            <span className="text-slate-400">•</span>
-                            <span>
-                              {format(su.shift.start, "h:mm a")} –{" "}
-                              {format(su.shift.end, "h:mm a")}
-                            </span>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div className="flex items-center gap-2 p-3 bg-white/60 dark:bg-slate-800/60 rounded-lg">
+                            <Clock className="h-4 w-4 text-gray-500" />
+                            <div className="text-sm">
+                              <div className="font-medium text-gray-900 dark:text-white">
+                                {format(su.shift.start, "EEE, dd MMM yyyy")}
+                              </div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400">
+                                {format(su.shift.start, "h:mm a")} – {format(su.shift.end, "h:mm a")}
+                              </div>
+                            </div>
                           </div>
-                          <div
-                            className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400"
-                            data-testid="shift-location"
-                          >
-                            <MapPin className="h-4 w-4 text-slate-400" />
-                            <span>
-                              {su.shift.location ??
-                                "Location was not specified"}
-                            </span>
+                          <div className="flex items-center gap-2 p-3 bg-white/60 dark:bg-slate-800/60 rounded-lg">
+                            <MapPin className="h-4 w-4 text-gray-500" />
+                            <div className="text-sm">
+                              <div className="font-medium text-gray-900 dark:text-white">
+                                Location
+                              </div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400">
+                                {su.shift.location ?? "Not specified"}
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
