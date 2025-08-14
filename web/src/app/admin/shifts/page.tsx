@@ -175,14 +175,34 @@ export default async function AdminShiftsPage({
     prisma.shift.findMany({
       where: upcomingFilter,
       orderBy: { start: "asc" },
-      include: { shiftType: true, signups: { include: { user: true } } },
+      include: { 
+        shiftType: true, 
+        signups: { include: { user: true } },
+        groupBookings: {
+          include: {
+            leader: { select: { id: true, name: true, email: true } },
+            signups: { include: { user: true } },
+            invitations: true,
+          },
+        },
+      },
       skip: (uPage - 1) * uSize,
       take: uSize,
     }),
     prisma.shift.findMany({
       where: pastFilter,
       orderBy: { start: "desc" },
-      include: { shiftType: true, signups: { include: { user: true } } },
+      include: { 
+        shiftType: true, 
+        signups: { include: { user: true } },
+        groupBookings: {
+          include: {
+            leader: { select: { id: true, name: true, email: true } },
+            signups: { include: { user: true } },
+            invitations: true,
+          },
+        },
+      },
       skip: (pPage - 1) * pSize,
       take: pSize,
     }),
