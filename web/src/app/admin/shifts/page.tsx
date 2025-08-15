@@ -807,6 +807,7 @@ export default async function AdminShiftsPage({
             <div className="grid gap-4" data-testid="group-bookings-list">
               {allGroupBookings.map((groupBooking) => {
                 const pendingInvites = groupBooking.invitations.filter(inv => inv.status === "PENDING").length;
+                const hasPendingInvitations = pendingInvites > 0;
                 const hasIncompleteMembers = groupBooking.signups.some(signup => {
                   const user = signup.user;
                   const hasBasicInfo = user.firstName && user.lastName && user.phone;
@@ -922,6 +923,7 @@ export default async function AdminShiftsPage({
                             status={groupBooking.status}
                             groupName={groupBooking.name}
                             hasIncompleteMembers={hasIncompleteMembers}
+                            hasPendingInvitations={hasPendingInvitations}
                           />
                         </div>
                       </div>
@@ -930,9 +932,12 @@ export default async function AdminShiftsPage({
                       <div className="border-t border-purple-100 pt-4 mt-6">
                         <h4 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
                           <Users className="h-4 w-4" />
-                          Members ({groupBooking.signups.length})
+                          Members ({groupBooking.signups.length}) {pendingInvites > 0 && (
+                            <span className="text-amber-600">+ {pendingInvites} pending</span>
+                          )}
                         </h4>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                          {/* Current Members (Signups) */}
                           {groupBooking.signups
                             .slice()
                             .sort((a, b) => {
@@ -986,6 +991,36 @@ export default async function AdminShiftsPage({
                                   }`}
                                 >
                                   {signup.status.toLowerCase()}
+                                </Badge>
+                              </div>
+                            ))}
+                            
+                          {/* Pending Invitations */}
+                          {groupBooking.invitations
+                            .filter(invitation => invitation.status === "PENDING")
+                            .map((invitation) => (
+                              <div
+                                key={invitation.id}
+                                className="flex items-center gap-2 p-2 bg-amber-50 rounded-lg border border-amber-200 hover:border-amber-300 transition-colors"
+                              >
+                                <div className="h-7 w-7 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white font-semibold text-xs flex-shrink-0">
+                                  {invitation.email[0]?.toUpperCase()}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-1">
+                                    <span className="text-sm font-medium text-slate-900 truncate">
+                                      {invitation.email}
+                                    </span>
+                                  </div>
+                                  <div className="text-xs text-amber-600">
+                                    Invitation sent {new Date(invitation.createdAt).toLocaleDateString()}
+                                  </div>
+                                </div>
+                                <Badge
+                                  variant="outline"
+                                  className="text-xs bg-amber-100 text-amber-700 border-amber-300"
+                                >
+                                  awaiting response
                                 </Badge>
                               </div>
                             ))}
