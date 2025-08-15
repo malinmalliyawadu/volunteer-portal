@@ -96,6 +96,8 @@ test.describe("Group Booking Feature", () => {
   });
 
   test("should display group bookings in My Shifts page", async ({ page }) => {
+    await loginAsVolunteer(page);
+
     // Navigate to My Shifts page
     await page.goto("/shifts/mine");
     
@@ -138,6 +140,8 @@ test.describe("Group Booking Feature", () => {
   });
 
   test("should show registration status on group detail page", async ({ page }) => {
+    await loginAsVolunteer(page);
+
     // First, we need to create a group booking or use an existing one
     // Navigate to My Shifts to find a group booking
     await page.goto("/shifts/mine");
@@ -180,7 +184,6 @@ test.describe("Group Booking Feature", () => {
       }
     }
   });
-});
 
   test("admin can view group bookings in admin dashboard", async ({ page }) => {
     await loginAsAdmin(page);
