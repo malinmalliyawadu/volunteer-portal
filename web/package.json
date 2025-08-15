@@ -14,6 +14,7 @@
     "prisma:seed": "prisma db seed",
     "prisma:generate": "prisma generate",
     "prisma:deploy": "prisma migrate deploy",
+    "prisma:reset": "prisma migrate reset",
     "postinstall": "prisma generate"
   },
   "dependencies": {

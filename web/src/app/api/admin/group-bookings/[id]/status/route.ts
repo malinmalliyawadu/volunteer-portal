@@ -47,13 +47,57 @@ export async function PATCH(req: Request) {
       where: { id: groupBookingId },
       include: { 
         shift: true,
-        signups: { include: { user: true } },
+        signups: { 
+          include: { 
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                profileCompleted: true,
+                firstName: true,
+                lastName: true,
+                phone: true,
+                emergencyContactName: true,
+                emergencyContactPhone: true,
+                volunteerAgreementAccepted: true,
+                healthSafetyPolicyAccepted: true,
+              }
+            } 
+          } 
+        },
         invitations: true,
       },
     });
 
     if (!groupBooking) {
       return NextResponse.json({ error: "Group booking not found" }, { status: 404 });
+    }
+
+    // If attempting to confirm, check that all members have completed registration
+    if (status === "CONFIRMED") {
+      const incompleteMembers = groupBooking.signups.filter(signup => {
+        const user = signup.user;
+        // Check if user has completed their profile
+        const hasBasicInfo = user.firstName && user.lastName && user.phone;
+        const hasEmergencyContact = user.emergencyContactName && user.emergencyContactPhone;
+        const hasAgreements = user.volunteerAgreementAccepted && user.healthSafetyPolicyAccepted;
+        const isProfileComplete = user.profileCompleted || (hasBasicInfo && hasEmergencyContact && hasAgreements);
+        
+        return !isProfileComplete;
+      });
+
+      if (incompleteMembers.length > 0) {
+        const incompleteEmails = incompleteMembers.map(s => s.user.email).join(", ");
+        return NextResponse.json(
+          { 
+            error: "Cannot approve group - some members have not completed registration",
+            incompleteMembers: incompleteEmails,
+            details: "All group members must complete their profile including emergency contacts and accept agreements before the group can be approved."
+          },
+          { status: 400 }
+        );
+      }
     }
 
     // Update group booking and related signups in a transaction

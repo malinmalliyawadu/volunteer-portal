@@ -67,10 +67,13 @@ export function GroupBookingDialog({
   const [description, setDescription] = useState("");
   const [memberEmails, setMemberEmails] = useState<string[]>([]);
   const [newEmail, setNewEmail] = useState("");
+  // Track member assignments: { email: [shiftId1, shiftId2, ...] }
+  const [memberAssignments, setMemberAssignments] = useState<Record<string, string[]>>({});
   const [errors, setErrors] = useState<{
     shifts?: string;
     groupName?: string;
     emails?: string;
+    assignments?: string;
     general?: string;
   }>({});
 
@@ -94,12 +97,21 @@ export function GroupBookingDialog({
     }
     
     setMemberEmails([...memberEmails, email]);
+    // Auto-assign new member to all selected shifts by default
+    setMemberAssignments({
+      ...memberAssignments,
+      [email]: [...selectedShiftIds]
+    });
     setNewEmail("");
     setErrors({ ...errors, emails: undefined });
   };
 
   const removeEmail = (emailToRemove: string) => {
     setMemberEmails(memberEmails.filter(email => email !== emailToRemove));
+    // Remove member assignments
+    const newAssignments = { ...memberAssignments };
+    delete newAssignments[emailToRemove];
+    setMemberAssignments(newAssignments);
   };
 
   const validateForm = (): boolean => {
@@ -117,6 +129,14 @@ export function GroupBookingDialog({
       newErrors.emails = "At least one member email is required";
     }
     
+    // Check that each member is assigned to at least one shift
+    const unassignedMembers = memberEmails.filter(
+      email => !memberAssignments[email] || memberAssignments[email].length === 0
+    );
+    if (unassignedMembers.length > 0) {
+      newErrors.assignments = `Some members are not assigned to any shifts: ${unassignedMembers.join(", ")}`;
+    }
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -129,8 +149,13 @@ export function GroupBookingDialog({
     
     try {
       // Create group bookings for all selected shifts
-      const promises = selectedShiftIds.map(shiftId => 
-        fetch(`/api/shifts/${shiftId}/group-booking`, {
+      const promises = selectedShiftIds.map(shiftId => {
+        // Get members assigned to this specific shift
+        const assignedMembers = memberEmails.filter(
+          email => memberAssignments[email]?.includes(shiftId)
+        );
+        
+        return fetch(`/api/shifts/${shiftId}/group-booking`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -138,10 +163,11 @@ export function GroupBookingDialog({
           body: JSON.stringify({
             name: groupName.trim(),
             description: description.trim() || undefined,
-            memberEmails,
+            memberEmails: assignedMembers,
+            memberAssignments: memberAssignments,
           }),
-        })
-      );
+        });
+      });
 
       const responses = await Promise.all(promises);
       const results = await Promise.all(responses.map(r => r.json()));
@@ -174,6 +200,7 @@ export function GroupBookingDialog({
     setDescription("");
     setMemberEmails([]);
     setNewEmail("");
+    setMemberAssignments({});
     setErrors({});
   };
 
@@ -241,8 +268,25 @@ export function GroupBookingDialog({
                       onCheckedChange={(checked) => {
                         if (checked) {
                           setSelectedShiftIds([...selectedShiftIds, shift.id]);
+                          // Auto-assign all existing members to this new shift
+                          const updatedAssignments = { ...memberAssignments };
+                          memberEmails.forEach(email => {
+                            if (!updatedAssignments[email]) {
+                              updatedAssignments[email] = [];
+                            }
+                            if (!updatedAssignments[email].includes(shift.id)) {
+                              updatedAssignments[email].push(shift.id);
+                            }
+                          });
+                          setMemberAssignments(updatedAssignments);
                         } else {
                           setSelectedShiftIds(selectedShiftIds.filter(id => id !== shift.id));
+                          // Remove this shift from all member assignments
+                          const updatedAssignments = { ...memberAssignments };
+                          Object.keys(updatedAssignments).forEach(email => {
+                            updatedAssignments[email] = updatedAssignments[email].filter(id => id !== shift.id);
+                          });
+                          setMemberAssignments(updatedAssignments);
                         }
                       }}
                       className="mt-1"
@@ -406,6 +450,85 @@ export function GroupBookingDialog({
             )}
           </div>
 
+          {/* Member-Shift Assignment Matrix */}
+          {memberEmails.length > 0 && selectedShiftIds.length > 0 && (
+            <div className="space-y-3" data-testid="member-assignment-section">
+              <Label className="text-sm font-medium">
+                Assign Members to Shifts
+              </Label>
+              <div className="border rounded-lg overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted">
+                    <tr>
+                      <th className="px-3 py-2 text-left font-medium">Member</th>
+                      {selectedShiftIds.map(shiftId => {
+                        const shift = shifts.find(s => s.id === shiftId);
+                        return (
+                          <th key={shiftId} className="px-3 py-2 text-center font-medium min-w-[120px]">
+                            <div className="text-xs">
+                              {shift?.shiftType.name}
+                              <div className="text-muted-foreground font-normal">
+                                {shift && format(shift.start, "h:mm a")}
+                              </div>
+                            </div>
+                          </th>
+                        );
+                      })}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {memberEmails.map((email, idx) => (
+                      <tr key={email} className={idx % 2 === 0 ? "bg-background" : "bg-muted/30"}>
+                        <td className="px-3 py-2 font-medium">
+                          <div className="flex items-center gap-2">
+                            <Mail className="h-3 w-3 text-muted-foreground" />
+                            <span className="text-xs truncate max-w-[150px]">{email}</span>
+                          </div>
+                        </td>
+                        {selectedShiftIds.map(shiftId => (
+                          <td key={shiftId} className="px-3 py-2 text-center">
+                            <Checkbox
+                              checked={memberAssignments[email]?.includes(shiftId) || false}
+                              onCheckedChange={(checked) => {
+                                const currentAssignments = memberAssignments[email] || [];
+                                let newAssignments: string[];
+                                
+                                if (checked) {
+                                  newAssignments = [...currentAssignments, shiftId];
+                                } else {
+                                  newAssignments = currentAssignments.filter(id => id !== shiftId);
+                                }
+                                
+                                setMemberAssignments({
+                                  ...memberAssignments,
+                                  [email]: newAssignments
+                                });
+                                
+                                // Clear assignment error if exists
+                                if (errors.assignments && newAssignments.length > 0) {
+                                  setErrors({ ...errors, assignments: undefined });
+                                }
+                              }}
+                              aria-label={`Assign ${email} to shift`}
+                            />
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {errors.assignments && (
+                <p className="text-sm text-red-600" data-testid="assignments-error">
+                  {errors.assignments}
+                </p>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Check the boxes to assign members to specific shifts. Each member must be assigned to at least one shift.
+              </p>
+            </div>
+          )}
+
           {/* Info Box */}
           <div className="rounded-lg border p-4 bg-blue-50 border-blue-200" data-testid="info-box">
             <div className="flex items-start gap-2">
@@ -416,6 +539,7 @@ export function GroupBookingDialog({
                 </p>
                 <ul className="text-blue-700 space-y-1 text-xs">
                   <li>• You&apos;ll be added to each group automatically as the leader</li>
+                  <li>• Assign members to specific shifts using the assignment matrix</li>
                   <li>• Invitation emails will be sent to all members</li>
                   <li>• Each person must accept and create/login to their account</li>
                   <li>• Separate group bookings will be created for each selected shift</li>

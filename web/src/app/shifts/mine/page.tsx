@@ -21,6 +21,9 @@ import {
   Timer,
   CheckCircle,
   Users,
+  UserCheck,
+  UserX,
+  Mail,
 } from "lucide-react";
 import { PageContainer } from "@/components/page-container";
 
@@ -87,6 +90,30 @@ export default async function MyShiftsPage({
       10
     ) || 10
   );
+
+  // Fetch group bookings where user is the leader
+  const groupBookings = await prisma.groupBooking.findMany({
+    where: {
+      leaderId: userId,
+      ...(selectedLocation ? { shift: { location: selectedLocation } } : {}),
+    },
+    include: {
+      shift: {
+        include: {
+          shiftType: true,
+        },
+      },
+      signups: {
+        include: {
+          user: true,
+        },
+      },
+      invitations: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
 
   const [upcomingCount, pastCount, upcoming, past] = await Promise.all([
     prisma.signup.count({
@@ -432,6 +459,237 @@ export default async function MyShiftsPage({
             </div>
           )}
         </section>
+
+        {/* Group Bookings Section - Only show if user has group bookings */}
+        {groupBookings.length > 0 && (
+          <section className="mb-12" data-testid="group-bookings-section">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
+                <Users className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+              </div>
+              <h2
+                className="text-2xl font-bold text-slate-900 dark:text-slate-100"
+                data-testid="group-bookings-title"
+              >
+                My Group Bookings
+              </h2>
+              <Badge
+                variant="outline"
+                className="bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800 px-3 py-1.5 text-sm font-semibold"
+                data-testid="group-bookings-count"
+              >
+                {groupBookings.length}
+              </Badge>
+            </div>
+
+            <div className="space-y-4" data-testid="group-bookings-list">
+              {groupBookings.map((group) => {
+                const acceptedMembers = group.signups.filter(
+                  (s) => s.status !== "CANCELED"
+                );
+                const pendingInvites = group.invitations.filter(
+                  (i) => i.status === "PENDING"
+                );
+                const totalInvited = acceptedMembers.length + pendingInvites.length;
+
+                return (
+                  <Card
+                    key={group.id}
+                    className="group relative overflow-hidden border-0 shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-purple-50/50 dark:bg-purple-950/30 backdrop-blur-sm"
+                    data-testid={`group-booking-${group.id}`}
+                  >
+                    {/* Gradient accent bar */}
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-pink-500" />
+                    
+                    <CardContent className="p-6">
+                      <div className="flex flex-col gap-4">
+                        {/* Header */}
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <div className="p-2 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 shadow-lg flex items-center justify-center text-white">
+                                <Users className="h-4 w-4" />
+                              </div>
+                              <h3
+                                className="font-bold text-xl text-gray-900 dark:text-white"
+                                data-testid="group-name"
+                              >
+                                {group.name}
+                              </h3>
+                              <StatusBadge status={group.status} />
+                            </div>
+                            {group.description && (
+                              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                                {group.description}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Shift Details */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                          <div className="flex items-center gap-2 p-3 bg-white/60 dark:bg-slate-800/60 rounded-lg">
+                            <Calendar className="h-4 w-4 text-gray-500" />
+                            <div className="text-sm">
+                              <div className="font-medium text-gray-900 dark:text-white">
+                                {group.shift.shiftType.name}
+                              </div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400">
+                                {format(group.shift.start, "EEE, dd MMM yyyy")}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 p-3 bg-white/60 dark:bg-slate-800/60 rounded-lg">
+                            <Clock className="h-4 w-4 text-gray-500" />
+                            <div className="text-sm">
+                              <div className="font-medium text-gray-900 dark:text-white">
+                                Time
+                              </div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400">
+                                {format(group.shift.start, "h:mm a")} – {format(group.shift.end, "h:mm a")}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 p-3 bg-white/60 dark:bg-slate-800/60 rounded-lg">
+                            <MapPin className="h-4 w-4 text-gray-500" />
+                            <div className="text-sm">
+                              <div className="font-medium text-gray-900 dark:text-white">
+                                Location
+                              </div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400">
+                                {group.shift.location ?? "To be confirmed"}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Members Section */}
+                        <div className="border-t pt-4">
+                          <div className="flex items-center justify-between mb-3">
+                            <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                              Group Members ({totalInvited}/{group.maxMembers})
+                            </h4>
+                          </div>
+
+                          {/* Accepted Members */}
+                          {acceptedMembers.length > 0 && (
+                            <div className="mb-3">
+                              <div className="text-xs text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-1">
+                                <UserCheck className="h-3 w-3" />
+                                Registered Members
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                {acceptedMembers.map((signup) => (
+                                  <div
+                                    key={signup.id}
+                                    className="flex items-center gap-2 px-3 py-1.5 bg-green-100 dark:bg-green-900/30 rounded-lg text-sm"
+                                  >
+                                    <UserCheck className="h-3 w-3 text-green-600 dark:text-green-400" />
+                                    <span className="text-green-700 dark:text-green-300">
+                                      {signup.user.name || signup.user.email}
+                                    </span>
+                                    {signup.user.id === userId && (
+                                      <Badge className="text-xs px-1.5 py-0.5">You</Badge>
+                                    )}
+                                    <Badge
+                                      variant="outline"
+                                      className="text-xs px-1.5 py-0.5"
+                                    >
+                                      {signup.status}
+                                    </Badge>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Pending Invitations */}
+                          {pendingInvites.length > 0 && (
+                            <div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-1">
+                                <Mail className="h-3 w-3" />
+                                Pending Invitations
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                {pendingInvites.map((invite) => (
+                                  <div
+                                    key={invite.id}
+                                    className="flex items-center gap-2 px-3 py-1.5 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg text-sm"
+                                  >
+                                    <Mail className="h-3 w-3 text-yellow-600 dark:text-yellow-400" />
+                                    <span className="text-yellow-700 dark:text-yellow-300">
+                                      {invite.email}
+                                    </span>
+                                    <Badge
+                                      variant="outline"
+                                      className="text-xs px-1.5 py-0.5 bg-yellow-50 dark:bg-yellow-900/20"
+                                    >
+                                      Awaiting Response
+                                    </Badge>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Declined/Expired Invitations */}
+                          {group.invitations.filter(
+                            (i) => i.status === "DECLINED" || i.status === "EXPIRED"
+                          ).length > 0 && (
+                            <div className="mt-3">
+                              <div className="text-xs text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-1">
+                                <UserX className="h-3 w-3" />
+                                Unable to Join
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                {group.invitations
+                                  .filter(
+                                    (i) => i.status === "DECLINED" || i.status === "EXPIRED"
+                                  )
+                                  .map((invite) => (
+                                    <div
+                                      key={invite.id}
+                                      className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-900/30 rounded-lg text-sm"
+                                    >
+                                      <UserX className="h-3 w-3 text-gray-500 dark:text-gray-400" />
+                                      <span className="text-gray-600 dark:text-gray-400 line-through">
+                                        {invite.email}
+                                      </span>
+                                      <Badge
+                                        variant="outline"
+                                        className="text-xs px-1.5 py-0.5 bg-gray-50 dark:bg-gray-900/20"
+                                      >
+                                        {invite.status === "DECLINED" ? "Declined" : "Expired"}
+                                      </Badge>
+                                    </div>
+                                  ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex justify-end gap-2 pt-2 border-t">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-2"
+                            asChild
+                          >
+                            <Link href={`/group-bookings/${group.id}`}>
+                              <Users className="h-3 w-3" />
+                              Manage Group
+                            </Link>
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
         {/* Past Shifts Section */}
         <section data-testid="past-shifts-section">
