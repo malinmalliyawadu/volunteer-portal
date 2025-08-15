@@ -1,3 +1,9 @@
+## [0.7.0] - 2025-08-15
+
+### Changes
+- feat: enhance group booking system with member assignments and registration validation ([#49](https://github.com/malinmalliyawadu/volunteer-portal/pull/49)) by @malinmalliyawadu
+
+
 ## [0.6.1] - 2025-08-14
 
 ### Changes
