@@ -9,7 +9,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { X, Plus, Users, Mail, Check, AlertCircle, Clock, MapPin } from "lucide-react";
 
 interface Shift {
@@ -40,6 +40,7 @@ interface GroupBookingDialogProps {
   location: string; // For display purposes
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  currentUserEmail?: string; // Leader's email to include in assignments
 }
 
 function getDurationInHours(start: Date, end: Date): string {
@@ -60,6 +61,7 @@ export function GroupBookingDialog({
   location,
   open,
   onOpenChange,
+  currentUserEmail,
 }: GroupBookingDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedShiftIds, setSelectedShiftIds] = useState<string[]>([]);
@@ -67,8 +69,8 @@ export function GroupBookingDialog({
   const [description, setDescription] = useState("");
   const [memberEmails, setMemberEmails] = useState<string[]>([]);
   const [newEmail, setNewEmail] = useState("");
-  // Track member assignments: { email: [shiftId1, shiftId2, ...] }
-  const [memberAssignments, setMemberAssignments] = useState<Record<string, string[]>>({});
+  // Track member assignments: { email: shiftId } - now only one shift per person
+  const [memberAssignments, setMemberAssignments] = useState<Record<string, string>>({});
   const [errors, setErrors] = useState<{
     shifts?: string;
     groupName?: string;
@@ -97,10 +99,10 @@ export function GroupBookingDialog({
     }
     
     setMemberEmails([...memberEmails, email]);
-    // Auto-assign new member to all selected shifts by default
+    // Auto-assign new member to first selected shift by default
     setMemberAssignments({
       ...memberAssignments,
-      [email]: [...selectedShiftIds]
+      [email]: selectedShiftIds[0] || ''
     });
     setNewEmail("");
     setErrors({ ...errors, emails: undefined });
@@ -129,12 +131,13 @@ export function GroupBookingDialog({
       newErrors.emails = "At least one member email is required";
     }
     
-    // Check that each member is assigned to at least one shift
-    const unassignedMembers = memberEmails.filter(
-      email => !memberAssignments[email] || memberAssignments[email].length === 0
+    // Check that each member is assigned to exactly one shift
+    const allMembers = currentUserEmail ? [currentUserEmail, ...memberEmails] : memberEmails;
+    const unassignedMembers = allMembers.filter(
+      email => !memberAssignments[email]
     );
     if (unassignedMembers.length > 0) {
-      newErrors.assignments = `Some members are not assigned to any shifts: ${unassignedMembers.join(", ")}`;
+      newErrors.assignments = `Some members are not assigned to any shift: ${unassignedMembers.join(", ")}`;
     }
     
     setErrors(newErrors);
@@ -150,9 +153,9 @@ export function GroupBookingDialog({
     try {
       // Create group bookings for all selected shifts
       const promises = selectedShiftIds.map(shiftId => {
-        // Get members assigned to this specific shift
+        // Get members assigned to this specific shift (excluding leader)
         const assignedMembers = memberEmails.filter(
-          email => memberAssignments[email]?.includes(shiftId)
+          email => memberAssignments[email] === shiftId
         );
         
         return fetch(`/api/shifts/${shiftId}/group-booking`, {
@@ -164,6 +167,7 @@ export function GroupBookingDialog({
             name: groupName.trim(),
             description: description.trim() || undefined,
             memberEmails: assignedMembers,
+            leaderAssignedToThisShift: currentUserEmail ? memberAssignments[currentUserEmail] === shiftId : true,
             memberAssignments: memberAssignments,
           }),
         });
@@ -173,7 +177,7 @@ export function GroupBookingDialog({
       const results = await Promise.all(responses.map(r => r.json()));
       
       // Check if any requests failed
-      const failedResponses = responses.filter((r, i) => !r.ok);
+      const failedResponses = responses.filter((r) => !r.ok);
       
       if (failedResponses.length === 0) {
         // All succeeded - refresh the page to show updated state
@@ -268,23 +272,24 @@ export function GroupBookingDialog({
                       onCheckedChange={(checked) => {
                         if (checked) {
                           setSelectedShiftIds([...selectedShiftIds, shift.id]);
-                          // Auto-assign all existing members to this new shift
+                          // Auto-assign all existing members to this shift if they're not assigned to any
                           const updatedAssignments = { ...memberAssignments };
-                          memberEmails.forEach(email => {
+                          const allMembers = currentUserEmail ? [currentUserEmail, ...memberEmails] : memberEmails;
+                          allMembers.forEach(email => {
                             if (!updatedAssignments[email]) {
-                              updatedAssignments[email] = [];
-                            }
-                            if (!updatedAssignments[email].includes(shift.id)) {
-                              updatedAssignments[email].push(shift.id);
+                              updatedAssignments[email] = shift.id;
                             }
                           });
                           setMemberAssignments(updatedAssignments);
                         } else {
                           setSelectedShiftIds(selectedShiftIds.filter(id => id !== shift.id));
-                          // Remove this shift from all member assignments
+                          // Remove this shift from member assignments and assign to first remaining shift
                           const updatedAssignments = { ...memberAssignments };
+                          const remainingShifts = selectedShiftIds.filter(id => id !== shift.id);
                           Object.keys(updatedAssignments).forEach(email => {
-                            updatedAssignments[email] = updatedAssignments[email].filter(id => id !== shift.id);
+                            if (updatedAssignments[email] === shift.id) {
+                              updatedAssignments[email] = remainingShifts[0] || '';
+                            }
                           });
                           setMemberAssignments(updatedAssignments);
                         }
@@ -451,7 +456,7 @@ export function GroupBookingDialog({
           </div>
 
           {/* Member-Shift Assignment Matrix */}
-          {memberEmails.length > 0 && selectedShiftIds.length > 0 && (
+          {(memberEmails.length > 0 || currentUserEmail) && selectedShiftIds.length > 0 && (
             <div className="space-y-3" data-testid="member-assignment-section">
               <Label className="text-sm font-medium">
                 Assign Members to Shifts
@@ -461,22 +466,60 @@ export function GroupBookingDialog({
                   <thead className="bg-muted">
                     <tr>
                       <th className="px-3 py-2 text-left font-medium">Member</th>
-                      {selectedShiftIds.map(shiftId => {
-                        const shift = shifts.find(s => s.id === shiftId);
-                        return (
-                          <th key={shiftId} className="px-3 py-2 text-center font-medium min-w-[120px]">
-                            <div className="text-xs">
-                              {shift?.shiftType.name}
-                              <div className="text-muted-foreground font-normal">
-                                {shift && format(shift.start, "h:mm a")}
-                              </div>
-                            </div>
-                          </th>
-                        );
-                      })}
+                      <th className="px-3 py-2 text-center font-medium">Assigned Shift</th>
                     </tr>
                   </thead>
                   <tbody>
+                    {/* Leader row */}
+                    {currentUserEmail && (
+                      <tr className="bg-primary/5 border border-primary/20">
+                        <td className="px-3 py-2 font-medium">
+                          <div className="flex items-center gap-2">
+                            <Users className="h-3 w-3 text-primary" />
+                            <span className="text-xs truncate max-w-[150px]">{currentUserEmail}</span>
+                            <Badge variant="secondary" className="text-xs px-1.5 py-0.5">Leader</Badge>
+                          </div>
+                        </td>
+                        <td className="px-3 py-2">
+                          <RadioGroup
+                            value={memberAssignments[currentUserEmail] || ''}
+                            onValueChange={(value) => {
+                              setMemberAssignments({
+                                ...memberAssignments,
+                                [currentUserEmail]: value
+                              });
+                              
+                              // Clear assignment error if exists
+                              if (errors.assignments && value) {
+                                setErrors({ ...errors, assignments: undefined });
+                              }
+                            }}
+                            className="flex flex-wrap gap-2"
+                          >
+                            {selectedShiftIds.map(shiftId => {
+                              const shift = shifts.find(s => s.id === shiftId);
+                              return (
+                                <div key={shiftId} className="flex items-center space-x-1">
+                                  <RadioGroupItem 
+                                    value={shiftId} 
+                                    id={`leader-${shiftId}`}
+                                    className="h-3 w-3"
+                                  />
+                                  <Label 
+                                    htmlFor={`leader-${shiftId}`} 
+                                    className="text-xs cursor-pointer"
+                                  >
+                                    {shift?.shiftType.name} ({shift && format(shift.start, "h:mm a")})
+                                  </Label>
+                                </div>
+                              );
+                            })}
+                          </RadioGroup>
+                        </td>
+                      </tr>
+                    )}
+                    
+                    {/* Member rows */}
                     {memberEmails.map((email, idx) => (
                       <tr key={email} className={idx % 2 === 0 ? "bg-background" : "bg-muted/30"}>
                         <td className="px-3 py-2 font-medium">
@@ -485,34 +528,42 @@ export function GroupBookingDialog({
                             <span className="text-xs truncate max-w-[150px]">{email}</span>
                           </div>
                         </td>
-                        {selectedShiftIds.map(shiftId => (
-                          <td key={shiftId} className="px-3 py-2 text-center">
-                            <Checkbox
-                              checked={memberAssignments[email]?.includes(shiftId) || false}
-                              onCheckedChange={(checked) => {
-                                const currentAssignments = memberAssignments[email] || [];
-                                let newAssignments: string[];
-                                
-                                if (checked) {
-                                  newAssignments = [...currentAssignments, shiftId];
-                                } else {
-                                  newAssignments = currentAssignments.filter(id => id !== shiftId);
-                                }
-                                
-                                setMemberAssignments({
-                                  ...memberAssignments,
-                                  [email]: newAssignments
-                                });
-                                
-                                // Clear assignment error if exists
-                                if (errors.assignments && newAssignments.length > 0) {
-                                  setErrors({ ...errors, assignments: undefined });
-                                }
-                              }}
-                              aria-label={`Assign ${email} to shift`}
-                            />
-                          </td>
-                        ))}
+                        <td className="px-3 py-2">
+                          <RadioGroup
+                            value={memberAssignments[email] || ''}
+                            onValueChange={(value) => {
+                              setMemberAssignments({
+                                ...memberAssignments,
+                                [email]: value
+                              });
+                              
+                              // Clear assignment error if exists
+                              if (errors.assignments && value) {
+                                setErrors({ ...errors, assignments: undefined });
+                              }
+                            }}
+                            className="flex flex-wrap gap-2"
+                          >
+                            {selectedShiftIds.map(shiftId => {
+                              const shift = shifts.find(s => s.id === shiftId);
+                              return (
+                                <div key={shiftId} className="flex items-center space-x-1">
+                                  <RadioGroupItem 
+                                    value={shiftId} 
+                                    id={`${email}-${shiftId}`}
+                                    className="h-3 w-3"
+                                  />
+                                  <Label 
+                                    htmlFor={`${email}-${shiftId}`} 
+                                    className="text-xs cursor-pointer"
+                                  >
+                                    {shift?.shiftType.name} ({shift && format(shift.start, "h:mm a")})
+                                  </Label>
+                                </div>
+                              );
+                            })}
+                          </RadioGroup>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -524,7 +575,7 @@ export function GroupBookingDialog({
                 </p>
               )}
               <p className="text-xs text-muted-foreground">
-                Check the boxes to assign members to specific shifts. Each member must be assigned to at least one shift.
+                Select one shift for each member. The leader (you) will also be assigned to one of the selected shifts.
               </p>
             </div>
           )}

@@ -600,6 +600,7 @@ export default async function ShiftsPageRedesigned({
                               testId={`group-booking-${dateKey}-${locationKey
                                 .toLowerCase()
                                 .replace(/\s+/g, "-")}`}
+                              currentUserEmail={session.user?.email || undefined}
                             />
                           )}
                         </div>
