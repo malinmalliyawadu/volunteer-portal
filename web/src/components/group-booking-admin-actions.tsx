@@ -9,17 +9,21 @@ interface GroupBookingAdminActionsProps {
   groupBookingId: string;
   status: string;
   groupName: string;
+  hasIncompleteMembers?: boolean;
 }
 
 export function GroupBookingAdminActions({
   groupBookingId,
   status,
+  hasIncompleteMembers = false,
 }: GroupBookingAdminActionsProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   const updateGroupStatus = async (newStatus: "CONFIRMED" | "CANCELED") => {
     setIsLoading(true);
+    setError(null);
     try {
       const response = await fetch(`/api/admin/group-bookings/${groupBookingId}/status`, {
         method: "PATCH",
@@ -36,13 +40,13 @@ export function GroupBookingAdminActions({
         // Refresh the page to show updated status
         router.refresh();
       } else {
-        const error = await response.json();
-        console.error("Failed to update group status:", error);
-        // TODO: Show error toast/notification
+        const errorData = await response.json();
+        console.error("Failed to update group status:", errorData);
+        setError(errorData.error || "Failed to update group status");
       }
     } catch (error) {
       console.error("Error updating group status:", error);
-      // TODO: Show error toast/notification
+      setError("An error occurred while updating the group status");
     } finally {
       setIsLoading(false);
     }
@@ -70,27 +74,40 @@ export function GroupBookingAdminActions({
   }
 
   return (
-    <div className="flex gap-2">
-      <Button
-        size="sm"
-        variant="outline"
-        className="text-green-600 hover:bg-green-50 border-green-300"
-        onClick={() => updateGroupStatus("CONFIRMED")}
-        disabled={isLoading}
-        data-testid={`approve-group-${groupBookingId}`}
-      >
-        {isLoading ? "..." : "Approve Group"}
-      </Button>
-      <Button
-        size="sm"
-        variant="outline"
-        className="text-red-600 hover:bg-red-50 border-red-300"
-        onClick={() => updateGroupStatus("CANCELED")}
-        disabled={isLoading}
-        data-testid={`reject-group-${groupBookingId}`}
-      >
-        {isLoading ? "..." : "Reject Group"}
-      </Button>
+    <div className="space-y-2">
+      <div className="flex gap-2">
+        <Button
+          size="sm"
+          variant="outline"
+          className="text-green-600 hover:bg-green-50 border-green-300"
+          onClick={() => updateGroupStatus("CONFIRMED")}
+          disabled={isLoading || hasIncompleteMembers}
+          title={hasIncompleteMembers ? "Some members have not completed registration" : undefined}
+          data-testid={`approve-group-${groupBookingId}`}
+        >
+          {isLoading ? "..." : "Approve Group"}
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          className="text-red-600 hover:bg-red-50 border-red-300"
+          onClick={() => updateGroupStatus("CANCELED")}
+          disabled={isLoading}
+          data-testid={`reject-group-${groupBookingId}`}
+        >
+          {isLoading ? "..." : "Reject Group"}
+        </Button>
+      </div>
+      {hasIncompleteMembers && (
+        <p className="text-xs text-amber-600">
+          ⚠️ Some members have incomplete profiles
+        </p>
+      )}
+      {error && (
+        <p className="text-xs text-red-600">
+          ❌ {error}
+        </p>
+      )}
     </div>
   );
 }

@@ -95,6 +95,93 @@ test.describe("Group Booking Feature", () => {
     await expect(page.getByTestId("group-booking-dialog")).not.toBeVisible({ timeout: 5000 });
   });
 
+  test("should display group bookings in My Shifts page", async ({ page }) => {
+    // Navigate to My Shifts page
+    await page.goto("/shifts/mine");
+    
+    // Wait for the page to load
+    await page.waitForSelector('[data-testid="my-shifts-page"]');
+    
+    // Check if group bookings section exists (only shows if user has group bookings)
+    const groupSection = page.locator('[data-testid="group-bookings-section"]');
+    const sectionExists = await groupSection.isVisible().catch(() => false);
+    
+    if (sectionExists) {
+      // Verify group bookings section structure
+      await expect(groupSection.locator('[data-testid="group-bookings-title"]')).toBeVisible();
+      await expect(groupSection.locator('[data-testid="group-bookings-count"]')).toBeVisible();
+      
+      // Check for group booking cards
+      const groupCards = groupSection.locator('[data-testid^="group-booking-"]');
+      const cardCount = await groupCards.count();
+      
+      if (cardCount > 0) {
+        const firstCard = groupCards.first();
+        
+        // Verify card contains expected elements
+        await expect(firstCard.locator('[data-testid="group-name"]')).toBeVisible();
+        
+        // Check for member information
+        const memberSection = firstCard.locator('text=/Group Members/');
+        if (await memberSection.isVisible()) {
+          // Verify member status indicators
+          const registeredMembers = firstCard.locator('text=/Registered Members/');
+          const pendingInvites = firstCard.locator('text=/Pending Invitations/');
+          
+          // At least one of these should be visible
+          const hasMembers = await registeredMembers.isVisible().catch(() => false) || 
+                            await pendingInvites.isVisible().catch(() => false);
+          expect(hasMembers).toBeTruthy();
+        }
+      }
+    }
+  });
+
+  test("should show registration status on group detail page", async ({ page }) => {
+    // First, we need to create a group booking or use an existing one
+    // Navigate to My Shifts to find a group booking
+    await page.goto("/shifts/mine");
+    
+    const groupSection = page.locator('[data-testid="group-bookings-section"]');
+    const sectionExists = await groupSection.isVisible().catch(() => false);
+    
+    if (sectionExists) {
+      // Click on Manage Group button for the first group
+      const manageButton = groupSection.locator('text=/Manage Group/').first();
+      if (await manageButton.isVisible()) {
+        await manageButton.click();
+        
+        // Wait for group detail page to load
+        await page.waitForSelector('[data-testid="group-booking-detail-page"]');
+        
+        // Verify page shows member registration status
+        const readyMembers = page.locator('text=/Ready Members/');
+        const needingAction = page.locator('text=/Members Needing Action/');
+        const pendingInvites = page.locator('text=/Pending Invitations/');
+        
+        // At least one section should be visible
+        const hasSections = await readyMembers.isVisible().catch(() => false) ||
+                           await needingAction.isVisible().catch(() => false) ||
+                           await pendingInvites.isVisible().catch(() => false);
+        
+        expect(hasSections).toBeTruthy();
+        
+        // Check for registration status badges
+        const completeProfile = page.locator('text=/Profile Complete/');
+        const incompleteProfile = page.locator('text=/Incomplete/');
+        const awaitingResponse = page.locator('text=/Awaiting Response/');
+        
+        // Verify at least one status indicator is present
+        const hasStatus = await completeProfile.isVisible().catch(() => false) ||
+                         await incompleteProfile.isVisible().catch(() => false) ||
+                         await awaitingResponse.isVisible().catch(() => false);
+        
+        expect(hasStatus).toBeTruthy();
+      }
+    }
+  });
+});
+
   test("admin can view group bookings in admin dashboard", async ({ page }) => {
     await loginAsAdmin(page);
 

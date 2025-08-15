@@ -32,6 +32,7 @@ model User {
   notificationPreference       NotificationPreference @default(EMAIL)
   volunteerAgreementAccepted   Boolean                @default(false)
   healthSafetyPolicyAccepted   Boolean                @default(false)
+  profileCompleted             Boolean                @default(false)
   createdAt                    DateTime               @default(now())
   updatedAt                    DateTime               @updatedAt
   signups                      Signup[]
@@ -135,6 +136,7 @@ model GroupInvitation {
   message        String?               // Personal message from inviter
   token          String                @unique @default(cuid()) // For invitation links
   expiresAt      DateTime              // Invitation expiry (7 days)
+  assignedShiftIds String[]            // Array of shift IDs this member is assigned to
   createdAt      DateTime              @default(now())
   updatedAt      DateTime              @updatedAt
   
