@@ -1,3 +1,9 @@
+## [0.8.0] - 2025-08-18
+
+### Changes
+- feat: add comprehensive CLAUDE.md files for subdirectories ([#50](https://github.com/malinmalliyawadu/volunteer-portal/pull/50)) by @malinmalliyawadu
+
+
 ## [0.7.1] - 2025-08-18
 
 ### Changes
