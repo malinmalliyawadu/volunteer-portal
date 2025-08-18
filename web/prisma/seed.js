@@ -1,6 +1,6 @@
 const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcrypt");
-const { addDays, set, subYears, subMonths } = require("date-fns");
+const { addDays, set, subYears, subMonths, subDays } = require("date-fns");
 
 const prisma = new PrismaClient();
 
@@ -328,6 +328,172 @@ async function main() {
     });
     extraVolunteers.push(u);
   }
+
+  // Create friend relationships for sample volunteer
+  console.log("👫 Seeding friend relationships...");
+  
+  // Sample volunteer's existing friends (bidirectional friendships)
+  const existingFriends = [
+    extraVolunteers.find(v => v.email === "sarah.chen@gmail.com"),
+    extraVolunteers.find(v => v.email === "james.williams@hotmail.com"),
+    extraVolunteers.find(v => v.email === "priya.patel@yahoo.com"),
+    extraVolunteers.find(v => v.email === "vol1@example.com"),
+    extraVolunteers.find(v => v.email === "vol3@example.com"),
+  ].filter(Boolean);
+
+  // Create bidirectional friendships
+  for (const friend of existingFriends) {
+    try {
+      // Create friendship from sample volunteer to friend
+      await prisma.friendship.create({
+        data: {
+          userId: volunteer.id,
+          friendId: friend.id,
+          status: "ACCEPTED",
+          initiatedBy: volunteer.id,
+          createdAt: subDays(new Date(), Math.floor(Math.random() * 60) + 30), // 30-90 days ago
+        },
+      });
+
+      // Create friendship from friend to sample volunteer
+      await prisma.friendship.create({
+        data: {
+          userId: friend.id,
+          friendId: volunteer.id,
+          status: "ACCEPTED",
+          initiatedBy: volunteer.id,
+          createdAt: subDays(new Date(), Math.floor(Math.random() * 60) + 30), // Same date as above
+        },
+      });
+    } catch (error) {
+      // Skip if friendship already exists
+      if (!error.message.includes('Unique constraint')) {
+        throw error;
+      }
+    }
+  }
+
+  // Create pending friend requests TO the sample volunteer
+  const pendingRequesters = [
+    extraVolunteers.find(v => v.email === "mike.johnson@outlook.com"),
+    extraVolunteers.find(v => v.email === "vol5@example.com"),
+    extraVolunteers.find(v => v.email === "vol7@example.com"),
+  ].filter(Boolean);
+
+  for (const requester of pendingRequesters) {
+    try {
+      await prisma.friendRequest.create({
+        data: {
+          fromUserId: requester.id,
+          toEmail: volunteer.email,
+          message: [
+            "Hey! I saw you volunteering last week. Would love to coordinate our shifts!",
+            "Let's be friends so we can volunteer together!",
+            "Would be great to connect and volunteer as a team!",
+          ][Math.floor(Math.random() * 3)],
+          status: "PENDING",
+          expiresAt: addDays(new Date(), 30), // 30 days from now
+          createdAt: subDays(new Date(), Math.floor(Math.random() * 7) + 1), // 1-7 days ago
+        },
+      });
+    } catch (error) {
+      // Skip if request already exists
+      if (!error.message.includes('Unique constraint')) {
+        throw error;
+      }
+    }
+  }
+
+  // Create some sent friend requests FROM the sample volunteer
+  const sentRequestTargets = [
+    "alex.taylor@gmail.com",
+    "vol9@example.com",
+  ];
+
+  for (const targetEmail of sentRequestTargets) {
+    try {
+      await prisma.friendRequest.create({
+        data: {
+          fromUserId: volunteer.id,
+          toEmail: targetEmail,
+          message: "Hi! Would love to be friends and volunteer together sometime!",
+          status: "PENDING",
+          expiresAt: addDays(new Date(), 30),
+          createdAt: subDays(new Date(), Math.floor(Math.random() * 5) + 2), // 2-6 days ago
+        },
+      });
+    } catch (error) {
+      // Skip if request already exists
+      if (!error.message.includes('Unique constraint')) {
+        throw error;
+      }
+    }
+  }
+
+  // Create some friendships between other volunteers (for realistic friend networks)
+  const friendPairs = [
+    ["sarah.chen@gmail.com", "james.williams@hotmail.com"],
+    ["priya.patel@yahoo.com", "maria.gonzalez@gmail.com"],
+    ["vol1@example.com", "vol2@example.com"],
+    ["vol3@example.com", "vol4@example.com"],
+    ["vol6@example.com", "vol8@example.com"],
+  ];
+
+  for (const [email1, email2] of friendPairs) {
+    const user1 = extraVolunteers.find(v => v.email === email1);
+    const user2 = extraVolunteers.find(v => v.email === email2);
+    
+    if (user1 && user2) {
+      try {
+        // Create bidirectional friendship
+        await prisma.friendship.create({
+          data: {
+            userId: user1.id,
+            friendId: user2.id,
+            status: "ACCEPTED",
+            initiatedBy: user1.id,
+            createdAt: subDays(new Date(), Math.floor(Math.random() * 120) + 30),
+          },
+        });
+
+        await prisma.friendship.create({
+          data: {
+            userId: user2.id,
+            friendId: user1.id,
+            status: "ACCEPTED",
+            initiatedBy: user1.id,
+            createdAt: subDays(new Date(), Math.floor(Math.random() * 120) + 30),
+          },
+        });
+      } catch (error) {
+        // Skip if friendship already exists
+        if (!error.message.includes('Unique constraint')) {
+          throw error;
+        }
+      }
+    }
+  }
+
+  // Set different privacy settings for some volunteers
+  await prisma.user.update({
+    where: { email: "sarah.chen@gmail.com" },
+    data: { friendVisibility: "PUBLIC" },
+  });
+
+  await prisma.user.update({
+    where: { email: "alex.taylor@gmail.com" },
+    data: { friendVisibility: "PRIVATE" },
+  });
+
+  await prisma.user.update({
+    where: { email: "vol10@example.com" },
+    data: { allowFriendRequests: false },
+  });
+
+  console.log(`✅ Created ${existingFriends.length} friendships for sample volunteer`);
+  console.log(`✅ Created ${pendingRequesters.length} pending friend requests`);
+  console.log(`✅ Created ${sentRequestTargets.length} sent friend requests`);
+  console.log(`✅ Created ${friendPairs.length} other volunteer friendships`);
 
   // Create updated shift types
   const dishwasher = await prisma.shiftType.upsert({
