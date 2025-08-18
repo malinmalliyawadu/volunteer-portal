@@ -194,3 +194,15 @@ Required in `.env.local`:
 - `NEXTAUTH_SECRET`: Random secret for NextAuth
 - `NEXTAUTH_URL`: Application URL
 - OAuth provider credentials (GOOGLE_CLIENT_ID, etc.)
+
+## Detailed Documentation
+
+For comprehensive guidelines specific to different areas of the codebase, see the documentation in `web/docs/`:
+
+- **[App Router Guide](web/docs/app-router-guide.md)** - Next.js App Router patterns, API routes, Server Components, authentication
+- **[Component Development](web/docs/component-development.md)** - React component guidelines, shadcn/ui usage, styling with Tailwind
+- **[Libraries & Utilities](web/docs/libraries-utilities.md)** - Shared utilities, services, auth patterns, validation schemas
+- **[Database & Schema](web/docs/database-schema.md)** - Prisma best practices, migrations, query optimization
+- **[Testing Guide](web/docs/testing-guide.md)** - Playwright e2e testing patterns, test utilities, data-testid conventions
+
+These guides provide detailed, domain-specific instructions for working in each area of the codebase and should be consulted when making changes to ensure consistency with established patterns.
