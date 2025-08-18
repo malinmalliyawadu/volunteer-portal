@@ -322,4 +322,84 @@ test.describe("Group Booking Feature", () => {
     const inviteResponse = await page.request.get("/api/group-invitations/invalid-token");
     expect(inviteResponse.status()).toBeLessThan(500); // Should handle gracefully
   });
+
+  test("admin cannot approve group booking with pending invitations", async ({ page }) => {
+    await loginAsAdmin(page);
+
+    // Navigate to admin shifts page
+    await page.goto("/admin/shifts");
+    await page.waitForLoadState("networkidle");
+
+    // Skip test if login failed
+    const currentUrl = page.url();
+    if (currentUrl.includes("/login")) {
+      test.skip(true, "Admin login failed - skipping pending invitations test");
+    }
+
+    // Look for group bookings section
+    const groupSection = page.locator('[data-testid="group-bookings-section"]');
+    const sectionExists = await groupSection.isVisible().catch(() => false);
+    
+    if (sectionExists) {
+      // Look for a pending group booking
+      const pendingGroup = groupSection.locator('[data-testid^="group-booking-card-"]').filter({
+        has: page.locator('text=pending')
+      }).first();
+      
+      if (await pendingGroup.isVisible()) {
+        // Check if this group has pending invitations (should show warning)
+        const pendingWarning = pendingGroup.locator('text=/Some invited members have not joined yet/');
+        
+        if (await pendingWarning.isVisible()) {
+          // Approve button should be disabled
+          const approveButton = pendingGroup.locator('button', { hasText: /approve group/i });
+          await expect(approveButton).toBeDisabled();
+          
+          // Should show warning message
+          await expect(pendingWarning).toBeVisible();
+        }
+      }
+    }
+  });
+
+  test("admin can see pending invitations in group member list", async ({ page }) => {
+    await loginAsAdmin(page);
+
+    await page.goto("/admin/shifts");
+    await page.waitForLoadState("networkidle");
+
+    // Skip test if login failed
+    const currentUrl = page.url();
+    if (currentUrl.includes("/login")) {
+      test.skip(true, "Admin login failed - skipping pending invitations display test");
+    }
+
+    // Look for group bookings section
+    const groupSection = page.locator('[data-testid="group-bookings-section"]');
+    const sectionExists = await groupSection.isVisible().catch(() => false);
+    
+    if (sectionExists) {
+      // Look for a group with pending invitations
+      const groupWithPending = groupSection.locator('[data-testid^="group-booking-card-"]').filter({
+        has: page.locator('text=/\\+ \\d+ pending/')
+      }).first();
+      
+      if (await groupWithPending.isVisible()) {
+        // Should show pending invitations in member list
+        const pendingInvite = groupWithPending.locator('.bg-amber-50').filter({
+          has: page.locator('text=awaiting response')
+        }).first();
+        
+        if (await pendingInvite.isVisible()) {
+          // Should display email address
+          const emailElement = pendingInvite.locator('.text-sm.font-medium');
+          const emailText = await emailElement.textContent();
+          expect(emailText).toMatch(/@/); // Should contain @ symbol (email)
+          
+          // Should show awaiting response badge
+          await expect(pendingInvite.locator('text=awaiting response')).toBeVisible();
+        }
+      }
+    }
+  });
 });

@@ -8,7 +8,8 @@ const createGroupBookingSchema = z.object({
   name: z.string().min(1).max(100),
   description: z.string().max(500).optional(),
   memberEmails: z.array(z.string().email()).min(1).max(10),
-  memberAssignments: z.record(z.string(), z.array(z.string())).optional(),
+  leaderAssignedToThisShift: z.boolean().optional().default(true),
+  memberAssignments: z.record(z.string(), z.string()).optional(), // Now single shift per member
 });
 
 export async function POST(req: Request) {
@@ -42,7 +43,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const { name, description, memberEmails, memberAssignments } = validation.data;
+    const { name, description, memberEmails, leaderAssignedToThisShift, memberAssignments } = validation.data;
 
     // Check if shift exists
     const shift = await prisma.shift.findUnique({
@@ -119,22 +120,24 @@ export async function POST(req: Request) {
         },
       });
 
-      // Create the leader's signup
-      await tx.signup.create({
-        data: {
-          userId: user.id,
-          shiftId,
-          status: "PENDING",
-          groupBookingId: groupBooking.id,
-        },
-      });
+      // Create the leader's signup only if they're assigned to this shift
+      if (leaderAssignedToThisShift) {
+        await tx.signup.create({
+          data: {
+            userId: user.id,
+            shiftId,
+            status: "PENDING",
+            groupBookingId: groupBooking.id,
+          },
+        });
+      }
 
       // Create invitations for all member emails
       const invitationData = uniqueMemberEmails.map(email => ({
         groupBookingId: groupBooking.id,
         email: email.toLowerCase(),
         invitedById: user.id,
-        assignedShiftIds: memberAssignments?.[email] || [shiftId], // Use assignments or default to current shift
+        assignedShiftIds: memberAssignments?.[email] ? [memberAssignments[email]] : [shiftId], // Use single shift assignment or default to current shift
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
       }));
 

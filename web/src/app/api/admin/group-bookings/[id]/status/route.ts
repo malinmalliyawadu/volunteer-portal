@@ -76,6 +76,22 @@ export async function PATCH(req: Request) {
 
     // If attempting to confirm, check that all members have completed registration
     if (status === "CONFIRMED") {
+      // First, check if there are any pending invitations (people who haven't joined yet)
+      const pendingInvitations = groupBooking.invitations.filter(inv => inv.status === "PENDING");
+      
+      if (pendingInvitations.length > 0) {
+        const pendingEmails = pendingInvitations.map(inv => inv.email).join(", ");
+        return NextResponse.json(
+          { 
+            error: "Cannot approve group - some invited members have not joined yet",
+            pendingInvitations: pendingEmails,
+            details: "All invited members must accept their invitations and create accounts before the group can be approved."
+          },
+          { status: 400 }
+        );
+      }
+
+      // Then, check that all members who have joined have completed their profiles
       const incompleteMembers = groupBooking.signups.filter(signup => {
         const user = signup.user;
         // Check if user has completed their profile

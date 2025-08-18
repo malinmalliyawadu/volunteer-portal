@@ -171,7 +171,26 @@ export default async function AdminShiftsPage({
   };
   const pastFilter = { start: { lt: now }, ...locationFilter, ...dateFilter };
 
-  const [upcomingCount, pastCount, upcoming, past] = await Promise.all([
+  // Create filter for group bookings
+  const groupBookingFilter: {
+    shift?: {
+      start?: {
+        gte?: Date;
+        lte?: Date;
+        lt?: Date;
+      };
+      location?: string;
+    };
+  } = {};
+  
+  if (selectedLocation || dateFrom || dateTo) {
+    groupBookingFilter.shift = {
+      ...(selectedLocation && { location: selectedLocation }),
+      ...dateFilter,
+    };
+  }
+
+  const [upcomingCount, pastCount, upcoming, past, allGroupBookings] = await Promise.all([
     prisma.shift.count({ where: upcomingFilter }),
     prisma.shift.count({ where: pastFilter }),
     prisma.shift.findMany({
@@ -207,6 +226,24 @@ export default async function AdminShiftsPage({
       },
       skip: (pPage - 1) * pSize,
       take: pSize,
+    }),
+    // Fetch all group bookings separately for the dedicated section
+    prisma.groupBooking.findMany({
+      where: groupBookingFilter,
+      include: {
+        shift: {
+          include: { shiftType: true },
+        },
+        leader: { select: { id: true, name: true, email: true } },
+        signups: { 
+          include: { user: true },
+        },
+        invitations: true,
+      },
+      orderBy: [
+        { status: "asc" }, // PENDING first, then CONFIRMED, etc.
+        { createdAt: "desc" },
+      ],
     }),
   ]);
 
@@ -476,7 +513,7 @@ export default async function AdminShiftsPage({
             </div>
           </div>
 
-          {s.signups.length === 0 && s.groupBookings.length === 0 ? (
+          {s.signups.filter(signup => !signup.groupBookingId).length === 0 ? (
             <div
               className="text-center py-8 sm:py-10 bg-gradient-to-br from-slate-50 to-gray-50 rounded-xl border border-slate-100"
               data-testid={`no-signups-${s.id}`}
@@ -484,237 +521,68 @@ export default async function AdminShiftsPage({
               <div className="h-12 w-12 mx-auto mb-3 rounded-full bg-white shadow-sm flex items-center justify-center">
                 <Users className="h-6 w-6 text-slate-400" />
               </div>
-              <p className="text-slate-600 font-medium">No signups yet</p>
+              <p className="text-slate-600 font-medium">No individual signups yet</p>
               <p className="text-sm text-slate-500 mt-1">
-                Volunteers will appear here once they sign up
+                Individual volunteers will appear here once they sign up
               </p>
             </div>
           ) : (
             <div className="border-t border-slate-200 pt-4">
-              {/* Group Bookings Section */}
-              {s.groupBookings.length > 0 && (
-                <div className="mb-6" data-testid={`group-bookings-${s.id}`}>
-                  <div className="mb-3">
-                    <h4 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                      <Users className="h-4 w-4" />
-                      Group Bookings
-                      <span className="text-xs font-normal text-slate-500">
-                        ({s.groupBookings.length} groups)
-                      </span>
-                    </h4>
-                  </div>
-                  <div className="space-y-4">
-                    {s.groupBookings
-                      .slice()
-                      .sort((a, b) => {
-                        // Sort by status, then by name
-                        const statusOrder = {
+              {/* Individual Signups Section */}
+              <div data-testid={`individual-signups-${s.id}`}>
+                <div className="mb-3">
+                  <h4 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    Individual Signups
+                    <span className="text-xs font-normal text-slate-500">
+                      ({s.signups.filter(signup => !signup.groupBookingId).length} individuals)
+                    </span>
+                  </h4>
+                </div>
+                <div className="hidden md:grid md:grid-cols-5 md:gap-4 text-xs uppercase tracking-wider text-slate-500 font-semibold pb-3 px-4 border-b border-slate-100">
+                  <div>Volunteer</div>
+                  <div>Email</div>
+                  <div>Phone</div>
+                  <div>Status</div>
+                  <div>Actions</div>
+                </div>
+                <div className="space-y-1.5 mt-2">
+                  {s.signups
+                    .filter(signup => !signup.groupBookingId)
+                    .slice()
+                    .sort(
+                      (
+                        a: ShiftWithAll["signups"][number],
+                        b: ShiftWithAll["signups"][number]
+                      ) => {
+                        type Status = ShiftWithAll["signups"][number]["status"];
+                        const order: Record<Status, number> = {
                           PENDING: 0,
                           CONFIRMED: 1,
-                          PARTIAL: 2,
-                          WAITLISTED: 3,
-                          CANCELED: 4,
+                          WAITLISTED: 2,
+                          CANCELED: 3,
                         };
-                        const aOrder = statusOrder[a.status as keyof typeof statusOrder];
-                        const bOrder = statusOrder[b.status as keyof typeof statusOrder];
-                        if (aOrder !== bOrder) return aOrder - bOrder;
-                        return a.name.localeCompare(b.name);
-                      })
-                      .map((groupBooking) => (
-                        <div
-                          key={groupBooking.id}
-                          className="border border-slate-200 rounded-lg p-4 bg-slate-50"
-                          data-testid={`group-booking-${groupBooking.id}`}
-                        >
-                          <div className="flex items-start justify-between mb-3">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <h5 className="font-semibold text-slate-900">{groupBooking.name}</h5>
-                                <Badge 
-                                  variant="outline"
-                                  className={`text-xs ${
-                                    groupBooking.status === "PENDING" 
-                                      ? "bg-amber-50 text-amber-700 border-amber-200"
-                                      : groupBooking.status === "CONFIRMED"
-                                      ? "bg-green-50 text-green-700 border-green-200"
-                                      : groupBooking.status === "PARTIAL"
-                                      ? "bg-blue-50 text-blue-700 border-blue-200"
-                                      : groupBooking.status === "WAITLISTED"
-                                      ? "bg-yellow-50 text-yellow-700 border-yellow-200"
-                                      : "bg-gray-50 text-gray-700 border-gray-200"
-                                  }`}
-                                >
-                                  {groupBooking.status.toLowerCase()}
-                                </Badge>
-                              </div>
-                              <p className="text-sm text-slate-600 mb-1">
-                                Leader: {groupBooking.leader.name || groupBooking.leader.email}
-                              </p>
-                              {groupBooking.description && (
-                                <p className="text-sm text-slate-500 italic mb-2">
-                                  &quot;{groupBooking.description}&quot;
-                                </p>
-                              )}
-                              <p className="text-xs text-slate-500">
-                                {groupBooking.signups.length} members, {groupBooking.invitations.filter(inv => inv.status === "PENDING").length} pending invitations
-                              </p>
-                            </div>
-                            <GroupBookingAdminActions
-                              groupBookingId={groupBooking.id}
-                              status={groupBooking.status}
-                              groupName={groupBooking.name}
-                            />
-                          </div>
-                          
-                          {/* Group Members */}
-                          <div className="border-t border-slate-200 pt-3 mt-3">
-                            <div className="hidden md:grid md:grid-cols-5 md:gap-4 text-xs uppercase tracking-wider text-slate-500 font-semibold pb-2 px-2">
-                              <div>Member</div>
-                              <div>Email</div>
-                              <div>Phone</div>
-                              <div>Status</div>
-                              <div>Actions</div>
-                            </div>
-                            <div className="space-y-1">
-                              {groupBooking.signups
-                                .slice()
-                                .sort(
-                                  (a, b) => {
-                                    const statusOrder = {
-                                      PENDING: 0,
-                                      CONFIRMED: 1,
-                                      WAITLISTED: 2,
-                                      CANCELED: 3,
-                                    };
-                                    const aOrder = statusOrder[a.status as keyof typeof statusOrder];
-                                    const bOrder = statusOrder[b.status as keyof typeof statusOrder];
-                                    if (aOrder !== bOrder) return aOrder - bOrder;
-                                    return (a.user.name ?? a.user.email).localeCompare(
-                                      b.user.name ?? b.user.email
-                                    );
-                                  }
-                                )
-                                .map((su) => (
-                                  <div
-                                    key={su.id}
-                                    className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-5 md:gap-4 text-sm py-3 px-2 bg-white rounded-lg border border-slate-100"
-                                    data-testid={`group-member-${su.id}`}
-                                  >
-                                    <div className="flex items-center gap-2 sm:col-span-1">
-                                      <div className="h-6 w-6 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-xs">
-                                        {(su.user.name ?? su.user.email)?.[0]?.toUpperCase()}
-                                      </div>
-                                      <Link
-                                        href={`/admin/volunteers/${su.user.id}`}
-                                        className="font-medium text-slate-800 hover:text-blue-600 transition-colors flex items-center gap-1 min-w-0"
-                                      >
-                                        <span className="truncate">{su.user.name ?? "(No name)"}</span>
-                                        {groupBooking.leaderId === su.user.id && (
-                                          <Badge variant="outline" className="text-xs">Leader</Badge>
-                                        )}
-                                      </Link>
-                                    </div>
-                                    <div className="flex items-center gap-2 text-slate-600 min-w-0">
-                                      <span className="sm:hidden text-xs text-slate-500">Email:</span>
-                                      <span className="truncate">{su.user.email}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2 text-slate-600 min-w-0">
-                                      <span className="sm:hidden text-xs text-slate-500">Phone:</span>
-                                      <span className="truncate">{su.user.phone ?? "—"}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      <span className="sm:hidden text-xs text-slate-500">Status:</span>
-                                      {su.status === "PENDING" && (
-                                        <Badge className="bg-gradient-to-r from-amber-50 to-orange-50 text-orange-700 border-orange-200 font-medium shadow-sm">
-                                          Pending
-                                        </Badge>
-                                      )}
-                                      {su.status === "CONFIRMED" && (
-                                        <Badge className="bg-gradient-to-r from-emerald-50 to-green-50 text-green-700 border-green-200 font-medium shadow-sm">
-                                          Confirmed
-                                        </Badge>
-                                      )}
-                                      {su.status === "WAITLISTED" && (
-                                        <Badge className="bg-gradient-to-r from-yellow-50 to-amber-50 text-yellow-700 border-yellow-200 font-medium shadow-sm">
-                                          Waitlisted
-                                        </Badge>
-                                      )}
-                                      {su.status === "CANCELED" && (
-                                        <Badge className="bg-gradient-to-r from-gray-50 to-slate-50 text-gray-600 border-gray-200 font-medium">
-                                          Canceled
-                                        </Badge>
-                                      )}
-                                    </div>
-                                    <div className="flex justify-start sm:justify-end md:justify-start">
-                                      <SignupActions signupId={su.id} status={su.status} />
-                                    </div>
-                                  </div>
-                                ))}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                  </div>
+                        const ao = order[a.status];
+                        const bo = order[b.status];
+                        if (ao !== bo) return ao - bo;
+                        return (a.user.name ?? a.user.email).localeCompare(
+                          b.user.name ?? b.user.email
+                        );
+                      }
+                    )
+                    .map((su: ShiftWithAll["signups"][number]) => (
+                      <SignupRow
+                        key={su.id}
+                        name={su.user.name}
+                        email={su.user.email}
+                        phone={su.user.phone}
+                        status={su.status}
+                        userId={su.user.id}
+                        signupId={su.id}
+                      />
+                    ))}
                 </div>
-              )}
-              
-              {/* Individual Signups Section */}
-              {s.signups.filter(signup => !signup.groupBookingId).length > 0 && (
-                <div data-testid={`individual-signups-${s.id}`}>
-                  <div className="mb-3">
-                    <h4 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                      <Users className="h-4 w-4" />
-                      Individual Signups
-                      <span className="text-xs font-normal text-slate-500">
-                        ({s.signups.filter(signup => !signup.groupBookingId).length} individuals)
-                      </span>
-                    </h4>
-                  </div>
-                  <div className="hidden md:grid md:grid-cols-5 md:gap-4 text-xs uppercase tracking-wider text-slate-500 font-semibold pb-3 px-4 border-b border-slate-100">
-                    <div>Volunteer</div>
-                    <div>Email</div>
-                    <div>Phone</div>
-                    <div>Status</div>
-                    <div>Actions</div>
-                  </div>
-                  <div className="space-y-1.5 mt-2">
-                    {s.signups
-                      .filter(signup => !signup.groupBookingId)
-                      .slice()
-                      .sort(
-                        (
-                          a: ShiftWithAll["signups"][number],
-                          b: ShiftWithAll["signups"][number]
-                        ) => {
-                          type Status = ShiftWithAll["signups"][number]["status"];
-                          const order: Record<Status, number> = {
-                            PENDING: 0,
-                            CONFIRMED: 1,
-                            WAITLISTED: 2,
-                            CANCELED: 3,
-                          };
-                          const ao = order[a.status];
-                          const bo = order[b.status];
-                          if (ao !== bo) return ao - bo;
-                          return (a.user.name ?? a.user.email).localeCompare(
-                            b.user.name ?? b.user.email
-                          );
-                        }
-                      )
-                      .map((su: ShiftWithAll["signups"][number]) => (
-                        <SignupRow
-                          key={su.id}
-                          name={su.user.name}
-                          email={su.user.email}
-                          phone={su.user.phone}
-                          status={su.status}
-                          userId={su.user.id}
-                          signupId={su.id}
-                        />
-                      ))}
-                  </div>
-                </div>
-              )}
+              </div>
             </div>
           )}
         </CardContent>
@@ -920,6 +788,251 @@ export default async function AdminShiftsPage({
             </CardContent>
           </Card>
         </div>
+
+        {/* Group Bookings Section */}
+        {allGroupBookings.length > 0 && (
+          <section className="mb-12" data-testid="group-bookings-section">
+            <div className="flex items-center gap-3 mb-6">
+              <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-800 to-purple-600 bg-clip-text text-transparent">
+                Group Bookings
+              </h2>
+              <Badge
+                variant="outline"
+                className="bg-gradient-to-r from-purple-50 to-pink-50 text-purple-700 border-purple-200 font-semibold px-2.5 py-1"
+              >
+                {allGroupBookings.length}
+              </Badge>
+            </div>
+            
+            <div className="grid gap-4" data-testid="group-bookings-list">
+              {allGroupBookings.map((groupBooking) => {
+                const pendingInvites = groupBooking.invitations.filter(inv => inv.status === "PENDING").length;
+                const hasPendingInvitations = pendingInvites > 0;
+                const hasIncompleteMembers = groupBooking.signups.some(signup => {
+                  const user = signup.user;
+                  const hasBasicInfo = user.firstName && user.lastName && user.phone;
+                  const hasEmergencyContact = user.emergencyContactName && user.emergencyContactPhone;
+                  const hasAgreements = user.volunteerAgreementAccepted && user.healthSafetyPolicyAccepted;
+                  const isProfileComplete = user.profileCompleted || (hasBasicInfo && hasEmergencyContact && hasAgreements);
+                  return !isProfileComplete;
+                });
+
+                return (
+                  <Card
+                    key={groupBooking.id}
+                    className="group shadow-sm border-purple-200 hover:shadow-lg transition-all duration-300 hover:border-purple-300 bg-gradient-to-r from-purple-50/30 to-pink-50/30"
+                    data-testid={`group-booking-card-${groupBooking.id}`}
+                  >
+                    <CardContent className="p-6">
+                      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start gap-4 mb-4">
+                            <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center flex-shrink-0 shadow-md">
+                              <Users className="h-6 w-6 text-white" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-3 mb-2">
+                                <h3 className="font-bold text-xl text-slate-900 truncate">
+                                  {groupBooking.name}
+                                </h3>
+                                <Badge 
+                                  className={`${
+                                    groupBooking.status === "PENDING" 
+                                      ? "bg-amber-50 text-amber-700 border-amber-200"
+                                      : groupBooking.status === "CONFIRMED"
+                                      ? "bg-green-50 text-green-700 border-green-200"
+                                      : groupBooking.status === "PARTIAL"
+                                      ? "bg-blue-50 text-blue-700 border-blue-200"
+                                      : groupBooking.status === "WAITLISTED"
+                                      ? "bg-yellow-50 text-yellow-700 border-yellow-200"
+                                      : "bg-gray-50 text-gray-700 border-gray-200"
+                                  }`}
+                                >
+                                  {groupBooking.status.toLowerCase()}
+                                </Badge>
+                              </div>
+                              
+                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+                                <div className="flex items-center gap-2">
+                                  <Users className="h-4 w-4 text-slate-500" />
+                                  <span className="text-slate-600">
+                                    Leader: <span className="font-medium text-slate-900">
+                                      {groupBooking.leader.name || groupBooking.leader.email}
+                                    </span>
+                                  </span>
+                                </div>
+                                
+                                <div className="flex items-center gap-2">
+                                  <Calendar className="h-4 w-4 text-slate-500" />
+                                  <span className="text-slate-600">
+                                    <span className="font-medium text-slate-900">
+                                      {groupBooking.shift.shiftType.name}
+                                    </span>
+                                  </span>
+                                </div>
+                                
+                                <div className="flex items-center gap-2">
+                                  <Clock className="h-4 w-4 text-slate-500" />
+                                  <span className="text-slate-600">
+                                    <span className="font-medium text-slate-900">
+                                      {format(groupBooking.shift.start, "MMM d, h:mm a")}
+                                    </span>
+                                  </span>
+                                </div>
+                                
+                                {groupBooking.shift.location && (
+                                  <div className="flex items-center gap-2">
+                                    <MapPin className="h-4 w-4 text-slate-500" />
+                                    <span className="text-slate-600">
+                                      <span className="font-medium text-slate-900">
+                                        {groupBooking.shift.location}
+                                      </span>
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                              
+                              {groupBooking.description && (
+                                <p className="text-sm text-slate-600 italic mt-3 max-w-md">
+                                  &quot;{groupBooking.description}&quot;
+                                </p>
+                              )}
+                              
+                              <div className="flex flex-wrap gap-2 mt-4">
+                                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                                  {groupBooking.signups.length} members
+                                </Badge>
+                                {pendingInvites > 0 && (
+                                  <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+                                    {pendingInvites} pending invites
+                                  </Badge>
+                                )}
+                                {hasIncompleteMembers && (
+                                  <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">
+                                    Incomplete profiles
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex-shrink-0">
+                          <GroupBookingAdminActions
+                            groupBookingId={groupBooking.id}
+                            status={groupBooking.status}
+                            groupName={groupBooking.name}
+                            hasIncompleteMembers={hasIncompleteMembers}
+                            hasPendingInvitations={hasPendingInvitations}
+                          />
+                        </div>
+                      </div>
+                      
+                      {/* Group Members Preview */}
+                      <div className="border-t border-purple-100 pt-4 mt-6">
+                        <h4 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                          <Users className="h-4 w-4" />
+                          Members ({groupBooking.signups.length}) {pendingInvites > 0 && (
+                            <span className="text-amber-600">+ {pendingInvites} pending</span>
+                          )}
+                        </h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                          {/* Current Members (Signups) */}
+                          {groupBooking.signups
+                            .slice()
+                            .sort((a, b) => {
+                              // Leader first, then by status, then by name
+                              if (a.userId === groupBooking.leaderId) return -1;
+                              if (b.userId === groupBooking.leaderId) return 1;
+                              
+                              const statusOrder = { PENDING: 0, CONFIRMED: 1, WAITLISTED: 2, CANCELED: 3 };
+                              const aOrder = statusOrder[a.status as keyof typeof statusOrder];
+                              const bOrder = statusOrder[b.status as keyof typeof statusOrder];
+                              if (aOrder !== bOrder) return aOrder - bOrder;
+                              
+                              return (a.user.name ?? a.user.email).localeCompare(b.user.name ?? b.user.email);
+                            })
+                            .map((signup) => (
+                              <div
+                                key={signup.id}
+                                className="flex items-center gap-2 p-2 bg-white rounded-lg border border-slate-100 hover:border-slate-200 transition-colors"
+                              >
+                                <div className="h-7 w-7 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-white font-semibold text-xs flex-shrink-0">
+                                  {(signup.user.name ?? signup.user.email)?.[0]?.toUpperCase()}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-1">
+                                    <Link
+                                      href={`/admin/volunteers/${signup.user.id}`}
+                                      className="text-sm font-medium text-slate-900 hover:text-purple-600 transition-colors truncate"
+                                    >
+                                      {signup.user.name ?? "(No name)"}
+                                    </Link>
+                                    {signup.userId === groupBooking.leaderId && (
+                                      <Badge variant="outline" className="text-xs px-1.5 py-0.5">
+                                        Leader
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <div className="text-xs text-slate-500 truncate">
+                                    {signup.user.email}
+                                  </div>
+                                </div>
+                                <Badge
+                                  variant="outline"
+                                  className={`text-xs ${
+                                    signup.status === "PENDING" 
+                                      ? "bg-amber-50 text-amber-700 border-amber-200"
+                                      : signup.status === "CONFIRMED"
+                                      ? "bg-green-50 text-green-700 border-green-200"
+                                      : signup.status === "WAITLISTED"
+                                      ? "bg-yellow-50 text-yellow-700 border-yellow-200"
+                                      : "bg-gray-50 text-gray-700 border-gray-200"
+                                  }`}
+                                >
+                                  {signup.status.toLowerCase()}
+                                </Badge>
+                              </div>
+                            ))}
+                            
+                          {/* Pending Invitations */}
+                          {groupBooking.invitations
+                            .filter(invitation => invitation.status === "PENDING")
+                            .map((invitation) => (
+                              <div
+                                key={invitation.id}
+                                className="flex items-center gap-2 p-2 bg-amber-50 rounded-lg border border-amber-200 hover:border-amber-300 transition-colors"
+                              >
+                                <div className="h-7 w-7 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white font-semibold text-xs flex-shrink-0">
+                                  {invitation.email[0]?.toUpperCase()}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-1">
+                                    <span className="text-sm font-medium text-slate-900 truncate">
+                                      {invitation.email}
+                                    </span>
+                                  </div>
+                                  <div className="text-xs text-amber-600">
+                                    Invitation sent {new Date(invitation.createdAt).toLocaleDateString()}
+                                  </div>
+                                </div>
+                                <Badge
+                                  variant="outline"
+                                  className="text-xs bg-amber-100 text-amber-700 border-amber-300"
+                                >
+                                  awaiting response
+                                </Badge>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
         {/* Upcoming Shifts */}
         <section className="mb-12" data-testid="upcoming-shifts-section">
