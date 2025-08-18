@@ -39,6 +39,16 @@ model User {
   achievements                 UserAchievement[]
   ledGroupBookings             GroupBooking[]         @relation("GroupLeader")
   groupInvitationsSent         GroupInvitation[]
+  
+  // Friend system relations
+  friendships                  Friendship[]           @relation("UserFriendships")
+  friendOf                     Friendship[]           @relation("FriendFriendships")
+  initiatedFriendships         Friendship[]           @relation("InitiatedFriendships")
+  sentFriendRequests           FriendRequest[]
+  
+  // Privacy settings
+  friendVisibility             FriendVisibility       @default(FRIENDS_ONLY)
+  allowFriendRequests          Boolean                @default(true)
 }
 
 model ShiftType {
@@ -188,4 +198,60 @@ enum GroupInvitationStatus {
   DECLINED // User declined invitation
   EXPIRED  // Invitation expired
   CANCELED // Canceled by leader
+}
+
+model Friendship {
+  id          String           @id @default(cuid())
+  userId      String
+  friendId    String
+  status      FriendshipStatus @default(PENDING)
+  initiatedBy String           // Who sent the friend request
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  
+  // Relations
+  user        User             @relation("UserFriendships", fields: [userId], references: [id], onDelete: Cascade)
+  friend      User             @relation("FriendFriendships", fields: [friendId], references: [id], onDelete: Cascade)
+  initiator   User             @relation("InitiatedFriendships", fields: [initiatedBy], references: [id])
+  
+  @@unique([userId, friendId])
+  @@index([userId, status])
+  @@index([friendId, status])
+}
+
+model FriendRequest {
+  id          String                @id @default(cuid())
+  fromUserId  String
+  toEmail     String                // Can be existing user email or new invitation
+  message     String?               // Personal message from requester
+  token       String                @unique @default(cuid()) // For invitation links
+  status      FriendRequestStatus   @default(PENDING)
+  expiresAt   DateTime              // Request expiry (30 days)
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+  
+  // Relations
+  fromUser    User                  @relation(fields: [fromUserId], references: [id], onDelete: Cascade)
+  
+  @@unique([fromUserId, toEmail])
+}
+
+enum FriendshipStatus {
+  PENDING     // Friend request sent, awaiting acceptance
+  ACCEPTED    // Friendship established
+  BLOCKED     // User blocked this friend
+}
+
+enum FriendRequestStatus {
+  PENDING     // Request sent, awaiting response
+  ACCEPTED    // Request accepted, friendship created
+  DECLINED    // Request declined
+  EXPIRED     // Request expired
+  CANCELED    // Canceled by sender
+}
+
+enum FriendVisibility {
+  PUBLIC        // Anyone can see user's shift activity
+  FRIENDS_ONLY  // Only friends can see shift activity
+  PRIVATE       // No one can see shift activity
 }

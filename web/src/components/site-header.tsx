@@ -112,15 +112,26 @@ export function SiteHeader({
             </Button>
 
             {session?.user && !isAdmin ? (
-              <Button
-                asChild
-                variant="ghost"
-                className={getLinkClassName("/shifts/mine")}
-              >
-                <Link href="/shifts/mine">
-                  My Shifts
-                </Link>
-              </Button>
+              <>
+                <Button
+                  asChild
+                  variant="ghost"
+                  className={getLinkClassName("/shifts/mine")}
+                >
+                  <Link href="/shifts/mine">
+                    My Shifts
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="ghost"
+                  className={getLinkClassName("/friends")}
+                >
+                  <Link href="/friends">
+                    Friends
+                  </Link>
+                </Button>
+              </>
             ) : null}
 
             {isAdmin ? (
@@ -211,16 +222,28 @@ export function SiteHeader({
                   </Link>
 
                   {!isAdmin && (
-                    <Link
-                      href="/shifts/mine"
-                      className={cn(
-                        "block px-4 py-3 rounded-lg text-white/90 hover:text-white hover:bg-white/10 transition-all duration-200",
-                        isActive("/shifts/mine") && "bg-white/15 text-white font-medium"
-                      )}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      My Shifts
-                    </Link>
+                    <>
+                      <Link
+                        href="/shifts/mine"
+                        className={cn(
+                          "block px-4 py-3 rounded-lg text-white/90 hover:text-white hover:bg-white/10 transition-all duration-200",
+                          isActive("/shifts/mine") && "bg-white/15 text-white font-medium"
+                        )}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        My Shifts
+                      </Link>
+                      <Link
+                        href="/friends"
+                        className={cn(
+                          "block px-4 py-3 rounded-lg text-white/90 hover:text-white hover:bg-white/10 transition-all duration-200",
+                          isActive("/friends") && "bg-white/15 text-white font-medium"
+                        )}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        Friends
+                      </Link>
+                    </>
                   )}
 
                   {isAdmin && (
