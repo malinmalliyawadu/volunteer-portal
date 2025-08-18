@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST(
   req: Request,
-  { params }: { params: { requestId: string } }
+  { params }: { params: Promise<{ requestId: string }> }
 ) {
   const session = await getServerSession(authOptions);
 
@@ -22,7 +22,7 @@ export async function POST(
   }
 
   try {
-    const { requestId } = params;
+    const { requestId } = await params;
 
     // Find the friend request
     const friendRequest = await prisma.friendRequest.findUnique({

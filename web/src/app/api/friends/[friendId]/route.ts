@@ -10,7 +10,7 @@ const blockFriendSchema = z.object({
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { friendId: string } }
+  { params }: { params: Promise<{ friendId: string }> }
 ) {
   const session = await getServerSession(authOptions);
 
@@ -27,7 +27,7 @@ export async function DELETE(
   }
 
   try {
-    const { friendId } = params;
+    const { friendId } = await params;
 
     // Find and delete both directions of the friendship
     const result = await prisma.$transaction(async (tx) => {
@@ -65,7 +65,7 @@ export async function DELETE(
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { friendId: string } }
+  { params }: { params: Promise<{ friendId: string }> }
 ) {
   const session = await getServerSession(authOptions);
 
@@ -82,7 +82,7 @@ export async function PATCH(
   }
 
   try {
-    const { friendId } = params;
+    const { friendId } = await params;
     const body = await req.json();
     const { blocked } = blockFriendSchema.parse(body);
 

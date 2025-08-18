@@ -9,12 +9,12 @@ import { Avatar } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SendFriendRequestDialog } from "@/components/send-friend-request-dialog";
 import { FriendPrivacySettings } from "@/components/friend-privacy-settings";
+import { FriendProfileDialog } from "@/components/friend-profile-dialog";
 import { 
   Users, 
   UserPlus, 
   Settings, 
-  Calendar, 
-  Trophy,
+  Calendar,
   Search,
   MessageCircle,
   Check,
@@ -58,6 +58,8 @@ export function FriendsManager() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showSendRequest, setShowSendRequest] = useState(false);
   const [showPrivacySettings, setShowPrivacySettings] = useState(false);
+  const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null);
+  const [showFriendProfile, setShowFriendProfile] = useState(false);
 
   useEffect(() => {
     fetchFriends();
@@ -118,6 +120,11 @@ export function FriendsManager() {
     } catch (error) {
       console.error("Error removing friend:", error);
     }
+  };
+
+  const handleViewProfile = (friend: Friend) => {
+    setSelectedFriend(friend);
+    setShowFriendProfile(true);
   };
 
   const filteredFriends = friendsData?.friends.filter(friend =>
@@ -233,13 +240,14 @@ export function FriendsManager() {
                     </div>
                     
                     <div className="mt-4 flex space-x-2">
-                      <Button variant="outline" size="sm" className="flex-1">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="flex-1"
+                        onClick={() => handleViewProfile(friend)}
+                      >
                         <Calendar className="h-3 w-3 mr-1" />
-                        View Schedule
-                      </Button>
-                      <Button variant="outline" size="sm" className="flex-1">
-                        <Trophy className="h-3 w-3 mr-1" />
-                        Achievements
+                        View Profile
                       </Button>
                     </div>
                   </CardContent>
@@ -337,6 +345,12 @@ export function FriendsManager() {
       <FriendPrivacySettings
         open={showPrivacySettings}
         onOpenChange={setShowPrivacySettings}
+      />
+
+      <FriendProfileDialog
+        friend={selectedFriend}
+        open={showFriendProfile}
+        onOpenChange={setShowFriendProfile}
       />
     </div>
   );
