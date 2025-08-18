@@ -25,6 +25,7 @@ interface GroupBookingDialogWrapperProps {
   date: string;
   location: string;
   testId?: string;
+  currentUserEmail?: string;
 }
 
 export function GroupBookingDialogWrapper({
@@ -32,6 +33,7 @@ export function GroupBookingDialogWrapper({
   date,
   location,
   testId,
+  currentUserEmail,
 }: GroupBookingDialogWrapperProps) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -53,6 +55,7 @@ export function GroupBookingDialogWrapper({
         location={location}
         open={isOpen}
         onOpenChange={setIsOpen}
+        currentUserEmail={currentUserEmail}
       />
     </>
   );

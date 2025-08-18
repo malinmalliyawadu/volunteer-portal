@@ -10,12 +10,14 @@ interface GroupBookingAdminActionsProps {
   status: string;
   groupName: string;
   hasIncompleteMembers?: boolean;
+  hasPendingInvitations?: boolean;
 }
 
 export function GroupBookingAdminActions({
   groupBookingId,
   status,
   hasIncompleteMembers = false,
+  hasPendingInvitations = false,
 }: GroupBookingAdminActionsProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -81,8 +83,14 @@ export function GroupBookingAdminActions({
           variant="outline"
           className="text-green-600 hover:bg-green-50 border-green-300"
           onClick={() => updateGroupStatus("CONFIRMED")}
-          disabled={isLoading || hasIncompleteMembers}
-          title={hasIncompleteMembers ? "Some members have not completed registration" : undefined}
+          disabled={isLoading || hasIncompleteMembers || hasPendingInvitations}
+          title={
+            hasPendingInvitations 
+              ? "Some invited members have not joined yet" 
+              : hasIncompleteMembers 
+              ? "Some members have not completed registration" 
+              : undefined
+          }
           data-testid={`approve-group-${groupBookingId}`}
         >
           {isLoading ? "..." : "Approve Group"}
@@ -98,6 +106,11 @@ export function GroupBookingAdminActions({
           {isLoading ? "..." : "Reject Group"}
         </Button>
       </div>
+      {hasPendingInvitations && (
+        <p className="text-xs text-amber-600">
+          ⚠️ Some invited members have not joined yet
+        </p>
+      )}
       {hasIncompleteMembers && (
         <p className="text-xs text-amber-600">
           ⚠️ Some members have incomplete profiles
