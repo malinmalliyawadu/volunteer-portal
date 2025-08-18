@@ -59,27 +59,40 @@ npm run lint      # Run ESLint
 
 ```
 web/
-├── app/              # Next.js App Router pages and API routes
-│   ├── api/         # API route handlers
-│   ├── admin/       # Admin dashboard pages
-│   └── (auth)/      # Authentication pages
-├── components/       # React components
-│   └── ui/          # shadcn/ui components
-├── lib/             # Utilities and shared code
-│   ├── auth.ts      # NextAuth configuration
-│   └── db.ts        # Prisma client singleton
-├── prisma/          # Database schema and migrations
-└── tests/           # Playwright e2e tests
+├── src/
+│   ├── app/              # Next.js App Router pages and API routes
+│   │   ├── api/         # API route handlers
+│   │   ├── admin/       # Admin dashboard pages
+│   │   ├── login/       # Authentication pages
+│   │   ├── register/    # User registration
+│   │   ├── dashboard/   # User dashboard
+│   │   ├── profile/     # Profile management
+│   │   └── shifts/      # Shift browsing and management
+│   ├── components/      # React components
+│   │   ├── ui/         # shadcn/ui components
+│   │   └── forms/      # Form components
+│   ├── lib/            # Utilities and shared code
+│   │   ├── auth-options.ts  # NextAuth configuration
+│   │   ├── prisma.ts        # Prisma client singleton
+│   │   └── utils.ts         # Utility functions
+│   └── types/          # TypeScript type definitions
+├── prisma/             # Database schema and migrations
+├── tests/              # Playwright e2e tests
+├── docs/               # Documentation files
+└── public/             # Static assets
 ```
 
 ### Key API Patterns
 
-All API routes follow Next.js App Router conventions in `app/api/`:
+All API routes follow Next.js App Router conventions in `src/app/api/`:
 
 - Authentication: `/api/auth/[...nextauth]` (NextAuth.js)
+- User registration: `/api/auth/register`
 - Admin operations: `/api/admin/*` (protected routes)
 - Shift management: `/api/shifts/*`
+- Group bookings: `/api/group-bookings/*`
 - User profiles: `/api/profile`
+- Achievements: `/api/achievements`
 
 Protected routes check session role:
 
@@ -97,7 +110,7 @@ if (session?.user?.role !== "ADMIN") {
 - **Signup**: Shift registrations with status tracking
 - **Achievement**: Gamification system with multiple criteria types
 
-Always use Prisma client through the singleton in `lib/db.ts`:
+Always use Prisma client through the singleton in `src/lib/prisma.ts`:
 
 ```typescript
 import { prisma } from "@/lib/prisma";
@@ -121,14 +134,26 @@ Complex gamification with automatic unlocking based on:
 
 Achievement processing happens in `/api/achievements/route.ts`
 
+### Group Booking System
+
+Advanced shift assignment system allowing volunteers to:
+
+- Create group bookings for shifts with multiple volunteers
+- Send invitations to other volunteers via email/link
+- Manage group member assignments and roles
+- Handle approval workflows for group bookings
+
+Group booking features are integrated throughout the admin dashboard and volunteer interface.
+
 ### Testing Approach
 
 E2e tests in `/web/tests/e2e/` cover:
 
-- Authentication flows
-- Admin dashboard functionality
-- Volunteer shift signups
-- Profile management
+- Authentication flows (login, register)
+- Admin dashboard functionality (user management, shift management)
+- Volunteer workflows (shift browsing, signups, profile management)
+- Group booking system
+- Mobile navigation and responsive design
 
 **Test ID Guidelines**:
 
@@ -194,3 +219,24 @@ Required in `.env.local`:
 - `NEXTAUTH_SECRET`: Random secret for NextAuth
 - `NEXTAUTH_URL`: Application URL
 - OAuth provider credentials (GOOGLE_CLIENT_ID, etc.)
+
+## Detailed Documentation
+
+For comprehensive guidelines specific to different areas of the codebase, see the documentation in `web/docs/`:
+
+### Development Guides
+- **[App Router Guide](web/docs/app-router-guide.md)** - Next.js App Router patterns, API routes, Server Components, authentication
+- **[Component Development](web/docs/component-development.md)** - React component guidelines, shadcn/ui usage, styling with Tailwind
+- **[Libraries & Utilities](web/docs/libraries-utilities.md)** - Shared utilities, services, auth patterns, validation schemas
+- **[Database & Schema](web/docs/database-schema.md)** - Prisma best practices, migrations, query optimization
+- **[Testing Guide](web/docs/testing-guide.md)** - Playwright e2e testing patterns, test utilities, data-testid conventions
+
+### Setup & Configuration
+- **[OAuth Setup](web/docs/oauth-setup.md)** - OAuth provider configuration and setup
+- **[Profile Images](web/docs/profile-images.md)** - Profile image upload and management
+- **[Versioning](web/docs/versioning.md)** - Semantic versioning and release process
+
+### Administrative
+- **[Admin User Management](web/docs/admin-user-management.md)** - User administration and management features
+
+These guides provide detailed, domain-specific instructions for working in each area of the codebase and should be consulted when making changes to ensure consistency with established patterns.
