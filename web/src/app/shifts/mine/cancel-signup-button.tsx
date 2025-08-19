@@ -53,8 +53,8 @@ export function CancelSignupButton({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" data-testid="cancel-shift-button">
-          Cancel
+        <Button variant="outline" size="sm" data-testid="cancel-shift-button" className="text-red-600 border-red-200 hover:bg-red-50">
+          Cancel Shift Signup
         </Button>
       </DialogTrigger>
       <DialogContent data-testid="cancel-shift-dialog">
