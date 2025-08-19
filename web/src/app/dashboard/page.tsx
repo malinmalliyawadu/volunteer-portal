@@ -113,7 +113,7 @@ export default async function DashboardPage() {
       },
     }),
 
-    // Friends' upcoming shifts 
+    // Friends' upcoming shifts
     prisma.signup.findMany({
       where: {
         status: "CONFIRMED",
@@ -541,7 +541,10 @@ export default async function DashboardPage() {
 
         {/* Friends Activity */}
         {friendsUpcomingShifts.length > 0 && (
-          <Card className="animate-slide-up h-fit flex-1 min-w-80" style={{ animationDelay: "0.7s" }}>
+          <Card
+            className="animate-slide-up h-fit flex-1 min-w-80"
+            style={{ animationDelay: "0.7s" }}
+          >
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -568,17 +571,28 @@ export default async function DashboardPage() {
             <CardContent>
               <div className="space-y-3">
                 {friendsUpcomingShifts.slice(0, 4).map((signup) => {
-                  const displayName = signup.user.name || 
-                    `${signup.user.firstName || ""} ${signup.user.lastName || ""}`.trim() || 
+                  const displayName =
+                    signup.user.name ||
+                    `${signup.user.firstName || ""} ${
+                      signup.user.lastName || ""
+                    }`.trim() ||
                     signup.user.email;
-                  const initials = (signup.user.firstName?.[0] || signup.user.name?.[0] || signup.user.email[0]).toUpperCase();
-                  
+                  const initials = (
+                    signup.user.firstName?.[0] ||
+                    signup.user.name?.[0] ||
+                    signup.user.email[0]
+                  ).toUpperCase();
+
                   return (
-                    <Link key={signup.id} href={`/friends/${signup.user.id}`}>
+                    <Link
+                      className="block"
+                      key={signup.id}
+                      href={`/friends/${signup.user.id}`}
+                    >
                       <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
                         <Avatar className="h-8 w-8">
-                          <AvatarImage 
-                            src={signup.user.profilePhotoUrl || undefined} 
+                          <AvatarImage
+                            src={signup.user.profilePhotoUrl || undefined}
                             alt={displayName}
                           />
                           <AvatarFallback className="bg-primary/10 text-primary">
@@ -603,7 +617,12 @@ export default async function DashboardPage() {
                   );
                 })}
                 {friendsUpcomingShifts.length > 4 && (
-                  <Button asChild variant="outline" size="sm" className="w-full">
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                  >
                     <Link href="/friends/stats">View All</Link>
                   </Button>
                 )}
