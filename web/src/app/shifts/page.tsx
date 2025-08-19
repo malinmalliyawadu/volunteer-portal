@@ -133,13 +133,11 @@ function ShiftCard({
   currentUserId,
   session,
   userFriendIds = [],
-  userDailySignups = [],
 }: {
   shift: ShiftWithRelations;
   currentUserId?: string;
   session: unknown;
   userFriendIds?: string[];
-  userDailySignups?: Array<{ start: Date; shiftType: { name: string } }>;
 }) {
   const theme = getShiftTheme(shift.shiftType.name);
   const duration = getDurationInHours(shift.start, shift.end);
@@ -163,27 +161,6 @@ function ShiftCard({
       )
     : undefined;
 
-  // Check if user has a confirmed signup on the same day
-  const shiftDate = new Date(shift.start);
-  const hasConfirmedShiftOnSameDay = userDailySignups.some(dailySignup => {
-    const dailySignupDate = new Date(dailySignup.start);
-    return (
-      dailySignupDate.getFullYear() === shiftDate.getFullYear() &&
-      dailySignupDate.getMonth() === shiftDate.getMonth() &&
-      dailySignupDate.getDate() === shiftDate.getDate()
-    );
-  });
-
-  const existingShiftOnSameDay = hasConfirmedShiftOnSameDay 
-    ? userDailySignups.find(dailySignup => {
-        const dailySignupDate = new Date(dailySignup.start);
-        return (
-          dailySignupDate.getFullYear() === shiftDate.getFullYear() &&
-          dailySignupDate.getMonth() === shiftDate.getMonth() &&
-          dailySignupDate.getDate() === shiftDate.getDate()
-        );
-      })
-    : undefined;
 
   // Find friends who have signed up for this shift
   const friendSignups = shift.signups.filter(
@@ -358,27 +335,7 @@ function ShiftCard({
           {/* Action button - anchored to bottom */}
           {!mySignup && (
             <div className="pt-4 mt-auto">
-              {hasConfirmedShiftOnSameDay ? (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div>
-                        <Button
-                          disabled
-                          className="w-full font-medium bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed"
-                          variant="outline"
-                        >
-                          ⚠️ Already scheduled this day
-                        </Button>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>You already have a shift on this day: {existingShiftOnSameDay?.shiftType.name}</p>
-                      <p className="text-xs text-muted-foreground">You can only sign up for one shift per day</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              ) : session ? (
+              {session ? (
                 <ShiftSignupDialog
                   shift={{
                     id: shift.id,
@@ -563,10 +520,41 @@ export default async function ShiftsPageRedesigned({
     },
   })) as ShiftWithRelations[];
 
+  // Filter shifts: only show shifts on days where user doesn't have an existing signup,
+  // or the shifts they're actually signed up for
+  const filteredShifts = shifts.filter((shift) => {
+    // Always show if not logged in
+    if (!currentUser?.id) return true;
+
+    // Check if user has a signup for this specific shift
+    const hasMySignup = shift.signups.some(
+      (signup) => 
+        signup.userId === currentUser.id && 
+        signup.status !== "CANCELED"
+    );
+
+    // If they have a signup for this shift, always show it
+    if (hasMySignup) return true;
+
+    // Check if user has any confirmed signup on this day
+    const shiftDate = new Date(shift.start);
+    const hasConfirmedShiftOnSameDay = userDailySignups.some(dailySignup => {
+      const dailySignupDate = new Date(dailySignup.start);
+      return (
+        dailySignupDate.getFullYear() === shiftDate.getFullYear() &&
+        dailySignupDate.getMonth() === shiftDate.getMonth() &&
+        dailySignupDate.getDate() === shiftDate.getDate()
+      );
+    });
+
+    // If they have a confirmed shift on this day, don't show other shifts
+    return !hasConfirmedShiftOnSameDay;
+  });
+
   // Group shifts by date and location
   const shiftsByDate = new Map<string, Map<string, ShiftWithRelations[]>>();
 
-  for (const shift of shifts) {
+  for (const shift of filteredShifts) {
     const dateKey = format(shift.start, "yyyy-MM-dd");
     const locationKey = shift.location || "No location specified";
 
@@ -666,7 +654,7 @@ export default async function ShiftsPageRedesigned({
         </div>
       )}
 
-      {shifts.length === 0 ? (
+      {filteredShifts.length === 0 ? (
         <div className="text-center py-20" data-testid="empty-state">
           <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
             <Calendar className="w-10 h-10 text-primary/60" />
@@ -799,7 +787,6 @@ export default async function ShiftsPageRedesigned({
                                 currentUserId={currentUser?.id}
                                 session={session}
                                 userFriendIds={userFriendIds}
-                                userDailySignups={userDailySignups}
                               />
                             ))}
                           </div>

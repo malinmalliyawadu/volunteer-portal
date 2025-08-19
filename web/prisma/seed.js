@@ -1030,7 +1030,11 @@ async function main() {
     }
     
     // For every 5th shift, add sample volunteer to create common shifts with friends
-    if (i % 5 === 0) {
+    // BUT skip the first and last days to demonstrate filtering (so user can see unsigned days)
+    const shiftDateKey = s.start.toISOString().split('T')[0];
+    const skipFirstAndLastDay = (i === 0) || (i >= createdShifts.length - 6); // Skip first day and last day's shifts
+    
+    if (i % 5 === 0 && !skipFirstAndLastDay) {
       // Check if sample volunteer can sign up for this date
       if (canUserSignUpForDate(volunteer.id, s.start)) {
         try {
