@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
+import { createFriendRequestAcceptedNotification } from "@/lib/notifications";
 
 export async function POST(
   req: Request,
@@ -15,6 +16,13 @@ export async function POST(
 
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      firstName: true,
+      lastName: true,
+    },
   });
 
   if (!user) {
@@ -29,7 +37,7 @@ export async function POST(
       where: { id: requestId },
       include: {
         fromUser: {
-          select: { id: true, email: true, name: true },
+          select: { id: true, email: true, name: true, firstName: true, lastName: true },
         },
       },
     });
@@ -104,8 +112,22 @@ export async function POST(
       return { friendship1, friendship2 };
     });
 
-    // TODO: Send notification to the requester about acceptance
-    // This would integrate with your notification service
+    // Create notification for the requester about acceptance
+    try {
+      const accepterName = user.name || 
+        (user.firstName && user.lastName 
+          ? `${user.firstName} ${user.lastName}`
+          : user.email);
+
+      await createFriendRequestAcceptedNotification(
+        friendRequest.fromUserId,
+        accepterName,
+        result.friendship1.id
+      );
+    } catch (notificationError) {
+      // Don't fail the acceptance if notification creation fails
+      console.error("Error creating friend request accepted notification:", notificationError);
+    }
 
     return NextResponse.json({
       message: "Friend request accepted",

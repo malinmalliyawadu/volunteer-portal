@@ -1044,6 +1044,130 @@ async function main() {
     }
   }
 
+  // Seed notifications
+  console.log("🔔 Seeding notifications...");
+  try {
+    // Get some users for creating realistic notifications
+    const allUsers = await prisma.user.findMany({
+      select: { id: true, name: true, firstName: true, lastName: true, email: true },
+    });
+
+    const sampleUser = allUsers.find(u => u.email === 'volunteer@example.com');
+    const adminUser = allUsers.find(u => u.email === 'admin@everybodyeats.nz');
+    const otherUsers = allUsers.filter(u => u.email !== 'volunteer@example.com' && u.email !== 'admin@everybodyeats.nz');
+
+    if (sampleUser && otherUsers.length > 0) {
+      // Create a variety of notifications for the sample user
+      const now = new Date();
+      const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
+      const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+      const notifications = [
+        // Recent friend request
+        {
+          userId: sampleUser.id,
+          type: 'FRIEND_REQUEST_RECEIVED',
+          title: 'New friend request',
+          message: `${otherUsers[0].firstName || otherUsers[0].name || 'Someone'} sent you a friend request`,
+          actionUrl: '/friends',
+          relatedId: 'fake-friend-request-id',
+          isRead: false,
+          createdAt: new Date(now.getTime() - 2 * 60 * 60 * 1000), // 2 hours ago
+        },
+        // Shift confirmed notification
+        {
+          userId: sampleUser.id,
+          type: 'SHIFT_CONFIRMED',
+          title: 'Shift confirmed',
+          message: 'Your Kitchen Prep shift on Saturday, August 24, 2025 has been confirmed',
+          actionUrl: '/shifts/mine',
+          relatedId: 'fake-shift-id',
+          isRead: false,
+          createdAt: oneDayAgo,
+        },
+        // Friend request accepted (older, read)
+        {
+          userId: sampleUser.id,
+          type: 'FRIEND_REQUEST_ACCEPTED',
+          title: 'Friend request accepted',
+          message: `${otherUsers[1].firstName || otherUsers[1].name || 'Someone'} accepted your friend request`,
+          actionUrl: '/friends',
+          relatedId: 'fake-friendship-id',
+          isRead: true,
+          createdAt: twoDaysAgo,
+        },
+        // Waitlisted notification (older, read)
+        {
+          userId: sampleUser.id,
+          type: 'SHIFT_WAITLISTED',
+          title: 'Added to waitlist',
+          message: "You've been added to the waitlist for Food Service on Sunday, August 18, 2025",
+          actionUrl: '/shifts/mine',
+          relatedId: 'fake-shift-id-2',
+          isRead: true,
+          createdAt: oneWeekAgo,
+        },
+        // Achievement unlocked (mix of read/unread)
+        {
+          userId: sampleUser.id,
+          type: 'ACHIEVEMENT_UNLOCKED',
+          title: 'Achievement unlocked!',
+          message: 'Congratulations! You earned the "First Steps" achievement',
+          actionUrl: '/dashboard',
+          relatedId: 'fake-achievement-id',
+          isRead: Math.random() > 0.5, // Randomly read or unread
+          createdAt: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
+        },
+      ];
+
+      // Create notifications
+      for (const notificationData of notifications) {
+        await prisma.notification.create({
+          data: notificationData,
+        });
+      }
+
+      // Also create some notifications for other users so they have data too
+      if (otherUsers.length >= 2) {
+        const additionalNotifications = [
+          {
+            userId: otherUsers[0].id,
+            type: 'FRIEND_REQUEST_RECEIVED',
+            title: 'New friend request',
+            message: `${sampleUser.firstName || sampleUser.name || 'Someone'} sent you a friend request`,
+            actionUrl: '/friends',
+            relatedId: 'fake-friend-request-id-2',
+            isRead: false,
+            createdAt: new Date(now.getTime() - 30 * 60 * 1000), // 30 minutes ago
+          },
+          {
+            userId: otherUsers[1].id,
+            type: 'SHIFT_CONFIRMED',
+            title: 'Shift confirmed',
+            message: 'Your Dishwashing shift on Friday, August 23, 2025 has been confirmed',
+            actionUrl: '/shifts/mine',
+            relatedId: 'fake-shift-id-3',
+            isRead: true,
+            createdAt: new Date(now.getTime() - 12 * 60 * 60 * 1000), // 12 hours ago
+          },
+        ];
+
+        for (const notificationData of additionalNotifications) {
+          await prisma.notification.create({
+            data: notificationData,
+          });
+        }
+      }
+
+      console.log(`✅ Seeded ${notifications.length + (otherUsers.length >= 2 ? 2 : 0)} notifications`);
+    } else {
+      console.log("⚠️ Could not find required users for notification seeding");
+    }
+  } catch (error) {
+    console.error("Warning: Could not seed notifications:", error.message);
+  }
+
   // Seed achievements
   console.log("🎯 Seeding achievements...");
   try {

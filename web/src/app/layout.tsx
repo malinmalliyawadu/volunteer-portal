@@ -37,6 +37,7 @@ export default async function RootLayout({
     userProfile = await prisma.user.findUnique({
       where: { email: session.user.email },
       select: {
+        id: true,
         profilePhotoUrl: true,
         name: true,
         firstName: true,

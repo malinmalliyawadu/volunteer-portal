@@ -7,7 +7,7 @@ async function loginAsVolunteer(page: Page) {
     await page.goto("/login");
 
     // Wait for the page to load
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     // Check if login form is visible
     const volunteerLoginButton = page.getByRole("button", {
@@ -28,7 +28,7 @@ async function loginAsVolunteer(page: Page) {
       console.log("Login may have failed or taken too long");
     }
 
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
   } catch (error) {
     console.log("Error during login:", error);
   }
@@ -40,7 +40,7 @@ test.describe("Dashboard Page", () => {
 
     // Navigate to dashboard and wait for it to load
     await page.goto("/dashboard");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     // Skip tests if login failed (we're still on login page)
     const currentUrl = page.url();
@@ -398,7 +398,7 @@ test.describe("Dashboard Page", () => {
 
     // Refresh the page and verify stats are consistent
     await page.reload();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const refreshedStatNumbers = page.locator(
       '[class*="text-2xl"][class*="font-bold"]'

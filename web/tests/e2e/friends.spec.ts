@@ -5,7 +5,7 @@ import type { Page } from "@playwright/test";
 async function loginAsVolunteer(page: Page) {
   try {
     await page.goto("/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const volunteerLoginButton = page.getByRole("button", {
       name: /login as volunteer/i,
@@ -21,7 +21,7 @@ async function loginAsVolunteer(page: Page) {
       console.log("Login may have failed or taken too long");
     }
 
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
   } catch (error) {
     console.log("Error during login:", error);
   }
@@ -31,7 +31,7 @@ async function loginAsVolunteer(page: Page) {
 async function loginAsAdmin(page: Page) {
   try {
     await page.goto("/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const adminLoginButton = page.getByRole("button", {
       name: /login as admin/i,
@@ -47,7 +47,7 @@ async function loginAsAdmin(page: Page) {
       console.log("Login may have failed or taken too long");
     }
 
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
   } catch (error) {
     console.log("Error during login:", error);
   }

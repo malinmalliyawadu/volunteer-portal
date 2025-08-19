@@ -1,3 +1,9 @@
+## [0.10.0] - 2025-08-19
+
+### Changes
+- feat: Add comprehensive notification system for friend requests and shifts ([#53](https://github.com/malinmalliyawadu/volunteer-portal/pull/53)) by @malinmalliyawadu
+
+
 ## [0.9.0] - 2025-08-19
 
 ### Changes

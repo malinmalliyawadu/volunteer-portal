@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
+import { createShiftConfirmedNotification, createShiftWaitlistedNotification } from "@/lib/notifications";
 
 export async function PATCH(req: Request) {
   const session = await getServerSession(authOptions);
@@ -36,8 +37,12 @@ export async function PATCH(req: Request) {
     const signup = await prisma.signup.findUnique({
       where: { id: signupId },
       include: {
-        shift: true,
-        user: { select: { email: true, name: true } },
+        shift: {
+          include: {
+            shiftType: true,
+          },
+        },
+        user: { select: { id: true, email: true, name: true } },
       },
     });
 
@@ -68,6 +73,25 @@ export async function PATCH(req: Request) {
           data: { status: "WAITLISTED" },
         });
 
+        // Create waitlist notification
+        try {
+          const shiftDate = new Intl.DateTimeFormat('en-NZ', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          }).format(signup.shift.start);
+
+          await createShiftWaitlistedNotification(
+            signup.user.id,
+            signup.shift.shiftType.name,
+            shiftDate,
+            signup.shift.id
+          );
+        } catch (notificationError) {
+          console.error("Error creating waitlist notification:", notificationError);
+        }
+
         return NextResponse.json({
           ...updatedSignup,
           message: "Shift was full, moved to waitlist",
@@ -79,6 +103,25 @@ export async function PATCH(req: Request) {
         where: { id: signupId },
         data: { status: "CONFIRMED" },
       });
+
+      // Create confirmation notification
+      try {
+        const shiftDate = new Intl.DateTimeFormat('en-NZ', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        }).format(signup.shift.start);
+
+        await createShiftConfirmedNotification(
+          signup.user.id,
+          signup.shift.shiftType.name,
+          shiftDate,
+          signup.shift.id
+        );
+      } catch (notificationError) {
+        console.error("Error creating confirmation notification:", notificationError);
+      }
 
       return NextResponse.json({
         ...updatedSignup,

@@ -5,7 +5,7 @@ import type { Page } from "@playwright/test";
 async function loginAsVolunteer(page: Page) {
   try {
     await page.goto("/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const volunteerLoginButton = page.getByRole("button", {
       name: /login as volunteer/i,
@@ -21,7 +21,7 @@ async function loginAsVolunteer(page: Page) {
       console.log("Login may have failed or taken too long");
     }
 
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
   } catch (error) {
     console.log("Error during login:", error);
   }
@@ -33,7 +33,7 @@ test.describe("Profile Page", () => {
 
     // Navigate to profile and wait for it to load
     await page.goto("/profile");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     // Skip tests if login failed (we're still on login page)
     const currentUrl = page.url();
@@ -217,7 +217,7 @@ test.describe("Profile Page", () => {
     await expect(browseShiftsLink).toBeVisible();
     
     await browseShiftsLink.click();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     
     await expect(page).toHaveURL("/shifts");
   });
@@ -230,7 +230,7 @@ test.describe("Profile Page", () => {
     await expect(viewScheduleLink).toBeVisible();
     
     await viewScheduleLink.click();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     
     await expect(page).toHaveURL("/shifts/mine");
   });
