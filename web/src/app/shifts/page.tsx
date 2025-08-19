@@ -6,10 +6,11 @@ import { authOptions } from "@/lib/auth-options";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ShiftSignupDialog } from "@/components/shift-signup-dialog";
 import { PageHeader } from "@/components/page-header";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Clock, MapPin, Users, ChevronDown } from "lucide-react";
+import { Calendar, Clock, MapPin, Users, ChevronDown, UserCheck } from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
@@ -108,7 +109,10 @@ interface ShiftWithRelations {
     user: {
       id: string;
       name: string | null;
+      firstName: string | null;
+      lastName: string | null;
       email: string;
+      profilePhotoUrl: string | null;
     };
   }>;
   groupBookings: Array<{
@@ -127,10 +131,12 @@ function ShiftCard({
   shift,
   currentUserId,
   session,
+  userFriendIds = [],
 }: {
   shift: ShiftWithRelations;
   currentUserId?: string;
   session: unknown;
+  userFriendIds?: string[];
 }) {
   const theme = getShiftTheme(shift.shiftType.name);
   const duration = getDurationInHours(shift.start, shift.end);
@@ -153,6 +159,13 @@ function ShiftCard({
         (s) => s.userId === currentUserId && s.status !== "CANCELED"
       )
     : undefined;
+
+  // Find friends who have signed up for this shift
+  const friendSignups = shift.signups.filter(
+    (signup) => 
+      userFriendIds.includes(signup.userId) && 
+      signup.status === "CONFIRMED"
+  );
 
   return (
     <Card
@@ -248,6 +261,43 @@ function ShiftCard({
             </div>
           </div>
 
+          {/* Friends participating */}
+          {friendSignups.length > 0 && (
+            <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg border border-green-100">
+              <UserCheck className="h-4 w-4 text-green-600" />
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                <span className="text-sm font-medium text-green-700">
+                  {friendSignups.length} friend{friendSignups.length !== 1 ? "s" : ""} joining:
+                </span>
+                <div className="flex items-center gap-1 overflow-hidden">
+                  {friendSignups.slice(0, 3).map((signup) => {
+                    const displayName = signup.user.name || 
+                      `${signup.user.firstName || ""} ${signup.user.lastName || ""}`.trim() || 
+                      signup.user.email;
+                    const initials = (signup.user.firstName?.[0] || signup.user.name?.[0] || signup.user.email[0]).toUpperCase();
+                    
+                    return (
+                      <Avatar key={signup.id} className="h-6 w-6">
+                        <AvatarImage 
+                          src={signup.user.profilePhotoUrl || undefined} 
+                          alt={displayName}
+                        />
+                        <AvatarFallback className="bg-green-100 text-green-700 text-xs">
+                          {initials}
+                        </AvatarFallback>
+                      </Avatar>
+                    );
+                  })}
+                  {friendSignups.length > 3 && (
+                    <div className="text-xs text-green-600 font-medium ml-1">
+                      +{friendSignups.length - 3}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Group bookings indicator */}
           {shift.groupBookings.length > 0 && (
             <div className="flex items-center gap-2 p-3 bg-purple-50 rounded-lg border border-purple-100">
@@ -315,13 +365,42 @@ export default async function ShiftsPageRedesigned({
   const session = await getServerSession(authOptions);
   const params = await searchParams;
 
-  // Get current user
+  // Get current user and their friends
   let currentUser = null;
+  let userFriendIds: string[] = [];
+  
   if (session?.user?.email) {
     currentUser = await prisma.user.findUnique({
       where: { email: session.user.email },
       select: { id: true, availableLocations: true },
     });
+
+    // Get user's friend IDs
+    if (currentUser?.id) {
+      const friendships = await prisma.friendship.findMany({
+        where: {
+          AND: [
+            {
+              OR: [
+                { userId: currentUser.id },
+                { friendId: currentUser.id },
+              ],
+            },
+            { status: "ACCEPTED" },
+          ],
+        },
+        select: {
+          userId: true,
+          friendId: true,
+        },
+      });
+
+      userFriendIds = friendships.map(friendship => 
+        friendship.userId === currentUser!.id 
+          ? friendship.friendId 
+          : friendship.userId
+      );
+    }
   }
 
   // Parse user's preferred locations
@@ -368,7 +447,18 @@ export default async function ShiftsPageRedesigned({
     include: {
       shiftType: true,
       signups: {
-        include: { user: { select: { id: true, name: true, email: true } } },
+        include: { 
+          user: { 
+            select: { 
+              id: true, 
+              name: true, 
+              firstName: true,
+              lastName: true,
+              email: true,
+              profilePhotoUrl: true,
+            } 
+          } 
+        },
       },
       groupBookings: {
         include: {
@@ -613,6 +703,7 @@ export default async function ShiftsPageRedesigned({
                                 shift={shift}
                                 currentUserId={currentUser?.id}
                                 session={session}
+                                userFriendIds={userFriendIds}
                               />
                             ))}
                           </div>

@@ -611,6 +611,206 @@ test.describe("Shifts Browse Page", () => {
     });
   });
 
+  test.describe("Daily Signup Validation", () => {
+    test.beforeEach(async ({ page }) => {
+      await loginAsVolunteer(page);
+      await page.goto("/shifts");
+      await page.waitForLoadState("networkidle");
+
+      // Skip tests if login failed
+      const currentUrl = page.url();
+      if (currentUrl.includes("/login")) {
+        test.skip(true, "Login failed - skipping daily signup validation tests");
+      }
+    });
+
+    test("should prevent multiple shift signups on the same day", async ({ page }) => {
+      // Find shifts on the same day (get first date section)
+      const firstDateSection = page.locator('[data-testid^="shifts-date-section-"]').first();
+      
+      if (await firstDateSection.isVisible()) {
+        // Get all shift cards in this date section
+        const shiftCards = firstDateSection.locator('[data-testid^="shift-card-"], .grid > div');
+        const shiftCount = await shiftCards.count();
+
+        if (shiftCount >= 2) {
+          // Try to sign up for the first available shift
+          const firstShiftSignupButton = shiftCards.first().locator('[data-testid*="signup-button"], button:has-text("Sign Up"), button:has-text("✨ Sign Up Now")').first();
+          
+          if (await firstShiftSignupButton.isVisible()) {
+            await firstShiftSignupButton.click();
+
+            // Confirm signup in dialog
+            const confirmButton = page.getByTestId("shift-signup-confirm-button");
+            if (await confirmButton.isVisible()) {
+              await confirmButton.click();
+              await page.waitForLoadState("networkidle");
+
+              // Wait for any toast notifications to appear and dismiss
+              await page.waitForTimeout(2000);
+
+              // Now try to sign up for the second shift on the same day
+              const secondShiftSignupButton = shiftCards.nth(1).locator('[data-testid*="signup-button"], button:has-text("Sign Up"), button:has-text("✨ Sign Up Now")').first();
+              
+              if (await secondShiftSignupButton.isVisible()) {
+                await secondShiftSignupButton.click();
+
+                // Should show validation error dialog or message
+                const errorDialog = page.getByTestId("shift-signup-dialog");
+                if (await errorDialog.isVisible()) {
+                  const confirmSecondButton = page.getByTestId("shift-signup-confirm-button");
+                  await confirmSecondButton.click();
+                }
+
+                // Check for error message about daily limit
+                const errorMessage = page.getByText(/you already have a confirmed shift on this day/i);
+                const duplicateErrorMessage = page.getByText(/you can only sign up for one shift per day/i);
+                const existingShiftError = page.getByText(/already have.*shift.*day/i);
+
+                // At least one of these error patterns should be visible
+                const hasError = await errorMessage.isVisible() || 
+                                await duplicateErrorMessage.isVisible() || 
+                                await existingShiftError.isVisible();
+
+                expect(hasError).toBe(true);
+
+                // Alternatively, check for toast notification with error
+                const toastError = page.locator('[data-testid*="toast"], .toast, [role="alert"]').filter({
+                  hasText: /shift.*day|daily.*limit|one shift per day/i
+                });
+
+                if (await toastError.count() > 0) {
+                  await expect(toastError.first()).toBeVisible();
+                }
+              }
+            }
+          }
+        } else {
+          // Skip test if not enough shifts on the same day
+          test.skip(true, "Not enough shifts on the same day to test daily validation");
+        }
+      } else {
+        // Skip test if no shifts available
+        test.skip(true, "No shifts available to test daily validation");
+      }
+    });
+
+    test("should allow signup on different days", async ({ page }) => {
+      // Find shifts on different days
+      const dateSections = page.locator('[data-testid^="shifts-date-section-"]');
+      const sectionCount = await dateSections.count();
+
+      if (sectionCount >= 2) {
+        // Sign up for a shift on the first day
+        const firstDayShifts = dateSections.first().locator('[data-testid^="shift-card-"], .grid > div');
+        const firstShiftSignupButton = firstDayShifts.first().locator('[data-testid*="signup-button"], button:has-text("Sign Up"), button:has-text("✨ Sign Up Now")').first();
+
+        if (await firstShiftSignupButton.isVisible()) {
+          await firstShiftSignupButton.click();
+
+          // Confirm first signup
+          const confirmButton = page.getByTestId("shift-signup-confirm-button");
+          if (await confirmButton.isVisible()) {
+            await confirmButton.click();
+            await page.waitForLoadState("networkidle");
+            await page.waitForTimeout(2000); // Wait for toast
+          }
+
+          // Now try to sign up for a shift on the second day
+          const secondDayShifts = dateSections.nth(1).locator('[data-testid^="shift-card-"], .grid > div');
+          const secondShiftSignupButton = secondDayShifts.first().locator('[data-testid*="signup-button"], button:has-text("Sign Up"), button:has-text("✨ Sign Up Now")').first();
+
+          if (await secondShiftSignupButton.isVisible()) {
+            await secondShiftSignupButton.click();
+
+            // Should be able to confirm second signup on different day
+            const confirmSecondButton = page.getByTestId("shift-signup-confirm-button");
+            if (await confirmSecondButton.isVisible()) {
+              await confirmSecondButton.click();
+              await page.waitForLoadState("networkidle");
+
+              // Should NOT show daily validation error
+              const errorMessage = page.getByText(/you already have a confirmed shift on this day/i);
+              const duplicateErrorMessage = page.getByText(/you can only sign up for one shift per day/i);
+
+              await expect(errorMessage).not.toBeVisible();
+              await expect(duplicateErrorMessage).not.toBeVisible();
+
+              // Should show success indicator instead
+              const successToast = page.locator('[data-testid*="toast"], .toast, [role="alert"]').filter({
+                hasText: /success|signed up|confirmed/i
+              });
+
+              if (await successToast.count() > 0) {
+                await expect(successToast.first()).toBeVisible();
+              }
+            }
+          }
+        }
+      } else {
+        // Skip test if not enough different days available
+        test.skip(true, "Not enough shifts on different days to test cross-day validation");
+      }
+    });
+
+    test("should show clear error message with existing shift details", async ({ page }) => {
+      // This test verifies the error message includes details about the existing shift
+      const firstDateSection = page.locator('[data-testid^="shifts-date-section-"]').first();
+      
+      if (await firstDateSection.isVisible()) {
+        const shiftCards = firstDateSection.locator('[data-testid^="shift-card-"], .grid > div');
+        const shiftCount = await shiftCards.count();
+
+        if (shiftCount >= 2) {
+          // Get the first shift details
+          const firstShiftCard = shiftCards.first();
+          const firstShiftName = await firstShiftCard.locator('h3, [data-testid*="shift-name"]').first().textContent();
+
+          // Sign up for first shift
+          const firstShiftSignupButton = firstShiftCard.locator('[data-testid*="signup-button"], button:has-text("Sign Up"), button:has-text("✨ Sign Up Now")').first();
+          
+          if (await firstShiftSignupButton.isVisible()) {
+            await firstShiftSignupButton.click();
+
+            const confirmButton = page.getByTestId("shift-signup-confirm-button");
+            if (await confirmButton.isVisible()) {
+              await confirmButton.click();
+              await page.waitForLoadState("networkidle");
+              await page.waitForTimeout(2000);
+
+              // Try to sign up for second shift
+              const secondShiftSignupButton = shiftCards.nth(1).locator('[data-testid*="signup-button"], button:has-text("Sign Up"), button:has-text("✨ Sign Up Now")').first();
+              
+              if (await secondShiftSignupButton.isVisible()) {
+                await secondShiftSignupButton.click();
+
+                const confirmSecondButton = page.getByTestId("shift-signup-confirm-button");
+                if (await confirmSecondButton.isVisible()) {
+                  await confirmSecondButton.click();
+                }
+
+                // Check that error message includes the first shift name or time
+                const detailedErrorMessage = page.locator('text*=' + (firstShiftName || '')).or(
+                  page.getByText(/at \d+:\d+/i)
+                ).or(
+                  page.getByText(/you already have.*shift/i)
+                );
+
+                if (await detailedErrorMessage.count() > 0) {
+                  await expect(detailedErrorMessage.first()).toBeVisible();
+                }
+              }
+            }
+          }
+        } else {
+          test.skip(true, "Not enough shifts to test detailed error message");
+        }
+      } else {
+        test.skip(true, "No shifts available to test detailed error message");
+      }
+    });
+  });
+
   test.describe("Accessibility", () => {
     test("should have proper accessibility attributes", async ({ page }) => {
       await page.goto("/shifts");

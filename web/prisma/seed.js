@@ -283,6 +283,31 @@ async function main() {
   const adminHash = await bcrypt.hash("admin123", 10);
   const volunteerHash = await bcrypt.hash("volunteer123", 10);
 
+  // Track user signups by date to prevent multiple signups per day
+  const userDailySignups = new Map(); // userId -> Set of date strings
+  
+  // Helper function to check if user can sign up for a shift on a given date
+  function canUserSignUpForDate(userId, shiftDate) {
+    const dateKey = shiftDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+    
+    if (!userDailySignups.has(userId)) {
+      userDailySignups.set(userId, new Set());
+    }
+    
+    return !userDailySignups.get(userId).has(dateKey);
+  }
+  
+  // Helper function to record a user signup for a date
+  function recordUserSignup(userId, shiftDate) {
+    const dateKey = shiftDate.toISOString().split('T')[0];
+    
+    if (!userDailySignups.has(userId)) {
+      userDailySignups.set(userId, new Set());
+    }
+    
+    userDailySignups.get(userId).add(dateKey);
+  }
+
   // Create admin user
   await prisma.user.upsert({
     where: { email: adminEmail },
@@ -803,15 +828,18 @@ async function main() {
 
       historicalShifts.push(historicalShift);
 
-      // Create signup for sample volunteer for ALL these historical shifts
-      await prisma.signup.create({
-        data: {
-          userId: volunteer.id,
-          shiftId: historicalShift.id,
-          status: "CONFIRMED",
-          createdAt: addDays(start, -Math.floor(Math.random() * 7) - 1), // Signed up 1-7 days before
-        },
-      });
+      // Create signup for sample volunteer for historical shifts (respecting daily limit)
+      if (canUserSignUpForDate(volunteer.id, historicalShift.start)) {
+        await prisma.signup.create({
+          data: {
+            userId: volunteer.id,
+            shiftId: historicalShift.id,
+            status: "CONFIRMED",
+            createdAt: addDays(start, -Math.floor(Math.random() * 7) - 1), // Signed up 1-7 days before
+          },
+        });
+        recordUserSignup(volunteer.id, historicalShift.start);
+      }
 
       // Also add some other volunteers to these shifts for realism
       const volunteersToAdd = Math.min(
@@ -824,20 +852,24 @@ async function main() {
           (period.weeksAgo * 10 + shiftInWeek * 3 + v) % extraVolunteers.length;
         const otherVolunteer = extraVolunteers[volunteerIndex];
 
-        await prisma.signup.upsert({
-          where: {
-            userId_shiftId: {
+        // Check if this volunteer can sign up for this date
+        if (canUserSignUpForDate(otherVolunteer.id, historicalShift.start)) {
+          await prisma.signup.upsert({
+            where: {
+              userId_shiftId: {
+                userId: otherVolunteer.id,
+                shiftId: historicalShift.id,
+              },
+            },
+            update: {},
+            create: {
               userId: otherVolunteer.id,
               shiftId: historicalShift.id,
+              status: "CONFIRMED",
             },
-          },
-          update: {},
-          create: {
-            userId: otherVolunteer.id,
-            shiftId: historicalShift.id,
-            status: "CONFIRMED",
-          },
-        });
+          });
+          recordUserSignup(otherVolunteer.id, historicalShift.start);
+        }
       }
     }
   }
@@ -897,7 +929,7 @@ async function main() {
   const firstShift = await prisma.shift.findFirst({
     orderBy: { start: "asc" },
   });
-  if (firstShift) {
+  if (firstShift && canUserSignUpForDate(volunteer.id, firstShift.start)) {
     await prisma.signup.upsert({
       where: {
         userId_shiftId: { userId: volunteer.id, shiftId: firstShift.id },
@@ -909,34 +941,114 @@ async function main() {
         status: "CONFIRMED",
       },
     });
+    recordUserSignup(volunteer.id, firstShift.start);
   }
 
   // Make some shifts full and add a waitlisted signup to demonstrate UI state
+  // Also add friends to shifts to demonstrate social features
   let extraIndex = 0;
+  
+  // Get sample volunteer's friends for social seeding
+  const sampleVolunteerFriends = [
+    extraVolunteers.find(v => v.email === "sarah.chen@gmail.com"),
+    extraVolunteers.find(v => v.email === "james.williams@hotmail.com"),
+    extraVolunteers.find(v => v.email === "priya.patel@yahoo.com"),
+  ].filter(Boolean);
+
+  // Record existing historical signups to prevent conflicts
+  console.log("📊 Recording existing signups to prevent daily conflicts...");
+  const existingSignups = await prisma.signup.findMany({
+    include: {
+      shift: true,
+    },
+  });
+  
+  for (const signup of existingSignups) {
+    recordUserSignup(signup.userId, signup.shift.start);
+  }
+
   for (let i = 0; i < createdShifts.length; i++) {
     const s = createdShifts[i];
+    
     // Every 4th shift: fill to capacity and add one waitlisted
     if (i % 4 === 0) {
       const capacity = s.capacity;
       // Create confirmed signups to fill the shift
       for (let c = 0; c < capacity; c++) {
         const user = extraVolunteers[(extraIndex + c) % extraVolunteers.length];
-        await prisma.signup.upsert({
-          where: { userId_shiftId: { userId: user.id, shiftId: s.id } },
-          update: { status: "CONFIRMED" },
-          create: { userId: user.id, shiftId: s.id, status: "CONFIRMED" },
-        });
+        
+        // Check if user can sign up for this date
+        if (canUserSignUpForDate(user.id, s.start)) {
+          await prisma.signup.upsert({
+            where: { userId_shiftId: { userId: user.id, shiftId: s.id } },
+            update: { status: "CONFIRMED" },
+            create: { userId: user.id, shiftId: s.id, status: "CONFIRMED" },
+          });
+          recordUserSignup(user.id, s.start);
+        }
       }
       extraIndex = (extraIndex + capacity) % extraVolunteers.length;
 
       // Add one waitlisted person as well
       const waitlister = extraVolunteers[extraIndex % extraVolunteers.length];
+      // Waitlisted users don't count towards daily limit since they're not confirmed
       await prisma.signup.upsert({
         where: { userId_shiftId: { userId: waitlister.id, shiftId: s.id } },
         update: { status: "WAITLISTED" },
         create: { userId: waitlister.id, shiftId: s.id, status: "WAITLISTED" },
       });
       extraIndex = (extraIndex + 1) % extraVolunteers.length;
+    }
+    
+    // For every 3rd shift, add some friends to create social activity
+    if (i % 3 === 0 && sampleVolunteerFriends.length > 0) {
+      // Add 1-2 friends to this shift
+      const friendsToAdd = Math.min(2, Math.floor(Math.random() * 2) + 1);
+      
+      for (let f = 0; f < friendsToAdd; f++) {
+        const friend = sampleVolunteerFriends[f % sampleVolunteerFriends.length];
+        
+        // Check if friend can sign up for this date
+        if (canUserSignUpForDate(friend.id, s.start)) {
+          try {
+            await prisma.signup.create({
+              data: {
+                userId: friend.id,
+                shiftId: s.id,
+                status: "CONFIRMED",
+              },
+            });
+            recordUserSignup(friend.id, s.start);
+          } catch (error) {
+            // Skip if signup already exists
+            if (!error.message.includes('Unique constraint')) {
+              console.log(`Could not add friend ${friend.email} to shift: ${error.message}`);
+            }
+          }
+        }
+      }
+    }
+    
+    // For every 5th shift, add sample volunteer to create common shifts with friends
+    if (i % 5 === 0) {
+      // Check if sample volunteer can sign up for this date
+      if (canUserSignUpForDate(volunteer.id, s.start)) {
+        try {
+          await prisma.signup.create({
+            data: {
+              userId: volunteer.id,
+              shiftId: s.id,
+              status: "CONFIRMED",
+            },
+          });
+          recordUserSignup(volunteer.id, s.start);
+        } catch (error) {
+          // Skip if signup already exists
+          if (!error.message.includes('Unique constraint')) {
+            console.log(`Could not add sample volunteer to shift: ${error.message}`);
+          }
+        }
+      }
     }
   }
 
