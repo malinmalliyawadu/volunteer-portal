@@ -1,7 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,10 +19,10 @@ interface SendFriendRequestDialogProps {
   onSuccess: () => void;
 }
 
-export function SendFriendRequestDialog({ 
-  open, 
-  onOpenChange, 
-  onSuccess 
+export function SendFriendRequestDialog({
+  open,
+  onOpenChange,
+  onSuccess,
 }: SendFriendRequestDialogProps) {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -51,6 +56,7 @@ export function SendFriendRequestDialog({
         setError(data.error || "Failed to send friend request");
       }
     } catch (error) {
+      console.error(error);
       setError("An error occurred while sending the friend request");
     } finally {
       setLoading(false);
@@ -89,7 +95,8 @@ export function SendFriendRequestDialog({
               required
             />
             <p className="text-sm text-gray-600">
-              Enter the email address of the person you&apos;d like to add as a friend.
+              Enter the email address of the person you&apos;d like to add as a
+              friend.
             </p>
           </div>
 
@@ -107,7 +114,8 @@ export function SendFriendRequestDialog({
               maxLength={500}
             />
             <p className="text-sm text-gray-600">
-              Add a personal message to your friend request (max 500 characters).
+              Add a personal message to your friend request (max 500
+              characters).
             </p>
           </div>
 

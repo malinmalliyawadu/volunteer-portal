@@ -1,7 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -18,9 +23,9 @@ interface FriendPrivacySettingsProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function FriendPrivacySettings({ 
-  open, 
-  onOpenChange 
+export function FriendPrivacySettings({
+  open,
+  onOpenChange,
 }: FriendPrivacySettingsProps) {
   const [settings, setSettings] = useState<PrivacySettings>({
     friendVisibility: "FRIENDS_ONLY",
@@ -70,6 +75,7 @@ export function FriendPrivacySettings({
         setError(data.error || "Failed to update privacy settings");
       }
     } catch (error) {
+      console.error(error);
       setError("An error occurred while updating privacy settings");
     } finally {
       setLoading(false);
@@ -77,17 +83,17 @@ export function FriendPrivacySettings({
   };
 
   const handleVisibilityChange = (value: string) => {
-    setSettings(prev => ({
+    setSettings((prev) => ({
       ...prev,
-      friendVisibility: value as PrivacySettings["friendVisibility"]
+      friendVisibility: value as PrivacySettings["friendVisibility"],
     }));
     setHasChanges(true);
   };
 
   const handleAllowRequestsChange = (checked: boolean) => {
-    setSettings(prev => ({
+    setSettings((prev) => ({
       ...prev,
-      allowFriendRequests: checked
+      allowFriendRequests: checked,
     }));
     setHasChanges(true);
   };
@@ -121,9 +127,16 @@ export function FriendPrivacySettings({
                 className="space-y-3"
               >
                 <div className="flex items-start space-x-3 p-3 border rounded-lg">
-                  <RadioGroupItem value="PUBLIC" id="public" className="mt-0.5" />
+                  <RadioGroupItem
+                    value="PUBLIC"
+                    id="public"
+                    className="mt-0.5"
+                  />
                   <div className="space-y-1">
-                    <Label htmlFor="public" className="flex items-center space-x-2 cursor-pointer">
+                    <Label
+                      htmlFor="public"
+                      className="flex items-center space-x-2 cursor-pointer"
+                    >
                       <Users className="h-4 w-4" />
                       <span className="font-medium">Public</span>
                     </Label>
@@ -134,22 +147,37 @@ export function FriendPrivacySettings({
                 </div>
 
                 <div className="flex items-start space-x-3 p-3 border rounded-lg">
-                  <RadioGroupItem value="FRIENDS_ONLY" id="friends" className="mt-0.5" />
+                  <RadioGroupItem
+                    value="FRIENDS_ONLY"
+                    id="friends"
+                    className="mt-0.5"
+                  />
                   <div className="space-y-1">
-                    <Label htmlFor="friends" className="flex items-center space-x-2 cursor-pointer">
+                    <Label
+                      htmlFor="friends"
+                      className="flex items-center space-x-2 cursor-pointer"
+                    >
                       <UserCheck className="h-4 w-4" />
                       <span className="font-medium">Friends Only</span>
                     </Label>
                     <p className="text-sm text-gray-600">
-                      Only your friends can see which shifts you&apos;ve signed up for
+                      Only your friends can see which shifts you&apos;ve signed
+                      up for
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-start space-x-3 p-3 border rounded-lg">
-                  <RadioGroupItem value="PRIVATE" id="private" className="mt-0.5" />
+                  <RadioGroupItem
+                    value="PRIVATE"
+                    id="private"
+                    className="mt-0.5"
+                  />
                   <div className="space-y-1">
-                    <Label htmlFor="private" className="flex items-center space-x-2 cursor-pointer">
+                    <Label
+                      htmlFor="private"
+                      className="flex items-center space-x-2 cursor-pointer"
+                    >
                       <Lock className="h-4 w-4" />
                       <span className="font-medium">Private</span>
                     </Label>
@@ -171,7 +199,10 @@ export function FriendPrivacySettings({
                   className="mt-0.5"
                 />
                 <div className="space-y-1">
-                  <Label htmlFor="allowRequests" className="cursor-pointer font-medium">
+                  <Label
+                    htmlFor="allowRequests"
+                    className="cursor-pointer font-medium"
+                  >
                     Allow friend requests
                   </Label>
                   <p className="text-sm text-gray-600">
@@ -197,10 +228,7 @@ export function FriendPrivacySettings({
             >
               Cancel
             </Button>
-            <Button
-              onClick={handleSave}
-              disabled={loading || !hasChanges}
-            >
+            <Button onClick={handleSave} disabled={loading || !hasChanges}>
               {loading ? "Saving..." : "Save Settings"}
             </Button>
           </div>

@@ -15,18 +15,20 @@ interface FriendsManagerServerProps {
   initialData: FriendsData;
 }
 
-export function FriendsManagerServer({ initialData }: FriendsManagerServerProps) {
+export function FriendsManagerServer({
+  initialData,
+}: FriendsManagerServerProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [showSendRequest, setShowSendRequest] = useState(false);
   const [showPrivacySettings, setShowPrivacySettings] = useState(false);
 
-  const { friends, pendingRequests, sentRequests } = initialData;
+  const { friends, pendingRequests } = initialData;
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <FriendsSearch onSearchChange={setSearchTerm} />
-        
+
         <div className="flex space-x-2">
           <Button
             variant="outline"
@@ -36,7 +38,7 @@ export function FriendsManagerServer({ initialData }: FriendsManagerServerProps)
             <Settings className="h-4 w-4 mr-2" />
             Privacy Settings
           </Button>
-          <Button 
+          <Button
             onClick={() => setShowSendRequest(true)}
             data-testid="add-friend-button"
           >
@@ -58,11 +60,19 @@ export function FriendsManagerServer({ initialData }: FriendsManagerServerProps)
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="friends" className="space-y-4" data-testid="friends-tab-content">
+        <TabsContent
+          value="friends"
+          className="space-y-4"
+          data-testid="friends-tab-content"
+        >
           <FriendsList friends={friends} searchTerm={searchTerm} />
         </TabsContent>
 
-        <TabsContent value="requests" className="space-y-4" data-testid="requests-tab-content">
+        <TabsContent
+          value="requests"
+          className="space-y-4"
+          data-testid="requests-tab-content"
+        >
           <FriendRequestsList pendingRequests={pendingRequests} />
         </TabsContent>
       </Tabs>
