@@ -663,15 +663,15 @@ export default async function ShiftsPageRedesigned({
       {/* Profile filter notification */}
       {isUsingProfileFilter && (
         <div
-          className="mb-8 p-4 bg-primary/10 rounded-lg border border-primary/20"
+          className="mb-8 p-4 bg-primary/5 rounded-lg border border-primary/30"
           data-testid="profile-filter-notification"
         >
-          <p className="text-sm text-primary font-medium flex items-center gap-2">
+          <p className="text-sm font-medium flex items-center gap-2">
             <MapPin className="h-4 w-4" />
             Showing shifts in your preferred locations:{" "}
             {userPreferredLocations.join(", ")}
           </p>
-          <p className="text-xs text-primary/80 mt-2">
+          <p className="text-xs text-muted-foreground mt-2">
             <Link href="/profile/edit" className="underline hover:text-primary">
               Update your preferences
             </Link>{" "}

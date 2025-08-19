@@ -123,7 +123,7 @@ export default function AchievementsCard() {
               {recentAchievements.map((userAchievement) => (
                 <div
                   key={userAchievement.id}
-                  className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200"
+                  className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/30 dark:to-orange-900/30 border border-yellow-200 dark:border-yellow-700"
                 >
                   <div className="text-2xl flex-shrink-0">
                     {userAchievement.achievement.icon}
@@ -149,7 +149,7 @@ export default function AchievementsCard() {
                       {userAchievement.achievement.description}
                     </p>
                   </div>
-                  <div className="text-xs font-medium text-yellow-700">
+                  <div className="text-xs font-medium text-yellow-700 dark:text-yellow-300">
                     +{userAchievement.achievement.points}
                   </div>
                 </div>
@@ -230,7 +230,7 @@ export default function AchievementsCard() {
                   {userAchievements.slice(3).map((userAchievement) => (
                     <div
                       key={userAchievement.id}
-                      className="flex items-center gap-3 p-2 rounded-lg bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200"
+                      className="flex items-center gap-3 p-2 rounded-lg bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/30 dark:to-orange-900/30 border border-yellow-200 dark:border-yellow-700"
                     >
                       <div className="text-lg flex-shrink-0">
                         {userAchievement.achievement.icon}
@@ -240,7 +240,7 @@ export default function AchievementsCard() {
                           {userAchievement.achievement.name}
                         </h5>
                       </div>
-                      <div className="text-xs font-medium text-yellow-700">
+                      <div className="text-xs font-medium text-yellow-700 dark:text-yellow-300">
                         +{userAchievement.achievement.points}
                       </div>
                     </div>
