@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { NotificationType } from "@prisma/client";
+import { sseBroadcaster } from "./sse-broadcaster";
 
 export interface CreateNotificationParams {
   userId: string;
@@ -25,6 +26,13 @@ export async function createNotification(params: CreateNotificationParams) {
         relatedId: params.relatedId,
       },
     });
+
+    // Broadcast new notification via SSE
+    sseBroadcaster.broadcastNewNotification(params.userId, notification);
+
+    // Broadcast updated unread count
+    const unreadCount = await getUnreadNotificationCount(params.userId);
+    sseBroadcaster.broadcastUnreadCountChange(params.userId, unreadCount);
 
     return notification;
   } catch (error) {
@@ -107,6 +115,10 @@ export async function markNotificationAsRead(notificationId: string, userId: str
       },
     });
 
+    // Broadcast updated unread count
+    const unreadCount = await getUnreadNotificationCount(userId);
+    sseBroadcaster.broadcastUnreadCountChange(userId, unreadCount);
+
     return notification;
   } catch (error) {
     console.error("Error marking notification as read:", error);
@@ -128,6 +140,9 @@ export async function markAllNotificationsAsRead(userId: string) {
         isRead: true,
       },
     });
+
+    // Broadcast updated unread count (should be 0 now)
+    sseBroadcaster.broadcastUnreadCountChange(userId, 0);
 
     return result;
   } catch (error) {

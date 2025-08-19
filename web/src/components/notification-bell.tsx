@@ -5,6 +5,7 @@ import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { NotificationList } from "@/components/notification-list";
+import { useNotificationStream } from "@/hooks/use-notification-stream";
 import { cn } from "@/lib/utils";
 
 interface NotificationBellProps {
@@ -16,7 +17,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Fetch unread count
+  // Fetch initial unread count
   const fetchUnreadCount = async () => {
     try {
       const response = await fetch("/api/notifications/unread");
@@ -29,15 +30,22 @@ export function NotificationBell({ userId }: NotificationBellProps) {
     }
   };
 
-  // Fetch unread count on mount and set up polling
+  // Set up Server-Sent Events for real-time updates
+  useNotificationStream({
+    onUnreadCountChange: (count) => {
+      setUnreadCount(count);
+    },
+    onNewNotification: () => {
+      // Refresh unread count when new notification arrives
+      fetchUnreadCount();
+    },
+    enabled: !!userId
+  });
+
+  // Fetch initial unread count on mount
   useEffect(() => {
     if (userId) {
       fetchUnreadCount();
-      
-      // Poll for new notifications every 30 seconds
-      const interval = setInterval(fetchUnreadCount, 30000);
-      
-      return () => clearInterval(interval);
     }
   }, [userId]);
 
