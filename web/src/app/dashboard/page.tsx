@@ -322,87 +322,10 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      {/* Friends Activity */}
-      {friendsUpcomingShifts.length > 0 && (
-        <Card className="animate-slide-up" style={{ animationDelay: "0.4s" }}>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <svg
-                  className="w-5 h-5 text-primary"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                  />
-                </svg>
-                Friends&apos; Upcoming Shifts
-              </div>
-              <Button asChild variant="outline" size="sm">
-                <Link href="/friends">View Friends</Link>
-              </Button>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {friendsUpcomingShifts.map((signup) => {
-                const displayName = signup.user.name || 
-                  `${signup.user.firstName || ""} ${signup.user.lastName || ""}`.trim() || 
-                  signup.user.email;
-                const initials = (signup.user.firstName?.[0] || signup.user.name?.[0] || signup.user.email[0]).toUpperCase();
-                
-                return (
-                  <div
-                    key={signup.id}
-                    className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors"
-                  >
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage 
-                        src={signup.user.profilePhotoUrl || undefined} 
-                        alt={displayName}
-                      />
-                      <AvatarFallback className="bg-primary/10 text-primary">
-                        {initials}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm truncate">
-                        {displayName}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {signup.shift.shiftType.name} • {signup.shift.location}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-medium">
-                        {format(signup.shift.start, "MMM d")}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {format(signup.shift.start, "h:mm a")}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
-              {friendsUpcomingShifts.length === 6 && (
-                <Button asChild variant="outline" size="sm" className="w-full">
-                  <Link href="/shifts">See More in Shifts</Link>
-                </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="flex flex-wrap gap-6">
         {/* Next Shift */}
         <Card
-          className="animate-slide-up h-fit"
+          className="animate-slide-up h-fit flex-1 min-w-80"
           style={{ animationDelay: "0.5s" }}
         >
           <CardHeader>
@@ -528,7 +451,7 @@ export default async function DashboardPage() {
 
         {/* Recent Activity */}
         <Card
-          className="animate-slide-up h-fit"
+          className="animate-slide-up h-fit flex-1 min-w-80"
           style={{ animationDelay: "0.6s" }}
         >
           <CardHeader>
@@ -615,6 +538,79 @@ export default async function DashboardPage() {
             )}
           </CardContent>
         </Card>
+
+        {/* Friends Activity */}
+        {friendsUpcomingShifts.length > 0 && (
+          <Card className="animate-slide-up h-fit flex-1 min-w-80" style={{ animationDelay: "0.7s" }}>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <svg
+                    className="w-5 h-5 text-primary"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                    />
+                  </svg>
+                  Friends&apos; Activity
+                </div>
+                <Button asChild variant="outline" size="sm">
+                  <Link href="/friends/stats">View Stats</Link>
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {friendsUpcomingShifts.slice(0, 4).map((signup) => {
+                  const displayName = signup.user.name || 
+                    `${signup.user.firstName || ""} ${signup.user.lastName || ""}`.trim() || 
+                    signup.user.email;
+                  const initials = (signup.user.firstName?.[0] || signup.user.name?.[0] || signup.user.email[0]).toUpperCase();
+                  
+                  return (
+                    <Link key={signup.id} href={`/friends/${signup.user.id}`}>
+                      <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage 
+                            src={signup.user.profilePhotoUrl || undefined} 
+                            alt={displayName}
+                          />
+                          <AvatarFallback className="bg-primary/10 text-primary">
+                            {initials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm truncate">
+                            {displayName}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {signup.shift.shiftType.name}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs font-medium">
+                            {format(signup.shift.start, "MMM d")}
+                          </p>
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
+                {friendsUpcomingShifts.length > 4 && (
+                  <Button asChild variant="outline" size="sm" className="w-full">
+                    <Link href="/friends/stats">View All</Link>
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -624,7 +620,7 @@ export default async function DashboardPage() {
         {/* Impact & Community Stats */}
         <Card
           className="animate-slide-up h-fit"
-          style={{ animationDelay: "0.7s" }}
+          style={{ animationDelay: "0.8s" }}
         >
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -691,7 +687,7 @@ export default async function DashboardPage() {
       {/* Quick Actions */}
       <Card
         className="animate-slide-up h-fit"
-        style={{ animationDelay: "0.8s" }}
+        style={{ animationDelay: "0.9s" }}
       >
         <CardHeader>
           <CardTitle>Quick Actions</CardTitle>

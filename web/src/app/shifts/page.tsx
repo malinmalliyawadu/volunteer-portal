@@ -10,8 +10,20 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ShiftSignupDialog } from "@/components/shift-signup-dialog";
 import { PageHeader } from "@/components/page-header";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Calendar, Clock, MapPin, Users, ChevronDown, UserCheck } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  Users,
+  ChevronDown,
+  UserCheck,
+} from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
@@ -161,12 +173,10 @@ function ShiftCard({
       )
     : undefined;
 
-
   // Find friends who have signed up for this shift
   const friendSignups = shift.signups.filter(
-    (signup) => 
-      userFriendIds.includes(signup.userId) && 
-      signup.status === "CONFIRMED"
+    (signup) =>
+      userFriendIds.includes(signup.userId) && signup.status === "CONFIRMED"
   );
 
   return (
@@ -181,155 +191,171 @@ function ShiftCard({
       <CardContent className="p-6 h-full">
         <div className="flex flex-col h-full">
           <div className="space-y-4 flex-1">
-          {/* Header with emoji and title */}
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-center gap-3 min-w-0 flex-1">
-              <div
-                className={`p-2 rounded-xl bg-gradient-to-br ${theme.gradient} shadow-lg flex items-center justify-center text-white text-lg font-medium`}
-              >
-                {theme.emoji}
-              </div>
-              <div className="min-w-0 flex-1">
-                <h3 className="font-bold text-xl text-gray-900 truncate mb-1">
-                  {shift.shiftType.name}
-                </h3>
-                <div className="flex items-center gap-2">
-                  <Badge
-                    variant="secondary"
-                    className={`text-xs font-medium ${theme.textColor} ${theme.bgColor} border ${theme.borderColor}`}
-                  >
-                    {duration}
-                  </Badge>
-                  {mySignup && (
+            {/* Header with emoji and title */}
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div
+                  className={`p-2 rounded-xl bg-gradient-to-br ${theme.gradient} shadow-lg flex items-center justify-center text-white text-lg font-medium`}
+                >
+                  {theme.emoji}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-bold text-xl text-gray-900 truncate mb-1">
+                    {shift.shiftType.name}
+                  </h3>
+                  <div className="flex items-center gap-2">
                     <Badge
-                      variant={
-                        mySignup.status === "CONFIRMED"
-                          ? "default"
-                          : "secondary"
-                      }
-                      className={`text-xs font-medium ${
-                        mySignup.status === "CONFIRMED"
-                          ? "bg-green-100 text-green-700 border-green-200"
-                          : "bg-yellow-100 text-yellow-700 border-yellow-200"
-                      }`}
+                      variant="secondary"
+                      className={`text-xs font-medium ${theme.textColor} ${theme.bgColor} border ${theme.borderColor}`}
                     >
-                      {mySignup.status === "CONFIRMED"
-                        ? "✅ Confirmed"
-                        : mySignup.status === "PENDING"
-                        ? "⏳ Pending"
-                        : "⏳ Waitlisted"}
+                      {duration}
                     </Badge>
-                  )}
+                    {mySignup && (
+                      <Badge
+                        variant={
+                          mySignup.status === "CONFIRMED"
+                            ? "default"
+                            : "secondary"
+                        }
+                        className={`text-xs font-medium ${
+                          mySignup.status === "CONFIRMED"
+                            ? "bg-green-100 text-green-700 border-green-200"
+                            : "bg-yellow-100 text-yellow-700 border-yellow-200"
+                        }`}
+                      >
+                        {mySignup.status === "CONFIRMED"
+                          ? "✅ Confirmed"
+                          : mySignup.status === "PENDING"
+                          ? "⏳ Pending"
+                          : "⏳ Waitlisted"}
+                      </Badge>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Description */}
-          {shift.shiftType.description && (
-            <p className="text-sm text-gray-600 leading-relaxed line-clamp-2">
-              {shift.shiftType.description}
-            </p>
-          )}
+            {/* Description */}
+            {shift.shiftType.description && (
+              <p className="text-sm text-gray-600 leading-relaxed line-clamp-2">
+                {shift.shiftType.description}
+              </p>
+            )}
 
-          {/* Time and capacity info */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex items-center gap-2 p-3 bg-white/50 rounded-lg">
-              <Clock className="h-4 w-4 text-gray-500" />
-              <div className="text-sm">
-                <div className="font-medium text-gray-900">
-                  {format(shift.start, "h:mm a")}
+            {/* Time and capacity info */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex items-center gap-2 p-3 bg-white/50 rounded-lg">
+                <Clock className="h-4 w-4 text-gray-500" />
+                <div className="text-sm">
+                  <div className="font-medium text-gray-900">
+                    {format(shift.start, "h:mm a")}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    to {format(shift.end, "h:mm a")}
+                  </div>
                 </div>
-                <div className="text-xs text-gray-500">
-                  to {format(shift.end, "h:mm a")}
+              </div>
+              <div className="flex items-center gap-2 p-3 bg-white/50 rounded-lg">
+                <Users className="h-4 w-4 text-gray-500" />
+                <div className="text-sm">
+                  <div className="font-medium text-gray-900">
+                    {confirmedCount + pendingCount}/{shift.capacity}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {remaining > 0 ? (
+                      <span className="text-green-600 font-medium">
+                        {remaining} spots left
+                      </span>
+                    ) : (
+                      <span className="text-orange-600 font-medium">Full</span>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-2 p-3 bg-white/50 rounded-lg">
-              <Users className="h-4 w-4 text-gray-500" />
-              <div className="text-sm">
-                <div className="font-medium text-gray-900">
-                  {confirmedCount + pendingCount}/{shift.capacity}
-                </div>
-                <div className="text-xs text-gray-500">
-                  {remaining > 0 ? (
-                    <span className="text-green-600 font-medium">
-                      {remaining} spots left
-                    </span>
-                  ) : (
-                    <span className="text-orange-600 font-medium">Full</span>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
 
-          {/* Friends participating */}
-          {friendSignups.length > 0 && (
-            <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg border border-green-100">
-              <UserCheck className="h-4 w-4 text-green-600" />
-              <div className="flex items-center gap-2 flex-1 min-w-0">
-                <span className="text-sm font-medium text-green-700">
-                  {friendSignups.length} friend{friendSignups.length !== 1 ? "s" : ""} joining:
-                </span>
-                <div className="flex items-center gap-1 overflow-hidden">
-                  <TooltipProvider>
-                    {friendSignups.slice(0, 3).map((signup) => {
-                      const displayName = signup.user.name || 
-                        `${signup.user.firstName || ""} ${signup.user.lastName || ""}`.trim() || 
-                        signup.user.email;
-                      const initials = (signup.user.firstName?.[0] || signup.user.name?.[0] || signup.user.email[0]).toUpperCase();
-                      
-                      return (
-                        <Tooltip key={signup.id}>
+            {/* Friends participating */}
+            {friendSignups.length > 0 && (
+              <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg border border-green-100">
+                <UserCheck className="h-4 w-4 text-green-600" />
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <span className="text-sm font-medium text-green-700">
+                    {friendSignups.length} friend
+                    {friendSignups.length !== 1 ? "s" : ""} joining:
+                  </span>
+                  <div className="flex items-center gap-1 overflow-hidden">
+                    <TooltipProvider>
+                      {friendSignups.slice(0, 3).map((signup) => {
+                        const displayName =
+                          signup.user.name ||
+                          `${signup.user.firstName || ""} ${
+                            signup.user.lastName || ""
+                          }`.trim() ||
+                          signup.user.email;
+                        const initials = (
+                          signup.user.firstName?.[0] ||
+                          signup.user.name?.[0] ||
+                          signup.user.email[0]
+                        ).toUpperCase();
+
+                        return (
+                          <Tooltip key={signup.id}>
+                            <TooltipTrigger asChild>
+                              <Link
+                                href={`/friends/${signup.user.id}`}
+                                className="cursor-pointer"
+                              >
+                                <Avatar className="h-6 w-6">
+                                  <AvatarImage
+                                    src={
+                                      signup.user.profilePhotoUrl || undefined
+                                    }
+                                    alt={displayName}
+                                  />
+                                  <AvatarFallback className="bg-green-100 text-green-700 text-xs">
+                                    {initials}
+                                  </AvatarFallback>
+                                </Avatar>
+                              </Link>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{displayName} is joining this shift</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        );
+                      })}
+                      {friendSignups.length > 3 && (
+                        <Tooltip>
                           <TooltipTrigger asChild>
-                            <div className="cursor-pointer">
-                              <Avatar className="h-6 w-6">
-                                <AvatarImage 
-                                  src={signup.user.profilePhotoUrl || undefined} 
-                                  alt={displayName}
-                                />
-                                <AvatarFallback className="bg-green-100 text-green-700 text-xs">
-                                  {initials}
-                                </AvatarFallback>
-                              </Avatar>
+                            <div className="text-xs text-green-600 font-medium ml-1 cursor-pointer">
+                              +{friendSignups.length - 3}
                             </div>
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p>{displayName} is joining this shift</p>
+                            <p>
+                              {friendSignups.length - 3} more friend
+                              {friendSignups.length - 3 !== 1 ? "s" : ""}{" "}
+                              joining this shift
+                            </p>
                           </TooltipContent>
                         </Tooltip>
-                      );
-                    })}
-                    {friendSignups.length > 3 && (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className="text-xs text-green-600 font-medium ml-1 cursor-pointer">
-                            +{friendSignups.length - 3}
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>{friendSignups.length - 3} more friend{friendSignups.length - 3 !== 1 ? 's' : ''} joining this shift</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    )}
-                  </TooltipProvider>
+                      )}
+                    </TooltipProvider>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Group bookings indicator */}
-          {shift.groupBookings.length > 0 && (
-            <div className="flex items-center gap-2 p-3 bg-purple-50 rounded-lg border border-purple-100">
-              <Users className="h-4 w-4 text-purple-600" />
-              <span className="text-sm font-medium text-purple-700">
-                {shift.groupBookings.length} group booking
-                {shift.groupBookings.length !== 1 ? "s" : ""}
-              </span>
-            </div>
-          )}
-
+            {/* Group bookings indicator */}
+            {shift.groupBookings.length > 0 && (
+              <div className="flex items-center gap-2 p-3 bg-purple-50 rounded-lg border border-purple-100">
+                <Users className="h-4 w-4 text-purple-600" />
+                <span className="text-sm font-medium text-purple-700">
+                  {shift.groupBookings.length} group booking
+                  {shift.groupBookings.length !== 1 ? "s" : ""}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Action button - anchored to bottom */}
@@ -391,8 +417,9 @@ export default async function ShiftsPageRedesigned({
   // Get current user and their friends
   let currentUser = null;
   let userFriendIds: string[] = [];
-  let userDailySignups: Array<{ start: Date; shiftType: { name: string } }> = [];
-  
+  let userDailySignups: Array<{ start: Date; shiftType: { name: string } }> =
+    [];
+
   if (session?.user?.email) {
     currentUser = await prisma.user.findUnique({
       where: { email: session.user.email },
@@ -406,10 +433,7 @@ export default async function ShiftsPageRedesigned({
           where: {
             AND: [
               {
-                OR: [
-                  { userId: currentUser.id },
-                  { friendId: currentUser.id },
-                ],
+                OR: [{ userId: currentUser.id }, { friendId: currentUser.id }],
               },
               { status: "ACCEPTED" },
             ],
@@ -442,13 +466,13 @@ export default async function ShiftsPageRedesigned({
         }),
       ]);
 
-      userFriendIds = friendships.map(friendship => 
-        friendship.userId === currentUser!.id 
-          ? friendship.friendId 
+      userFriendIds = friendships.map((friendship) =>
+        friendship.userId === currentUser!.id
+          ? friendship.friendId
           : friendship.userId
       );
 
-      userDailySignups = dailySignups.map(signup => ({
+      userDailySignups = dailySignups.map((signup) => ({
         start: signup.shift.start,
         shiftType: { name: signup.shift.shiftType.name },
       }));
@@ -499,17 +523,17 @@ export default async function ShiftsPageRedesigned({
     include: {
       shiftType: true,
       signups: {
-        include: { 
-          user: { 
-            select: { 
-              id: true, 
-              name: true, 
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
               firstName: true,
               lastName: true,
               email: true,
               profilePhotoUrl: true,
-            } 
-          } 
+            },
+          },
         },
       },
       groupBookings: {
@@ -528,9 +552,8 @@ export default async function ShiftsPageRedesigned({
 
     // Check if user has a signup for this specific shift
     const hasMySignup = shift.signups.some(
-      (signup) => 
-        signup.userId === currentUser.id && 
-        signup.status !== "CANCELED"
+      (signup) =>
+        signup.userId === currentUser.id && signup.status !== "CANCELED"
     );
 
     // If they have a signup for this shift, always show it
@@ -538,7 +561,7 @@ export default async function ShiftsPageRedesigned({
 
     // Check if user has any confirmed signup on this day
     const shiftDate = new Date(shift.start);
-    const hasConfirmedShiftOnSameDay = userDailySignups.some(dailySignup => {
+    const hasConfirmedShiftOnSameDay = userDailySignups.some((dailySignup) => {
       const dailySignupDate = new Date(dailySignup.start);
       return (
         dailySignupDate.getFullYear() === shiftDate.getFullYear() &&
@@ -589,48 +612,51 @@ export default async function ShiftsPageRedesigned({
           data-testid="shifts-page-header"
         />
 
-        {/* Location filter */}
-        <div className="flex flex-col gap-3" data-testid="location-filter">
-          <span className="text-sm font-medium text-muted-foreground">
-            Filter by location:
-          </span>
-          <Tabs
-            value={
-              selectedLocation || (isUsingProfileFilter ? "preferences" : "all")
-            }
-            className="w-fit"
-            data-testid="location-tabs"
-          >
-            <TabsList
-              className="flex-wrap h-auto"
-              data-testid="location-tabs-list"
+        <div className="flex flex-col lg:flex-row gap-4 lg:items-end">
+          {/* Location filter */}
+          <div className="flex flex-col gap-3" data-testid="location-filter">
+            <span className="text-sm font-medium text-muted-foreground">
+              Filter by location:
+            </span>
+            <Tabs
+              value={
+                selectedLocation ||
+                (isUsingProfileFilter ? "preferences" : "all")
+              }
+              className="w-fit"
+              data-testid="location-tabs"
             >
-              {userPreferredLocations.length > 0 && (
-                <TabsTrigger
-                  value="preferences"
-                  asChild
-                  data-testid="location-tab-preferences"
-                >
-                  <Link href="/shifts">My Locations</Link>
+              <TabsList
+                className="flex-wrap h-auto"
+                data-testid="location-tabs-list"
+              >
+                {userPreferredLocations.length > 0 && (
+                  <TabsTrigger
+                    value="preferences"
+                    asChild
+                    data-testid="location-tab-preferences"
+                  >
+                    <Link href="/shifts">My Locations</Link>
+                  </TabsTrigger>
+                )}
+                <TabsTrigger value="all" asChild data-testid="location-tab-all">
+                  <Link href="/shifts?showAll=true">All</Link>
                 </TabsTrigger>
-              )}
-              <TabsTrigger value="all" asChild data-testid="location-tab-all">
-                <Link href="/shifts?showAll=true">All</Link>
-              </TabsTrigger>
-              {LOCATIONS.map((loc) => (
-                <TabsTrigger
-                  key={loc}
-                  value={loc}
-                  asChild
-                  data-testid={`location-tab-${loc
-                    .toLowerCase()
-                    .replace(/\s+/g, "-")}`}
-                >
-                  <Link href={`/shifts?location=${loc}`}>{loc}</Link>
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
+                {LOCATIONS.map((loc) => (
+                  <TabsTrigger
+                    key={loc}
+                    value={loc}
+                    asChild
+                    data-testid={`location-tab-${loc
+                      .toLowerCase()
+                      .replace(/\s+/g, "-")}`}
+                  >
+                    <Link href={`/shifts?location=${loc}`}>{loc}</Link>
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
+          </div>
         </div>
       </div>
 
@@ -773,7 +799,9 @@ export default async function ShiftsPageRedesigned({
                               testId={`group-booking-${dateKey}-${locationKey
                                 .toLowerCase()
                                 .replace(/\s+/g, "-")}`}
-                              currentUserEmail={session.user?.email || undefined}
+                              currentUserEmail={
+                                session.user?.email || undefined
+                              }
                             />
                           )}
                         </div>

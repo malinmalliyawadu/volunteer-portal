@@ -984,9 +984,12 @@ async function main() {
       extraIndex = (extraIndex + 1) % extraVolunteers.length;
     }
     
-    // For every 3rd shift, add some friends to create social activity
-    if (i % 3 === 0 && sampleVolunteerFriends.length > 0) {
-      // Add 1-2 friends to this shift
+    // Add friends to shifts where sample volunteer is signed up (to show social activity)
+    const shiftDay = s.start.getDate();
+    const shouldSignUp = (shiftDay % 3 === 0) && (i % 10 === 0); // Match sample volunteer's condition
+    
+    if (shouldSignUp && sampleVolunteerFriends.length > 0) {
+      // Add 1-2 friends to this shift to create social activity
       const friendsToAdd = Math.min(2, Math.floor(Math.random() * 2) + 1);
       
       for (let f = 0; f < friendsToAdd; f++) {
@@ -1003,6 +1006,7 @@ async function main() {
               },
             });
             recordUserSignup(friend.id, s.start);
+            console.log(`✅ Signed up friend ${friend.email} for same shift as sample volunteer on ${s.start.toDateString()}`);
           } catch (error) {
             // Skip if signup already exists
             if (!error.message.includes('Unique constraint')) {
@@ -1015,8 +1019,7 @@ async function main() {
     
     // Only sign up sample volunteer for very specific shifts to demonstrate filtering
     // This ensures most days are free, with only 2-3 days having signups
-    const shiftDay = s.start.getDate();
-    const shouldSignUp = (shiftDay % 3 === 0) && (i % 10 === 0); // Much more selective
+    // (shouldSignUp and shiftDay already declared above for friend signup logic)
     
     if (shouldSignUp) {
       // Check if sample volunteer can sign up for this date
