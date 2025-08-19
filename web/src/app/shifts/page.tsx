@@ -10,6 +10,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ShiftSignupDialog } from "@/components/shift-signup-dialog";
 import { PageHeader } from "@/components/page-header";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Calendar, Clock, MapPin, Users, ChevronDown, UserCheck } from "lucide-react";
 import {
   Collapsible,
@@ -132,11 +133,13 @@ function ShiftCard({
   currentUserId,
   session,
   userFriendIds = [],
+  userDailySignups = [],
 }: {
   shift: ShiftWithRelations;
   currentUserId?: string;
   session: unknown;
   userFriendIds?: string[];
+  userDailySignups?: Array<{ start: Date; shiftType: { name: string } }>;
 }) {
   const theme = getShiftTheme(shift.shiftType.name);
   const duration = getDurationInHours(shift.start, shift.end);
@@ -160,6 +163,28 @@ function ShiftCard({
       )
     : undefined;
 
+  // Check if user has a confirmed signup on the same day
+  const shiftDate = new Date(shift.start);
+  const hasConfirmedShiftOnSameDay = userDailySignups.some(dailySignup => {
+    const dailySignupDate = new Date(dailySignup.start);
+    return (
+      dailySignupDate.getFullYear() === shiftDate.getFullYear() &&
+      dailySignupDate.getMonth() === shiftDate.getMonth() &&
+      dailySignupDate.getDate() === shiftDate.getDate()
+    );
+  });
+
+  const existingShiftOnSameDay = hasConfirmedShiftOnSameDay 
+    ? userDailySignups.find(dailySignup => {
+        const dailySignupDate = new Date(dailySignup.start);
+        return (
+          dailySignupDate.getFullYear() === shiftDate.getFullYear() &&
+          dailySignupDate.getMonth() === shiftDate.getMonth() &&
+          dailySignupDate.getDate() === shiftDate.getDate()
+        );
+      })
+    : undefined;
+
   // Find friends who have signed up for this shift
   const friendSignups = shift.signups.filter(
     (signup) => 
@@ -169,15 +194,16 @@ function ShiftCard({
 
   return (
     <Card
-      className={`group relative overflow-hidden border-0 shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 ${theme.bgColor}`}
+      className={`group relative overflow-hidden border-0 shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 ${theme.bgColor} h-full`}
     >
       {/* Gradient accent bar */}
       <div
         className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${theme.gradient}`}
       />
 
-      <CardContent className="p-6">
-        <div className="space-y-4">
+      <CardContent className="p-6 h-full">
+        <div className="flex flex-col h-full">
+          <div className="space-y-4 flex-1">
           {/* Header with emoji and title */}
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -270,29 +296,47 @@ function ShiftCard({
                   {friendSignups.length} friend{friendSignups.length !== 1 ? "s" : ""} joining:
                 </span>
                 <div className="flex items-center gap-1 overflow-hidden">
-                  {friendSignups.slice(0, 3).map((signup) => {
-                    const displayName = signup.user.name || 
-                      `${signup.user.firstName || ""} ${signup.user.lastName || ""}`.trim() || 
-                      signup.user.email;
-                    const initials = (signup.user.firstName?.[0] || signup.user.name?.[0] || signup.user.email[0]).toUpperCase();
-                    
-                    return (
-                      <Avatar key={signup.id} className="h-6 w-6">
-                        <AvatarImage 
-                          src={signup.user.profilePhotoUrl || undefined} 
-                          alt={displayName}
-                        />
-                        <AvatarFallback className="bg-green-100 text-green-700 text-xs">
-                          {initials}
-                        </AvatarFallback>
-                      </Avatar>
-                    );
-                  })}
-                  {friendSignups.length > 3 && (
-                    <div className="text-xs text-green-600 font-medium ml-1">
-                      +{friendSignups.length - 3}
-                    </div>
-                  )}
+                  <TooltipProvider>
+                    {friendSignups.slice(0, 3).map((signup) => {
+                      const displayName = signup.user.name || 
+                        `${signup.user.firstName || ""} ${signup.user.lastName || ""}`.trim() || 
+                        signup.user.email;
+                      const initials = (signup.user.firstName?.[0] || signup.user.name?.[0] || signup.user.email[0]).toUpperCase();
+                      
+                      return (
+                        <Tooltip key={signup.id}>
+                          <TooltipTrigger asChild>
+                            <div className="cursor-pointer">
+                              <Avatar className="h-6 w-6">
+                                <AvatarImage 
+                                  src={signup.user.profilePhotoUrl || undefined} 
+                                  alt={displayName}
+                                />
+                                <AvatarFallback className="bg-green-100 text-green-700 text-xs">
+                                  {initials}
+                                </AvatarFallback>
+                              </Avatar>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{displayName} is joining this shift</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      );
+                    })}
+                    {friendSignups.length > 3 && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="text-xs text-green-600 font-medium ml-1 cursor-pointer">
+                            +{friendSignups.length - 3}
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{friendSignups.length - 3} more friend{friendSignups.length - 3 !== 1 ? 's' : ''} joining this shift</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    )}
+                  </TooltipProvider>
                 </div>
               </div>
             </div>
@@ -309,10 +353,32 @@ function ShiftCard({
             </div>
           )}
 
-          {/* Action button */}
+          </div>
+
+          {/* Action button - anchored to bottom */}
           {!mySignup && (
-            <div className="pt-2">
-              {session ? (
+            <div className="pt-4 mt-auto">
+              {hasConfirmedShiftOnSameDay ? (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div>
+                        <Button
+                          disabled
+                          className="w-full font-medium bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed"
+                          variant="outline"
+                        >
+                          ⚠️ Already scheduled this day
+                        </Button>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>You already have a shift on this day: {existingShiftOnSameDay?.shiftType.name}</p>
+                      <p className="text-xs text-muted-foreground">You can only sign up for one shift per day</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              ) : session ? (
                 <ShiftSignupDialog
                   shift={{
                     id: shift.id,
@@ -368,6 +434,7 @@ export default async function ShiftsPageRedesigned({
   // Get current user and their friends
   let currentUser = null;
   let userFriendIds: string[] = [];
+  let userDailySignups: Array<{ start: Date; shiftType: { name: string } }> = [];
   
   if (session?.user?.email) {
     currentUser = await prisma.user.findUnique({
@@ -375,31 +442,59 @@ export default async function ShiftsPageRedesigned({
       select: { id: true, availableLocations: true },
     });
 
-    // Get user's friend IDs
+    // Get user's friend IDs and daily signups
     if (currentUser?.id) {
-      const friendships = await prisma.friendship.findMany({
-        where: {
-          AND: [
-            {
-              OR: [
-                { userId: currentUser.id },
-                { friendId: currentUser.id },
-              ],
+      const [friendships, dailySignups] = await Promise.all([
+        prisma.friendship.findMany({
+          where: {
+            AND: [
+              {
+                OR: [
+                  { userId: currentUser.id },
+                  { friendId: currentUser.id },
+                ],
+              },
+              { status: "ACCEPTED" },
+            ],
+          },
+          select: {
+            userId: true,
+            friendId: true,
+          },
+        }),
+        prisma.signup.findMany({
+          where: {
+            userId: currentUser.id,
+            status: "CONFIRMED",
+            shift: {
+              start: { gte: new Date() },
             },
-            { status: "ACCEPTED" },
-          ],
-        },
-        select: {
-          userId: true,
-          friendId: true,
-        },
-      });
+          },
+          select: {
+            shift: {
+              select: {
+                start: true,
+                shiftType: {
+                  select: {
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
+        }),
+      ]);
 
       userFriendIds = friendships.map(friendship => 
         friendship.userId === currentUser!.id 
           ? friendship.friendId 
           : friendship.userId
       );
+
+      userDailySignups = dailySignups.map(signup => ({
+        start: signup.shift.start,
+        shiftType: { name: signup.shift.shiftType.name },
+      }));
     }
   }
 
@@ -704,6 +799,7 @@ export default async function ShiftsPageRedesigned({
                                 currentUserId={currentUser?.id}
                                 session={session}
                                 userFriendIds={userFriendIds}
+                                userDailySignups={userDailySignups}
                               />
                             ))}
                           </div>
