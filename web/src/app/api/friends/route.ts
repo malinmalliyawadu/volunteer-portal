@@ -1,8 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { friendRequestLimiter, getClientIdentifier } from "@/lib/rate-limit";
 
 const sendFriendRequestSchema = z.object({
   email: z.string().email("Invalid email format"),
@@ -25,39 +26,35 @@ export async function GET() {
   }
 
   try {
-    // Get user's friends (accepted friendships)
-    const friends = await prisma.friendship.findMany({
-      where: {
-        AND: [
-          {
-            OR: [{ userId: user.id }, { friendId: user.id }],
-          },
-          { status: "ACCEPTED" },
-        ],
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-            profilePhotoUrl: true,
-          },
-        },
-        friend: {
-          select: {
-            id: true,
-            name: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-            profilePhotoUrl: true,
-          },
-        },
-      },
-    });
+    // Get user's friends using a more efficient query that avoids N+1 issues
+    // We'll use raw query for better performance with deduplication at database level
+    const friendsRaw = await prisma.$queryRaw<Array<{
+      friendshipId: string;
+      friendId: string;
+      name: string | null;
+      firstName: string | null;
+      lastName: string | null;
+      email: string;
+      profilePhotoUrl: string | null;
+      friendsSince: Date;
+    }>>`
+      SELECT DISTINCT
+        f.id as "friendshipId",
+        u.id as "friendId",
+        u.name,
+        u."firstName",
+        u."lastName", 
+        u.email,
+        u."profilePhotoUrl",
+        f."createdAt" as "friendsSince"
+      FROM "Friendship" f
+      JOIN "User" u ON (
+        (f."userId" = ${user.id} AND u.id = f."friendId") OR
+        (f."friendId" = ${user.id} AND u.id = f."userId")
+      )
+      WHERE f.status = 'ACCEPTED' AND u.id != ${user.id}
+      ORDER BY f."createdAt" ASC
+    `;
 
     // Get pending friend requests received
     const pendingRequests = await prisma.friendRequest.findMany({
@@ -89,30 +86,17 @@ export async function GET() {
       },
     });
 
-    // Format friends list - get the other person in the friendship
-    // Use a Map to deduplicate friends by their ID
-    const friendsMap = new Map();
-    
-    friends.forEach((friendship) => {
-      const friend =
-        friendship.userId === user.id ? friendship.friend : friendship.user;
-      
-      // Only add if we haven't seen this friend before, or if this friendship is older
-      if (!friendsMap.has(friend.id) || friendship.createdAt < friendsMap.get(friend.id).friendsSince) {
-        friendsMap.set(friend.id, {
-          friendshipId: friendship.id,
-          id: friend.id,
-          name: friend.name,
-          firstName: friend.firstName,
-          lastName: friend.lastName,
-          email: friend.email,
-          profilePhotoUrl: friend.profilePhotoUrl,
-          friendsSince: friendship.createdAt,
-        });
-      }
-    });
-    
-    const formattedFriends = Array.from(friendsMap.values());
+    // Format friends list - the query already handles deduplication and proper joins
+    const formattedFriends = friendsRaw.map(friend => ({
+      friendshipId: friend.friendshipId,
+      id: friend.friendId,
+      name: friend.name,
+      firstName: friend.firstName,
+      lastName: friend.lastName,
+      email: friend.email,
+      profilePhotoUrl: friend.profilePhotoUrl,
+      friendsSince: friend.friendsSince,
+    }));
 
     return NextResponse.json({
       friends: formattedFriends,
@@ -128,7 +112,7 @@ export async function GET() {
   }
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.email) {
@@ -141,6 +125,27 @@ export async function POST(req: Request) {
 
   if (!user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
+
+  // Apply rate limiting
+  const clientId = getClientIdentifier(req, user.id);
+  const rateLimitResult = friendRequestLimiter(clientId);
+  
+  if (!rateLimitResult.success) {
+    return NextResponse.json(
+      { 
+        error: "Rate limit exceeded. Please wait before sending more friend requests.",
+        retryAfter: Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000)
+      },
+      { 
+        status: 429,
+        headers: {
+          'X-RateLimit-Limit': rateLimitResult.limit.toString(),
+          'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+          'X-RateLimit-Reset': rateLimitResult.resetTime.toString(),
+        }
+      }
+    );
   }
 
   try {

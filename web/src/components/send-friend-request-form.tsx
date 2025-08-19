@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { UserPlus, Mail, MessageSquare } from "lucide-react";
+import { UserPlus, Mail, MessageSquare, RefreshCw } from "lucide-react";
 import { sendFriendRequest } from "@/lib/friends-actions";
 
 interface SendFriendRequestFormProps {
@@ -25,6 +25,7 @@ export function SendFriendRequestForm({
 }: SendFriendRequestFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [retryCount, setRetryCount] = useState(0);
 
   const handleSubmit = async (formData: FormData) => {
     setIsSubmitting(true);
@@ -46,6 +47,7 @@ export function SendFriendRequestForm({
     } catch (error) {
       console.error(error);
       setError("An error occurred while sending the friend request");
+      setRetryCount(prev => prev + 1);
     } finally {
       setIsSubmitting(false);
     }
@@ -54,10 +56,21 @@ export function SendFriendRequestForm({
   const handleClose = () => {
     onOpenChange(false);
     setError("");
+    setRetryCount(0);
     const form = document.getElementById(
       "friend-request-form"
     ) as HTMLFormElement;
     form?.reset();
+  };
+
+  const handleRetry = async () => {
+    const form = document.getElementById(
+      "friend-request-form"
+    ) as HTMLFormElement;
+    if (form) {
+      const formData = new FormData(form);
+      await handleSubmit(formData);
+    }
   };
 
   return (
@@ -118,10 +131,28 @@ export function SendFriendRequestForm({
 
           {error && (
             <div
-              className="bg-red-50 border border-red-200 rounded-md p-3"
+              className="bg-red-50 border border-red-200 rounded-md p-3 space-y-3"
               data-testid="friend-request-error"
             >
               <p className="text-red-800 text-sm">{error}</p>
+              {retryCount > 0 && retryCount < 3 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRetry}
+                  disabled={isSubmitting}
+                  className="flex items-center gap-2"
+                >
+                  <RefreshCw className="h-3 w-3" />
+                  Try Again
+                </Button>
+              )}
+              {retryCount >= 3 && (
+                <p className="text-red-700 text-xs">
+                  Multiple attempts failed. Please check your connection and try again later.
+                </p>
+              )}
             </div>
           )}
 

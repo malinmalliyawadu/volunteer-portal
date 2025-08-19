@@ -29,9 +29,26 @@ export async function DELETE(
   try {
     const { friendId } = await params;
 
+    // First validate that this is actually a friendship
+    const existingFriendship = await prisma.friendship.findFirst({
+      where: {
+        OR: [
+          { userId: user.id, friendId, status: "ACCEPTED" },
+          { userId: friendId, friendId: user.id, status: "ACCEPTED" },
+        ],
+      },
+    });
+
+    if (!existingFriendship) {
+      return NextResponse.json(
+        { error: "Friendship not found" },
+        { status: 404 }
+      );
+    }
+
     // Find and delete both directions of the friendship
-    const result = await prisma.$transaction(async (tx) => {
-      const deletedFriendships = await tx.friendship.deleteMany({
+    await prisma.$transaction(async (tx) => {
+      await tx.friendship.deleteMany({
         where: {
           OR: [
             { userId: user.id, friendId },
@@ -40,16 +57,7 @@ export async function DELETE(
           status: "ACCEPTED",
         },
       });
-
-      return deletedFriendships;
     });
-
-    if (result.count === 0) {
-      return NextResponse.json(
-        { error: "Friendship not found" },
-        { status: 404 }
-      );
-    }
 
     return NextResponse.json({
       message: "Friendship removed successfully",
@@ -86,8 +94,26 @@ export async function PATCH(
     const body = await req.json();
     const { blocked } = blockFriendSchema.parse(body);
 
-    // Update friendship status
-    const updatedFriendship = await prisma.friendship.updateMany({
+    // First validate that this is actually a friendship
+    const existingFriendship = await prisma.friendship.findFirst({
+      where: {
+        OR: [
+          { userId: user.id, friendId },
+          { userId: friendId, friendId: user.id },
+        ],
+        status: { in: ["ACCEPTED", "BLOCKED"] },
+      },
+    });
+
+    if (!existingFriendship) {
+      return NextResponse.json(
+        { error: "Friendship not found" },
+        { status: 404 }
+      );
+    }
+
+    // Update friendship status (only update the current user's side)
+    await prisma.friendship.updateMany({
       where: {
         userId: user.id,
         friendId,
@@ -96,13 +122,6 @@ export async function PATCH(
         status: blocked ? "BLOCKED" : "ACCEPTED",
       },
     });
-
-    if (updatedFriendship.count === 0) {
-      return NextResponse.json(
-        { error: "Friendship not found" },
-        { status: 404 }
-      );
-    }
 
     return NextResponse.json({
       message: blocked ? "Friend blocked successfully" : "Friend unblocked successfully",

@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { getFriendsData } from "@/lib/friends-data";
 import { FriendsManagerServer } from "@/components/friends-manager-server";
 import { BarChart3 } from "lucide-react";
+import ErrorBoundary from "@/components/error-boundary";
+import { FriendsErrorFallback } from "@/components/friends-error-fallback";
 
 export default async function FriendsPage() {
   const session = await getServerSession(authOptions);
@@ -39,13 +41,15 @@ export default async function FriendsPage() {
           </Link>
         </Button>
       </div>
-      <Suspense
-        fallback={
-          <div className="flex justify-center py-8">Loading friends...</div>
-        }
-      >
-        <FriendsManagerServer initialData={friendsData} />
-      </Suspense>
+      <ErrorBoundary fallback={FriendsErrorFallback}>
+        <Suspense
+          fallback={
+            <div className="flex justify-center py-8">Loading friends...</div>
+          }
+        >
+          <FriendsManagerServer initialData={friendsData} />
+        </Suspense>
+      </ErrorBoundary>
     </PageContainer>
   );
 }

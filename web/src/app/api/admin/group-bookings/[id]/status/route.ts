@@ -18,9 +18,10 @@ export async function PATCH(req: Request) {
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
+      select: { id: true, role: true },
     });
 
-    if (!user || (user as { role?: string }).role !== "ADMIN") {
+    if (!user || user.role !== "ADMIN") {
       return NextResponse.json({ error: "Admin access required" }, { status: 403 });
     }
 
