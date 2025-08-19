@@ -925,24 +925,8 @@ async function main() {
     }
   }
 
-  // Ensure the sample volunteer is signed up for the first shift
-  const firstShift = await prisma.shift.findFirst({
-    orderBy: { start: "asc" },
-  });
-  if (firstShift && canUserSignUpForDate(volunteer.id, firstShift.start)) {
-    await prisma.signup.upsert({
-      where: {
-        userId_shiftId: { userId: volunteer.id, shiftId: firstShift.id },
-      },
-      update: {},
-      create: {
-        userId: volunteer.id,
-        shiftId: firstShift.id,
-        status: "CONFIRMED",
-      },
-    });
-    recordUserSignup(volunteer.id, firstShift.start);
-  }
+  // SKIP signing up sample volunteer for the first shift to demonstrate filtering
+  // (This ensures at least the first day is completely free for testing)
 
   // Make some shifts full and add a waitlisted signup to demonstrate UI state
   // Also add friends to shifts to demonstrate social features
@@ -1029,12 +1013,12 @@ async function main() {
       }
     }
     
-    // For every 5th shift, add sample volunteer to create common shifts with friends
-    // BUT skip the first and last days to demonstrate filtering (so user can see unsigned days)
-    const shiftDateKey = s.start.toISOString().split('T')[0];
-    const skipFirstAndLastDay = (i === 0) || (i >= createdShifts.length - 6); // Skip first day and last day's shifts
+    // Only sign up sample volunteer for very specific shifts to demonstrate filtering
+    // This ensures most days are free, with only 2-3 days having signups
+    const shiftDay = s.start.getDate();
+    const shouldSignUp = (shiftDay % 3 === 0) && (i % 10 === 0); // Much more selective
     
-    if (i % 5 === 0 && !skipFirstAndLastDay) {
+    if (shouldSignUp) {
       // Check if sample volunteer can sign up for this date
       if (canUserSignUpForDate(volunteer.id, s.start)) {
         try {
@@ -1046,6 +1030,7 @@ async function main() {
             },
           });
           recordUserSignup(volunteer.id, s.start);
+          console.log(`✅ Signed up sample volunteer for ${s.start.toDateString()}`);
         } catch (error) {
           // Skip if signup already exists
           if (!error.message.includes('Unique constraint')) {
