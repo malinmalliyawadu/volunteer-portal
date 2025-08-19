@@ -7,6 +7,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { UserMenu } from "@/components/user-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { NotificationBell } from "@/components/notification-bell";
 import { cn } from "@/lib/utils";
 import { Session } from "next-auth";
 import { Menu, X } from "lucide-react";
@@ -14,6 +15,7 @@ import { Menu, X } from "lucide-react";
 interface SiteHeaderProps {
   session: Session | null;
   userProfile: {
+    id: string;
     profilePhotoUrl?: string | null;
     name?: string | null;
     firstName?: string | null;
@@ -163,6 +165,9 @@ export function SiteHeader({
             <div className="hidden sm:block">
               <ThemeToggle />
             </div>
+            {session?.user && userProfile?.id && (
+              <NotificationBell userId={userProfile.id} />
+            )}
             {session?.user ? (
               <UserMenu
                 userName={displayName}

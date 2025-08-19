@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { friendRequestLimiter, getClientIdentifier } from "@/lib/rate-limit";
+import { createFriendRequestNotification } from "@/lib/notifications";
 
 const sendFriendRequestSchema = z.object({
   email: z.string().email("Invalid email format"),
@@ -163,7 +164,7 @@ export async function POST(req: NextRequest) {
     // Check if user allows friend requests
     const targetUser = await prisma.user.findUnique({
       where: { email },
-      select: { id: true, allowFriendRequests: true, name: true },
+      select: { id: true, allowFriendRequests: true, name: true, firstName: true, lastName: true },
     });
 
     if (!targetUser) {
@@ -229,14 +230,30 @@ export async function POST(req: NextRequest) {
         fromUser: {
           select: {
             name: true,
+            firstName: true,
+            lastName: true,
             email: true,
           },
         },
       },
     });
 
-    // TODO: Send email notification to target user
-    // This would integrate with your email service
+    // Create notification for the target user
+    try {
+      const senderName = friendRequest.fromUser.name || 
+        (friendRequest.fromUser.firstName && friendRequest.fromUser.lastName 
+          ? `${friendRequest.fromUser.firstName} ${friendRequest.fromUser.lastName}`
+          : friendRequest.fromUser.email);
+
+      await createFriendRequestNotification(
+        targetUser.id,
+        senderName,
+        friendRequest.id
+      );
+    } catch (notificationError) {
+      // Don't fail the friend request if notification creation fails
+      console.error("Error creating friend request notification:", notificationError);
+    }
 
     return NextResponse.json(
       {
