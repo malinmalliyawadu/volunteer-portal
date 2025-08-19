@@ -1,8 +1,112 @@
 const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcrypt");
 const { addDays, set, subYears, subMonths, subDays } = require("date-fns");
+const fs = require('fs');
+const path = require('path');
+const https = require('https');
 
 const prisma = new PrismaClient();
+
+// Generate random profile images using randomuser.me
+function generateRandomProfileImages() {
+  const profileMap = [
+    { email: 'sarah.chen@gmail.com', gender: 'women' },
+    { email: 'james.williams@hotmail.com', gender: 'men' },
+    { email: 'priya.patel@yahoo.com', gender: 'women' },
+    { email: 'mike.johnson@outlook.com', gender: 'men' },
+    { email: 'alex.taylor@gmail.com', gender: 'men' }, // Alex is they/them but using men category
+    { email: 'maria.gonzalez@gmail.com', gender: 'women' },
+    { email: 'tom.brown@hotmail.com', gender: 'men' },
+    { email: 'lucy.kim@yahoo.com', gender: 'women' },
+    { email: 'volunteer@example.com', gender: 'women' },
+    { email: 'admin@everybodyeats.nz', gender: 'men' },
+  ];
+
+  return profileMap.map(({ email, gender }) => {
+    // Generate random number between 0-99 for profile diversity
+    const randomId = Math.floor(Math.random() * 100);
+    const filename = `${email.split('@')[0].replace('.', '-')}-${randomId}.jpg`;
+    
+    return {
+      url: `https://randomuser.me/api/portraits/${gender}/${randomId}.jpg`,
+      filename,
+      email,
+    };
+  });
+}
+
+// Generate profile images with randomness
+const profileImages = generateRandomProfileImages();
+
+
+function downloadImageAsBase64(url) {
+  return new Promise((resolve, reject) => {
+    https.get(url, (response) => {
+      if (response.statusCode !== 200) {
+        reject(new Error(`Failed to download image: ${response.statusCode}`));
+        return;
+      }
+      
+      const chunks = [];
+      response.on('data', chunk => chunks.push(chunk));
+      response.on('end', () => {
+        try {
+          const buffer = Buffer.concat(chunks);
+          const base64 = buffer.toString('base64');
+          const mimeType = 'image/jpeg';
+          resolve(`data:${mimeType};base64,${base64}`);
+        } catch (error) {
+          reject(error);
+        }
+      });
+    }).on('error', reject);
+  });
+}
+
+async function downloadAndConvertProfileImages() {
+  console.log('🎲 Generating random profile photos from randomuser.me...\n');
+  
+  for (const image of profileImages) {
+    try {
+      console.log(`📸 Processing ${image.email} with random photo...`);
+      
+      // Download image directly as base64 (no file storage needed)
+      const base64Data = await downloadImageAsBase64(image.url);
+      
+      if (base64Data) {
+        await prisma.user.updateMany({
+          where: { email: image.email },
+          data: { profilePhotoUrl: base64Data }
+        });
+        console.log(`✅ Updated random profile image for ${image.email}`);
+      }
+      
+      // Add a small delay to be respectful to the API
+      await new Promise(resolve => setTimeout(resolve, 300));
+    } catch (error) {
+      console.log(`⚠️ Failed to process ${image.email}: ${error.message}`);
+      // Try a fallback image
+      try {
+        const fallbackId = Math.floor(Math.random() * 50); // Different random range for fallback
+        const gender = image.url.includes('/women/') ? 'women' : 'men';
+        const fallbackUrl = `https://randomuser.me/api/portraits/${gender}/${fallbackId}.jpg`;
+        const fallbackBase64 = await downloadImageAsBase64(fallbackUrl);
+        
+        if (fallbackBase64) {
+          await prisma.user.updateMany({
+            where: { email: image.email },
+            data: { profilePhotoUrl: fallbackBase64 }
+          });
+          console.log(`✅ Updated ${image.email} with fallback random image`);
+        }
+      } catch (fallbackError) {
+        console.log(`❌ Fallback also failed for ${image.email}`);
+      }
+    }
+  }
+  
+  console.log('✅ Random profile images processing completed\n');
+}
 
 // Realistic sample data
 const REALISTIC_VOLUNTEERS = [
@@ -1021,6 +1125,9 @@ async function main() {
   } catch (error) {
     console.error("Warning: Could not seed achievements:", error.message);
   }
+
+  // Download and convert profile images after all users are created
+  await downloadAndConvertProfileImages();
 }
 
 main()

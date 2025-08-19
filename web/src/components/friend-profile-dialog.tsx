@@ -5,8 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Avatar } from "@/components/ui/avatar";
-import Image from "next/image";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { 
   Calendar, 
@@ -115,19 +114,13 @@ export function FriendProfileDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-3">
             <Avatar className="h-10 w-10">
-              {friend.profilePhotoUrl ? (
-                <Image 
-                  src={friend.profilePhotoUrl} 
-                  alt={displayName} 
-                  width={40}
-                  height={40}
-                  className="rounded-full"
-                />
-              ) : (
-                <div className="bg-blue-500 text-white flex items-center justify-center h-full rounded-full">
-                  {(friend.firstName?.[0] || friend.name?.[0] || friend.email[0]).toUpperCase()}
-                </div>
-              )}
+              <AvatarImage 
+                src={friend.profilePhotoUrl || undefined} 
+                alt={displayName}
+              />
+              <AvatarFallback className="bg-blue-500 text-white">
+                {(friend.firstName?.[0] || friend.name?.[0] || friend.email[0]).toUpperCase()}
+              </AvatarFallback>
             </Avatar>
             <div>
               <h2 className="text-lg font-semibold">{displayName}</h2>

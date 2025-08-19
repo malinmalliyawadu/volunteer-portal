@@ -1,11 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Avatar } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SendFriendRequestDialog } from "@/components/send-friend-request-dialog";
 import { FriendPrivacySettings } from "@/components/friend-privacy-settings";
@@ -206,19 +205,13 @@ export function FriendsManager() {
                     <div className="flex items-start justify-between">
                       <div className="flex items-center space-x-3">
                         <Avatar className="h-10 w-10">
-                          {friend.profilePhotoUrl ? (
-                            <Image 
-                              src={friend.profilePhotoUrl} 
-                              alt={friend.name || "Friend"} 
-                              width={40}
-                              height={40}
-                              className="rounded-full"
-                            />
-                          ) : (
-                            <div className="bg-blue-500 text-white flex items-center justify-center h-full rounded-full">
-                              {(friend.firstName?.[0] || friend.name?.[0] || friend.email[0]).toUpperCase()}
-                            </div>
-                          )}
+                          <AvatarImage 
+                            src={friend.profilePhotoUrl || undefined} 
+                            alt={friend.name || "Friend"}
+                          />
+                          <AvatarFallback className="bg-blue-500 text-white">
+                            {(friend.firstName?.[0] || friend.name?.[0] || friend.email[0]).toUpperCase()}
+                          </AvatarFallback>
                         </Avatar>
                         <div>
                           <h3 className="font-medium">
@@ -276,21 +269,15 @@ export function FriendsManager() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
                         <Avatar className="h-10 w-10">
-                          {request.fromUser.profilePhotoUrl ? (
-                            <Image 
-                              src={request.fromUser.profilePhotoUrl} 
-                              alt={request.fromUser.name || "User"} 
-                              width={40}
-                              height={40}
-                              className="rounded-full"
-                            />
-                          ) : (
-                            <div className="bg-blue-500 text-white flex items-center justify-center h-full rounded-full">
-                              {(request.fromUser.firstName?.[0] || 
-                                request.fromUser.name?.[0] || 
-                                request.fromUser.email[0]).toUpperCase()}
-                            </div>
-                          )}
+                          <AvatarImage 
+                            src={request.fromUser.profilePhotoUrl || undefined} 
+                            alt={request.fromUser.name || "User"}
+                          />
+                          <AvatarFallback className="bg-blue-500 text-white">
+                            {(request.fromUser.firstName?.[0] || 
+                              request.fromUser.name?.[0] || 
+                              request.fromUser.email[0]).toUpperCase()}
+                          </AvatarFallback>
                         </Avatar>
                         <div>
                           <h3 className="font-medium">

@@ -90,20 +90,29 @@ export async function GET() {
     });
 
     // Format friends list - get the other person in the friendship
-    const formattedFriends = friends.map((friendship) => {
+    // Use a Map to deduplicate friends by their ID
+    const friendsMap = new Map();
+    
+    friends.forEach((friendship) => {
       const friend =
         friendship.userId === user.id ? friendship.friend : friendship.user;
-      return {
-        friendshipId: friendship.id,
-        id: friend.id,
-        name: friend.name,
-        firstName: friend.firstName,
-        lastName: friend.lastName,
-        email: friend.email,
-        profilePhotoUrl: friend.profilePhotoUrl,
-        friendsSince: friendship.createdAt,
-      };
+      
+      // Only add if we haven't seen this friend before, or if this friendship is older
+      if (!friendsMap.has(friend.id) || friendship.createdAt < friendsMap.get(friend.id).friendsSince) {
+        friendsMap.set(friend.id, {
+          friendshipId: friendship.id,
+          id: friend.id,
+          name: friend.name,
+          firstName: friend.firstName,
+          lastName: friend.lastName,
+          email: friend.email,
+          profilePhotoUrl: friend.profilePhotoUrl,
+          friendsSince: friendship.createdAt,
+        });
+      }
     });
+    
+    const formattedFriends = Array.from(friendsMap.values());
 
     return NextResponse.json({
       friends: formattedFriends,
