@@ -52,6 +52,46 @@ export async function POST(req: Request) {
     );
   }
 
+  // Check if user already has a confirmed signup for the same day
+  const shiftDate = new Date(shift.start);
+  const startOfDay = new Date(shiftDate.getFullYear(), shiftDate.getMonth(), shiftDate.getDate());
+  const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000);
+  
+  const existingDailySignup = await prisma.signup.findFirst({
+    where: {
+      userId: user.id,
+      status: "CONFIRMED",
+      shift: {
+        start: {
+          gte: startOfDay,
+          lt: endOfDay,
+        },
+      },
+    },
+    include: {
+      shift: {
+        include: {
+          shiftType: true,
+        },
+      },
+    },
+  });
+  
+  if (existingDailySignup) {
+    const existingShiftTime = new Intl.DateTimeFormat('en-NZ', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    }).format(existingDailySignup.shift.start);
+    
+    return NextResponse.json(
+      { 
+        error: `You already have a confirmed shift on this day: ${existingDailySignup.shift.shiftType.name} at ${existingShiftTime}. You can only sign up for one shift per day.`
+      },
+      { status: 400 }
+    );
+  }
+
   if (confirmedCount >= shift.capacity) {
     if (!waitlistRequested) {
       return NextResponse.json(

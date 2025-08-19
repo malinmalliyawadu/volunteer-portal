@@ -18,9 +18,10 @@ export async function PATCH(req: Request) {
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
+      select: { id: true, role: true },
     });
 
-    if (!user || (user as { role?: string }).role !== "ADMIN") {
+    if (!user || user.role !== "ADMIN") {
       return NextResponse.json({ error: "Admin access required" }, { status: 403 });
     }
 
@@ -180,10 +181,55 @@ export async function PATCH(req: Request) {
         });
       }
 
+      // If confirmed, create automatic friendships between all group members
+      if (status === "CONFIRMED" && updatedGroupBooking.signups.length > 1) {
+        const memberIds = updatedGroupBooking.signups.map(signup => signup.userId);
+        
+        // Create bidirectional friendships between all members
+        for (let i = 0; i < memberIds.length; i++) {
+          for (let j = i + 1; j < memberIds.length; j++) {
+            const userId1 = memberIds[i];
+            const userId2 = memberIds[j];
+            
+            // Check if friendship already exists
+            const existingFriendship = await tx.friendship.findFirst({
+              where: {
+                OR: [
+                  { userId: userId1, friendId: userId2 },
+                  { userId: userId2, friendId: userId1 },
+                ],
+              },
+            });
+            
+            if (!existingFriendship) {
+              // Create bidirectional friendship
+              await tx.friendship.create({
+                data: {
+                  userId: userId1,
+                  friendId: userId2,
+                  status: "ACCEPTED",
+                  initiatedBy: userId1, // Group leader initiated this
+                },
+              });
+              
+              await tx.friendship.create({
+                data: {
+                  userId: userId2,
+                  friendId: userId1,
+                  status: "ACCEPTED",
+                  initiatedBy: userId1, // Group leader initiated this
+                },
+              });
+            }
+          }
+        }
+      }
+
       return updatedGroupBooking;
     });
 
     // TODO: Send notification emails to group members about status change
+    // TODO: Send notification about new automatic friendships when confirmed
 
     return NextResponse.json({
       success: true,

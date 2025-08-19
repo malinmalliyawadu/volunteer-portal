@@ -1,8 +1,112 @@
 const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcrypt");
-const { addDays, set, subYears, subMonths } = require("date-fns");
+const { addDays, set, subYears, subMonths, subDays } = require("date-fns");
+const fs = require('fs');
+const path = require('path');
+const https = require('https');
 
 const prisma = new PrismaClient();
+
+// Generate random profile images using randomuser.me
+function generateRandomProfileImages() {
+  const profileMap = [
+    { email: 'sarah.chen@gmail.com', gender: 'women' },
+    { email: 'james.williams@hotmail.com', gender: 'men' },
+    { email: 'priya.patel@yahoo.com', gender: 'women' },
+    { email: 'mike.johnson@outlook.com', gender: 'men' },
+    { email: 'alex.taylor@gmail.com', gender: 'men' }, // Alex is they/them but using men category
+    { email: 'maria.gonzalez@gmail.com', gender: 'women' },
+    { email: 'tom.brown@hotmail.com', gender: 'men' },
+    { email: 'lucy.kim@yahoo.com', gender: 'women' },
+    { email: 'volunteer@example.com', gender: 'women' },
+    { email: 'admin@everybodyeats.nz', gender: 'men' },
+  ];
+
+  return profileMap.map(({ email, gender }) => {
+    // Generate random number between 0-99 for profile diversity
+    const randomId = Math.floor(Math.random() * 100);
+    const filename = `${email.split('@')[0].replace('.', '-')}-${randomId}.jpg`;
+    
+    return {
+      url: `https://randomuser.me/api/portraits/${gender}/${randomId}.jpg`,
+      filename,
+      email,
+    };
+  });
+}
+
+// Generate profile images with randomness
+const profileImages = generateRandomProfileImages();
+
+
+function downloadImageAsBase64(url) {
+  return new Promise((resolve, reject) => {
+    https.get(url, (response) => {
+      if (response.statusCode !== 200) {
+        reject(new Error(`Failed to download image: ${response.statusCode}`));
+        return;
+      }
+      
+      const chunks = [];
+      response.on('data', chunk => chunks.push(chunk));
+      response.on('end', () => {
+        try {
+          const buffer = Buffer.concat(chunks);
+          const base64 = buffer.toString('base64');
+          const mimeType = 'image/jpeg';
+          resolve(`data:${mimeType};base64,${base64}`);
+        } catch (error) {
+          reject(error);
+        }
+      });
+    }).on('error', reject);
+  });
+}
+
+async function downloadAndConvertProfileImages() {
+  console.log('🎲 Generating random profile photos from randomuser.me...\n');
+  
+  for (const image of profileImages) {
+    try {
+      console.log(`📸 Processing ${image.email} with random photo...`);
+      
+      // Download image directly as base64 (no file storage needed)
+      const base64Data = await downloadImageAsBase64(image.url);
+      
+      if (base64Data) {
+        await prisma.user.updateMany({
+          where: { email: image.email },
+          data: { profilePhotoUrl: base64Data }
+        });
+        console.log(`✅ Updated random profile image for ${image.email}`);
+      }
+      
+      // Add a small delay to be respectful to the API
+      await new Promise(resolve => setTimeout(resolve, 300));
+    } catch (error) {
+      console.log(`⚠️ Failed to process ${image.email}: ${error.message}`);
+      // Try a fallback image
+      try {
+        const fallbackId = Math.floor(Math.random() * 50); // Different random range for fallback
+        const gender = image.url.includes('/women/') ? 'women' : 'men';
+        const fallbackUrl = `https://randomuser.me/api/portraits/${gender}/${fallbackId}.jpg`;
+        const fallbackBase64 = await downloadImageAsBase64(fallbackUrl);
+        
+        if (fallbackBase64) {
+          await prisma.user.updateMany({
+            where: { email: image.email },
+            data: { profilePhotoUrl: fallbackBase64 }
+          });
+          console.log(`✅ Updated ${image.email} with fallback random image`);
+        }
+      } catch (fallbackError) {
+        console.log(`❌ Fallback also failed for ${image.email}`);
+      }
+    }
+  }
+  
+  console.log('✅ Random profile images processing completed\n');
+}
 
 // Realistic sample data
 const REALISTIC_VOLUNTEERS = [
@@ -179,6 +283,31 @@ async function main() {
   const adminHash = await bcrypt.hash("admin123", 10);
   const volunteerHash = await bcrypt.hash("volunteer123", 10);
 
+  // Track user signups by date to prevent multiple signups per day
+  const userDailySignups = new Map(); // userId -> Set of date strings
+  
+  // Helper function to check if user can sign up for a shift on a given date
+  function canUserSignUpForDate(userId, shiftDate) {
+    const dateKey = shiftDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+    
+    if (!userDailySignups.has(userId)) {
+      userDailySignups.set(userId, new Set());
+    }
+    
+    return !userDailySignups.get(userId).has(dateKey);
+  }
+  
+  // Helper function to record a user signup for a date
+  function recordUserSignup(userId, shiftDate) {
+    const dateKey = shiftDate.toISOString().split('T')[0];
+    
+    if (!userDailySignups.has(userId)) {
+      userDailySignups.set(userId, new Set());
+    }
+    
+    userDailySignups.get(userId).add(dateKey);
+  }
+
   // Create admin user
   await prisma.user.upsert({
     where: { email: adminEmail },
@@ -328,6 +457,172 @@ async function main() {
     });
     extraVolunteers.push(u);
   }
+
+  // Create friend relationships for sample volunteer
+  console.log("👫 Seeding friend relationships...");
+  
+  // Sample volunteer's existing friends (bidirectional friendships)
+  const existingFriends = [
+    extraVolunteers.find(v => v.email === "sarah.chen@gmail.com"),
+    extraVolunteers.find(v => v.email === "james.williams@hotmail.com"),
+    extraVolunteers.find(v => v.email === "priya.patel@yahoo.com"),
+    extraVolunteers.find(v => v.email === "vol1@example.com"),
+    extraVolunteers.find(v => v.email === "vol3@example.com"),
+  ].filter(Boolean);
+
+  // Create bidirectional friendships
+  for (const friend of existingFriends) {
+    try {
+      // Create friendship from sample volunteer to friend
+      await prisma.friendship.create({
+        data: {
+          userId: volunteer.id,
+          friendId: friend.id,
+          status: "ACCEPTED",
+          initiatedBy: volunteer.id,
+          createdAt: subDays(new Date(), Math.floor(Math.random() * 60) + 30), // 30-90 days ago
+        },
+      });
+
+      // Create friendship from friend to sample volunteer
+      await prisma.friendship.create({
+        data: {
+          userId: friend.id,
+          friendId: volunteer.id,
+          status: "ACCEPTED",
+          initiatedBy: volunteer.id,
+          createdAt: subDays(new Date(), Math.floor(Math.random() * 60) + 30), // Same date as above
+        },
+      });
+    } catch (error) {
+      // Skip if friendship already exists
+      if (!error.message.includes('Unique constraint')) {
+        throw error;
+      }
+    }
+  }
+
+  // Create pending friend requests TO the sample volunteer
+  const pendingRequesters = [
+    extraVolunteers.find(v => v.email === "mike.johnson@outlook.com"),
+    extraVolunteers.find(v => v.email === "vol5@example.com"),
+    extraVolunteers.find(v => v.email === "vol7@example.com"),
+  ].filter(Boolean);
+
+  for (const requester of pendingRequesters) {
+    try {
+      await prisma.friendRequest.create({
+        data: {
+          fromUserId: requester.id,
+          toEmail: volunteer.email,
+          message: [
+            "Hey! I saw you volunteering last week. Would love to coordinate our shifts!",
+            "Let's be friends so we can volunteer together!",
+            "Would be great to connect and volunteer as a team!",
+          ][Math.floor(Math.random() * 3)],
+          status: "PENDING",
+          expiresAt: addDays(new Date(), 30), // 30 days from now
+          createdAt: subDays(new Date(), Math.floor(Math.random() * 7) + 1), // 1-7 days ago
+        },
+      });
+    } catch (error) {
+      // Skip if request already exists
+      if (!error.message.includes('Unique constraint')) {
+        throw error;
+      }
+    }
+  }
+
+  // Create some sent friend requests FROM the sample volunteer
+  const sentRequestTargets = [
+    "alex.taylor@gmail.com",
+    "vol9@example.com",
+  ];
+
+  for (const targetEmail of sentRequestTargets) {
+    try {
+      await prisma.friendRequest.create({
+        data: {
+          fromUserId: volunteer.id,
+          toEmail: targetEmail,
+          message: "Hi! Would love to be friends and volunteer together sometime!",
+          status: "PENDING",
+          expiresAt: addDays(new Date(), 30),
+          createdAt: subDays(new Date(), Math.floor(Math.random() * 5) + 2), // 2-6 days ago
+        },
+      });
+    } catch (error) {
+      // Skip if request already exists
+      if (!error.message.includes('Unique constraint')) {
+        throw error;
+      }
+    }
+  }
+
+  // Create some friendships between other volunteers (for realistic friend networks)
+  const friendPairs = [
+    ["sarah.chen@gmail.com", "james.williams@hotmail.com"],
+    ["priya.patel@yahoo.com", "maria.gonzalez@gmail.com"],
+    ["vol1@example.com", "vol2@example.com"],
+    ["vol3@example.com", "vol4@example.com"],
+    ["vol6@example.com", "vol8@example.com"],
+  ];
+
+  for (const [email1, email2] of friendPairs) {
+    const user1 = extraVolunteers.find(v => v.email === email1);
+    const user2 = extraVolunteers.find(v => v.email === email2);
+    
+    if (user1 && user2) {
+      try {
+        // Create bidirectional friendship
+        await prisma.friendship.create({
+          data: {
+            userId: user1.id,
+            friendId: user2.id,
+            status: "ACCEPTED",
+            initiatedBy: user1.id,
+            createdAt: subDays(new Date(), Math.floor(Math.random() * 120) + 30),
+          },
+        });
+
+        await prisma.friendship.create({
+          data: {
+            userId: user2.id,
+            friendId: user1.id,
+            status: "ACCEPTED",
+            initiatedBy: user1.id,
+            createdAt: subDays(new Date(), Math.floor(Math.random() * 120) + 30),
+          },
+        });
+      } catch (error) {
+        // Skip if friendship already exists
+        if (!error.message.includes('Unique constraint')) {
+          throw error;
+        }
+      }
+    }
+  }
+
+  // Set different privacy settings for some volunteers
+  await prisma.user.update({
+    where: { email: "sarah.chen@gmail.com" },
+    data: { friendVisibility: "PUBLIC" },
+  });
+
+  await prisma.user.update({
+    where: { email: "alex.taylor@gmail.com" },
+    data: { friendVisibility: "PRIVATE" },
+  });
+
+  await prisma.user.update({
+    where: { email: "vol10@example.com" },
+    data: { allowFriendRequests: false },
+  });
+
+  console.log(`✅ Created ${existingFriends.length} friendships for sample volunteer`);
+  console.log(`✅ Created ${pendingRequesters.length} pending friend requests`);
+  console.log(`✅ Created ${sentRequestTargets.length} sent friend requests`);
+  console.log(`✅ Created ${friendPairs.length} other volunteer friendships`);
 
   // Create updated shift types
   const dishwasher = await prisma.shiftType.upsert({
@@ -533,15 +828,18 @@ async function main() {
 
       historicalShifts.push(historicalShift);
 
-      // Create signup for sample volunteer for ALL these historical shifts
-      await prisma.signup.create({
-        data: {
-          userId: volunteer.id,
-          shiftId: historicalShift.id,
-          status: "CONFIRMED",
-          createdAt: addDays(start, -Math.floor(Math.random() * 7) - 1), // Signed up 1-7 days before
-        },
-      });
+      // Create signup for sample volunteer for historical shifts (respecting daily limit)
+      if (canUserSignUpForDate(volunteer.id, historicalShift.start)) {
+        await prisma.signup.create({
+          data: {
+            userId: volunteer.id,
+            shiftId: historicalShift.id,
+            status: "CONFIRMED",
+            createdAt: addDays(start, -Math.floor(Math.random() * 7) - 1), // Signed up 1-7 days before
+          },
+        });
+        recordUserSignup(volunteer.id, historicalShift.start);
+      }
 
       // Also add some other volunteers to these shifts for realism
       const volunteersToAdd = Math.min(
@@ -554,20 +852,24 @@ async function main() {
           (period.weeksAgo * 10 + shiftInWeek * 3 + v) % extraVolunteers.length;
         const otherVolunteer = extraVolunteers[volunteerIndex];
 
-        await prisma.signup.upsert({
-          where: {
-            userId_shiftId: {
+        // Check if this volunteer can sign up for this date
+        if (canUserSignUpForDate(otherVolunteer.id, historicalShift.start)) {
+          await prisma.signup.upsert({
+            where: {
+              userId_shiftId: {
+                userId: otherVolunteer.id,
+                shiftId: historicalShift.id,
+              },
+            },
+            update: {},
+            create: {
               userId: otherVolunteer.id,
               shiftId: historicalShift.id,
+              status: "CONFIRMED",
             },
-          },
-          update: {},
-          create: {
-            userId: otherVolunteer.id,
-            shiftId: historicalShift.id,
-            status: "CONFIRMED",
-          },
-        });
+          });
+          recordUserSignup(otherVolunteer.id, historicalShift.start);
+        }
       }
     }
   }
@@ -623,50 +925,122 @@ async function main() {
     }
   }
 
-  // Ensure the sample volunteer is signed up for the first shift
-  const firstShift = await prisma.shift.findFirst({
-    orderBy: { start: "asc" },
-  });
-  if (firstShift) {
-    await prisma.signup.upsert({
-      where: {
-        userId_shiftId: { userId: volunteer.id, shiftId: firstShift.id },
-      },
-      update: {},
-      create: {
-        userId: volunteer.id,
-        shiftId: firstShift.id,
-        status: "CONFIRMED",
-      },
-    });
-  }
+  // SKIP signing up sample volunteer for the first shift to demonstrate filtering
+  // (This ensures at least the first day is completely free for testing)
 
   // Make some shifts full and add a waitlisted signup to demonstrate UI state
+  // Also add friends to shifts to demonstrate social features
   let extraIndex = 0;
+  
+  // Get sample volunteer's friends for social seeding
+  const sampleVolunteerFriends = [
+    extraVolunteers.find(v => v.email === "sarah.chen@gmail.com"),
+    extraVolunteers.find(v => v.email === "james.williams@hotmail.com"),
+    extraVolunteers.find(v => v.email === "priya.patel@yahoo.com"),
+  ].filter(Boolean);
+
+  // Record existing historical signups to prevent conflicts
+  console.log("📊 Recording existing signups to prevent daily conflicts...");
+  const existingSignups = await prisma.signup.findMany({
+    include: {
+      shift: true,
+    },
+  });
+  
+  for (const signup of existingSignups) {
+    recordUserSignup(signup.userId, signup.shift.start);
+  }
+
   for (let i = 0; i < createdShifts.length; i++) {
     const s = createdShifts[i];
+    
     // Every 4th shift: fill to capacity and add one waitlisted
     if (i % 4 === 0) {
       const capacity = s.capacity;
       // Create confirmed signups to fill the shift
       for (let c = 0; c < capacity; c++) {
         const user = extraVolunteers[(extraIndex + c) % extraVolunteers.length];
-        await prisma.signup.upsert({
-          where: { userId_shiftId: { userId: user.id, shiftId: s.id } },
-          update: { status: "CONFIRMED" },
-          create: { userId: user.id, shiftId: s.id, status: "CONFIRMED" },
-        });
+        
+        // Check if user can sign up for this date
+        if (canUserSignUpForDate(user.id, s.start)) {
+          await prisma.signup.upsert({
+            where: { userId_shiftId: { userId: user.id, shiftId: s.id } },
+            update: { status: "CONFIRMED" },
+            create: { userId: user.id, shiftId: s.id, status: "CONFIRMED" },
+          });
+          recordUserSignup(user.id, s.start);
+        }
       }
       extraIndex = (extraIndex + capacity) % extraVolunteers.length;
 
       // Add one waitlisted person as well
       const waitlister = extraVolunteers[extraIndex % extraVolunteers.length];
+      // Waitlisted users don't count towards daily limit since they're not confirmed
       await prisma.signup.upsert({
         where: { userId_shiftId: { userId: waitlister.id, shiftId: s.id } },
         update: { status: "WAITLISTED" },
         create: { userId: waitlister.id, shiftId: s.id, status: "WAITLISTED" },
       });
       extraIndex = (extraIndex + 1) % extraVolunteers.length;
+    }
+    
+    // Add friends to shifts where sample volunteer is signed up (to show social activity)
+    const shiftDay = s.start.getDate();
+    const shouldSignUp = (shiftDay % 3 === 0) && (i % 10 === 0); // Match sample volunteer's condition
+    
+    if (shouldSignUp && sampleVolunteerFriends.length > 0) {
+      // Add 1-2 friends to this shift to create social activity
+      const friendsToAdd = Math.min(2, Math.floor(Math.random() * 2) + 1);
+      
+      for (let f = 0; f < friendsToAdd; f++) {
+        const friend = sampleVolunteerFriends[f % sampleVolunteerFriends.length];
+        
+        // Check if friend can sign up for this date
+        if (canUserSignUpForDate(friend.id, s.start)) {
+          try {
+            await prisma.signup.create({
+              data: {
+                userId: friend.id,
+                shiftId: s.id,
+                status: "CONFIRMED",
+              },
+            });
+            recordUserSignup(friend.id, s.start);
+            console.log(`✅ Signed up friend ${friend.email} for same shift as sample volunteer on ${s.start.toDateString()}`);
+          } catch (error) {
+            // Skip if signup already exists
+            if (!error.message.includes('Unique constraint')) {
+              console.log(`Could not add friend ${friend.email} to shift: ${error.message}`);
+            }
+          }
+        }
+      }
+    }
+    
+    // Only sign up sample volunteer for very specific shifts to demonstrate filtering
+    // This ensures most days are free, with only 2-3 days having signups
+    // (shouldSignUp and shiftDay already declared above for friend signup logic)
+    
+    if (shouldSignUp) {
+      // Check if sample volunteer can sign up for this date
+      if (canUserSignUpForDate(volunteer.id, s.start)) {
+        try {
+          await prisma.signup.create({
+            data: {
+              userId: volunteer.id,
+              shiftId: s.id,
+              status: "CONFIRMED",
+            },
+          });
+          recordUserSignup(volunteer.id, s.start);
+          console.log(`✅ Signed up sample volunteer for ${s.start.toDateString()}`);
+        } catch (error) {
+          // Skip if signup already exists
+          if (!error.message.includes('Unique constraint')) {
+            console.log(`Could not add sample volunteer to shift: ${error.message}`);
+          }
+        }
+      }
     }
   }
 
@@ -855,6 +1229,9 @@ async function main() {
   } catch (error) {
     console.error("Warning: Could not seed achievements:", error.message);
   }
+
+  // Download and convert profile images after all users are created
+  await downloadAndConvertProfileImages();
 }
 
 main()

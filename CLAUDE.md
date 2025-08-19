@@ -23,6 +23,7 @@ cd web
 npm run prisma:generate  # Generate Prisma client after schema changes
 npm run prisma:migrate   # Run migrations in development
 npm run prisma:seed      # Seed database with initial data
+npm run prisma:reset     # Reset database (drops data, runs migrations, and seeds automatically)
 npm run prisma:deploy    # Deploy migrations to production
 ```
 
@@ -33,8 +34,10 @@ cd web
 npm run test:e2e                # Run all Playwright e2e tests
 npm run test:e2e:ui              # Run tests with UI mode
 npm run test:e2e:ci              # Run tests in CI mode (Chromium only)
-npx playwright test test.spec.ts # Run specific test file
+npx playwright test test.spec.ts --project=chromium # Run specific test in Chromium only (RECOMMENDED)
 ```
+
+**Important**: ALWAYS run e2e tests in Chromium only using `--project=chromium` flag. This avoids cross-browser compatibility issues and provides cleaner debugging output. Running tests across all browsers can cause timeouts and false positives.
 
 ### Build & Lint
 

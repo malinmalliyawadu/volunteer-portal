@@ -55,6 +55,12 @@ npm run prisma:seed
 3. **⚙️ Set up environment variables:**
    Create a `.env.local` file in the root directory with your configuration.
 
+4. **🔒 Generate auth secret:**
+
+```bash
+npx auth secret
+```
+
 4. **🏃‍♂️ Run the development server:**
 
 ```bash

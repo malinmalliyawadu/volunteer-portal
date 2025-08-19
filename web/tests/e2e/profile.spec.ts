@@ -69,12 +69,10 @@ test.describe("Profile Page", () => {
   });
 
   test("should display user information correctly", async ({ page }) => {
-    // Check avatar is visible
-    const avatar = page
-      .getByRole("img", { name: /profile/i })
-      .or(page.locator('[data-slot="avatar"], [class*="avatar"]').first());
-    if ((await avatar.count()) > 0) {
-      await expect(avatar).toBeVisible();
+    // Check main profile avatar is visible (not the header avatar)
+    const mainProfileAvatar = page.getByTestId("profile-page").getByRole("img", { name: /profile/i });
+    if ((await mainProfileAvatar.count()) > 0) {
+      await expect(mainProfileAvatar).toBeVisible();
     }
 
     // Check user name is displayed

@@ -7,6 +7,8 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CancelSignupButton } from "./cancel-signup-button";
 import { PageHeader } from "@/components/page-header";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -115,6 +117,32 @@ export default async function MyShiftsPage({
     },
   });
 
+  // Get user's friend IDs
+  const userFriendIds = await prisma.friendship.findMany({
+    where: {
+      AND: [
+        {
+          OR: [
+            { userId: userId },
+            { friendId: userId },
+          ],
+        },
+        { status: "ACCEPTED" },
+      ],
+    },
+    select: {
+      userId: true,
+      friendId: true,
+    },
+  }).then(friendships => 
+    friendships.map(friendship => 
+      friendship.userId === userId 
+        ? friendship.friendId 
+        : friendship.userId
+    )
+  );
+
+
   const [upcomingCount, pastCount, upcoming, past] = await Promise.all([
     prisma.signup.count({
       where: {
@@ -145,7 +173,34 @@ export default async function MyShiftsPage({
         },
         status: { not: "CANCELED" },
       },
-      include: { shift: { include: { shiftType: true } } },
+      include: { 
+        shift: { 
+          include: { 
+            shiftType: true,
+            signups: {
+              where: userFriendIds.length > 0 ? {
+                userId: { in: userFriendIds },
+                status: { in: ["CONFIRMED", "PENDING"] }
+              } : {
+                // Return no results if no friends
+                id: { equals: "never-match" }
+              },
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    email: true,
+                    profilePhotoUrl: true,
+                  }
+                }
+              }
+            }
+          } 
+        } 
+      },
       orderBy: { shift: { start: "asc" } },
       skip: (uPage - 1) * uSize,
       take: uSize,
@@ -159,7 +214,34 @@ export default async function MyShiftsPage({
         },
         status: { not: "CANCELED" },
       },
-      include: { shift: { include: { shiftType: true } } },
+      include: { 
+        shift: { 
+          include: { 
+            shiftType: true,
+            signups: {
+              where: userFriendIds.length > 0 ? {
+                userId: { in: userFriendIds },
+                status: { in: ["CONFIRMED", "PENDING"] }
+              } : {
+                // Return no results if no friends
+                id: { equals: "never-match" }
+              },
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    email: true,
+                    profilePhotoUrl: true,
+                  }
+                }
+              }
+            }
+          } 
+        } 
+      },
       orderBy: { shift: { start: "desc" } },
       skip: (pPage - 1) * pSize,
       take: pSize,
@@ -441,6 +523,63 @@ export default async function MyShiftsPage({
                             </div>
                           </div>
                         </div>
+
+                        {/* Friends participating */}
+                        {su.shift.signups.length > 0 && (
+                          <div className="mt-4">
+                            <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-100 dark:border-green-800">
+                              <UserCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
+                              <div className="flex items-center gap-2 flex-1 min-w-0">
+                                <span className="text-sm font-medium text-green-700 dark:text-green-300">
+                                  {su.shift.signups.length} friend{su.shift.signups.length !== 1 ? "s" : ""} joining:
+                                </span>
+                                <div className="flex items-center gap-1 overflow-hidden">
+                                  <TooltipProvider>
+                                    {su.shift.signups.slice(0, 3).map((signup) => {
+                                      const displayName = signup.user.name || 
+                                        `${signup.user.firstName || ""} ${signup.user.lastName || ""}`.trim() || 
+                                        signup.user.email;
+                                      const initials = (signup.user.firstName?.[0] || signup.user.name?.[0] || signup.user.email[0]).toUpperCase();
+                                      
+                                      return (
+                                        <Tooltip key={signup.id}>
+                                          <TooltipTrigger asChild>
+                                            <Link href={`/friends/${signup.user.id}`} className="cursor-pointer">
+                                              <Avatar className="h-6 w-6">
+                                                <AvatarImage 
+                                                  src={signup.user.profilePhotoUrl || undefined} 
+                                                  alt={displayName}
+                                                />
+                                                <AvatarFallback className="bg-green-100 text-green-700 text-xs dark:bg-green-800 dark:text-green-300">
+                                                  {initials}
+                                                </AvatarFallback>
+                                              </Avatar>
+                                            </Link>
+                                          </TooltipTrigger>
+                                          <TooltipContent>
+                                            <p>{displayName} is joining this shift</p>
+                                          </TooltipContent>
+                                        </Tooltip>
+                                      );
+                                    })}
+                                    {su.shift.signups.length > 3 && (
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <div className="text-xs text-green-600 dark:text-green-400 font-medium ml-1 cursor-pointer">
+                                            +{su.shift.signups.length - 3}
+                                          </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                          <p>{su.shift.signups.length - 3} more friend{su.shift.signups.length - 3 !== 1 ? 's' : ''} joining this shift</p>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    )}
+                                  </TooltipProvider>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
 
                       <div
