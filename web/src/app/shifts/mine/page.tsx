@@ -36,9 +36,6 @@ import {
 } from "lucide-react";
 import { PageContainer } from "@/components/page-container";
 
-const LOCATIONS = ["Wellington", "Glenn Innes", "Onehunga"] as const;
-type LocationOption = (typeof LOCATIONS)[number];
-
 // Shift type theming configuration
 const SHIFT_THEMES = {
   Dishwasher: {
@@ -99,7 +96,16 @@ function getShiftTheme(shiftTypeName: string) {
   );
 }
 
-function generateCalendarUrls(shift: any) {
+function generateCalendarUrls(shift: {
+  id: string;
+  start: Date;
+  end: Date;
+  location: string | null;
+  shiftType: {
+    name: string;
+    description: string | null;
+  };
+}) {
   const startDate = format(shift.start, "yyyyMMdd'T'HHmmss");
   const endDate = format(shift.end, "yyyyMMdd'T'HHmmss");
   const title = encodeURIComponent(`Volunteer Shift: ${shift.shiftType.name}`);
