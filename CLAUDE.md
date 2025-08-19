@@ -23,6 +23,7 @@ cd web
 npm run prisma:generate  # Generate Prisma client after schema changes
 npm run prisma:migrate   # Run migrations in development
 npm run prisma:seed      # Seed database with initial data
+npm run prisma:reset     # Reset database (drops data, runs migrations, and seeds automatically)
 npm run prisma:deploy    # Deploy migrations to production
 ```
 
