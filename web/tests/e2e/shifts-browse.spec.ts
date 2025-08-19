@@ -5,7 +5,7 @@ import type { Page } from "@playwright/test";
 async function loginAsVolunteer(page: Page) {
   try {
     await page.goto("/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const volunteerLoginButton = page.getByRole("button", {
       name: /login as volunteer/i,
@@ -21,7 +21,7 @@ async function loginAsVolunteer(page: Page) {
       console.log("Login may have failed or taken too long");
     }
 
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
   } catch (error) {
     console.log("Error during login:", error);
   }
@@ -31,7 +31,7 @@ test.describe("Shifts Browse Page", () => {
   test.describe("Unauthenticated Access", () => {
     test.beforeEach(async ({ page }) => {
       await page.goto("/shifts");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
     });
 
     test("should display shifts page without authentication", async ({ page }) => {
@@ -106,7 +106,7 @@ test.describe("Shifts Browse Page", () => {
     test.beforeEach(async ({ page }) => {
       await loginAsVolunteer(page);
       await page.goto("/shifts");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       // Skip tests if login failed
       const currentUrl = page.url();
@@ -305,14 +305,14 @@ test.describe("Shifts Browse Page", () => {
   test.describe("Location Filtering", () => {
     test.beforeEach(async ({ page }) => {
       await page.goto("/shifts");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
     });
 
     test("should filter shifts by location when clicking location tabs", async ({ page }) => {
       // Click on Wellington tab
       const wellingtonTab = page.getByTestId("location-tab-wellington");
       await wellingtonTab.click();
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       // Should navigate to filtered URL
       await expect(page).toHaveURL("/shifts?location=Wellington");
@@ -325,12 +325,12 @@ test.describe("Shifts Browse Page", () => {
     test("should show all locations when clicking All tab", async ({ page }) => {
       // First go to a filtered view
       await page.goto("/shifts?location=Wellington");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       // Then click "All" tab
       const allTab = page.getByTestId("location-tab-all");
       await allTab.click();
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       // Should return to unfiltered URL
       await expect(page).toHaveURL("/shifts?showAll=true");
@@ -339,7 +339,7 @@ test.describe("Shifts Browse Page", () => {
     test("should maintain active tab state for selected location", async ({ page }) => {
       // Navigate directly to filtered URL
       await page.goto("/shifts?location=Glenn%20Innes");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       // Glenn Innes tab should be visually active
       const glennInnesTab = page.getByTestId("location-tab-glenn-innes");
@@ -351,7 +351,7 @@ test.describe("Shifts Browse Page", () => {
     test("should show user preference notification when applicable", async ({ page }) => {
       await loginAsVolunteer(page);
       await page.goto("/shifts");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       // Look for preference notification
       const preferenceNotification = page.getByTestId("profile-filter-notification");
@@ -372,7 +372,7 @@ test.describe("Shifts Browse Page", () => {
     test("should display empty state when no shifts available", async ({ page }) => {
       // Try to trigger empty state by filtering to a location that might not have shifts
       await page.goto("/shifts?location=NonExistentLocation");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       // Look for empty state content
       const emptyState = page.getByTestId("empty-state");
@@ -390,7 +390,7 @@ test.describe("Shifts Browse Page", () => {
 
     test("should provide helpful links in empty state for filtered locations", async ({ page }) => {
       await page.goto("/shifts?location=Wellington");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       // Check if empty state is visible first
       const emptyState = page.getByTestId("empty-state");
@@ -414,7 +414,7 @@ test.describe("Shifts Browse Page", () => {
   test.describe("Shifts Grouping and Display", () => {
     test.beforeEach(async ({ page }) => {
       await page.goto("/shifts");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
     });
 
     test("should group shifts by date", async ({ page }) => {
@@ -481,7 +481,7 @@ test.describe("Shifts Browse Page", () => {
   test.describe("Progress Indicators and Capacity", () => {
     test.beforeEach(async ({ page }) => {
       await page.goto("/shifts");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
     });
 
     test("should display capacity progress bars", async ({ page }) => {
@@ -526,12 +526,12 @@ test.describe("Shifts Browse Page", () => {
   test.describe("Responsive Design", () => {
     test("should be responsive on mobile viewport", async ({ page }) => {
       await page.goto("/shifts");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       // Set mobile viewport
       await page.setViewportSize({ width: 375, height: 667 });
       await page.reload();
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       // Check main elements are still visible and accessible
       const pageTitle = page.getByRole("heading", { name: /volunteer shifts/i });
@@ -553,12 +553,12 @@ test.describe("Shifts Browse Page", () => {
 
     test("should maintain usability on tablet viewport", async ({ page }) => {
       await page.goto("/shifts");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       // Set tablet viewport
       await page.setViewportSize({ width: 768, height: 1024 });
       await page.reload();
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       // Check grid layout works on tablet
       const shiftCards = page.locator('[data-testid^="shift-card-"]');
@@ -590,18 +590,18 @@ test.describe("Shifts Browse Page", () => {
 
     test("should handle navigation between filter states", async ({ page }) => {
       await page.goto("/shifts");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       // Navigate through different location filters
       const wellingtonTab = page.getByTestId("location-tab-wellington");
       await wellingtonTab.click();
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       await expect(page).toHaveURL("/shifts?location=Wellington");
 
       const allTab = page.getByTestId("location-tab-all");
       await allTab.click();
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       await expect(page).toHaveURL("/shifts?showAll=true");
 
@@ -615,7 +615,7 @@ test.describe("Shifts Browse Page", () => {
     test.beforeEach(async ({ page }) => {
       await loginAsVolunteer(page);
       await page.goto("/shifts");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       // Skip tests if login failed
       const currentUrl = page.url();
@@ -644,7 +644,7 @@ test.describe("Shifts Browse Page", () => {
             const confirmButton = page.getByTestId("shift-signup-confirm-button");
             if (await confirmButton.isVisible()) {
               await confirmButton.click();
-              await page.waitForLoadState("networkidle");
+              await page.waitForLoadState("load");
 
               // Wait for any toast notifications to appear and dismiss
               await page.waitForTimeout(2000);
@@ -712,7 +712,7 @@ test.describe("Shifts Browse Page", () => {
           const confirmButton = page.getByTestId("shift-signup-confirm-button");
           if (await confirmButton.isVisible()) {
             await confirmButton.click();
-            await page.waitForLoadState("networkidle");
+            await page.waitForLoadState("load");
             await page.waitForTimeout(2000); // Wait for toast
           }
 
@@ -727,7 +727,7 @@ test.describe("Shifts Browse Page", () => {
             const confirmSecondButton = page.getByTestId("shift-signup-confirm-button");
             if (await confirmSecondButton.isVisible()) {
               await confirmSecondButton.click();
-              await page.waitForLoadState("networkidle");
+              await page.waitForLoadState("load");
 
               // Should NOT show daily validation error
               const errorMessage = page.getByText(/you already have a confirmed shift on this day/i);
@@ -775,7 +775,7 @@ test.describe("Shifts Browse Page", () => {
             const confirmButton = page.getByTestId("shift-signup-confirm-button");
             if (await confirmButton.isVisible()) {
               await confirmButton.click();
-              await page.waitForLoadState("networkidle");
+              await page.waitForLoadState("load");
               await page.waitForTimeout(2000);
 
               // Try to sign up for second shift
@@ -814,7 +814,7 @@ test.describe("Shifts Browse Page", () => {
   test.describe("Accessibility", () => {
     test("should have proper accessibility attributes", async ({ page }) => {
       await page.goto("/shifts");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       // Check main heading structure
       const mainHeading = page.getByRole("heading", { name: /volunteer shifts/i });
@@ -840,7 +840,7 @@ test.describe("Shifts Browse Page", () => {
 
     test("should support keyboard navigation", async ({ page }) => {
       await page.goto("/shifts");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       // Tab through location filters
       const wellingtonTab = page.getByTestId("location-tab-wellington");

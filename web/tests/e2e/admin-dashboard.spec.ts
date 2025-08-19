@@ -6,31 +6,24 @@ async function loginAsAdmin(page: Page) {
   try {
     await page.goto("/login");
 
-    // Wait for the page to load
-    await page.waitForLoadState("networkidle");
+    // Wait for the login page to load
+    await page.waitForLoadState("load");
 
-    // Check if login form is visible
-    const adminLoginButton = page.getByRole("button", {
-      name: /login as admin/i,
-    });
-    await adminLoginButton.waitFor({ state: "visible", timeout: 5000 });
-
-    // Click admin login button
+    // Wait for and click the admin login button using the correct test ID
+    const adminLoginButton = page.getByTestId("quick-login-admin-button");
+    await adminLoginButton.waitFor({ state: "visible", timeout: 10000 });
     await adminLoginButton.click();
 
-    // Wait for navigation with timeout
-    try {
-      await page.waitForURL((url) => !url.pathname.includes("/login"), {
-        timeout: 10000,
-      });
-    } catch (error) {
-      // Login might have failed, but don't throw - let the test handle it
-      console.log("Admin login may have failed or taken too long");
-    }
+    // Wait for navigation away from login page
+    await page.waitForURL((url) => !url.pathname.includes("/login"), {
+      timeout: 15000,
+    });
 
-    await page.waitForLoadState("networkidle");
+    // Wait for page to be ready
+    await page.waitForLoadState("load");
   } catch (error) {
     console.log("Error during admin login:", error);
+    throw error; // Re-throw to fail the test if login fails
   }
 }
 
@@ -38,25 +31,23 @@ async function loginAsAdmin(page: Page) {
 async function loginAsVolunteer(page: Page) {
   try {
     await page.goto("/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
-    const volunteerLoginButton = page.getByRole("button", {
-      name: /login as volunteer/i,
-    });
-    await volunteerLoginButton.waitFor({ state: "visible", timeout: 5000 });
+    // Wait for and click the volunteer login button using the correct test ID
+    const volunteerLoginButton = page.getByTestId("quick-login-volunteer-button");
+    await volunteerLoginButton.waitFor({ state: "visible", timeout: 10000 });
     await volunteerLoginButton.click();
 
-    try {
-      await page.waitForURL((url) => !url.pathname.includes("/login"), {
-        timeout: 10000,
-      });
-    } catch (error) {
-      console.log("Volunteer login may have failed or taken too long");
-    }
+    // Wait for navigation away from login page
+    await page.waitForURL((url) => !url.pathname.includes("/login"), {
+      timeout: 15000,
+    });
 
-    await page.waitForLoadState("networkidle");
+    // Wait for page to be ready
+    await page.waitForLoadState("load");
   } catch (error) {
     console.log("Error during volunteer login:", error);
+    throw error; // Re-throw to fail the test if login fails
   }
 }
 
@@ -67,7 +58,7 @@ test.describe("Admin Dashboard Page", () => {
 
       // Navigate to admin dashboard and wait for it to load
       await page.goto("/admin");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       // Skip tests if login failed (we're still on login page)
       const currentUrl = page.url();
@@ -110,7 +101,7 @@ test.describe("Admin Dashboard Page", () => {
       
       // Try to access admin dashboard directly
       await page.goto("/admin");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       // Should redirect to main dashboard, not admin dashboard
       await expect(page).not.toHaveURL("/admin");
@@ -147,7 +138,7 @@ test.describe("Admin Dashboard Page", () => {
     test.beforeEach(async ({ page }) => {
       await loginAsAdmin(page);
       await page.goto("/admin");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
       
       const currentUrl = page.url();
       if (currentUrl.includes("/login")) {
@@ -232,7 +223,7 @@ test.describe("Admin Dashboard Page", () => {
     test.beforeEach(async ({ page }) => {
       await loginAsAdmin(page);
       await page.goto("/admin");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
       
       const currentUrl = page.url();
       if (currentUrl.includes("/login")) {
@@ -299,7 +290,7 @@ test.describe("Admin Dashboard Page", () => {
     test.beforeEach(async ({ page }) => {
       await loginAsAdmin(page);
       await page.goto("/admin");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
       
       const currentUrl = page.url();
       if (currentUrl.includes("/login")) {
@@ -349,7 +340,7 @@ test.describe("Admin Dashboard Page", () => {
     test.beforeEach(async ({ page }) => {
       await loginAsAdmin(page);
       await page.goto("/admin");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
       
       const currentUrl = page.url();
       if (currentUrl.includes("/login")) {
@@ -400,7 +391,7 @@ test.describe("Admin Dashboard Page", () => {
     test.beforeEach(async ({ page }) => {
       await loginAsAdmin(page);
       await page.goto("/admin");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
       
       const currentUrl = page.url();
       if (currentUrl.includes("/login")) {
@@ -451,7 +442,7 @@ test.describe("Admin Dashboard Page", () => {
     test.beforeEach(async ({ page }) => {
       await loginAsAdmin(page);
       await page.goto("/admin");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
       
       const currentUrl = page.url();
       if (currentUrl.includes("/login")) {
@@ -488,7 +479,7 @@ test.describe("Admin Dashboard Page", () => {
       await wellingtonTab.click();
       
       // Wait for page to load with filter
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
       
       // Verify URL has location parameter
       await expect(page).toHaveURL(/location=Wellington/);
@@ -502,7 +493,7 @@ test.describe("Admin Dashboard Page", () => {
       // First filter by a location
       const wellingtonTab = page.getByTestId("location-filter-wellington");
       await wellingtonTab.click();
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
       
       // Verify we're on Wellington filter
       await expect(page).toHaveURL(/location=Wellington/);
@@ -540,7 +531,7 @@ test.describe("Admin Dashboard Page", () => {
 
     test("should display valid data in all stat cards", async ({ page }) => {
       await page.goto("/admin");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
       
       // Check that all stat numbers are valid (not NaN or undefined)
       const statNumbers = page.locator('[class*="text-2xl"][class*="font-bold"]');
@@ -565,7 +556,7 @@ test.describe("Admin Dashboard Page", () => {
     test.beforeEach(async ({ page }) => {
       await loginAsAdmin(page);
       await page.goto("/admin");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
       
       const currentUrl = page.url();
       if (currentUrl.includes("/login")) {
@@ -617,7 +608,7 @@ test.describe("Admin Dashboard Page", () => {
     test.beforeEach(async ({ page }) => {
       await loginAsAdmin(page);
       await page.goto("/admin");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
       
       const currentUrl = page.url();
       if (currentUrl.includes("/login")) {

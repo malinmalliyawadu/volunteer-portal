@@ -5,7 +5,7 @@ import type { Page } from "@playwright/test";
 async function loginAsAdmin(page: Page) {
   try {
     await page.goto("/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const adminLoginButton = page.getByRole("button", {
       name: /login as admin/i,
@@ -21,7 +21,7 @@ async function loginAsAdmin(page: Page) {
       console.log("Admin login may have failed or taken too long");
     }
 
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
   } catch (error) {
     console.log("Error during admin login:", error);
   }
@@ -31,7 +31,7 @@ async function loginAsAdmin(page: Page) {
 async function loginAsVolunteer(page: Page) {
   try {
     await page.goto("/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const volunteerLoginButton = page.getByRole("button", {
       name: /login as volunteer/i,
@@ -47,7 +47,7 @@ async function loginAsVolunteer(page: Page) {
       console.log("Volunteer login may have failed or taken too long");
     }
 
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
   } catch (error) {
     console.log("Error during volunteer login:", error);
   }
@@ -59,7 +59,7 @@ test.describe("Group Booking Feature", () => {
 
     // Navigate to shifts page
     await page.goto("/shifts");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     // Skip test if login failed (we're still on login page)
     const currentUrl = page.url();
@@ -190,7 +190,7 @@ test.describe("Group Booking Feature", () => {
 
     // Navigate to admin shifts page
     await page.goto("/admin/shifts");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     // Skip test if login failed (we're still on login page)
     const currentUrl = page.url();
@@ -212,7 +212,7 @@ test.describe("Group Booking Feature", () => {
     await loginAsVolunteer(page);
 
     await page.goto("/shifts");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     // Skip test if login failed (we're still on login page)
     const currentUrl = page.url();
@@ -274,7 +274,7 @@ test.describe("Group Booking Feature", () => {
     // Test accessing an invitation page (this will likely show "not found" or "expired")
     // but it tests that the route works and the page loads
     await page.goto("/group-invitations/test-token-123");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     // Should load without JavaScript errors (even if invitation doesn't exist)
     // Just check that the page loaded and we're not getting a browser error
@@ -297,7 +297,7 @@ test.describe("Group Booking Feature", () => {
 
     // Try to access admin group booking endpoints (should be redirected or show error)
     await page.goto("/admin/shifts");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     
     // Wait a bit for any redirects to complete
     await page.waitForTimeout(2000);
@@ -328,7 +328,7 @@ test.describe("Group Booking Feature", () => {
 
     // Navigate to admin shifts page
     await page.goto("/admin/shifts");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     // Skip test if login failed
     const currentUrl = page.url();
@@ -366,7 +366,7 @@ test.describe("Group Booking Feature", () => {
     await loginAsAdmin(page);
 
     await page.goto("/admin/shifts");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     // Skip test if login failed
     const currentUrl = page.url();
