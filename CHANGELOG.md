@@ -1,3 +1,9 @@
+## [0.11.0] - 2025-08-19
+
+### Changes
+- feat: redesign My Shifts page with enhanced calendar and user experience ([#54](https://github.com/malinmalliyawadu/volunteer-portal/pull/54)) by @malinmalliyawadu
+
+
 ## [0.10.0] - 2025-08-19
 
 ### Changes
