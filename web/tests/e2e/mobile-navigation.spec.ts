@@ -5,7 +5,7 @@ import type { Page } from "@playwright/test";
 async function loginAsAdmin(page: Page) {
   try {
     await page.goto("/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const adminLoginButton = page.getByRole("button", {
       name: /login as admin/i,
@@ -21,7 +21,7 @@ async function loginAsAdmin(page: Page) {
       console.log("Admin login may have failed or taken too long");
     }
 
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
   } catch (error) {
     console.log("Error during admin login:", error);
   }
@@ -31,7 +31,7 @@ async function loginAsAdmin(page: Page) {
 async function loginAsVolunteer(page: Page) {
   try {
     await page.goto("/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const volunteerLoginButton = page.getByRole("button", {
       name: /login as volunteer/i,
@@ -47,7 +47,7 @@ async function loginAsVolunteer(page: Page) {
       console.log("Volunteer login may have failed or taken too long");
     }
 
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
   } catch (error) {
     console.log("Error during volunteer login:", error);
   }
@@ -60,7 +60,7 @@ test.describe("Mobile Navigation", () => {
       await page.setViewportSize({ width: 375, height: 667 });
       
       await page.goto("/");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       // Hamburger menu should be visible on mobile
       const hamburgerButton = page.getByRole("button", { name: "Toggle mobile menu" });
@@ -76,7 +76,7 @@ test.describe("Mobile Navigation", () => {
       await page.setViewportSize({ width: 1280, height: 720 });
       
       await page.goto("/");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       // Hamburger menu should not be visible on desktop
       const hamburgerButton = page.getByRole("button", { name: "Toggle mobile menu" });
@@ -88,7 +88,7 @@ test.describe("Mobile Navigation", () => {
       await page.setViewportSize({ width: 375, height: 667 });
       
       await page.goto("/");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       // Click hamburger menu
       const hamburgerButton = page.getByRole("button", { name: "Toggle mobile menu" });
@@ -107,7 +107,7 @@ test.describe("Mobile Navigation", () => {
       await page.setViewportSize({ width: 375, height: 667 });
       
       await page.goto("/");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       // Open menu
       const hamburgerButton = page.getByRole("button", { name: "Toggle mobile menu" });
@@ -136,7 +136,7 @@ test.describe("Mobile Navigation", () => {
       await page.setViewportSize({ width: 375, height: 667 });
       
       await page.goto("/");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       // Open menu
       const hamburgerButton = page.getByRole("button", { name: "Toggle mobile menu" });
@@ -166,7 +166,7 @@ test.describe("Mobile Navigation", () => {
       await page.setViewportSize({ width: 375, height: 667 });
       
       await page.goto("/");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       // Open menu
       const hamburgerButton = page.getByRole("button", { name: "Toggle mobile menu" });
@@ -188,7 +188,7 @@ test.describe("Mobile Navigation", () => {
       await page.setViewportSize({ width: 375, height: 667 });
       
       await page.goto("/");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       const hamburgerButton = page.getByRole("button", { name: "Toggle mobile menu" });
       const mobileMenu = page.locator('.lg\\:hidden nav');
@@ -211,7 +211,7 @@ test.describe("Mobile Navigation", () => {
       await page.setViewportSize({ width: 768, height: 1024 });
       
       await page.goto("/");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       // Hamburger should be visible on tablet
       const hamburgerButton = page.getByRole("button", { name: "Toggle mobile menu" });

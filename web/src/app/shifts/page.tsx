@@ -39,53 +39,53 @@ type LocationOption = (typeof LOCATIONS)[number];
 const SHIFT_THEMES = {
   Dishwasher: {
     gradient: "from-blue-500 to-cyan-500",
-    bgColor: "bg-blue-50",
-    borderColor: "border-blue-200",
-    textColor: "text-blue-700",
+    bgColor: "bg-blue-50 dark:bg-blue-950/20",
+    borderColor: "border-blue-200 dark:border-blue-800/50",
+    textColor: "text-blue-700 dark:text-blue-300",
     emoji: "🧽",
   },
   "FOH Set-Up & Service": {
     gradient: "from-purple-500 to-pink-500",
-    bgColor: "bg-purple-50",
-    borderColor: "border-purple-200",
-    textColor: "text-purple-700",
+    bgColor: "bg-purple-50 dark:bg-purple-950/20",
+    borderColor: "border-purple-200 dark:border-purple-800/50",
+    textColor: "text-purple-700 dark:text-purple-300",
     emoji: "✨",
   },
   "Front of House": {
     gradient: "from-green-500 to-emerald-500",
-    bgColor: "bg-green-50",
-    borderColor: "border-green-200",
-    textColor: "text-green-700",
+    bgColor: "bg-green-50 dark:bg-green-950/20",
+    borderColor: "border-green-200 dark:border-green-800/50",
+    textColor: "text-green-700 dark:text-green-300",
     emoji: "🌟",
   },
   "Kitchen Prep": {
     gradient: "from-orange-500 to-amber-500",
-    bgColor: "bg-orange-50",
-    borderColor: "border-orange-200",
-    textColor: "text-orange-700",
+    bgColor: "bg-orange-50 dark:bg-orange-950/20",
+    borderColor: "border-orange-200 dark:border-orange-800/50",
+    textColor: "text-orange-700 dark:text-orange-300",
     emoji: "🔪",
   },
   "Kitchen Prep & Service": {
     gradient: "from-red-500 to-pink-500",
-    bgColor: "bg-red-50",
-    borderColor: "border-red-200",
-    textColor: "text-red-700",
+    bgColor: "bg-red-50 dark:bg-red-950/20",
+    borderColor: "border-red-200 dark:border-red-800/50",
+    textColor: "text-red-700 dark:text-red-300",
     emoji: "🍳",
   },
   "Kitchen Service & Pack Down": {
     gradient: "from-indigo-500 to-purple-500",
-    bgColor: "bg-indigo-50",
-    borderColor: "border-indigo-200",
-    textColor: "text-indigo-700",
+    bgColor: "bg-indigo-50 dark:bg-indigo-950/20",
+    borderColor: "border-indigo-200 dark:border-indigo-800/50",
+    textColor: "text-indigo-700 dark:text-indigo-300",
     emoji: "📦",
   },
 } as const;
 
 const DEFAULT_THEME = {
   gradient: "from-gray-500 to-slate-500",
-  bgColor: "bg-gray-50",
-  borderColor: "border-gray-200",
-  textColor: "text-gray-700",
+  bgColor: "bg-gray-50 dark:bg-gray-950/20",
+  borderColor: "border-gray-200 dark:border-gray-800/50",
+  textColor: "text-gray-700 dark:text-gray-300",
   emoji: "❤️",
 };
 
@@ -200,7 +200,7 @@ function ShiftCard({
                   {theme.emoji}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h3 className="font-bold text-xl text-gray-900 truncate mb-1">
+                  <h3 className="font-bold text-xl text-gray-900 dark:text-white truncate mb-1">
                     {shift.shiftType.name}
                   </h3>
                   <div className="flex items-center gap-2">
@@ -219,8 +219,8 @@ function ShiftCard({
                         }
                         className={`text-xs font-medium ${
                           mySignup.status === "CONFIRMED"
-                            ? "bg-green-100 text-green-700 border-green-200"
-                            : "bg-yellow-100 text-yellow-700 border-yellow-200"
+                            ? "bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700"
+                            : "bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700"
                         }`}
                       >
                         {mySignup.status === "CONFIRMED"
@@ -237,37 +237,39 @@ function ShiftCard({
 
             {/* Description */}
             {shift.shiftType.description && (
-              <p className="text-sm text-gray-600 leading-relaxed line-clamp-2">
+              <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed line-clamp-2">
                 {shift.shiftType.description}
               </p>
             )}
 
             {/* Time and capacity info */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center gap-2 p-3 bg-white/50 rounded-lg">
-                <Clock className="h-4 w-4 text-gray-500" />
+              <div className="flex items-center gap-2 p-3 bg-white/50 dark:bg-gray-800/30 rounded-lg">
+                <Clock className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                 <div className="text-sm">
-                  <div className="font-medium text-gray-900">
+                  <div className="font-medium text-gray-900 dark:text-white">
                     {format(shift.start, "h:mm a")}
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
                     to {format(shift.end, "h:mm a")}
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2 p-3 bg-white/50 rounded-lg">
-                <Users className="h-4 w-4 text-gray-500" />
+              <div className="flex items-center gap-2 p-3 bg-white/50 dark:bg-gray-800/30 rounded-lg">
+                <Users className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                 <div className="text-sm">
-                  <div className="font-medium text-gray-900">
+                  <div className="font-medium text-gray-900 dark:text-white">
                     {confirmedCount + pendingCount}/{shift.capacity}
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
                     {remaining > 0 ? (
-                      <span className="text-green-600 font-medium">
+                      <span className="text-green-600 dark:text-green-400 font-medium">
                         {remaining} spots left
                       </span>
                     ) : (
-                      <span className="text-orange-600 font-medium">Full</span>
+                      <span className="text-orange-600 dark:text-orange-400 font-medium">
+                        Full
+                      </span>
                     )}
                   </div>
                 </div>
@@ -276,10 +278,10 @@ function ShiftCard({
 
             {/* Friends participating */}
             {friendSignups.length > 0 && (
-              <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg border border-green-100">
-                <UserCheck className="h-4 w-4 text-green-600" />
+              <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-100 dark:border-green-800/50">
+                <UserCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
                 <div className="flex items-center gap-2 flex-1 min-w-0">
-                  <span className="text-sm font-medium text-green-700">
+                  <span className="text-sm font-medium text-green-700 dark:text-green-300">
                     {friendSignups.length} friend
                     {friendSignups.length !== 1 ? "s" : ""} joining:
                   </span>
@@ -327,7 +329,7 @@ function ShiftCard({
                       {friendSignups.length > 3 && (
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <div className="text-xs text-green-600 font-medium ml-1 cursor-pointer">
+                            <div className="text-xs text-green-600 dark:text-green-400 font-medium ml-1 cursor-pointer">
                               +{friendSignups.length - 3}
                             </div>
                           </TooltipTrigger>
@@ -348,9 +350,9 @@ function ShiftCard({
 
             {/* Group bookings indicator */}
             {shift.groupBookings.length > 0 && (
-              <div className="flex items-center gap-2 p-3 bg-purple-50 rounded-lg border border-purple-100">
-                <Users className="h-4 w-4 text-purple-600" />
-                <span className="text-sm font-medium text-purple-700">
+              <div className="flex items-center gap-2 p-3 bg-purple-50 dark:bg-purple-950/30 rounded-lg border border-purple-100 dark:border-purple-800/50">
+                <Users className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                <span className="text-sm font-medium text-purple-700 dark:text-purple-300">
                   {shift.groupBookings.length} group booking
                   {shift.groupBookings.length !== 1 ? "s" : ""}
                 </span>
@@ -663,15 +665,15 @@ export default async function ShiftsPageRedesigned({
       {/* Profile filter notification */}
       {isUsingProfileFilter && (
         <div
-          className="mb-8 p-4 bg-primary/10 rounded-lg border border-primary/20"
+          className="mb-8 p-4 bg-primary/5 rounded-lg border border-primary/30"
           data-testid="profile-filter-notification"
         >
-          <p className="text-sm text-primary font-medium flex items-center gap-2">
+          <p className="text-sm font-medium flex items-center gap-2">
             <MapPin className="h-4 w-4" />
             Showing shifts in your preferred locations:{" "}
             {userPreferredLocations.join(", ")}
           </p>
-          <p className="text-xs text-primary/80 mt-2">
+          <p className="text-xs text-muted-foreground mt-2">
             <Link href="/profile/edit" className="underline hover:text-primary">
               Update your preferences
             </Link>{" "}

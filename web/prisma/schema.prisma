@@ -49,6 +49,9 @@ model User {
   // Privacy settings
   friendVisibility             FriendVisibility       @default(FRIENDS_ONLY)
   allowFriendRequests          Boolean                @default(true)
+  
+  // Notifications
+  notifications                Notification[]
 }
 
 model ShiftType {
@@ -254,4 +257,33 @@ enum FriendVisibility {
   PUBLIC        // Anyone can see user's shift activity
   FRIENDS_ONLY  // Only friends can see shift activity
   PRIVATE       // No one can see shift activity
+}
+
+model Notification {
+  id             String           @id @default(cuid())
+  userId         String           // Recipient of the notification
+  type           NotificationType
+  title          String           // e.g., "New friend request", "Shift confirmed"
+  message        String           // e.g., "John Doe sent you a friend request"
+  isRead         Boolean          @default(false)
+  actionUrl      String?          // Optional URL to navigate to when clicked
+  relatedId      String?          // ID of related entity (friendRequestId, shiftId, etc.)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  
+  // Relations
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
+}
+
+enum NotificationType {
+  FRIEND_REQUEST_RECEIVED  // Someone sent you a friend request
+  FRIEND_REQUEST_ACCEPTED  // Someone accepted your friend request
+  SHIFT_CONFIRMED         // Your shift signup was confirmed
+  SHIFT_WAITLISTED        // Your shift signup was waitlisted
+  SHIFT_CANCELED          // Your shift was canceled by admin
+  GROUP_INVITATION        // You were invited to a group booking
+  ACHIEVEMENT_UNLOCKED    // You unlocked a new achievement
 }

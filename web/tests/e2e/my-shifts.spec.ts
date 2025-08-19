@@ -5,7 +5,7 @@ import type { Page } from "@playwright/test";
 async function loginAsVolunteer(page: Page) {
   try {
     await page.goto("/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const volunteerLoginButton = page.getByRole("button", {
       name: /login as volunteer/i,
@@ -21,7 +21,7 @@ async function loginAsVolunteer(page: Page) {
       console.log("Login may have failed or taken too long");
     }
 
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
   } catch (error) {
     console.log("Error during login:", error);
   }
@@ -33,7 +33,7 @@ test.describe("My Shifts Page", () => {
 
     // Navigate to my shifts page
     await page.goto("/shifts/mine");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     // Skip tests if login failed (we're still on login page)
     const currentUrl = page.url();
@@ -132,7 +132,7 @@ test.describe("My Shifts Page", () => {
       // Click on Wellington tab
       const wellingtonTab = page.getByTestId("location-tab-wellington");
       await wellingtonTab.click();
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       // Should navigate to filtered URL
       await expect(page).toHaveURL("/shifts/mine?location=Wellington");
@@ -140,7 +140,7 @@ test.describe("My Shifts Page", () => {
       // Click on "All" tab to clear filter
       const allTab = page.getByTestId("location-tab-all");
       await allTab.click();
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       // Should navigate back to unfiltered URL
       await expect(page).toHaveURL("/shifts/mine");
@@ -149,7 +149,7 @@ test.describe("My Shifts Page", () => {
     test("should maintain selected location tab state", async ({ page }) => {
       // Navigate directly to filtered URL
       await page.goto("/shifts/mine?location=Glenn%20Innes");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       // Glenn Innes tab should be active
       const glennInnesTab = page.getByTestId("location-tab-glenn-innes");
@@ -191,7 +191,7 @@ test.describe("My Shifts Page", () => {
       
       if (await browseShiftsButton.isVisible()) {
         await browseShiftsButton.click();
-        await page.waitForLoadState("networkidle");
+        await page.waitForLoadState("load");
         await expect(page).toHaveURL("/shifts");
       }
     });
@@ -363,7 +363,7 @@ test.describe("My Shifts Page", () => {
           await expect(confirmCancelButton).toContainText("Canceling...");
           
           // Wait for action to complete (either success or error)
-          await page.waitForLoadState("networkidle");
+          await page.waitForLoadState("load");
         }
       }
     });
@@ -379,7 +379,7 @@ test.describe("My Shifts Page", () => {
 
       // Try to access my shifts directly without authentication
       await newPage.goto("/shifts/mine");
-      await newPage.waitForLoadState("networkidle");
+      await newPage.waitForLoadState("load");
 
       // Should be redirected to login with callback URL
       await expect(newPage).toHaveURL(/\/login.*callbackUrl.*shifts\/mine/);
@@ -394,7 +394,7 @@ test.describe("My Shifts Page", () => {
       // Set mobile viewport
       await page.setViewportSize({ width: 375, height: 667 });
       await page.reload();
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       // Check that main elements are still visible and accessible
       const myShiftsPage = page.getByTestId("my-shifts-page");
