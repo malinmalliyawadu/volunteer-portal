@@ -1,3 +1,9 @@
+## [0.9.0] - 2025-08-19
+
+### Changes
+- Feature: Friend System for Social Volunteering (#42) ([#52](https://github.com/malinmalliyawadu/volunteer-portal/pull/52)) by @malinmalliyawadu
+
+
 ## [0.8.0] - 2025-08-18
 
 ### Changes
