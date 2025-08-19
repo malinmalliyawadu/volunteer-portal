@@ -33,7 +33,7 @@ export function UserMenu({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger>
+      <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
           size="sm"
