@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { X, ExternalLink, Check } from "lucide-react";
+import { X, Check } from "lucide-react";
 import { Notification } from "@prisma/client";
 import { cn } from "@/lib/utils";
 

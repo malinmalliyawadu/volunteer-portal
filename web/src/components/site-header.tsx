@@ -59,7 +59,7 @@ export function SiteHeader({
             <Button
               variant="ghost"
               size="sm"
-              className="text-white hover:bg-white/10 border border-white/40 hover:border-white/60 p-2 mr-2 transition-all duration-200"
+              className="text-white/90 hover:text-white hover:bg-white/10 p-2 transition-colors duration-200 rounded-lg"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               aria-label="Toggle mobile menu"
             >
@@ -161,39 +161,52 @@ export function SiteHeader({
           </div>
 
 
-          <div className="ml-auto flex items-center gap-3">
+          {/* Right side header items */}
+          <div className="ml-auto flex items-center gap-1">
+            {/* Theme Toggle - Always visible on desktop */}
             <div className="hidden sm:block">
               <ThemeToggle />
             </div>
-            {session?.user && userProfile?.id && (
-              <NotificationBell userId={userProfile.id} />
-            )}
+            
             {session?.user ? (
-              <UserMenu
-                userName={displayName}
-                userEmail={
-                  (session.user as { email?: string | null })?.email ??
-                  undefined
-                }
-                profilePhotoUrl={userProfile?.profilePhotoUrl}
-              />
+              <>
+                {/* Notification Bell - Only for logged in users */}
+                {userProfile?.id && (
+                  <NotificationBell userId={userProfile.id} />
+                )}
+                
+                {/* Divider between notifications and user menu */}
+                <div className="hidden sm:block w-px h-6 bg-white/20" />
+                
+                {/* User Menu */}
+                <UserMenu
+                  userName={displayName}
+                  userEmail={
+                    (session.user as { email?: string | null })?.email ??
+                    undefined
+                  }
+                  profilePhotoUrl={userProfile?.profilePhotoUrl}
+                />
+              </>
             ) : (
-              <div className="flex items-center gap-3">
+              <>
+                {/* Auth Buttons for logged out users */}
                 <Button
                   asChild
-                  variant="outline"
-                  className="bg-transparent text-white border-white/40 hover:bg-white/15 hover:text-white hover:border-white/60 backdrop-blur-sm transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl"
+                  variant="ghost"
+                  size="sm"
+                  className="text-white/90 hover:text-white hover:bg-white/10 backdrop-blur-sm transition-colors duration-300 rounded-lg px-3 py-2 font-medium"
                 >
                   <Link href="/register">Join Us</Link>
                 </Button>
                 <Button
                   asChild
-                  variant="outline"
-                  className="bg-white/10 text-white border-white/50 hover:bg-white/20 hover:text-white hover:border-white/70 backdrop-blur-sm transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl"
+                  size="sm"
+                  className="bg-white text-[var(--ee-primary)] hover:bg-gray-100 font-semibold shadow-sm hover:shadow-md transition-all duration-300 px-4 py-2"
                 >
-                  <Link href="/login">Login</Link>
+                  <Link href="/login">Sign In</Link>
                 </Button>
-              </div>
+              </>
             )}
           </div>
         </nav>

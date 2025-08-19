@@ -36,10 +36,11 @@ export function UserMenu({
       <DropdownMenuTrigger>
         <Button
           variant="ghost"
-          className="relative h-10 w-auto px-3 bg-white/10 text-white border border-white/20 hover:bg-white/20 hover:text-white rounded-full transition-all duration-200"
+          size="sm"
+          className="relative text-white/90 hover:text-white hover:bg-white/10 transition-colors duration-200 rounded-lg px-2 py-1"
         >
-          <div className="flex items-center gap-3">
-            <Avatar className="w-8 h-8 -ml-2 border border-white/20">
+          <div className="flex items-center gap-2">
+            <Avatar className="w-7 h-7 border border-white/20">
               <AvatarImage
                 src={profilePhotoUrl || undefined}
                 alt="Profile"

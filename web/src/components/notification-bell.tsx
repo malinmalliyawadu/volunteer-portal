@@ -65,7 +65,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
       <Button
         variant="ghost"
         size="sm"
-        className="relative text-white/90 hover:text-white hover:bg-white/10 backdrop-blur-sm transition-colors duration-300 ease-out rounded-lg border border-transparent hover:border-white/20"
+        className="relative text-white/90 hover:text-white hover:bg-white/10 transition-colors duration-200 rounded-lg p-2"
         data-testid="notification-bell-button"
         onClick={() => setIsOpen(!isOpen)}
       >
