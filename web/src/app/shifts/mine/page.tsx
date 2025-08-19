@@ -852,19 +852,6 @@ export default async function MyShiftsPage({
                                   }
                                 `}
                               >
-                                {/* Shift indicator dot */}
-                                <div className="absolute top-1 right-1">
-                                  <div
-                                    className={`w-2 h-2 rounded-full ${
-                                      shift.status === "CONFIRMED"
-                                        ? "bg-white/80"
-                                        : shift.status === "PENDING"
-                                        ? "bg-yellow-300/80"
-                                        : "bg-gray-300/80"
-                                    }`}
-                                  />
-                                </div>
-
                                 <div className="text-center space-y-1">
                                   <div className="text-lg sm:text-xl">
                                     {theme.emoji}
