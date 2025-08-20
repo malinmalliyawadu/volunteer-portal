@@ -24,7 +24,7 @@ interface GroupBookingDialogWrapperProps {
   shifts: Shift[];
   date: string;
   location: string;
-  testId?: string;
+  testid?: string;
   currentUserEmail?: string;
 }
 
@@ -32,7 +32,7 @@ export function GroupBookingDialogWrapper({
   shifts,
   date,
   location,
-  testId,
+  testid,
   currentUserEmail,
 }: GroupBookingDialogWrapperProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -43,12 +43,12 @@ export function GroupBookingDialogWrapper({
         variant="outline"
         className="mr-4"
         onClick={() => setIsOpen(true)}
-        data-testid={testId}
+        data-testid={testid}
       >
         <Users className="h-4 w-4 mr-2" />
         Group Booking
       </Button>
-      
+
       <GroupBookingDialog
         shifts={shifts}
         date={date}

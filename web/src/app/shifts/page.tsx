@@ -599,7 +599,7 @@ export default async function ShiftsPageRedesigned({
   const sortedDates = Array.from(shiftsByDate.keys()).sort();
 
   return (
-    <PageContainer testId="shifts-browse-page">
+    <PageContainer testid="shifts-browse-page">
       <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
         <PageHeader
           title="Volunteer Shifts"
@@ -798,7 +798,7 @@ export default async function ShiftsPageRedesigned({
                               shifts={locationShifts}
                               date={format(dateObj, "EEEE, MMMM d, yyyy")}
                               location={locationKey}
-                              testId={`group-booking-${dateKey}-${locationKey
+                              testid={`group-booking-${dateKey}-${locationKey
                                 .toLowerCase()
                                 .replace(/\s+/g, "-")}`}
                               currentUserEmail={

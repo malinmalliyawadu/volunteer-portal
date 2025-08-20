@@ -10,7 +10,14 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { PageHeader } from "@/components/page-header";
 import { PageContainer } from "@/components/page-container";
-import { ArrowLeft, Users, Calendar, Clock, TrendingUp, Heart } from "lucide-react";
+import {
+  ArrowLeft,
+  Users,
+  Calendar,
+  Clock,
+  TrendingUp,
+  Heart,
+} from "lucide-react";
 
 export default async function FriendsStatsPage() {
   const session = await getServerSession(authOptions);
@@ -34,10 +41,7 @@ export default async function FriendsStatsPage() {
       where: {
         AND: [
           {
-            OR: [
-              { userId: user.id },
-              { friendId: user.id },
-            ],
+            OR: [{ userId: user.id }, { friendId: user.id }],
           },
           { status: "ACCEPTED" },
         ],
@@ -125,11 +129,12 @@ export default async function FriendsStatsPage() {
   ]);
 
   // Process friends data to get the friend objects
-  const friends = friendsData.map(friendship => {
-    const friend = friendship.userId === user.id ? friendship.friend : friendship.user;
+  const friends = friendsData.map((friendship) => {
+    const friend =
+      friendship.userId === user.id ? friendship.friend : friendship.user;
     const friendshipDate = friendship.createdAt;
     const daysSinceFriendship = differenceInDays(new Date(), friendshipDate);
-    
+
     return {
       ...friend,
       friendshipDate,
@@ -148,22 +153,29 @@ export default async function FriendsStatsPage() {
     }
     acc[friendId].shifts.push(signup);
     return acc;
-  }, {} as Record<string, { friend: typeof friendsShiftStats[0]['user']; shifts: typeof friendsShiftStats }>);
+  }, {} as Record<string, { friend: (typeof friendsShiftStats)[0]["user"]; shifts: typeof friendsShiftStats }>);
 
   // Calculate friendship stats
   const totalFriends = friends.length;
-  const recentFriends = friends.filter(f => f.daysSinceFriendship <= 30).length;
+  const recentFriends = friends.filter(
+    (f) => f.daysSinceFriendship <= 30
+  ).length;
   const activeFriends = Object.keys(friendsUpcomingShifts).length;
-  const averageFriendshipDays = totalFriends > 0 
-    ? Math.round(friends.reduce((sum, f) => sum + f.daysSinceFriendship, 0) / totalFriends)
-    : 0;
+  const averageFriendshipDays =
+    totalFriends > 0
+      ? Math.round(
+          friends.reduce((sum, f) => sum + f.daysSinceFriendship, 0) /
+            totalFriends
+        )
+      : 0;
 
   // Find most active friend (most upcoming shifts)
-  const mostActiveFriend = Object.values(friendsUpcomingShifts)
-    .sort((a, b) => b.shifts.length - a.shifts.length)[0];
+  const mostActiveFriend = Object.values(friendsUpcomingShifts).sort(
+    (a, b) => b.shifts.length - a.shifts.length
+  )[0];
 
   return (
-    <PageContainer testId="friends-stats-page">
+    <PageContainer testid="friends-stats-page">
       <div className="space-y-6">
         {/* Header with back button */}
         <div className="flex items-center gap-4">
@@ -204,7 +216,9 @@ export default async function FriendsStatsPage() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{activeFriends}</p>
-                  <p className="text-sm text-muted-foreground">Active This Month</p>
+                  <p className="text-sm text-muted-foreground">
+                    Active This Month
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -218,7 +232,9 @@ export default async function FriendsStatsPage() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{recentFriends}</p>
-                  <p className="text-sm text-muted-foreground">New This Month</p>
+                  <p className="text-sm text-muted-foreground">
+                    New This Month
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -232,7 +248,9 @@ export default async function FriendsStatsPage() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{averageFriendshipDays}</p>
-                  <p className="text-sm text-muted-foreground">Avg. Days Connected</p>
+                  <p className="text-sm text-muted-foreground">
+                    Avg. Days Connected
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -252,17 +270,24 @@ export default async function FriendsStatsPage() {
               {friends.slice(0, 5).length > 0 ? (
                 <div className="space-y-3">
                   {friends.slice(0, 5).map((friend) => {
-                    const displayName = friend.name || 
-                      `${friend.firstName || ""} ${friend.lastName || ""}`.trim() || 
+                    const displayName =
+                      friend.name ||
+                      `${friend.firstName || ""} ${
+                        friend.lastName || ""
+                      }`.trim() ||
                       friend.email;
-                    const initials = (friend.firstName?.[0] || friend.name?.[0] || friend.email[0]).toUpperCase();
-                    
+                    const initials = (
+                      friend.firstName?.[0] ||
+                      friend.name?.[0] ||
+                      friend.email[0]
+                    ).toUpperCase();
+
                     return (
                       <Link key={friend.id} href={`/friends/${friend.id}`}>
                         <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
                           <Avatar className="h-10 w-10">
-                            <AvatarImage 
-                              src={friend.profilePhotoUrl || undefined} 
+                            <AvatarImage
+                              src={friend.profilePhotoUrl || undefined}
                               alt={displayName}
                             />
                             <AvatarFallback className="bg-primary/10 text-primary">
@@ -276,14 +301,21 @@ export default async function FriendsStatsPage() {
                             </p>
                           </div>
                           <Badge variant="outline" className="text-xs">
-                            {friend.daysSinceFriendship <= 7 ? "New" : "Connected"}
+                            {friend.daysSinceFriendship <= 7
+                              ? "New"
+                              : "Connected"}
                           </Badge>
                         </div>
                       </Link>
                     );
                   })}
                   {friends.length > 5 && (
-                    <Button asChild variant="outline" size="sm" className="w-full">
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                    >
                       <Link href="/friends">View All Friends</Link>
                     </Button>
                   )}
@@ -314,16 +346,23 @@ export default async function FriendsStatsPage() {
                   <div className="flex items-center gap-4">
                     {(() => {
                       const friend = mostActiveFriend.friend;
-                      const displayName = friend.name || 
-                        `${friend.firstName || ""} ${friend.lastName || ""}`.trim() || 
+                      const displayName =
+                        friend.name ||
+                        `${friend.firstName || ""} ${
+                          friend.lastName || ""
+                        }`.trim() ||
                         friend.email;
-                      const initials = (friend.firstName?.[0] || friend.name?.[0] || friend.email[0]).toUpperCase();
-                      
+                      const initials = (
+                        friend.firstName?.[0] ||
+                        friend.name?.[0] ||
+                        friend.email[0]
+                      ).toUpperCase();
+
                       return (
                         <>
                           <Avatar className="h-16 w-16">
-                            <AvatarImage 
-                              src={friend.profilePhotoUrl || undefined} 
+                            <AvatarImage
+                              src={friend.profilePhotoUrl || undefined}
                               alt={displayName}
                             />
                             <AvatarFallback className="bg-primary/10 text-primary text-lg">
@@ -331,7 +370,9 @@ export default async function FriendsStatsPage() {
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <p className="font-semibold text-lg">{displayName}</p>
+                            <p className="font-semibold text-lg">
+                              {displayName}
+                            </p>
                             <p className="text-muted-foreground">
                               {mostActiveFriend.shifts.length} upcoming shifts
                             </p>
@@ -342,14 +383,21 @@ export default async function FriendsStatsPage() {
                   </div>
                   <div className="space-y-2">
                     <p className="text-sm font-medium">Upcoming Shifts:</p>
-                    {mostActiveFriend.shifts.slice(0, 3).map((signup, index) => (
-                      <div key={index} className="text-sm p-2 bg-muted/50 rounded">
-                        <span className="font-medium">{signup.shift.shiftType.name}</span>
-                        <span className="text-muted-foreground ml-2">
-                          {format(signup.shift.start, "MMM d, h:mm a")}
-                        </span>
-                      </div>
-                    ))}
+                    {mostActiveFriend.shifts
+                      .slice(0, 3)
+                      .map((signup, index) => (
+                        <div
+                          key={index}
+                          className="text-sm p-2 bg-muted/50 rounded"
+                        >
+                          <span className="font-medium">
+                            {signup.shift.shiftType.name}
+                          </span>
+                          <span className="text-muted-foreground ml-2">
+                            {format(signup.shift.start, "MMM d, h:mm a")}
+                          </span>
+                        </div>
+                      ))}
                     {mostActiveFriend.shifts.length > 3 && (
                       <p className="text-sm text-muted-foreground">
                         +{mostActiveFriend.shifts.length - 3} more shifts
@@ -378,46 +426,60 @@ export default async function FriendsStatsPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {Object.values(friendsUpcomingShifts).slice(0, 6).map(({ friend, shifts }) => {
-                  const displayName = friend.name || 
-                    `${friend.firstName || ""} ${friend.lastName || ""}`.trim() || 
-                    friend.email;
-                  const initials = (friend.firstName?.[0] || friend.name?.[0] || friend.email[0]).toUpperCase();
-                  
-                  return (
-                    <Link key={friend.id} href={`/friends/${friend.id}`}>
-                      <div className="flex items-start gap-3 p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage 
-                            src={friend.profilePhotoUrl || undefined} 
-                            alt={displayName}
-                          />
-                          <AvatarFallback className="bg-primary/10 text-primary text-sm">
-                            {initials}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm">{displayName}</p>
-                          <div className="mt-1 space-y-1">
-                            {shifts.slice(0, 2).map((signup, index) => (
-                              <p key={index} className="text-xs text-muted-foreground">
-                                {signup.shift.shiftType.name} • {format(signup.shift.start, "MMM d, h:mm a")}
-                              </p>
-                            ))}
-                            {shifts.length > 2 && (
-                              <p className="text-xs text-muted-foreground">
-                                +{shifts.length - 2} more shifts
-                              </p>
-                            )}
+                {Object.values(friendsUpcomingShifts)
+                  .slice(0, 6)
+                  .map(({ friend, shifts }) => {
+                    const displayName =
+                      friend.name ||
+                      `${friend.firstName || ""} ${
+                        friend.lastName || ""
+                      }`.trim() ||
+                      friend.email;
+                    const initials = (
+                      friend.firstName?.[0] ||
+                      friend.name?.[0] ||
+                      friend.email[0]
+                    ).toUpperCase();
+
+                    return (
+                      <Link key={friend.id} href={`/friends/${friend.id}`}>
+                        <div className="flex items-start gap-3 p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage
+                              src={friend.profilePhotoUrl || undefined}
+                              alt={displayName}
+                            />
+                            <AvatarFallback className="bg-primary/10 text-primary text-sm">
+                              {initials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm">{displayName}</p>
+                            <div className="mt-1 space-y-1">
+                              {shifts.slice(0, 2).map((signup, index) => (
+                                <p
+                                  key={index}
+                                  className="text-xs text-muted-foreground"
+                                >
+                                  {signup.shift.shiftType.name} •{" "}
+                                  {format(signup.shift.start, "MMM d, h:mm a")}
+                                </p>
+                              ))}
+                              {shifts.length > 2 && (
+                                <p className="text-xs text-muted-foreground">
+                                  +{shifts.length - 2} more shifts
+                                </p>
+                              )}
+                            </div>
                           </div>
+                          <Badge variant="outline" className="text-xs">
+                            {shifts.length} shift
+                            {shifts.length !== 1 ? "s" : ""}
+                          </Badge>
                         </div>
-                        <Badge variant="outline" className="text-xs">
-                          {shifts.length} shift{shifts.length !== 1 ? 's' : ''}
-                        </Badge>
-                      </div>
-                    </Link>
-                  );
-                })}
+                      </Link>
+                    );
+                  })}
                 <Button asChild variant="outline" size="sm" className="w-full">
                   <Link href="/shifts">View All Shifts</Link>
                 </Button>

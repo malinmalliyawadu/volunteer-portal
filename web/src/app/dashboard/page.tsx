@@ -4,13 +4,20 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import AchievementsCard from "@/components/achievements-card";
 import { PageHeader } from "@/components/page-header";
 import { PageContainer } from "@/components/page-container";
+import {
+  StatsGrid,
+  ContentGrid,
+  BottomGrid,
+} from "@/components/dashboard-animated";
+import { MotionStatCard } from "@/components/motion-stat-card";
+import { MotionContentCard } from "@/components/motion-content-card";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -198,15 +205,15 @@ export default async function DashboardPage() {
   )[0]?.[0];
 
   return (
-    <PageContainer testId="dashboard-page">
+    <PageContainer testid="dashboard-page">
       <PageHeader
         title={`Welcome back${userName ? `, ${userName}` : ""}!`}
         description="Here's what's happening with your volunteer journey"
       ></PageHeader>
 
       {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="animate-slide-up">
+      <StatsGrid>
+        <MotionStatCard>
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
@@ -232,9 +239,9 @@ export default async function DashboardPage() {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </MotionStatCard>
 
-        <Card className="animate-slide-up" style={{ animationDelay: "0.1s" }}>
+        <MotionStatCard>
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center">
@@ -260,9 +267,9 @@ export default async function DashboardPage() {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </MotionStatCard>
 
-        <Card className="animate-slide-up" style={{ animationDelay: "0.2s" }}>
+        <MotionStatCard>
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
@@ -293,9 +300,9 @@ export default async function DashboardPage() {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </MotionStatCard>
 
-        <Card className="animate-slide-up" style={{ animationDelay: "0.3s" }}>
+        <MotionStatCard>
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
@@ -319,15 +326,12 @@ export default async function DashboardPage() {
               </div>
             </div>
           </CardContent>
-        </Card>
-      </div>
+        </MotionStatCard>
+      </StatsGrid>
 
-      <div className="flex flex-wrap gap-6">
+      <ContentGrid>
         {/* Next Shift */}
-        <Card
-          className="animate-slide-up h-fit flex-1 min-w-80"
-          style={{ animationDelay: "0.5s" }}
-        >
+        <MotionContentCard className="h-fit flex-1 min-w-80" delay={0.2}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <svg
@@ -447,13 +451,10 @@ export default async function DashboardPage() {
               </div>
             )}
           </CardContent>
-        </Card>
+        </MotionContentCard>
 
         {/* Recent Activity */}
-        <Card
-          className="animate-slide-up h-fit flex-1 min-w-80"
-          style={{ animationDelay: "0.6s" }}
-        >
+        <MotionContentCard className="h-fit flex-1 min-w-80" delay={0.3}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <svg
@@ -537,14 +538,11 @@ export default async function DashboardPage() {
               </div>
             )}
           </CardContent>
-        </Card>
+        </MotionContentCard>
 
         {/* Friends Activity */}
         {friendsUpcomingShifts.length > 0 && (
-          <Card
-            className="animate-slide-up h-fit flex-1 min-w-80"
-            style={{ animationDelay: "0.7s" }}
-          >
+          <MotionContentCard className="h-fit flex-1 min-w-80" delay={0.4}>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -628,19 +626,18 @@ export default async function DashboardPage() {
                 )}
               </div>
             </CardContent>
-          </Card>
+          </MotionContentCard>
         )}
-      </div>
+      </ContentGrid>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <BottomGrid>
         {/* Achievements */}
-        <AchievementsCard />
+        <div>
+          <AchievementsCard />
+        </div>
 
         {/* Impact & Community Stats */}
-        <Card
-          className="animate-slide-up h-fit"
-          style={{ animationDelay: "0.8s" }}
-        >
+        <MotionContentCard className="h-fit" delay={0.6}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <svg
@@ -700,14 +697,11 @@ export default async function DashboardPage() {
               </div>
             </div>
           </CardContent>
-        </Card>
-      </div>
+        </MotionContentCard>
+      </BottomGrid>
 
       {/* Quick Actions */}
-      <Card
-        className="animate-slide-up h-fit"
-        style={{ animationDelay: "0.9s" }}
-      >
+      <MotionContentCard className="h-fit" delay={0.7}>
         <CardHeader>
           <CardTitle>Quick Actions</CardTitle>
         </CardHeader>
@@ -801,7 +795,7 @@ export default async function DashboardPage() {
             </Button>
           </div>
         </CardContent>
-      </Card>
+      </MotionContentCard>
     </PageContainer>
   );
 }

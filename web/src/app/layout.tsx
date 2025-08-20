@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { ThemeProvider } from "@/components/theme-provider";
+import { MotionConfig } from "@/components/motion-config";
 import { Toaster } from "sonner";
 
 const libreFranklin = Libre_Franklin({
@@ -68,6 +69,7 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <MotionConfig />
           <SiteHeader
             session={session}
             userProfile={userProfile}

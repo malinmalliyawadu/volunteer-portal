@@ -1,3 +1,9 @@
+## [0.12.0] - 2025-08-20
+
+### Changes
+- feat: Complete migration to motion.dev for enhanced animations ([#57](https://github.com/malinmalliyawadu/volunteer-portal/pull/57)) by @malinmalliyawadu
+
+
 ## [0.11.0] - 2025-08-19
 
 ### Changes
