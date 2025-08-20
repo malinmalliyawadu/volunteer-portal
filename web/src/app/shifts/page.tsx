@@ -6,16 +6,10 @@ import { authOptions } from "@/lib/auth-options";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { AvatarList } from "@/components/ui/avatar-list";
 import { ShiftSignupDialog } from "@/components/shift-signup-dialog";
 import { PageHeader } from "@/components/page-header";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import {
   Calendar,
   Clock,
@@ -285,65 +279,11 @@ function ShiftCard({
                     {friendSignups.length} friend
                     {friendSignups.length !== 1 ? "s" : ""} joining:
                   </span>
-                  <div className="flex items-center gap-1 overflow-hidden">
-                    <TooltipProvider>
-                      {friendSignups.slice(0, 3).map((signup) => {
-                        const displayName =
-                          signup.user.name ||
-                          `${signup.user.firstName || ""} ${
-                            signup.user.lastName || ""
-                          }`.trim() ||
-                          signup.user.email;
-                        const initials = (
-                          signup.user.firstName?.[0] ||
-                          signup.user.name?.[0] ||
-                          signup.user.email[0]
-                        ).toUpperCase();
-
-                        return (
-                          <Tooltip key={signup.id}>
-                            <TooltipTrigger asChild>
-                              <Link
-                                href={`/friends/${signup.user.id}`}
-                                className="cursor-pointer"
-                              >
-                                <Avatar className="h-6 w-6">
-                                  <AvatarImage
-                                    src={
-                                      signup.user.profilePhotoUrl || undefined
-                                    }
-                                    alt={displayName}
-                                  />
-                                  <AvatarFallback className="bg-green-100 text-green-700 text-xs">
-                                    {initials}
-                                  </AvatarFallback>
-                                </Avatar>
-                              </Link>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>{displayName} is joining this shift</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        );
-                      })}
-                      {friendSignups.length > 3 && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <div className="text-xs text-green-600 dark:text-green-400 font-medium ml-1 cursor-pointer">
-                              +{friendSignups.length - 3}
-                            </div>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>
-                              {friendSignups.length - 3} more friend
-                              {friendSignups.length - 3 !== 1 ? "s" : ""}{" "}
-                              joining this shift
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
-                      )}
-                    </TooltipProvider>
-                  </div>
+                  <AvatarList
+                    users={friendSignups.map(signup => signup.user)}
+                    size="sm"
+                    maxDisplay={3}
+                  />
                 </div>
               </div>
             )}
