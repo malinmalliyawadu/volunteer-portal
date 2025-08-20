@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageHeader } from "@/components/page-header";
 // Badge import removed as it's not used
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ResourceManagementTable } from "@/components/admin/resource-management-table";
@@ -92,20 +93,19 @@ export default async function AdminResourcesPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Manage Resources</h1>
-            <p className="text-gray-600 mt-2">
-              Create and manage volunteer resources, training materials, and categories
-            </p>
-          </div>
-          <Button asChild variant="outline">
-            <Link href="/resources">
-              View Resource Hub
-            </Link>
-          </Button>
-        </div>
+        <PageHeader
+          title="Manage Resources"
+          description="Create and manage volunteer resources, training materials, and categories"
+          actions={
+            <Button asChild variant="outline">
+              <Link href="/resources">
+                View Resource Hub
+              </Link>
+            </Button>
+          }
+          className="mb-8"
+          data-testid="admin-resources-heading"
+        />
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

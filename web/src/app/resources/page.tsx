@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
 import { ResourceGrid } from "@/components/resource-grid";
 import { ResourceSearch } from "@/components/resource-search";
+import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -117,25 +118,19 @@ export default async function ResourcesPage({
   return (
     <div className="min-h-screen">
       <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Resource Hub
-          </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Access training materials, guides, videos, and helpful resources to
-            enhance your volunteer experience
-          </p>
-        </div>
-
-        {/* Admin Actions */}
-        {isAdmin && (
-          <div className="mb-6 flex justify-end">
-            <Button asChild>
-              <Link href="/admin/resources">Manage Resources</Link>
-            </Button>
-          </div>
-        )}
+        <PageHeader
+          title="Resource Hub"
+          description="Access training materials, guides, videos, and helpful resources to enhance your volunteer experience"
+          actions={
+            isAdmin ? (
+              <Button asChild>
+                <Link href="/admin/resources">Manage Resources</Link>
+              </Button>
+            ) : undefined
+          }
+          className="mb-8"
+          data-testid="resource-hub-heading"
+        />
 
         {/* Search and Filters */}
         <ResourceSearch
