@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth-options";
 import { redirect } from "next/navigation";
 import Image from "next/image";
 import { PageHeader } from "@/components/page-header";
+import { HomePageWrapper, HeroContent, FeatureCard, FeatureGrid } from "@/components/home-animated";
 
 export default async function Home() {
   const session = await getServerSession(authOptions);
@@ -23,10 +24,10 @@ export default async function Home() {
   }
 
   return (
-    <div className="animate-fade-in" data-testid="home-page">
+    <HomePageWrapper data-testid="home-page">
       <section className="section-hero py-14" data-testid="hero-section">
         <div className="grid gap-8 md:grid-cols-2 md:items-center">
-          <div className="animate-slide-up">
+          <HeroContent>
             <h1 className="text-5xl md:text-6xl font-bold leading-tight mb-6 text-foreground" data-testid="hero-title">
               Making a difference one plate at a time
             </h1>
@@ -65,11 +66,8 @@ export default async function Home() {
                 <Link href="/register">Join as volunteer</Link>
               </Button>
             </div>
-          </div>
-          <div
-            className="hidden md:block animate-slide-up"
-            style={{ animationDelay: "0.2s" }}
-          >
+          </HeroContent>
+          <HeroContent className="hidden md:block">
             <div className="relative">
               <div
                 className="aspect-[4/3] w-full rounded-2xl overflow-hidden border-2 shadow-2xl"
@@ -86,16 +84,16 @@ export default async function Home() {
                 />
               </div>
             </div>
-          </div>
+          </HeroContent>
         </div>
       </section>
 
       <section className="section-content py-10" data-testid="features-section">
         <div>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div
-              className="text-center p-6 card animate-slide-up"
-              style={{ animationDelay: "0.3s" }}
+          <FeatureGrid className="grid md:grid-cols-3 gap-8">
+            <FeatureCard
+              className="text-center p-6 card"
+              delay={0.3}
               data-testid="feature-community-impact"
             >
               <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -118,11 +116,11 @@ export default async function Home() {
                 Join hundreds of volunteers making a real difference in our
                 communities across New Zealand.
               </p>
-            </div>
+            </FeatureCard>
 
-            <div
-              className="text-center p-6 card animate-slide-up"
-              style={{ animationDelay: "0.4s" }}
+            <FeatureCard
+              className="text-center p-6 card"
+              delay={0.4}
               data-testid="feature-flexible-scheduling"
             >
               <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -147,11 +145,11 @@ export default async function Home() {
                 Choose shifts that fit your schedule. From prep work to service,
                 find opportunities that work for you.
               </p>
-            </div>
+            </FeatureCard>
 
-            <div
-              className="text-center p-6 card animate-slide-up"
-              style={{ animationDelay: "0.5s" }}
+            <FeatureCard
+              className="text-center p-6 card"
+              delay={0.5}
               data-testid="feature-meaningful-work"
             >
               <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -174,8 +172,8 @@ export default async function Home() {
                 Help fight food waste and food insecurity while building
                 connections in your local community.
               </p>
-            </div>
-          </div>
+            </FeatureCard>
+          </FeatureGrid>
         </div>
       </section>
 
@@ -256,6 +254,6 @@ export default async function Home() {
           </div>
         </div>
       </section>
-    </div>
+    </HomePageWrapper>
   );
 }

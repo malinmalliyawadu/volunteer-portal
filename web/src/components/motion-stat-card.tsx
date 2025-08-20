@@ -15,15 +15,14 @@ interface MotionStatCardProps extends React.ComponentProps<typeof Card> {
  * Combines Card component with stagger animation
  */
 export function MotionStatCard({ children, className, ...props }: MotionStatCardProps) {
-  const MotionCard = motion(Card);
-  
   return (
-    <MotionCard
+    <motion.div
       variants={staggerItem}
       className={cn(className)}
-      {...props}
     >
-      {children}
-    </MotionCard>
+      <Card {...props}>
+        {children}
+      </Card>
+    </motion.div>
   );
 }

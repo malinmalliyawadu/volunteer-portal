@@ -6,9 +6,13 @@ import { useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
+import { CardContent } from "@/components/ui/card";
 import { PageHeader } from "@/components/page-header";
 import Link from "next/link";
+import { MotionSpinner } from "@/components/motion-spinner";
+import { MotionFormError, MotionFormSuccess } from "@/components/motion-form";
+import { MotionPageContainer } from "@/components/motion-page-container";
+import { MotionCard } from "@/components/motion-card";
 
 interface Provider {
   id: string;
@@ -185,7 +189,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center animate-fade-in" data-testid="login-page">
+    <MotionPageContainer className="min-h-[80vh] flex items-center justify-center" data-testid="login-page">
       <div className="w-full max-w-md">
         <div className="text-center">
           <PageHeader
@@ -195,7 +199,7 @@ export default function LoginPage() {
           />
         </div>
 
-        <Card className="animate-slide-up" data-testid="login-form-card">
+        <MotionCard className="" data-testid="login-form-card">
           <CardContent className="p-8">
             {/* OAuth Providers */}
             {oauthProviders.length > 0 && (
@@ -217,7 +221,7 @@ export default function LoginPage() {
                     data-testid={`oauth-${provider.id}-button`}
                   >
                     {oauthLoading === provider.id ? (
-                      <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                      <MotionSpinner size="sm" />
                     ) : (
                       <>
                         {getProviderIcon(provider.id)}
@@ -277,29 +281,27 @@ export default function LoginPage() {
                 />
               </div>
 
-              {successMessage && (
-                <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm" data-testid="success-message">
-                  <div className="flex items-center gap-2">
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                    {successMessage}
-                  </div>
+              <MotionFormSuccess show={!!successMessage} data-testid="success-message">
+                <div className="flex items-center gap-2">
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  {successMessage}
                 </div>
-              )}
+              </MotionFormSuccess>
 
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm" data-testid="error-message">
+              <MotionFormError show={!!error} data-testid="error-message">
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
                   <div className="flex items-center gap-2">
                     <svg
                       className="w-4 h-4"
@@ -317,7 +319,7 @@ export default function LoginPage() {
                     {error}
                   </div>
                 </div>
-              )}
+              </MotionFormError>
 
               <Button
                 type="submit"
@@ -328,19 +330,7 @@ export default function LoginPage() {
               >
                 {isLoading ? (
                   <div className="flex items-center gap-2">
-                    <svg
-                      className="w-4 h-4 animate-spin"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                      />
-                    </svg>
+                    <MotionSpinner size="sm" color="white" />
                     Signing in...
                   </div>
                 ) : (
@@ -390,8 +380,8 @@ export default function LoginPage() {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </MotionCard>
       </div>
-    </div>
+    </MotionPageContainer>
   );
 }
