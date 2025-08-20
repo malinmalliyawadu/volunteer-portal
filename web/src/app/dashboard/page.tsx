@@ -11,7 +11,8 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import AchievementsCard from "@/components/achievements-card";
 import { PageHeader } from "@/components/page-header";
 import { PageContainer } from "@/components/page-container";
-import { StatsGrid, StatCard, ContentSection, ContentGrid, BottomGrid } from "@/components/dashboard-animated";
+import { StatsGrid, ContentSection, ContentGrid, BottomGrid } from "@/components/dashboard-animated";
+import { MotionStatCard } from "@/components/motion-stat-card";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -207,8 +208,7 @@ export default async function DashboardPage() {
 
       {/* Stats Overview */}
       <StatsGrid>
-        <StatCard>
-        <Card>
+        <MotionStatCard>
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
@@ -234,11 +234,9 @@ export default async function DashboardPage() {
               </div>
             </div>
           </CardContent>
-        </Card>
-        </StatCard>
+        </MotionStatCard>
 
-        <StatCard>
-        <Card>
+        <MotionStatCard>
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center">
@@ -264,11 +262,9 @@ export default async function DashboardPage() {
               </div>
             </div>
           </CardContent>
-        </Card>
-        </StatCard>
+        </MotionStatCard>
 
-        <StatCard>
-        <Card>
+        <MotionStatCard>
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
@@ -299,11 +295,9 @@ export default async function DashboardPage() {
               </div>
             </div>
           </CardContent>
-        </Card>
-        </StatCard>
+        </MotionStatCard>
 
-        <StatCard>
-        <Card>
+        <MotionStatCard>
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
@@ -327,8 +321,7 @@ export default async function DashboardPage() {
               </div>
             </div>
           </CardContent>
-        </Card>
-        </StatCard>
+        </MotionStatCard>
       </StatsGrid>
 
       <ContentGrid>

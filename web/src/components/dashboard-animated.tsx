@@ -11,7 +11,7 @@ interface DashboardAnimatedProps {
 export function StatsGrid({ children }: DashboardAnimatedProps) {
   return (
     <motion.div 
-      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+      className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
       variants={staggerContainer}
       initial="hidden"
       animate="visible"
@@ -22,9 +22,13 @@ export function StatsGrid({ children }: DashboardAnimatedProps) {
 }
 
 // Animated wrapper for individual stat cards
+// This component should be applied to each grid item to maintain proper layout
 export function StatCard({ children }: DashboardAnimatedProps) {
   return (
-    <motion.div variants={staggerItem}>
+    <motion.div 
+      variants={staggerItem}
+      className="contents" // Use Tailwind's contents utility
+    >
       {children}
     </motion.div>
   );

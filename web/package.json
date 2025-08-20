@@ -3,6 +3,7 @@
   "version": "0.11.0",
   "private": true,
   "scripts": {
+    "local-setup": "cp .env.example .env && npx auth secret",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
