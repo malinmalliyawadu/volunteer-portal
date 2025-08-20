@@ -38,8 +38,8 @@ export function SiteHeader({
 
   const getLinkClassName = (path: string) => {
     return cn(
-      "text-white/90 hover:text-white hover:bg-white/10 backdrop-blur-sm transition-all duration-300 ease-out hover:scale-105 active:scale-95 rounded-lg px-3 py-2 font-medium relative overflow-hidden group border border-transparent hover:border-white/20",
-      isActive(path) && "text-white bg-white/15 backdrop-blur-sm shadow-lg font-medium"
+      "text-white/90 hover:text-white hover:bg-white/10 dark:hover:bg-white/5 backdrop-blur-sm transition-all duration-300 ease-out hover:scale-105 active:scale-95 rounded-lg px-3 py-2 font-medium relative overflow-hidden group border border-transparent hover:border-white/20 dark:hover:border-gray-700",
+      isActive(path) && "text-white bg-white/15 dark:bg-white/10 backdrop-blur-sm shadow-lg font-medium"
     );
   };
 
@@ -47,7 +47,7 @@ export function SiteHeader({
     (session?.user as { role?: "ADMIN" } | undefined)?.role === "ADMIN";
 
   return (
-    <header className="border-b border-white/10 shadow-lg">
+    <header className="border-b border-white/10 dark:border-gray-800 shadow-lg dark:shadow-xl">
       <div className="bg-[var(--ee-primary)] text-white relative">
         
         <nav
