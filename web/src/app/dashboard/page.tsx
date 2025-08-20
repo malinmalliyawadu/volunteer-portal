@@ -252,19 +252,7 @@ export default async function DashboardPage() {
         <MotionContentCard className="h-fit flex-1 min-w-80" delay={0.2}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <svg
-                className="w-5 h-5 text-primary"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
+              <Clock className="w-5 h-5 text-primary dark:text-emerald-400" />
               Your Next Shift
             </CardTitle>
           </CardHeader>
@@ -282,7 +270,7 @@ export default async function DashboardPage() {
                     {nextShift.status === "PENDING" && (
                       <Badge
                         variant="outline"
-                        className="bg-orange-50 text-orange-700 border-orange-200 mt-2"
+                        className="bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-800/50 mt-2"
                       >
                         Pending Approval
                       </Badge>
@@ -299,42 +287,20 @@ export default async function DashboardPage() {
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm">
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
-                    </svg>
+                    <Calendar className="w-4 h-4 text-muted-foreground dark:text-gray-400" />
                     {format(nextShift.shift.start, "EEEE, MMMM do")}
                   </div>
                   <div className="flex items-center gap-2 text-sm">
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
+                    <Clock className="w-4 h-4 text-muted-foreground dark:text-gray-400" />
                     {format(nextShift.shift.start, "h:mm a")} -{" "}
                     {format(nextShift.shift.end, "h:mm a")}
                   </div>
                 </div>
                 {nextShift.shift.notes && (
-                  <div className="p-3 bg-accent/10 rounded-lg">
-                    <p className="text-sm">{nextShift.shift.notes}</p>
+                  <div className="p-3 bg-accent/10 dark:bg-yellow-900/20 rounded-lg">
+                    <p className="text-sm dark:text-gray-200">
+                      {nextShift.shift.notes}
+                    </p>
                   </div>
                 )}
                 <Button asChild size="sm" className="w-full">
@@ -343,20 +309,8 @@ export default async function DashboardPage() {
               </div>
             ) : (
               <div className="text-center py-8">
-                <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg
-                    className="w-8 h-8 text-muted-foreground"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    />
-                  </svg>
+                <div className="w-16 h-16 bg-muted dark:bg-muted/50 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Calendar className="w-8 h-8 text-muted-foreground dark:text-gray-500" />
                 </div>
                 <h3 className="font-semibold mb-2">No upcoming shifts</h3>
                 <p className="text-muted-foreground text-sm mb-4">
@@ -375,19 +329,7 @@ export default async function DashboardPage() {
         <MotionContentCard className="h-fit flex-1 min-w-80" delay={0.3}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <svg
-                className="w-5 h-5 text-primary"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
+              <CheckCircle className="w-5 h-5 text-primary dark:text-emerald-400" />
               Recent Activity
             </CardTitle>
           </CardHeader>
@@ -399,20 +341,8 @@ export default async function DashboardPage() {
                     key={signup.id}
                     className="flex items-center gap-3 p-3 rounded-lg"
                   >
-                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                      <svg
-                        className="w-5 h-5 text-primary"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
+                    <div className="w-10 h-10 bg-primary/10 dark:bg-emerald-900/30 rounded-full flex items-center justify-center flex-shrink-0">
+                      <CheckCircle className="w-5 h-5 text-primary dark:text-emerald-400" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm truncate">
@@ -434,20 +364,8 @@ export default async function DashboardPage() {
               </div>
             ) : (
               <div className="text-center py-8">
-                <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg
-                    className="w-8 h-8 text-muted-foreground"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
+                <div className="w-16 h-16 bg-muted dark:bg-muted/50 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Clock className="w-8 h-8 text-muted-foreground dark:text-gray-500" />
                 </div>
                 <h3 className="font-semibold mb-2">No completed shifts yet</h3>
                 <p className="text-muted-foreground text-sm">
@@ -464,24 +382,9 @@ export default async function DashboardPage() {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <svg
-                    className="w-5 h-5 text-primary"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                    />
-                  </svg>
+                  <TrendingUp className="w-5 h-5 text-primary dark:text-emerald-400" />
                   Friends&apos; Activity
                 </div>
-                <Button asChild variant="outline" size="sm">
-                  <Link href="/friends/stats">View Stats</Link>
-                </Button>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -505,13 +408,13 @@ export default async function DashboardPage() {
                       key={signup.id}
                       href={`/friends/${signup.user.id}`}
                     >
-                      <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
+                      <div className="flex items-center gap-3 p-3 bg-muted/30 dark:bg-muted/20 rounded-lg hover:bg-muted/50 dark:hover:bg-muted/30 transition-colors cursor-pointer">
                         <Avatar className="h-8 w-8">
                           <AvatarImage
                             src={signup.user.profilePhotoUrl || undefined}
                             alt={displayName}
                           />
-                          <AvatarFallback className="bg-primary/10 text-primary">
+                          <AvatarFallback className="bg-primary/10 dark:bg-emerald-900/30 text-primary dark:text-emerald-400">
                             {initials}
                           </AvatarFallback>
                         </Avatar>
@@ -558,26 +461,14 @@ export default async function DashboardPage() {
         <MotionContentCard className="h-fit" delay={0.6}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <svg
-                className="w-5 h-5 text-primary"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                />
-              </svg>
+              <CheckCircle className="w-5 h-5 text-primary dark:text-emerald-400" />
               Your Impact & Community
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="text-center">
-                <div className="text-3xl font-bold text-primary mb-2">
+                <div className="text-3xl font-bold text-primary dark:text-emerald-400 mb-2">
                   {totalHours * 15}
                 </div>
                 <p className="text-sm text-muted-foreground">
@@ -589,7 +480,7 @@ export default async function DashboardPage() {
               </div>
 
               <div className="text-center">
-                <div className="text-3xl font-bold text-accent mb-2">
+                <div className="text-3xl font-bold text-accent dark:text-yellow-400 mb-2">
                   {totalVolunteers}
                 </div>
                 <p className="text-sm text-muted-foreground">
@@ -603,7 +494,7 @@ export default async function DashboardPage() {
               </div>
 
               <div className="text-center">
-                <div className="text-3xl font-bold text-green-600 mb-2">
+                <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">
                   {Math.round(totalHours * 2.5 * 10) / 10}kg
                 </div>
                 <p className="text-sm text-muted-foreground">
@@ -628,7 +519,7 @@ export default async function DashboardPage() {
             <Button asChild variant="outline" className="h-auto py-4">
               <Link href="/shifts" className="flex flex-col items-center gap-2">
                 <svg
-                  className="w-6 h-6"
+                  className="w-6 h-6 text-foreground dark:text-gray-300"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -649,19 +540,7 @@ export default async function DashboardPage() {
                 href="/shifts/mine"
                 className="flex flex-col items-center gap-2"
               >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
+                <Calendar className="w-6 h-6 text-foreground dark:text-gray-300" />
                 <span className="text-sm">My Schedule</span>
               </Link>
             </Button>
@@ -672,7 +551,7 @@ export default async function DashboardPage() {
                 className="flex flex-col items-center gap-2"
               >
                 <svg
-                  className="w-6 h-6"
+                  className="w-6 h-6 text-foreground dark:text-gray-300"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -696,7 +575,7 @@ export default async function DashboardPage() {
                 className="flex flex-col items-center gap-2"
               >
                 <svg
-                  className="w-6 h-6"
+                  className="w-6 h-6 text-foreground dark:text-gray-300"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"

@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { InfoBox } from "@/components/ui/info-box";
 import { X, Plus, Users, Mail, Check, AlertCircle, Clock, MapPin } from "lucide-react";
 
 interface Shift {
@@ -581,25 +582,21 @@ export function GroupBookingDialog({
           )}
 
           {/* Info Box */}
-          <div className="rounded-lg border p-4 bg-blue-50 border-blue-200" data-testid="info-box">
-            <div className="flex items-start gap-2">
-              <Check className="h-4 w-4 text-blue-600 mt-0.5" />
-              <div className="text-sm">
-                <p className="font-medium text-blue-900 mb-1">
-                  How Group Bookings Work
-                </p>
-                <ul className="text-blue-700 space-y-1 text-xs">
-                  <li>• You&apos;ll be added to each group automatically as the leader</li>
-                  <li>• Assign members to specific shifts using the assignment matrix</li>
-                  <li>• Invitation emails will be sent to all members</li>
-                  <li>• Each person must accept and create/login to their account</li>
-                  <li>• Separate group bookings will be created for each selected shift</li>
-                  <li>• All groups will be reviewed by administrators</li>
-                  <li>• Everyone gets individual confirmation once approved</li>
-                </ul>
-              </div>
-            </div>
-          </div>
+          <InfoBox
+            title="How Group Bookings Work"
+            icon={<Check className="h-4 w-4 mt-0.5" />}
+            testId="info-box"
+          >
+            <ul className="space-y-1 text-xs">
+              <li>• You&apos;ll be added to each group automatically as the leader</li>
+              <li>• Assign members to specific shifts using the assignment matrix</li>
+              <li>• Invitation emails will be sent to all members</li>
+              <li>• Each person must accept and create/login to their account</li>
+              <li>• Separate group bookings will be created for each selected shift</li>
+              <li>• All groups will be reviewed by administrators</li>
+              <li>• Everyone gets individual confirmation once approved</li>
+            </ul>
+          </InfoBox>
         </div>
 
         <DialogFooter className="flex gap-2" data-testid="group-booking-dialog-footer">

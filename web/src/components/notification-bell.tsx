@@ -40,7 +40,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
       // Refresh unread count when new notification arrives
       fetchUnreadCount();
     },
-    enabled: !!userId
+    enabled: !!userId,
   });
 
   // Fetch initial unread count on mount
@@ -58,14 +58,18 @@ export function NotificationBell({ userId }: NotificationBellProps) {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
 
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
     }
   }, [isOpen]);
 
@@ -82,7 +86,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
         {unreadCount > 0 && (
           <Badge
             variant="destructive"
-            className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
+            className="absolute top-1 right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
             data-testid="notification-count-badge"
           >
             {unreadCount > 99 ? "99+" : unreadCount}
@@ -92,7 +96,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
           Notifications {unreadCount > 0 && `(${unreadCount} unread)`}
         </span>
       </Button>
-      
+
       <AnimatePresence>
         {isOpen && (
           <motion.div

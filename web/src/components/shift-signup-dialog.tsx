@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { InfoBox } from "@/components/ui/info-box";
 import { MotionSpinner } from "@/components/motion-spinner";
 
 interface ShiftSignupDialogProps {
@@ -149,21 +150,16 @@ export function ShiftSignupDialog({
           </div>
 
           {/* Approval Process Info */}
-          <div className="rounded-lg border p-4 bg-blue-50 border-blue-200" data-testid="approval-process-info">
-            <div className="flex items-start gap-2">
-              <span className="text-blue-600 text-lg">ℹ️</span>
-              <div className="text-sm">
-                <p className="font-medium text-blue-900 mb-1">
-                  {isWaitlist ? "Waitlist Process" : "Approval Required"}
-                </p>
-                <p className="text-blue-700">
-                  {isWaitlist
-                    ? "You'll be added to the waitlist and notified by email if a spot becomes available and you're approved."
-                    : "Your signup will be reviewed by an administrator. You'll receive an email confirmation if you're approved for this shift."}
-                </p>
-              </div>
-            </div>
-          </div>
+          <InfoBox
+            title={isWaitlist ? "Waitlist Process" : "Approval Required"}
+            testId="approval-process-info"
+          >
+            <p>
+              {isWaitlist
+                ? "You'll be added to the waitlist and notified by email if a spot becomes available and you're approved."
+                : "Your signup will be reviewed by an administrator. You'll receive an email confirmation if you're approved for this shift."}
+            </p>
+          </InfoBox>
         </div>
 
         <DialogFooter className="flex gap-2" data-testid="shift-signup-dialog-footer">

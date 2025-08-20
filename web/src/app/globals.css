@@ -52,7 +52,7 @@
 
 .dark {
   /* Dark mode values for --ee-* custom properties */
-  --ee-bg: #0a0f0a !important;
+  --ee-bg: #0f1114 !important;
   --ee-fg: #e5f0e8 !important;
   --ee-primary: #1d5337;
   --ee-primary-700: #3d8b40;
@@ -61,14 +61,14 @@
   --ee-accent-subtle: #e4e85a;
   --ee-muted: #0f1419;
   --ee-border: #1f2937;
-  --ee-card-bg: #111827;
+  --ee-card-bg: #1a1d23;
 
   /* shadcn/ui dark mode variables */
-  --background: oklch(0.147 0.004 49.25);
+  --background: oklch(0.12 0.002 240);
   --foreground: oklch(0.985 0.001 106.423);
-  --card: oklch(0.216 0.006 56.043);
+  --card: oklch(0.15 0.002 240);
   --card-foreground: oklch(0.985 0.001 106.423);
-  --popover: oklch(0.216 0.006 56.043);
+  --popover: oklch(0.15 0.002 240);
   --popover-foreground: oklch(0.985 0.001 106.423);
   --primary: oklch(0.923 0.003 48.717);
   --primary-foreground: oklch(0.216 0.006 56.043);
