@@ -52,6 +52,10 @@ model User {
   
   // Notifications
   notifications                Notification[]
+  
+  // Resource system
+  createdResources             Resource[]       @relation("ResourceCreator")
+  resourceAccesses             ResourceAccess[]
 }
 
 model ShiftType {
@@ -286,4 +290,70 @@ enum NotificationType {
   SHIFT_CANCELED          // Your shift was canceled by admin
   GROUP_INVITATION        // You were invited to a group booking
   ACHIEVEMENT_UNLOCKED    // You unlocked a new achievement
+}
+
+model ResourceCategory {
+  id          String     @id @default(cuid())
+  name        String     @unique
+  description String?
+  icon        String?    // Icon name for UI
+  color       String?    // Theme color for category
+  sortOrder   Int        @default(0)
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  resources   Resource[]
+}
+
+model Resource {
+  id          String           @id @default(cuid())
+  title       String
+  description String?
+  type        ResourceType
+  url         String?          // For external links/videos
+  filePath    String?          // For uploaded files
+  fileName    String?          // Original filename
+  fileSize    Int?             // File size in bytes
+  mimeType    String?          // MIME type of file
+  categoryId  String
+  isActive    Boolean          @default(true)
+  isFeatured  Boolean          @default(false)
+  sortOrder   Int              @default(0)
+  viewCount   Int              @default(0)
+  tags        String[]         // Array of tags for searching
+  createdBy   String           // Admin who created the resource
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  
+  // Relations
+  category    ResourceCategory @relation(fields: [categoryId], references: [id])
+  creator     User             @relation("ResourceCreator", fields: [createdBy], references: [id])
+  accesses    ResourceAccess[]
+  
+  @@index([categoryId, isActive])
+  @@index([type, isActive])
+  @@index([isFeatured, isActive])
+}
+
+model ResourceAccess {
+  id         String   @id @default(cuid())
+  userId     String
+  resourceId String
+  accessedAt DateTime @default(now())
+  
+  // Relations
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, resourceId])
+  @@index([resourceId, accessedAt])
+}
+
+enum ResourceType {
+  DOCUMENT    // PDFs, Word docs, etc.
+  VIDEO       // Video files or links
+  LINK        // External links/websites
+  IMAGE       // Images/infographics
+  AUDIO       // Audio files/podcasts
+  ARTICLE     // Text-based articles
 }
