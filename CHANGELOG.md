@@ -1,3 +1,9 @@
+## [0.16.0] - 2025-08-20
+
+### Changes
+- feat: comprehensive dark mode improvements across site header and dashboard ([#60](https://github.com/malinmalliyawadu/volunteer-portal/pull/60)) by @malinmalliyawadu
+
+
 ## [0.15.0] - 2025-08-20
 
 ### Changes
