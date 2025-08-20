@@ -20,16 +20,14 @@ interface SiteFooterProps {
  */
 export function SiteFooter({ session }: SiteFooterProps) {
   const currentYear = new Date().getFullYear();
+  const isAdmin =
+    (session?.user as { role?: "ADMIN" } | undefined)?.role === "ADMIN";
 
   return (
     <footer className="border-t mt-12 bg-slate-900 dark:bg-slate-950">
       <div className="max-w-6xl mx-auto px-4 py-12">
         {/* Main footer content */}
-        <div className={`grid gap-8 mb-8 ${
-          session?.user 
-            ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' 
-            : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
-        }`}>
+        <div className="grid gap-8 mb-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {/* About section */}
           <div>
             <h3 className="text-white font-semibold mb-4">Everybody Eats</h3>
@@ -43,7 +41,6 @@ export function SiteFooter({ session }: SiteFooterProps) {
               <span className="font-medium text-slate-300">CC56055</span>
             </p>
           </div>
-
 
           {/* Social Media */}
           <div>
@@ -115,18 +112,22 @@ export function SiteFooter({ session }: SiteFooterProps) {
                 >
                   My Profile
                 </Link>
-                <Link
-                  href="/shifts/mine"
-                  className="block text-slate-300 hover:text-white text-sm transition-colors"
-                >
-                  My Shifts
-                </Link>
-                <Link
-                  href="/friends"
-                  className="block text-slate-300 hover:text-white text-sm transition-colors"
-                >
-                  Friends
-                </Link>
+                {!isAdmin && (
+                  <>
+                    <Link
+                      href="/shifts/mine"
+                      className="block text-slate-300 hover:text-white text-sm transition-colors"
+                    >
+                      My Shifts
+                    </Link>
+                    <Link
+                      href="/friends"
+                      className="block text-slate-300 hover:text-white text-sm transition-colors"
+                    >
+                      Friends
+                    </Link>
+                  </>
+                )}
               </nav>
             </div>
           )}

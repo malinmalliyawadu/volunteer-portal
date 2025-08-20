@@ -154,7 +154,7 @@ test.describe("Admin Volunteer Profile View", () => {
         await waitForPageLoad(page);
 
         // Check overall layout container
-        const layoutContainer = page.locator(".grid.grid-cols-1.lg\\:grid-cols-3");
+        const layoutContainer = page.getByTestId("volunteer-profile-layout");
         await expect(layoutContainer).toBeVisible();
       } else {
         test.skip(true, "No volunteer profiles found for testing");
@@ -554,7 +554,7 @@ test.describe("Admin Volunteer Profile View", () => {
         await waitForPageLoad(page);
 
         // Check layout adjusts appropriately
-        const layoutContainer = page.locator(".grid.grid-cols-1.lg\\:grid-cols-3");
+        const layoutContainer = page.getByTestId("volunteer-profile-layout");
         await expect(layoutContainer).toBeVisible();
 
         // All major sections should still be visible
