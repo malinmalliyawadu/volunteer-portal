@@ -271,7 +271,7 @@ export default async function FriendProfilePage({
                 </div>
                 <div className="flex items-center gap-2">
                   <Handshake className="h-4 w-4" />
-                  <span>Volunteer companion</span>
+                  <span>Volunteer friend</span>
                 </div>
               </div>
               {daysSinceFriendship <= 30 && (
