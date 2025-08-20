@@ -211,8 +211,8 @@ export default async function FriendsStatsPage() {
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                  <Calendar className="w-6 h-6 text-green-600" />
+                <div className="w-12 h-12 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center">
+                  <Calendar className="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{activeFriends}</p>
@@ -227,8 +227,8 @@ export default async function FriendsStatsPage() {
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                  <TrendingUp className="w-6 h-6 text-blue-600" />
+                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center">
+                  <TrendingUp className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{recentFriends}</p>
@@ -243,8 +243,8 @@ export default async function FriendsStatsPage() {
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                  <Clock className="w-6 h-6 text-purple-600" />
+                <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/50 rounded-full flex items-center justify-center">
+                  <Clock className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{averageFriendshipDays}</p>
@@ -442,7 +442,11 @@ export default async function FriendsStatsPage() {
                     ).toUpperCase();
 
                     return (
-                      <Link key={friend.id} href={`/friends/${friend.id}`}>
+                      <Link
+                        key={friend.id}
+                        href={`/friends/${friend.id}`}
+                        className="block"
+                      >
                         <div className="flex items-start gap-3 p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
                           <Avatar className="h-8 w-8">
                             <AvatarImage

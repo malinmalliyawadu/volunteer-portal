@@ -6,6 +6,8 @@ import { Friend } from "@/lib/friends-data";
 import { RemoveFriendButton } from "./remove-friend-button";
 import { ViewFriendProfileButton } from "./view-friend-profile-button";
 import { differenceInDays, format } from "date-fns";
+import { motion } from "motion/react";
+import { staggerContainer, staggerItem } from "@/lib/motion";
 
 interface FriendsListProps {
   friends: Friend[];
@@ -53,7 +55,12 @@ export function FriendsList({ friends, searchTerm }: FriendsListProps) {
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <motion.div 
+      className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+      variants={staggerContainer}
+      initial="hidden"
+      animate="visible"
+    >
       {filteredFriends.map((friend) => {
         const displayName = friend.name || `${friend.firstName || ""} ${friend.lastName || ""}`.trim() || friend.email;
         const friendsSinceDate = new Date(friend.friendsSince);
@@ -61,33 +68,37 @@ export function FriendsList({ friends, searchTerm }: FriendsListProps) {
         const isRecentFriend = daysSinceFriendship <= 30;
         
         return (
-          <Card key={friend.friendshipId} className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1">
-            <CardContent className="p-6">
+          <motion.div
+            key={friend.friendshipId}
+            variants={staggerItem}
+          >
+            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-2 border-border/50 dark:border-border/70 hover:border-primary/30 dark:hover:border-primary/50 shadow-md bg-gradient-to-br from-background to-muted/20 dark:from-background dark:to-muted/10 hover:from-primary/5 hover:to-purple-500/5 dark:hover:from-primary/10 dark:hover:to-purple-500/10">
+            <CardContent className="p-6 relative overflow-hidden">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center space-x-4">
                   <div className="relative">
-                    <Avatar className="h-14 w-14 ring-2 ring-primary/10 group-hover:ring-primary/20 transition-all">
+                    <Avatar className="h-16 w-16 ring-2 ring-primary/10 group-hover:ring-primary/30 transition-all duration-300 shadow-lg group-hover:shadow-xl">
                       <AvatarImage 
                         src={friend.profilePhotoUrl || undefined} 
                         alt={displayName}
                       />
-                      <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-semibold text-lg">
+                      <AvatarFallback className="bg-gradient-to-br from-primary/30 to-purple-500/20 dark:from-primary/40 dark:to-purple-500/30 text-primary font-semibold text-lg">
                         {(friend.firstName?.[0] || friend.name?.[0] || friend.email[0]).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     {isRecentFriend && (
-                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-background flex items-center justify-center">
+                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full border-2 border-background flex items-center justify-center shadow-lg animate-pulse">
                         <div className="w-2 h-2 bg-white rounded-full"></div>
                       </div>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-lg text-foreground truncate">
+                    <h3 className="font-bold text-xl text-foreground truncate group-hover:text-primary transition-colors duration-200">
                       {displayName}
                     </h3>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Heart className="h-3 w-3 text-primary" />
-                      <p className="text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2 mt-2">
+                      <Heart className="h-4 w-4 text-primary group-hover:text-red-500 transition-colors duration-200" />
+                      <p className="text-sm text-muted-foreground group-hover:text-foreground transition-colors duration-200">
                         {daysSinceFriendship === 0 ? "Today" : 
                          daysSinceFriendship === 1 ? "1 day ago" : 
                          daysSinceFriendship <= 7 ? `${daysSinceFriendship} days ago` :
@@ -101,26 +112,34 @@ export function FriendsList({ friends, searchTerm }: FriendsListProps) {
 
               {isRecentFriend && (
                 <div className="mb-4">
-                  <Badge variant="secondary" className="bg-green-100 text-green-700 border-green-200">
+                  <Badge variant="secondary" className="bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800/50">
                     <Clock className="h-3 w-3 mr-1" />
                     New Friend
                   </Badge>
                 </div>
               )}
               
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <ViewFriendProfileButton friend={friend} />
                 
-                <div className="pt-3 border-t border-border/50">
-                  <p className="text-xs text-muted-foreground text-center">
-                    Connected for {daysSinceFriendship} day{daysSinceFriendship !== 1 ? 's' : ''}
-                  </p>
+                <div className="pt-4 border-t border-border/50">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-primary/50"></div>
+                    <p className="text-xs text-muted-foreground font-medium">
+                      Connected for {daysSinceFriendship} day{daysSinceFriendship !== 1 ? 's' : ''}
+                    </p>
+                    <div className="w-2 h-2 rounded-full bg-primary/50"></div>
+                  </div>
                 </div>
               </div>
+              
+              {/* Subtle background decoration */}
+              <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-primary/5 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </CardContent>
-          </Card>
+            </Card>
+          </motion.div>
         );
       })}
-    </div>
+    </motion.div>
   );
 }

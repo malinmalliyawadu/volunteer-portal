@@ -13,6 +13,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { AnimatedStatsGrid } from "@/components/animated-stats-grid";
 import { Button } from "@/components/ui/button";
 import { AvatarList } from "@/components/ui/avatar-list";
 import {
@@ -40,53 +41,53 @@ import { PageContainer } from "@/components/page-container";
 const SHIFT_THEMES = {
   Dishwasher: {
     gradient: "from-blue-500 to-cyan-500",
-    bgColor: "bg-blue-50",
-    borderColor: "border-blue-200",
-    textColor: "text-blue-700",
+    bgColor: "bg-blue-50 dark:bg-blue-950/20",
+    borderColor: "border-blue-200 dark:border-blue-800/50",
+    textColor: "text-blue-700 dark:text-blue-300",
     emoji: "🧽",
   },
   "FOH Set-Up & Service": {
     gradient: "from-purple-500 to-pink-500",
-    bgColor: "bg-purple-50",
-    borderColor: "border-purple-200",
-    textColor: "text-purple-700",
+    bgColor: "bg-purple-50 dark:bg-purple-950/20",
+    borderColor: "border-purple-200 dark:border-purple-800/50",
+    textColor: "text-purple-700 dark:text-purple-300",
     emoji: "✨",
   },
   "Front of House": {
     gradient: "from-green-500 to-emerald-500",
-    bgColor: "bg-green-50",
-    borderColor: "border-green-200",
-    textColor: "text-green-700",
+    bgColor: "bg-green-50 dark:bg-green-950/20",
+    borderColor: "border-green-200 dark:border-green-800/50",
+    textColor: "text-green-700 dark:text-green-300",
     emoji: "🌟",
   },
   "Kitchen Prep": {
     gradient: "from-orange-500 to-amber-500",
-    bgColor: "bg-orange-50",
-    borderColor: "border-orange-200",
-    textColor: "text-orange-700",
+    bgColor: "bg-orange-50 dark:bg-orange-950/20",
+    borderColor: "border-orange-200 dark:border-orange-800/50",
+    textColor: "text-orange-700 dark:text-orange-300",
     emoji: "🔪",
   },
   "Kitchen Prep & Service": {
     gradient: "from-red-500 to-pink-500",
-    bgColor: "bg-red-50",
-    borderColor: "border-red-200",
-    textColor: "text-red-700",
+    bgColor: "bg-red-50 dark:bg-red-950/20",
+    borderColor: "border-red-200 dark:border-red-800/50",
+    textColor: "text-red-700 dark:text-red-300",
     emoji: "🍳",
   },
   "Kitchen Service & Pack Down": {
     gradient: "from-indigo-500 to-purple-500",
-    bgColor: "bg-indigo-50",
-    borderColor: "border-indigo-200",
-    textColor: "text-indigo-700",
+    bgColor: "bg-indigo-50 dark:bg-indigo-950/20",
+    borderColor: "border-indigo-200 dark:border-indigo-800/50",
+    textColor: "text-indigo-700 dark:text-indigo-300",
     emoji: "📦",
   },
 } as const;
 
 const DEFAULT_THEME = {
   gradient: "from-gray-500 to-slate-500",
-  bgColor: "bg-gray-50",
-  borderColor: "border-gray-200",
-  textColor: "text-gray-700",
+  bgColor: "bg-gray-50 dark:bg-gray-950/20",
+  borderColor: "border-gray-200 dark:border-gray-800/50",
+  textColor: "text-gray-700 dark:text-gray-300",
   emoji: "❤️",
 };
 
@@ -538,7 +539,7 @@ export default async function MyShiftsPage({
         return (
           <Badge
             variant="outline"
-            className="bg-amber-50 text-amber-700 border-amber-200"
+            className="bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800/50"
           >
             <Timer className="h-3 w-3 mr-1" />
             Pending
@@ -546,7 +547,7 @@ export default async function MyShiftsPage({
         );
       case "CONFIRMED":
         return (
-          <Badge className="bg-green-50 text-green-700 border-green-200">
+          <Badge className="bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800/50">
             <CheckCircle className="h-3 w-3 mr-1" />
             {isPast ? "Completed" : "Confirmed"}
           </Badge>
@@ -585,106 +586,51 @@ export default async function MyShiftsPage({
       </div>
 
       {/* Stats Overview */}
-      <div
+      <AnimatedStatsGrid
+        useStatsGrid={false}
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6"
         data-testid="stats-overview"
-      >
-        <Card
-          className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 border-green-200"
-          data-testid="completed-shifts-card"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <div
-                className="text-2xl font-bold text-green-700"
-                data-testid="completed-shifts-count"
-              >
-                {completedShifts}
-              </div>
-              <div className="text-sm text-green-600 font-medium">
-                Completed
-              </div>
-            </div>
-            <div className="p-2 bg-green-100 rounded-lg">
-              <CheckCircle className="h-5 w-5 text-green-600" />
-            </div>
-          </div>
-        </Card>
-
-        <Card
-          className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-200"
-          data-testid="upcoming-shifts-card"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <div
-                className="text-2xl font-bold text-blue-700"
-                data-testid="upcoming-shifts-count"
-              >
-                {upcomingShifts}
-              </div>
-              <div className="text-sm text-blue-600 font-medium">Upcoming</div>
-            </div>
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Calendar className="h-5 w-5 text-blue-600" />
-            </div>
-          </div>
-        </Card>
-
-        <Card
-          className="p-4 bg-gradient-to-br from-purple-50 to-violet-50 border-purple-200"
-          data-testid="this-month-shifts-card"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <div
-                className="text-2xl font-bold text-purple-700"
-                data-testid="this-month-shifts-count"
-              >
-                {monthShifts.length}
-              </div>
-              <div className="text-sm text-purple-600 font-medium">
-                This Month
-              </div>
-            </div>
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <Timer className="h-5 w-5 text-purple-600" />
-            </div>
-          </div>
-        </Card>
-
-        <Card
-          className="p-4 bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200"
-          data-testid="total-hours-card"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <div
-                className="text-2xl font-bold text-amber-700"
-                data-testid="total-hours-count"
-              >
-                {Math.round(
-                  allShifts
-                    .filter(
-                      (s) => s.shift.end < now && s.status === "CONFIRMED"
-                    )
-                    .reduce(
-                      (total, s) =>
-                        total + differenceInHours(s.shift.end, s.shift.start),
-                      0
-                    )
-                )}
-              </div>
-              <div className="text-sm text-amber-600 font-medium">
-                Total Hours
-              </div>
-            </div>
-            <div className="p-2 bg-amber-100 rounded-lg">
-              <Timer className="h-5 w-5 text-amber-600" />
-            </div>
-          </div>
-        </Card>
-      </div>
+        stats={[
+          {
+            title: "Completed",
+            value: completedShifts,
+            iconType: "checkCircle",
+            variant: "green",
+            testId: "completed-shifts-card",
+          },
+          {
+            title: "Upcoming",
+            value: upcomingShifts,
+            iconType: "calendar",
+            variant: "blue",
+            testId: "upcoming-shifts-card",
+          },
+          {
+            title: "This Month",
+            value: monthShifts.length,
+            iconType: "timer",
+            variant: "purple",
+            testId: "this-month-shifts-card",
+          },
+          {
+            title: "Total Hours",
+            value: Math.round(
+              allShifts
+                .filter(
+                  (s) => s.shift.end < now && s.status === "CONFIRMED"
+                )
+                .reduce(
+                  (total, s) =>
+                    total + differenceInHours(s.shift.end, s.shift.start),
+                  0
+                )
+            ),
+            iconType: "timer",
+            variant: "amber",
+            testId: "total-hours-card",
+          },
+        ]}
+      />
 
       {/* Calendar View */}
       <Card data-testid="calendar-view">
@@ -809,12 +755,12 @@ export default async function MyShiftsPage({
                     transition-all duration-200 ease-in-out hover:scale-[1.02] hover:shadow-lg
                     ${
                       isPast
-                        ? "bg-gray-50/70 border border-gray-200/60 shadow-sm"
+                        ? "bg-gray-50/70 dark:bg-gray-900/30 border border-gray-200/60 dark:border-gray-700/60 shadow-sm"
                         : isToday
-                        ? "bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-300 shadow-md ring-2 ring-blue-200/40"
+                        ? "bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-indigo-950/40 border-2 border-blue-300 dark:border-blue-700 shadow-md ring-2 ring-blue-200/40 dark:ring-blue-800/40"
                         : isWeekend
-                        ? "bg-gray-50/50 border border-gray-200 shadow-sm hover:shadow-md"
-                        : "bg-white border border-gray-200 shadow-sm hover:shadow-md"
+                        ? "bg-gray-50/50 dark:bg-gray-900/20 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md"
+                        : "bg-white dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md"
                     }
                   `}
                 >
@@ -825,17 +771,17 @@ export default async function MyShiftsPage({
                         text-sm font-bold w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center
                         ${
                           isPast
-                            ? "text-gray-400"
+                            ? "text-gray-400 dark:text-gray-600"
                             : isToday
                             ? "text-white bg-blue-500 shadow-md"
-                            : "text-gray-700"
+                            : "text-gray-700 dark:text-gray-300"
                         }
                       `}
                     >
                       {format(day, "d")}
                     </div>
                     {isToday && (
-                      <div className="text-[10px] font-medium text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">
+                      <div className="text-[10px] font-medium text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/50 px-2 py-0.5 rounded-full">
                         Today
                       </div>
                     )}
@@ -895,7 +841,7 @@ export default async function MyShiftsPage({
                     ) : (
                       <div className="text-center">
                         {isPast ? (
-                          <div className="text-gray-400 text-xs font-medium">
+                          <div className="text-gray-400 dark:text-gray-600 text-xs font-medium">
                             No shifts
                           </div>
                         ) : availableShifts.length > 0 ? (
@@ -903,7 +849,7 @@ export default async function MyShiftsPage({
                             variant="outline"
                             size="sm"
                             asChild
-                            className="h-7 px-3 text-xs font-medium border-dashed border-blue-300 text-blue-600 hover:bg-blue-50 hover:border-blue-400 transition-all duration-200"
+                            className="h-7 px-3 text-xs font-medium border-dashed border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:border-blue-400 dark:hover:border-blue-600 transition-all duration-200"
                           >
                             <Link
                               href="/shifts"
@@ -919,7 +865,7 @@ export default async function MyShiftsPage({
                             </Link>
                           </Button>
                         ) : (
-                          <div className="text-gray-400 text-xs font-medium">
+                          <div className="text-gray-400 dark:text-gray-600 text-xs font-medium">
                             No shifts
                           </div>
                         )}

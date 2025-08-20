@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { GradientButton } from "@/components/ui/gradient-button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -36,37 +37,47 @@ export function FriendsManagerServer({
   return (
     <div className="space-y-8">
       {/* Enhanced Header Section */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div className="flex-1 max-w-md">
-          <FriendsSearch onSearchChange={setSearchTerm} />
-        </div>
+      <div className="bg-gradient-to-r from-primary/5 to-purple-500/5 dark:from-primary/10 dark:to-purple-500/10 rounded-xl p-6 border border-primary/10 dark:border-primary/20 shadow-sm">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="flex-1 max-w-md">
+            <div className="mb-3">
+              <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                <Users className="h-5 w-5 text-primary" />
+                Connect & Discover
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Search for friends and manage your volunteer network
+              </p>
+            </div>
+            <FriendsSearch onSearchChange={setSearchTerm} />
+          </div>
 
-        <div className="flex flex-col sm:flex-row gap-3">
-          <Button
-            variant="outline"
-            onClick={() => setShowPrivacySettings(true)}
-            data-testid="privacy-settings-button"
-            className="hover:bg-muted/50 transition-colors"
-          >
-            <Settings className="h-4 w-4 mr-2" />
-            Privacy Settings
-          </Button>
-          <Button
-            onClick={() => setShowSendRequest(true)}
-            data-testid="add-friend-button"
-            className="bg-primary hover:bg-primary/90 transition-colors"
-          >
-            <UserPlus className="h-4 w-4 mr-2" />
-            Add Friend
-            <Sparkles className="h-3 w-3 ml-2" />
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setShowPrivacySettings(true)}
+              data-testid="privacy-settings-button"
+              className="hover:bg-muted/50 hover:border-primary/30 transition-all duration-200 shadow-sm"
+            >
+              <Settings className="h-4 w-4 mr-2" />
+              Privacy Settings
+            </Button>
+            <GradientButton
+              onClick={() => setShowSendRequest(true)}
+              data-testid="add-friend-button"
+            >
+              <UserPlus className="h-4 w-4 mr-2" />
+              Add Friend
+              <Sparkles className="h-3 w-3 ml-2" />
+            </GradientButton>
+          </div>
         </div>
       </div>
 
       <Tabs defaultValue="friends" className="space-y-8">
         <TabsList
           data-testid="friends-tabs"
-          className="grid w-full grid-cols-2 lg:w-96"
+          className="grid w-full grid-cols-2 lg:w-96 bg-muted/50 dark:bg-muted/30 p-1 rounded-lg shadow-sm"
         >
           <TabsTrigger
             value="friends"

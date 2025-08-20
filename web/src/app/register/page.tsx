@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signIn, getProviders } from "next-auth/react";
 import { Button } from "@/components/ui/button";
+import { GradientButton } from "@/components/ui/gradient-button";
 import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
@@ -677,10 +678,10 @@ export default function RegisterPage() {
                   Previous
                 </Button>
 
-                <Button
+                <GradientButton
                   type="submit"
                   disabled={loading}
-                  className="flex items-center gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                  className="flex items-center gap-2"
                   data-testid="next-submit-button"
                 >
                   {loading ? (
@@ -701,7 +702,7 @@ export default function RegisterPage() {
                       <ArrowRight className="h-4 w-4" />
                     </>
                   )}
-                </Button>
+                </GradientButton>
               </div>
             </form>
           </CardContent>

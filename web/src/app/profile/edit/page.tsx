@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { GradientButton } from "@/components/ui/gradient-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
@@ -479,15 +480,15 @@ export default function EditProfilePage() {
                     {sections[currentSection].title}
                   </CardTitle>
                   {/* Always visible save button */}
-                  <Button
+                  <GradientButton
                     onClick={handleSubmit}
                     disabled={loading}
                     size="sm"
-                    className="flex items-center gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                    className="flex items-center gap-2"
                   >
                     <Save className="h-4 w-4" />
                     {loading ? "Saving..." : "Save"}
-                  </Button>
+                  </GradientButton>
                 </div>
               </CardHeader>
               <CardContent>
@@ -519,14 +520,14 @@ export default function EditProfilePage() {
                           <ArrowLeft className="h-4 w-4 rotate-180" />
                         </Button>
                       ) : (
-                        <Button
+                        <GradientButton
                           type="submit"
                           disabled={loading}
-                          className="flex items-center gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                          className="flex items-center gap-2"
                         >
                           <Save className="h-4 w-4" />
                           {loading ? "Saving..." : "Save Profile"}
-                        </Button>
+                        </GradientButton>
                       )}
                     </div>
                   </div>
