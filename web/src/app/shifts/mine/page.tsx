@@ -14,7 +14,7 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { AvatarList } from "@/components/ui/avatar-list";
 import {
   Dialog,
   DialogContent,
@@ -441,46 +441,12 @@ export default async function MyShiftsPage({
             {/* Friends joining */}
             {shift.shift.signups.length > 0 && (
               <div>
-                <div className="text-sm font-medium mb-2">Friends Joining</div>
-                <div className="space-y-2">
-                  {shift.shift.signups.map((signup) => {
-                    const displayName =
-                      signup.user.name ||
-                      `${signup.user.firstName || ""} ${
-                        signup.user.lastName || ""
-                      }`.trim() ||
-                      signup.user.email;
-                    const initials = (
-                      signup.user.firstName?.[0] ||
-                      signup.user.name?.[0] ||
-                      signup.user.email[0]
-                    ).toUpperCase();
-
-                    return (
-                      <div key={signup.id} className="flex items-center gap-3">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage
-                            src={signup.user.profilePhotoUrl || undefined}
-                            alt={displayName}
-                          />
-                          <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                            {initials}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <div className="text-sm font-medium">
-                            {displayName}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {signup.status === "CONFIRMED"
-                              ? "Confirmed"
-                              : "Pending"}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                <div className="text-sm font-medium mb-3">Friends Joining</div>
+                <AvatarList
+                  users={shift.shift.signups.map(signup => signup.user)}
+                  size="md"
+                  maxDisplay={6}
+                />
               </div>
             )}
 
