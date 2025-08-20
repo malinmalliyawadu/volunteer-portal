@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { CardContent } from "@/components/ui/card";
 import { PageHeader } from "@/components/page-header";
 import Link from "next/link";
+import { motion, Variants } from "motion/react";
 import { MotionSpinner } from "@/components/motion-spinner";
 import { MotionFormError, MotionFormSuccess } from "@/components/motion-form";
 import { MotionPageContainer } from "@/components/motion-page-container";
@@ -21,6 +22,42 @@ interface Provider {
   signinUrl: string;
   callbackUrl: string;
 }
+
+// Animation variants for staggered button animations
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2,
+    },
+  },
+};
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
+    },
+  },
+};
+
+const formFieldVariants: Variants = {
+  hidden: { opacity: 0, x: -20 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: {
+      duration: 0.4,
+      ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
+    },
+  },
+};
 
 export default function LoginPage() {
   const [email, setEmail] = useState("volunteer@example.com");
@@ -203,13 +240,21 @@ export default function LoginPage() {
           <CardContent className="p-8">
             {/* OAuth Providers */}
             {oauthProviders.length > 0 && (
-              <div className="space-y-3 mb-6" data-testid="oauth-providers">
-                <div className="text-center">
+              <motion.div 
+                className="mb-6" 
+                data-testid="oauth-providers"
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+              >
+                <motion.div className="text-center" variants={itemVariants}>
                   <p className="text-sm text-muted-foreground mb-4">
                     Sign in with your preferred method
                   </p>
-                </div>
+                </motion.div>
+                <div className="space-y-3">
                 {oauthProviders.map((provider) => (
+                  <motion.div key={provider.id} variants={itemVariants}>
                   <Button
                     key={provider.id}
                     onClick={() => handleOAuthSignIn(provider.id)}
@@ -231,9 +276,11 @@ export default function LoginPage() {
                       </>
                     )}
                   </Button>
+                  </motion.div>
                 ))}
+                </div>
 
-                <div className="relative my-6" data-testid="oauth-divider">
+                <motion.div className="relative my-6" data-testid="oauth-divider" variants={itemVariants}>
                   <div className="absolute inset-0 flex items-center">
                     <span className="w-full border-t border-border" />
                   </div>
@@ -242,12 +289,19 @@ export default function LoginPage() {
                       Or continue with email
                     </span>
                   </div>
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
             )}
 
-            <form onSubmit={onSubmit} className="space-y-6" data-testid="login-form">
-              <div className="space-y-2" data-testid="email-field">
+            <motion.form 
+              onSubmit={onSubmit} 
+              className="space-y-6" 
+              data-testid="login-form"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+            >
+              <motion.div className="space-y-2" data-testid="email-field" variants={formFieldVariants}>
                 <Label htmlFor="email" className="text-sm font-medium">
                   Email address
                 </Label>
@@ -262,9 +316,9 @@ export default function LoginPage() {
                   disabled={isLoading || oauthLoading !== null}
                   data-testid="email-input"
                 />
-              </div>
+              </motion.div>
 
-              <div className="space-y-2" data-testid="password-field">
+              <motion.div className="space-y-2" data-testid="password-field" variants={formFieldVariants}>
                 <Label htmlFor="password" className="text-sm font-medium">
                   Password
                 </Label>
@@ -279,7 +333,7 @@ export default function LoginPage() {
                   disabled={isLoading || oauthLoading !== null}
                   data-testid="password-input"
                 />
-              </div>
+              </motion.div>
 
               <MotionFormSuccess show={!!successMessage} data-testid="success-message">
                 <div className="flex items-center gap-2">
@@ -321,25 +375,33 @@ export default function LoginPage() {
                 </div>
               </MotionFormError>
 
-              <Button
-                type="submit"
-                className="w-full btn-primary"
-                size="lg"
-                disabled={isLoading || oauthLoading !== null}
-                data-testid="login-submit-button"
-              >
-                {isLoading ? (
-                  <div className="flex items-center gap-2">
-                    <MotionSpinner size="sm" color="white" />
-                    Signing in...
-                  </div>
-                ) : (
-                  "Sign in with Email"
-                )}
-              </Button>
-            </form>
+              <motion.div variants={formFieldVariants}>
+                <Button
+                  type="submit"
+                  className="w-full btn-primary"
+                  size="lg"
+                  disabled={isLoading || oauthLoading !== null}
+                  data-testid="login-submit-button"
+                >
+                  {isLoading ? (
+                    <div className="flex items-center gap-2">
+                      <MotionSpinner size="sm" color="white" />
+                      Signing in...
+                    </div>
+                  ) : (
+                    "Sign in with Email"
+                  )}
+                </Button>
+              </motion.div>
+            </motion.form>
 
-            <div className="mt-6 pt-6 border-t border-border" data-testid="login-footer">
+            <motion.div 
+              className="mt-6 pt-6 border-t border-border" 
+              data-testid="login-footer"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            >
               <div className="text-center mb-4">
                 <p className="text-sm text-muted-foreground">
                   Don&apos;t have an account yet?
@@ -378,7 +440,7 @@ export default function LoginPage() {
                   admin@everybodyeats.nz
                 </p>
               </div>
-            </div>
+            </motion.div>
           </CardContent>
         </MotionCard>
       </div>
