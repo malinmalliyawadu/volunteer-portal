@@ -11,13 +11,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { PageHeader } from "@/components/page-header";
 import { PageContainer } from "@/components/page-container";
 import { AnimatedStatsGrid } from "@/components/animated-stats-grid";
-import {
-  ArrowLeft,
-  Users,
-  Calendar,
-  TrendingUp,
-  Heart,
-} from "lucide-react";
+import { ArrowLeft, Users, Calendar, TrendingUp, Heart } from "lucide-react";
 
 export default async function FriendsStatsPage() {
   const session = await getServerSession(authOptions);
@@ -200,7 +194,7 @@ export default async function FriendsStatsPage() {
               title: "Total Friends",
               value: totalFriends,
               iconType: "checkCircle",
-              variant: "primary",
+              variant: "amber",
               testId: "total-friends",
             },
             {
@@ -260,7 +254,7 @@ export default async function FriendsStatsPage() {
                               src={friend.profilePhotoUrl || undefined}
                               alt={displayName}
                             />
-                            <AvatarFallback className="bg-primary/10 text-primary">
+                            <AvatarFallback className="bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary">
                               {initials}
                             </AvatarFallback>
                           </Avatar>

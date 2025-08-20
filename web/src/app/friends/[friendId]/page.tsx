@@ -277,7 +277,7 @@ export default async function FriendProfilePage({
               {daysSinceFriendship <= 30 && (
                 <Badge
                   variant="secondary"
-                  className="bg-green-100 text-green-700 border-green-200 w-fit"
+                  className="bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800 w-fit"
                 >
                   <Clock className="h-3 w-3 mr-1" />
                   New Friend
@@ -327,7 +327,7 @@ export default async function FriendProfilePage({
           <Card className="hover:shadow-lg transition-all duration-200">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                <div className="w-8 h-8 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center">
                   <Users className="h-4 w-4 text-primary" />
                 </div>
                 <span className="text-xl">{displayName}&apos;s Activity</span>
@@ -375,8 +375,8 @@ export default async function FriendProfilePage({
           <Card className="hover:shadow-lg transition-all duration-200">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                  <UserCheck className="h-4 w-4 text-green-600" />
+                <div className="w-8 h-8 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center">
+                  <UserCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
                 </div>
                 <span className="text-xl">Shared Volunteering</span>
               </CardTitle>
@@ -419,7 +419,7 @@ export default async function FriendProfilePage({
                 </div>
               ) : (
                 <div className="text-center py-12">
-                  <div className="w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <div className="w-16 h-16 bg-muted/50 dark:bg-muted/20 rounded-full flex items-center justify-center mx-auto mb-4">
                     <UserCheck className="h-8 w-8 text-muted-foreground/50" />
                   </div>
                   <h3 className="font-semibold mb-2">No shared shifts yet</h3>
@@ -465,7 +465,7 @@ export default async function FriendProfilePage({
                       key={signup.id}
                       className="flex items-center gap-3 p-3 border rounded-lg"
                     >
-                      <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                      <div className="w-12 h-12 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center">
                         <Calendar className="w-6 h-6 text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
