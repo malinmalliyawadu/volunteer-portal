@@ -8,7 +8,7 @@ interface MotionPageContainerProps {
   children: React.ReactNode;
   className?: string;
   animate?: boolean;
-  [key: string]: any; // Allow arbitrary props like data-testid
+  [key: string]: unknown; // Allow arbitrary props like data-testid
 }
 
 /**

@@ -6,7 +6,7 @@ import { fadeVariants, slideUpVariants, staggerContainer } from "@/lib/motion";
 interface AnimatedProps {
   children: React.ReactNode;
   className?: string;
-  [key: string]: any; // Allow arbitrary props like data-testid
+  [key: string]: unknown; // Allow arbitrary props like data-testid
 }
 
 // Animated wrapper for the home page

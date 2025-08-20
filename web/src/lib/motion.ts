@@ -3,7 +3,7 @@
  * Replaces Tailwind CSS animations and custom CSS keyframes
  */
 
-import { Variants, Transition } from "motion/react";
+import { Variants } from "motion/react";
 
 // Common easing curves
 export const easing = {

@@ -69,7 +69,7 @@ export function MotionFormError({
   children,
   show,
   ...props
-}: { children: React.ReactNode; show: boolean; [key: string]: any }) {
+}: { children: React.ReactNode; show: boolean; [key: string]: unknown }) {
   return (
     <AnimatePresence>
       {show && (
@@ -140,7 +140,7 @@ export function MotionFormSuccess({
   children,
   show,
   ...props 
-}: { children: React.ReactNode; show: boolean; [key: string]: any }) {
+}: { children: React.ReactNode; show: boolean; [key: string]: unknown }) {
   return (
     <AnimatePresence>
       {show && (

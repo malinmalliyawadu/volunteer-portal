@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { staggerContainer, staggerItem, cardHoverVariants } from "@/lib/motion";
+import { staggerContainer, staggerItem } from "@/lib/motion";
 
 interface AnimatedProps {
   children: React.ReactNode;

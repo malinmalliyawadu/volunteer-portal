@@ -12,7 +12,6 @@ import {
   CardContent 
 } from "@/components/ui/card";
 import { cardHoverVariants } from "@/lib/motion";
-import { cn } from "@/lib/utils";
 
 interface MotionCardProps extends React.ComponentProps<"div"> {
   enableMotion?: boolean;

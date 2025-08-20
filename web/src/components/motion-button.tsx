@@ -4,7 +4,6 @@ import * as React from "react";
 import { motion } from "motion/react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { buttonHoverVariants } from "@/lib/motion";
-import { cn } from "@/lib/utils";
 import { VariantProps } from "class-variance-authority";
 
 interface MotionButtonProps 
