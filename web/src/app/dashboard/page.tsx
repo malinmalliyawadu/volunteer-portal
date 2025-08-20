@@ -11,6 +11,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import AchievementsCard from "@/components/achievements-card";
 import { PageHeader } from "@/components/page-header";
 import { PageContainer } from "@/components/page-container";
+import { StatsGrid, StatCard, ContentSection, ContentGrid, BottomGrid } from "@/components/dashboard-animated";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -205,8 +206,9 @@ export default async function DashboardPage() {
       ></PageHeader>
 
       {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="animate-slide-up">
+      <StatsGrid>
+        <StatCard>
+        <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
@@ -233,8 +235,10 @@ export default async function DashboardPage() {
             </div>
           </CardContent>
         </Card>
+        </StatCard>
 
-        <Card className="animate-slide-up" style={{ animationDelay: "0.1s" }}>
+        <StatCard>
+        <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center">
@@ -261,8 +265,10 @@ export default async function DashboardPage() {
             </div>
           </CardContent>
         </Card>
+        </StatCard>
 
-        <Card className="animate-slide-up" style={{ animationDelay: "0.2s" }}>
+        <StatCard>
+        <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
@@ -294,8 +300,10 @@ export default async function DashboardPage() {
             </div>
           </CardContent>
         </Card>
+        </StatCard>
 
-        <Card className="animate-slide-up" style={{ animationDelay: "0.3s" }}>
+        <StatCard>
+        <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
@@ -320,14 +328,13 @@ export default async function DashboardPage() {
             </div>
           </CardContent>
         </Card>
-      </div>
+        </StatCard>
+      </StatsGrid>
 
-      <div className="flex flex-wrap gap-6">
+      <ContentGrid>
         {/* Next Shift */}
-        <Card
-          className="animate-slide-up h-fit flex-1 min-w-80"
-          style={{ animationDelay: "0.5s" }}
-        >
+        <ContentSection delay={0.2}>
+        <Card className="h-fit flex-1 min-w-80">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <svg
@@ -448,12 +455,11 @@ export default async function DashboardPage() {
             )}
           </CardContent>
         </Card>
+        </ContentSection>
 
         {/* Recent Activity */}
-        <Card
-          className="animate-slide-up h-fit flex-1 min-w-80"
-          style={{ animationDelay: "0.6s" }}
-        >
+        <ContentSection delay={0.3}>
+        <Card className="h-fit flex-1 min-w-80">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <svg
@@ -538,13 +544,12 @@ export default async function DashboardPage() {
             )}
           </CardContent>
         </Card>
+        </ContentSection>
 
         {/* Friends Activity */}
         {friendsUpcomingShifts.length > 0 && (
-          <Card
-            className="animate-slide-up h-fit flex-1 min-w-80"
-            style={{ animationDelay: "0.7s" }}
-          >
+          <ContentSection delay={0.4}>
+          <Card className="h-fit flex-1 min-w-80">
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -629,18 +634,19 @@ export default async function DashboardPage() {
               </div>
             </CardContent>
           </Card>
+          </ContentSection>
         )}
-      </div>
+      </ContentGrid>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <BottomGrid>
         {/* Achievements */}
-        <AchievementsCard />
+        <ContentSection delay={0.5}>
+          <AchievementsCard />
+        </ContentSection>
 
         {/* Impact & Community Stats */}
-        <Card
-          className="animate-slide-up h-fit"
-          style={{ animationDelay: "0.8s" }}
-        >
+        <ContentSection delay={0.6}>
+        <Card className="h-fit">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <svg
@@ -701,13 +707,12 @@ export default async function DashboardPage() {
             </div>
           </CardContent>
         </Card>
-      </div>
+        </ContentSection>
+      </BottomGrid>
 
       {/* Quick Actions */}
-      <Card
-        className="animate-slide-up h-fit"
-        style={{ animationDelay: "0.9s" }}
-      >
+      <ContentSection delay={0.7}>
+      <Card className="h-fit">
         <CardHeader>
           <CardTitle>Quick Actions</CardTitle>
         </CardHeader>
@@ -802,6 +807,7 @@ export default async function DashboardPage() {
           </div>
         </CardContent>
       </Card>
+      </ContentSection>
     </PageContainer>
   );
 }

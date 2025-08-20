@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { NotificationList } from "@/components/notification-list";
 import { useNotificationStream } from "@/hooks/use-notification-stream";
-import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "motion/react";
+import { dropdownVariants } from "@/lib/motion";
 
 interface NotificationBellProps {
   userId: string;
@@ -92,20 +93,23 @@ export function NotificationBell({ userId }: NotificationBellProps) {
         </span>
       </Button>
       
-      {isOpen && (
-        <div
-          className={cn(
-            "absolute right-0 top-full mt-2 w-96 max-h-96 overflow-hidden z-[100] bg-background border border-border rounded-lg shadow-lg",
-            "animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 duration-200"
-          )}
-          data-testid="notification-dropdown"
-        >
-          <NotificationList
-            onNotificationsRead={handleNotificationsRead}
-            onClose={() => setIsOpen(false)}
-          />
-        </div>
-      )}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            className="absolute right-0 top-full mt-2 w-96 max-h-96 overflow-hidden z-[100] bg-background border border-border rounded-lg shadow-lg"
+            variants={dropdownVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            data-testid="notification-dropdown"
+          >
+            <NotificationList
+              onNotificationsRead={handleNotificationsRead}
+              onClose={() => setIsOpen(false)}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
