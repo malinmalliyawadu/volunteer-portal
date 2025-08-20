@@ -609,7 +609,7 @@ export default async function MyShiftsPage({
   );
 
   return (
-    <PageContainer testId="my-shifts-page">
+    <PageContainer testid="my-shifts-page">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <PageHeader
           title="My Shifts"
@@ -619,11 +619,20 @@ export default async function MyShiftsPage({
       </div>
 
       {/* Stats Overview */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6" data-testid="stats-overview">
-        <Card className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 border-green-200" data-testid="completed-shifts-card">
+      <div
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6"
+        data-testid="stats-overview"
+      >
+        <Card
+          className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 border-green-200"
+          data-testid="completed-shifts-card"
+        >
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-2xl font-bold text-green-700" data-testid="completed-shifts-count">
+              <div
+                className="text-2xl font-bold text-green-700"
+                data-testid="completed-shifts-count"
+              >
                 {completedShifts}
               </div>
               <div className="text-sm text-green-600 font-medium">
@@ -636,10 +645,16 @@ export default async function MyShiftsPage({
           </div>
         </Card>
 
-        <Card className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-200" data-testid="upcoming-shifts-card">
+        <Card
+          className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-200"
+          data-testid="upcoming-shifts-card"
+        >
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-2xl font-bold text-blue-700" data-testid="upcoming-shifts-count">
+              <div
+                className="text-2xl font-bold text-blue-700"
+                data-testid="upcoming-shifts-count"
+              >
                 {upcomingShifts}
               </div>
               <div className="text-sm text-blue-600 font-medium">Upcoming</div>
@@ -650,10 +665,16 @@ export default async function MyShiftsPage({
           </div>
         </Card>
 
-        <Card className="p-4 bg-gradient-to-br from-purple-50 to-violet-50 border-purple-200" data-testid="this-month-shifts-card">
+        <Card
+          className="p-4 bg-gradient-to-br from-purple-50 to-violet-50 border-purple-200"
+          data-testid="this-month-shifts-card"
+        >
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-2xl font-bold text-purple-700" data-testid="this-month-shifts-count">
+              <div
+                className="text-2xl font-bold text-purple-700"
+                data-testid="this-month-shifts-count"
+              >
                 {monthShifts.length}
               </div>
               <div className="text-sm text-purple-600 font-medium">
@@ -666,10 +687,16 @@ export default async function MyShiftsPage({
           </div>
         </Card>
 
-        <Card className="p-4 bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200" data-testid="total-hours-card">
+        <Card
+          className="p-4 bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200"
+          data-testid="total-hours-card"
+        >
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-2xl font-bold text-amber-700" data-testid="total-hours-count">
+              <div
+                className="text-2xl font-bold text-amber-700"
+                data-testid="total-hours-count"
+              >
                 {Math.round(
                   allShifts
                     .filter(
@@ -705,12 +732,18 @@ export default async function MyShiftsPage({
                 <div className="text-xl font-bold" data-testid="calendar-title">
                   {format(viewMonth, "MMMM yyyy")}
                 </div>
-                <div className="text-sm text-muted-foreground font-normal" data-testid="calendar-description">
+                <div
+                  className="text-sm text-muted-foreground font-normal"
+                  data-testid="calendar-description"
+                >
                   Your volunteer schedule
                 </div>
               </div>
             </CardTitle>
-            <div className="flex items-center gap-1 sm:gap-2" data-testid="calendar-navigation">
+            <div
+              className="flex items-center gap-1 sm:gap-2"
+              data-testid="calendar-navigation"
+            >
               <Button
                 variant="outline"
                 size="sm"
@@ -771,7 +804,10 @@ export default async function MyShiftsPage({
         </CardHeader>
         <CardContent className="p-6">
           {/* Calendar Grid */}
-          <div className="grid grid-cols-7 gap-1 sm:gap-3" data-testid="calendar-grid">
+          <div
+            className="grid grid-cols-7 gap-1 sm:gap-3"
+            data-testid="calendar-grid"
+          >
             {/* Day headers */}
             {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
               (day, index) => (

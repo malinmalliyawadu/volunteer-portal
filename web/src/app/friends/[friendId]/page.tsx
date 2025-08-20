@@ -229,7 +229,7 @@ export default async function FriendProfilePage({
   ).toUpperCase();
 
   return (
-    <PageContainer testId="friend-profile-page">
+    <PageContainer testid="friend-profile-page">
       <div className="space-y-6">
         {/* Header with back button */}
         <div className="flex items-center gap-4">

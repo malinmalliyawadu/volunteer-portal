@@ -63,7 +63,7 @@ export default async function ProfilePage() {
     : [];
 
   return (
-    <PageContainer testId="profile-page">
+    <PageContainer testid="profile-page">
       <PageHeader
         title="Your Profile"
         description="Manage your volunteer account and track your impact"

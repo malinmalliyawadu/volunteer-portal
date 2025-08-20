@@ -5,6 +5,7 @@ interface PageContainerProps {
   children: React.ReactNode;
   className?: string;
   animate?: boolean;
+  testid?: string;
   [key: string]: unknown; // Allow arbitrary props like data-testid
 }
 
@@ -13,23 +14,25 @@ interface PageContainerProps {
  * - Standard max-width (6xl) and centering
  * - Consistent spacing between sections (space-y-8)
  * - Motion.dev animations instead of CSS animations
- * 
+ *
  * Usage:
  * <PageContainer>
  *   <PageHeader title="..." />
  *   <section>...</section>
  * </PageContainer>
  */
-export function PageContainer({ 
-  children, 
+export function PageContainer({
+  children,
   className,
   animate = true,
+  testid,
   ...props
 }: PageContainerProps) {
   return (
     <MotionPageContainer
       className={cn("space-y-8", className)}
       animate={animate}
+      testid={testid}
       {...props}
     >
       {children}

@@ -220,7 +220,7 @@ export default async function EditShiftPage({
   const isPastShift = shift.start <= new Date();
 
   return (
-    <PageContainer testId="edit-shift-page">
+    <PageContainer testid="edit-shift-page">
       <PageHeader
         title="Edit shift"
         description={`Modify details for ${shift.shiftType.name} on ${format(

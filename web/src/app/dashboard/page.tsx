@@ -205,7 +205,7 @@ export default async function DashboardPage() {
   )[0]?.[0];
 
   return (
-    <PageContainer testId="dashboard-page">
+    <PageContainer testid="dashboard-page">
       <PageHeader
         title={`Welcome back${userName ? `, ${userName}` : ""}!`}
         description="Here's what's happening with your volunteer journey"

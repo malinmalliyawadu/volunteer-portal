@@ -16,30 +16,26 @@ interface MotionPageContainerProps {
  * Motion-enhanced page container with fade-in animation
  * Replaces the CSS animate-fade-in with motion.dev
  */
-export function MotionPageContainer({ 
-  children, 
+export function MotionPageContainer({
+  children,
   className,
   animate = true,
   testid,
   ...props
 }: MotionPageContainerProps) {
   const testProps = testid ? { "data-testid": testid } : {};
-  
+
   // If animations are disabled, just return a regular div
   if (!animate) {
     return (
-      <div 
-        className={cn("space-y-8", className)}
-        {...props}
-        {...testProps}
-      >
+      <div className={cn("space-y-8", className)} {...props} {...testProps}>
         {children}
       </div>
     );
   }
 
   return (
-    <motion.div 
+    <motion.div
       className={cn("space-y-8", className)}
       variants={fadeVariants}
       initial="hidden"
