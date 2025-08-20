@@ -117,7 +117,7 @@ export default async function ResourcesPage({
 
   return (
     <div className="min-h-screen">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto">
         <PageHeader
           title="Resource Hub"
           description="Access training materials, guides, videos, and helpful resources to enhance your volunteer experience"
