@@ -14,22 +14,22 @@ interface MotionContentCardProps extends React.ComponentProps<typeof Card> {
  * Motion-enhanced Card for dashboard content sections
  * Includes slide-up animation with configurable delay
  */
-export function MotionContentCard({ 
-  children, 
-  className, 
+export function MotionContentCard({
+  children,
+  className,
   delay = 0,
-  ...props 
+  ...props
 }: MotionContentCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ 
-        duration: 0.3, 
+      transition={{
+        duration: 0.3,
         ease: [0.4, 0, 0.2, 1],
-        delay 
+        delay,
       }}
-      className="h-full"
+      className="h-full contents"
     >
       <Card className={cn("h-full", className)} {...props}>
         {children}
