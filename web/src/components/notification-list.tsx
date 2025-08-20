@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { NotificationItem } from "@/components/notification-item";
 import { Loader2, CheckCheck, Bell } from "lucide-react";
 import { Notification } from "@prisma/client";
+import { motion } from "motion/react";
+import { staggerContainer, staggerItem } from "@/lib/motion";
 
 interface NotificationListProps {
   onNotificationsRead?: () => void;
@@ -84,7 +86,9 @@ export function NotificationList({ onNotificationsRead, onClose }: NotificationL
   if (loading) {
     return (
       <div className="p-4 flex items-center justify-center text-muted-foreground" data-testid="notification-loading">
-        <Loader2 className="h-6 w-6 animate-spin" />
+        <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}>
+          <Loader2 className="h-6 w-6" />
+        </motion.div>
         <span className="ml-2">Loading notifications...</span>
       </div>
     );
@@ -133,17 +137,24 @@ export function NotificationList({ onNotificationsRead, onClose }: NotificationL
         </div>
       ) : (
         <div className="max-h-80 overflow-y-auto">
-          <div className="divide-y" data-testid="notification-list">
+          <motion.div 
+            className="divide-y" 
+            data-testid="notification-list"
+            variants={staggerContainer}
+            initial="hidden"
+            animate="visible"
+          >
             {notifications.map((notification) => (
-              <NotificationItem
-                key={notification.id}
-                notification={notification}
-                onRead={handleNotificationRead}
-                onDelete={handleNotificationDelete}
-                onClick={onClose}
-              />
+              <motion.div key={notification.id} variants={staggerItem}>
+                <NotificationItem
+                  notification={notification}
+                  onRead={handleNotificationRead}
+                  onDelete={handleNotificationDelete}
+                  onClick={onClose}
+                />
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       )}
     </div>

@@ -183,6 +183,57 @@ Example testid usage:
 
 Run tests before committing changes that affect user flows.
 
+## Animation System
+
+This project uses **motion.dev** for all animations. We've migrated from CSS animations and tw-animate-css to motion.dev for better performance and developer experience.
+
+### Animation Guidelines
+
+1. **Use Motion.dev Components**: Import motion wrappers instead of using CSS animations
+   ```tsx
+   // ❌ Don't use CSS classes
+   <div className="animate-fade-in animate-slide-up">
+   
+   // ✅ Use motion components
+   import { motion } from "motion/react";
+   <motion.div variants={slideUpVariants} initial="hidden" animate="visible">
+   ```
+
+2. **Animation Utilities**: All animation variants are in `/src/lib/motion.ts`
+   - `fadeVariants` - Fade in/out animations
+   - `slideUpVariants` - Slide up entrance animations
+   - `staggerContainer` & `staggerItem` - For lists and grids
+   - `cardHoverVariants` - Card hover effects
+   - `buttonHoverVariants` - Button interactions
+
+3. **Motion Components Available**:
+   - `MotionButton` - Enhanced button with hover/tap animations
+   - `MotionCard` - Card with hover lift effect
+   - `MotionDialog` - Dialog with entrance/exit animations
+   - `MotionStatCard` - Dashboard stat cards with stagger
+   - Loading skeletons in `/src/components/loading-skeleton.tsx`
+
+4. **Dashboard Animations**: Use the wrappers in `/src/components/dashboard-animated.tsx`
+   - `StatsGrid` - Grid container with stagger
+   - `ContentSection` - Section with configurable delay
+   - `ContentGrid` & `BottomGrid` - Layout containers
+
+5. **Page Transitions**: For auth pages, use `/src/components/auth-animated.tsx`
+   - `AuthPageContainer` - Page fade-in
+   - `AuthCard` - Form card slide-up
+   - `FormStepTransition` - Multi-step form transitions
+
+6. **Testing with Animations**: 
+   - Animations are automatically disabled during e2e tests via `.e2e-testing` class
+   - Use `data-testid` attributes for reliable element selection
+
+### Adding New Animations
+
+1. Define variants in `/src/lib/motion.ts`
+2. Create motion wrapper components as needed
+3. Maintain grid/flex layouts by avoiding unnecessary wrapper divs
+4. Test animations across different screen sizes
+
 ## Development Tips
 
 1. **Type Safety**: Use generated Prisma types for database operations
@@ -190,6 +241,7 @@ Run tests before committing changes that affect user flows.
 3. **Error Handling**: API routes should return appropriate HTTP status codes
 4. **Session Checks**: Always verify session and role for protected operations
 5. **Database Queries**: Include necessary relations in Prisma queries to avoid N+1 problems
+6. **Animations**: Use motion.dev components, not CSS animations
 
 ## Versioning System
 

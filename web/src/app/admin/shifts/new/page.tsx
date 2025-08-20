@@ -294,7 +294,7 @@ export default async function NewShiftPage() {
   });
 
   return (
-    <PageContainer testId="create-shift-page">
+    <PageContainer testid="create-shift-page">
       <PageHeader
         title="Create shifts"
         description="Schedule new volunteer shifts efficiently with single or bulk creation options."

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import { acceptFriendRequest } from "@/lib/friends-actions";
+import { MotionSpinner } from "@/components/motion-spinner";
 
 interface AcceptFriendRequestButtonProps {
   requestId: string;
@@ -34,7 +35,7 @@ export function AcceptFriendRequestButton({ requestId }: AcceptFriendRequestButt
     >
       {isAccepting ? (
         <>
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1" />
+          <MotionSpinner className="h-4 w-4 border-b-2 border-white mr-1" />
           Accepting...
         </>
       ) : (
