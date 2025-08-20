@@ -5,13 +5,13 @@ import { motion } from "motion/react";
 import { StatsGrid } from "@/components/dashboard-animated";
 import { StatsCard } from "@/components/ui/stats-card";
 import { staggerItem, staggerContainer } from "@/lib/motion";
-import { CheckCircle, Clock, Calendar, TrendingUp, Timer } from "lucide-react";
+import { CheckCircle, Clock, Calendar, TrendingUp, Timer, Heart, Handshake } from "lucide-react";
 
 interface StatData {
   title: string;
   value: string | number;
   subtitle?: string;
-  iconType: "checkCircle" | "clock" | "calendar" | "trendingUp" | "timer";
+  iconType: "checkCircle" | "clock" | "calendar" | "trendingUp" | "timer" | "heart" | "handshake";
   variant: "green" | "blue" | "purple" | "amber" | "red" | "primary";
   testId?: string;
 }
@@ -29,6 +29,8 @@ const iconMap = {
   calendar: Calendar,
   trendingUp: TrendingUp,
   timer: Timer,
+  heart: Heart,
+  handshake: Handshake,
 };
 
 export function AnimatedStatsGrid({ stats, useStatsGrid = true, className, "data-testid": dataTestId }: AnimatedStatsGridProps) {

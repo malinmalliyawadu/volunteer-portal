@@ -10,11 +10,11 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { PageHeader } from "@/components/page-header";
 import { PageContainer } from "@/components/page-container";
+import { AnimatedStatsGrid } from "@/components/animated-stats-grid";
 import {
   ArrowLeft,
   Users,
   Calendar,
-  Clock,
   TrendingUp,
   Heart,
 } from "lucide-react";
@@ -193,69 +193,39 @@ export default async function FriendsStatsPage() {
         />
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                  <Users className="w-6 h-6 text-primary" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{totalFriends}</p>
-                  <p className="text-sm text-muted-foreground">Total Friends</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center">
-                  <Calendar className="w-6 h-6 text-green-600 dark:text-green-400" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{activeFriends}</p>
-                  <p className="text-sm text-muted-foreground">
-                    Active This Month
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center">
-                  <TrendingUp className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{recentFriends}</p>
-                  <p className="text-sm text-muted-foreground">
-                    New This Month
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/50 rounded-full flex items-center justify-center">
-                  <Clock className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{averageFriendshipDays}</p>
-                  <p className="text-sm text-muted-foreground">
-                    Avg. Days Connected
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <AnimatedStatsGrid
+          data-testid="friends-stats-grid"
+          stats={[
+            {
+              title: "Total Friends",
+              value: totalFriends,
+              iconType: "checkCircle",
+              variant: "primary",
+              testId: "total-friends",
+            },
+            {
+              title: "Active This Month",
+              value: activeFriends,
+              iconType: "calendar",
+              variant: "green",
+              testId: "active-friends",
+            },
+            {
+              title: "New This Month",
+              value: recentFriends,
+              iconType: "trendingUp",
+              variant: "blue",
+              testId: "recent-friends",
+            },
+            {
+              title: "Avg. Days Connected",
+              value: averageFriendshipDays,
+              iconType: "clock",
+              variant: "purple",
+              testId: "avg-days-connected",
+            },
+          ]}
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Recent Friends */}

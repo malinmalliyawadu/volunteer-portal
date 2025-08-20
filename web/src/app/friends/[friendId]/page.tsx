@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { PageContainer } from "@/components/page-container";
+import { AnimatedStatsGrid } from "@/components/animated-stats-grid";
 import {
   ArrowLeft,
   Users,
@@ -287,79 +288,39 @@ export default async function FriendProfilePage({
         </div>
 
         {/* Enhanced Friendship & Activity Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="hover:shadow-lg transition-all duration-200 hover:-translate-y-1">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full flex items-center justify-center">
-                  <Heart className="w-7 h-7 text-primary" />
-                </div>
-                <div>
-                  <p className="text-3xl font-bold text-primary">
-                    {daysSinceFriendship}
-                  </p>
-                  <p className="text-sm text-muted-foreground font-medium">
-                    Days Connected
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-all duration-200 hover:-translate-y-1">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 bg-gradient-to-br from-green-100 to-green-50 rounded-full flex items-center justify-center">
-                  <Handshake className="w-7 h-7 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-3xl font-bold text-green-600">
-                    {sharedShiftsCount}
-                  </p>
-                  <p className="text-sm text-muted-foreground font-medium">
-                    Shared Shifts
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-all duration-200 hover:-translate-y-1">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 bg-gradient-to-br from-blue-100 to-blue-50 rounded-full flex items-center justify-center">
-                  <TrendingUp className="w-7 h-7 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-3xl font-bold text-blue-600">
-                    {friendTotalShifts}
-                  </p>
-                  <p className="text-sm text-muted-foreground font-medium">
-                    Total Shifts
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-all duration-200 hover:-translate-y-1">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 bg-gradient-to-br from-purple-100 to-purple-50 rounded-full flex items-center justify-center">
-                  <Clock className="w-7 h-7 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-3xl font-bold text-purple-600">
-                    {friendTotalHours}
-                  </p>
-                  <p className="text-sm text-muted-foreground font-medium">
-                    Hours Volunteered
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <AnimatedStatsGrid
+          data-testid="friend-stats-grid"
+          stats={[
+            {
+              title: "Days Connected",
+              value: daysSinceFriendship,
+              iconType: "heart",
+              variant: "red",
+              testId: "days-connected",
+            },
+            {
+              title: "Shared Shifts",
+              value: sharedShiftsCount,
+              iconType: "handshake",
+              variant: "green",
+              testId: "shared-shifts",
+            },
+            {
+              title: "Total Shifts",
+              value: friendTotalShifts,
+              iconType: "trendingUp",
+              variant: "blue",
+              testId: "total-shifts",
+            },
+            {
+              title: "Hours Volunteered",
+              value: friendTotalHours,
+              iconType: "clock",
+              variant: "purple",
+              testId: "hours-volunteered",
+            },
+          ]}
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Enhanced Friend's Activity Summary */}
