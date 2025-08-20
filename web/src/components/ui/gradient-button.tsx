@@ -1,9 +1,11 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
-import { Button, ButtonProps } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
+import { type VariantProps } from "class-variance-authority"
 
-export interface GradientButtonProps extends ButtonProps {
+export interface GradientButtonProps extends React.ComponentProps<"button">, VariantProps<typeof buttonVariants> {
   gradient?: "primary" | "success" | "warning" | "danger" | "info"
+  asChild?: boolean
 }
 
 const gradientVariants = {
