@@ -1354,6 +1354,275 @@ async function main() {
     console.error("Warning: Could not seed achievements:", error.message);
   }
 
+  // Seed resource categories and resources
+  console.log("📚 Seeding resource categories and resources...");
+  try {
+    const adminUser = await prisma.user.findUnique({
+      where: { email: adminEmail },
+    });
+
+    if (adminUser) {
+      // Create resource categories
+      const categories = [
+        {
+          name: "Training Materials",
+          description: "Essential training guides and onboarding materials for new volunteers",
+          icon: "🎓",
+          color: "#3B82F6",
+          sortOrder: 1,
+        },
+        {
+          name: "Safety Guidelines",
+          description: "Food safety, health protocols, and safety procedures",
+          icon: "🛡️",
+          color: "#EF4444",
+          sortOrder: 2,
+        },
+        {
+          name: "Procedures",
+          description: "Step-by-step guides for volunteer tasks and processes",
+          icon: "📋",
+          color: "#10B981",
+          sortOrder: 3,
+        },
+        {
+          name: "Videos",
+          description: "Training videos and demonstrations",
+          icon: "🎥",
+          color: "#8B5CF6",
+          sortOrder: 4,
+        },
+        {
+          name: "Forms & Documents",
+          description: "Important forms, policies, and documentation",
+          icon: "📄",
+          color: "#F59E0B",
+          sortOrder: 5,
+        },
+        {
+          name: "Community Resources",
+          description: "Information about our community partners and additional resources",
+          icon: "🤝",
+          color: "#06B6D4",
+          sortOrder: 6,
+        },
+      ];
+
+      const createdCategories = [];
+      for (const categoryData of categories) {
+        const category = await prisma.resourceCategory.upsert({
+          where: { name: categoryData.name },
+          update: categoryData,
+          create: categoryData,
+        });
+        createdCategories.push(category);
+      }
+
+      console.log(`✅ Created ${createdCategories.length} resource categories`);
+
+      // Create sample resources
+      const resources = [
+        // Training Materials
+        {
+          title: "New Volunteer Orientation Guide",
+          description: "Complete guide for new volunteers covering our mission, values, and basic procedures",
+          type: "DOCUMENT",
+          categoryId: createdCategories[0].id,
+          isFeatured: true,
+          tags: ["orientation", "new volunteers", "getting started"],
+          sortOrder: 1,
+        },
+        {
+          title: "Kitchen Basics Training",
+          description: "Essential kitchen skills and safety procedures for food preparation volunteers",
+          type: "ARTICLE",
+          categoryId: createdCategories[0].id,
+          isFeatured: true,
+          tags: ["kitchen", "training", "food prep"],
+          sortOrder: 2,
+        },
+        {
+          title: "Front of House Service Guide",
+          description: "Customer service guidelines and dining room procedures for front of house volunteers",
+          type: "DOCUMENT",
+          categoryId: createdCategories[0].id,
+          tags: ["front of house", "customer service", "dining room"],
+          sortOrder: 3,
+        },
+
+        // Safety Guidelines
+        {
+          title: "Food Safety and Hygiene Standards",
+          description: "Comprehensive food safety protocols and hygiene requirements for all volunteers",
+          type: "DOCUMENT",
+          categoryId: createdCategories[1].id,
+          isFeatured: true,
+          tags: ["food safety", "hygiene", "health", "requirements"],
+          sortOrder: 1,
+        },
+        {
+          title: "Emergency Procedures",
+          description: "What to do in case of emergencies, including fire safety and first aid procedures",
+          type: "DOCUMENT",
+          categoryId: createdCategories[1].id,
+          tags: ["emergency", "fire safety", "first aid", "procedures"],
+          sortOrder: 2,
+        },
+        {
+          title: "COVID-19 Safety Protocols",
+          description: "Current health and safety protocols related to COVID-19 prevention",
+          type: "ARTICLE",
+          categoryId: createdCategories[1].id,
+          tags: ["covid-19", "health", "safety", "protocols"],
+          sortOrder: 3,
+        },
+
+        // Procedures
+        {
+          title: "Shift Check-in and Check-out Process",
+          description: "Step-by-step guide for signing in and out of volunteer shifts",
+          type: "ARTICLE",
+          categoryId: createdCategories[2].id,
+          tags: ["shifts", "check-in", "attendance", "process"],
+          sortOrder: 1,
+        },
+        {
+          title: "Equipment Operation Manual",
+          description: "How to safely operate kitchen equipment and cleaning tools",
+          type: "DOCUMENT",
+          categoryId: createdCategories[2].id,
+          tags: ["equipment", "kitchen", "operation", "tools"],
+          sortOrder: 2,
+        },
+        {
+          title: "Inventory Management Guide",
+          description: "Procedures for managing food inventory and supply tracking",
+          type: "ARTICLE",
+          categoryId: createdCategories[2].id,
+          tags: ["inventory", "supplies", "food", "tracking"],
+          sortOrder: 3,
+        },
+
+        // Videos
+        {
+          title: "Welcome to Everybody Eats",
+          description: "Introduction video explaining our mission and impact in the community",
+          type: "VIDEO",
+          url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", // Placeholder
+          categoryId: createdCategories[3].id,
+          isFeatured: true,
+          tags: ["welcome", "mission", "introduction", "impact"],
+          sortOrder: 1,
+        },
+        {
+          title: "Proper Hand Washing Technique",
+          description: "Demonstration of proper hand washing techniques for food safety",
+          type: "VIDEO",
+          url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", // Placeholder
+          categoryId: createdCategories[3].id,
+          tags: ["hand washing", "hygiene", "food safety", "demonstration"],
+          sortOrder: 2,
+        },
+        {
+          title: "Kitchen Equipment Safety Demo",
+          description: "Video demonstration of safe operation of kitchen equipment",
+          type: "VIDEO",
+          url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", // Placeholder
+          categoryId: createdCategories[3].id,
+          tags: ["equipment", "safety", "kitchen", "demonstration"],
+          sortOrder: 3,
+        },
+
+        // Forms & Documents
+        {
+          title: "Volunteer Agreement Form",
+          description: "Official volunteer agreement and code of conduct document",
+          type: "DOCUMENT",
+          categoryId: createdCategories[4].id,
+          tags: ["agreement", "legal", "code of conduct", "policy"],
+          sortOrder: 1,
+        },
+        {
+          title: "Incident Report Form",
+          description: "Form to report any incidents, accidents, or safety concerns during shifts",
+          type: "DOCUMENT",
+          categoryId: createdCategories[4].id,
+          tags: ["incident", "report", "safety", "accident"],
+          sortOrder: 2,
+        },
+        {
+          title: "Volunteer Privacy Policy",
+          description: "Information about how we collect, use, and protect volunteer personal information",
+          type: "DOCUMENT",
+          categoryId: createdCategories[4].id,
+          tags: ["privacy", "policy", "data protection", "legal"],
+          sortOrder: 3,
+        },
+
+        // Community Resources
+        {
+          title: "Community Partner Directory",
+          description: "List of our community partners and collaborative organizations",
+          type: "ARTICLE",
+          categoryId: createdCategories[5].id,
+          tags: ["partners", "community", "organizations", "collaboration"],
+          sortOrder: 1,
+        },
+        {
+          title: "Food Rescue Network",
+          description: "Information about local food rescue initiatives and how to get involved",
+          type: "LINK",
+          url: "https://www.foodrescue.org", // Placeholder
+          categoryId: createdCategories[5].id,
+          tags: ["food rescue", "network", "sustainability", "environment"],
+          sortOrder: 2,
+        },
+        {
+          title: "Volunteer Opportunities Beyond EE",
+          description: "Other volunteer opportunities in the community for those wanting to expand their impact",
+          type: "ARTICLE",
+          categoryId: createdCategories[5].id,
+          tags: ["opportunities", "community", "volunteering", "impact"],
+          sortOrder: 3,
+        },
+      ];
+
+      let resourceCount = 0;
+      for (const resourceData of resources) {
+        // Check if resource already exists by title
+        const existingResource = await prisma.resource.findFirst({
+          where: { title: resourceData.title },
+        });
+
+        if (existingResource) {
+          // Update existing resource
+          await prisma.resource.update({
+            where: { id: existingResource.id },
+            data: {
+              ...resourceData,
+              createdBy: adminUser.id,
+            },
+          });
+        } else {
+          // Create new resource
+          await prisma.resource.create({
+            data: {
+              ...resourceData,
+              createdBy: adminUser.id,
+            },
+          });
+        }
+        resourceCount++;
+      }
+
+      console.log(`✅ Created ${resourceCount} sample resources`);
+    } else {
+      console.log("⚠️ Could not find admin user for resource seeding");
+    }
+  } catch (error) {
+    console.error("Warning: Could not seed resources:", error.message);
+  }
+
   // Download and convert profile images after all users are created
   await downloadAndConvertProfileImages();
 }
