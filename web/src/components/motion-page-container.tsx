@@ -8,6 +8,7 @@ interface MotionPageContainerProps {
   children: React.ReactNode;
   className?: string;
   animate?: boolean;
+  testid?: string;
   [key: string]: unknown; // Allow arbitrary props like data-testid
 }
 
@@ -19,14 +20,18 @@ export function MotionPageContainer({
   children, 
   className,
   animate = true,
+  testid,
   ...props
 }: MotionPageContainerProps) {
+  const testProps = testid ? { "data-testid": testid } : {};
+  
   // If animations are disabled, just return a regular div
   if (!animate) {
     return (
       <div 
         className={cn("space-y-8", className)}
         {...props}
+        {...testProps}
       >
         {children}
       </div>
@@ -40,6 +45,7 @@ export function MotionPageContainer({
       initial="hidden"
       animate="visible"
       {...props}
+      {...testProps}
     >
       {children}
     </motion.div>

@@ -189,7 +189,7 @@ export default function LoginPage() {
   };
 
   return (
-    <MotionPageContainer className="min-h-[80vh] flex items-center justify-center" data-testid="login-page">
+    <MotionPageContainer className="min-h-[80vh] flex items-center justify-center" testid="login-page">
       <div className="w-full max-w-md">
         <div className="text-center">
           <PageHeader
@@ -199,7 +199,7 @@ export default function LoginPage() {
           />
         </div>
 
-        <MotionCard className="" data-testid="login-form-card">
+        <MotionCard className="" testid="login-form-card">
           <CardContent className="p-8">
             {/* OAuth Providers */}
             {oauthProviders.length > 0 && (

@@ -16,6 +16,7 @@ import { cardHoverVariants } from "@/lib/motion";
 interface MotionCardProps extends React.ComponentProps<"div"> {
   enableMotion?: boolean;
   hoverEffect?: boolean;
+  testid?: string;
 }
 
 /**
@@ -27,11 +28,14 @@ function MotionCard({
   hoverEffect = true,
   className,
   children,
+  testid,
   ...props
 }: MotionCardProps) {
+  const testProps = testid ? { "data-testid": testid } : {};
+
   if (!enableMotion || !hoverEffect) {
     return (
-      <Card className={className} {...props}>
+      <Card className={className} {...props} {...testProps}>
         {children}
       </Card>
     );
@@ -43,6 +47,7 @@ function MotionCard({
       initial="rest"
       animate="rest"
       whileHover="hover"
+      {...testProps}
     >
       <Card className={className} {...props}>
         {children}

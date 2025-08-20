@@ -11,6 +11,7 @@ interface MotionButtonProps
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
   enableMotion?: boolean;
+  testid?: string;
 }
 
 /**
@@ -21,10 +22,13 @@ export function MotionButton({
   enableMotion = true,
   className,
   children,
+  testid,
   ...props 
 }: MotionButtonProps) {
+  const testProps = testid ? { "data-testid": testid } : {};
+
   if (!enableMotion) {
-    return <Button className={className} {...props}>{children}</Button>;
+    return <Button className={className} {...props} {...testProps}>{children}</Button>;
   }
 
   return (
@@ -34,6 +38,7 @@ export function MotionButton({
       whileHover="hover"
       whileTap="tap"
       className="inline-block"
+      {...testProps}
     >
       <Button className={className} {...props}>
         {children}

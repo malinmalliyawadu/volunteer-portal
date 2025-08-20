@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 interface MotionFormProps {
   children: React.ReactNode;
   className?: string;
+  testid?: string;
 }
 
 /**
@@ -14,8 +15,11 @@ interface MotionFormProps {
 export function MotionFormField({ 
   children, 
   className,
+  testid,
   delay = 0 
 }: MotionFormProps & { delay?: number }) {
+  const testProps = testid ? { "data-testid": testid } : {};
+
   return (
     <motion.div
       className={cn(className)}
@@ -26,6 +30,7 @@ export function MotionFormField({
         ease: [0.4, 0, 0.2, 1],
         delay 
       }}
+      {...testProps}
     >
       {children}
     </motion.div>

@@ -8,6 +8,7 @@ interface MotionSpinnerProps {
   className?: string;
   size?: "sm" | "md" | "lg";
   color?: "primary" | "white" | "muted";
+  testid?: string;
 }
 
 /**
@@ -17,7 +18,8 @@ interface MotionSpinnerProps {
 export function MotionSpinner({ 
   className, 
   size = "md",
-  color = "primary" 
+  color = "primary",
+  testid
 }: MotionSpinnerProps) {
   const sizeClasses = {
     sm: "h-4 w-4",
@@ -31,11 +33,14 @@ export function MotionSpinner({
     muted: "text-muted-foreground"
   };
 
+  const testProps = testid ? { "data-testid": testid } : {};
+
   return (
     <motion.div
       animate={{ rotate: 360 }}
       transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
       className={cn(sizeClasses[size], colorClasses[color], className)}
+      {...testProps}
     >
       <Loader2 />
     </motion.div>
