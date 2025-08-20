@@ -71,7 +71,7 @@ export function ResourceSearch({
     <div className="space-y-4 mb-8">
       {/* Search Form */}
       <form onSubmit={handleSearchSubmit} className="flex gap-2">
-        <div className="relative flex-1">
+        <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
             placeholder="Search resources..."
@@ -80,7 +80,7 @@ export function ResourceSearch({
             className="pl-10"
           />
         </div>
-        <Button type="submit">Search</Button>
+        <Button type="submit" className="px-6">Search</Button>
       </form>
 
       {/* Filters */}
