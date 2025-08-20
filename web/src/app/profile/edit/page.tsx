@@ -25,6 +25,7 @@ import {
   CommunicationStep,
   UserProfileFormData,
 } from "@/components/forms/user-profile-form";
+import { MotionPageContainer } from "@/components/motion-page-container";
 
 /**
  * Multi-section profile editing page
@@ -366,7 +367,7 @@ export default function EditProfilePage() {
 
   return (
     <div className="min-h-screen">
-      <div className="max-w-6xl mx-auto p-6 space-y-8 animate-fade-in">
+      <MotionPageContainer className="max-w-6xl mx-auto p-6 space-y-8">
         <PageHeader
           title="Edit Your Profile"
           description="Update your volunteer profile to help us provide you with the best possible experience. Your information is kept secure and confidential."
@@ -534,7 +535,7 @@ export default function EditProfilePage() {
             </Card>
           </>
         )}
-      </div>
+      </MotionPageContainer>
     </div>
   );
 }
