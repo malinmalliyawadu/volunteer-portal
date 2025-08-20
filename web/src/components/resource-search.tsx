@@ -87,16 +87,16 @@ export function ResourceSearch({
       <div className="flex flex-wrap gap-4">
         {/* Category Filter */}
         <Select
-          value={selectedCategory || ""}
+          value={selectedCategory || "all"}
           onValueChange={(value) =>
-            updateSearch({ category: value || undefined })
+            updateSearch({ category: value === "all" ? undefined : value })
           }
         >
           <SelectTrigger className="w-48">
             <SelectValue placeholder="All Categories" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Categories</SelectItem>
+            <SelectItem value="all">All Categories</SelectItem>
             {categories.map((category) => (
               <SelectItem key={category.id} value={category.id}>
                 <div className="flex items-center gap-2">
@@ -113,16 +113,16 @@ export function ResourceSearch({
 
         {/* Type Filter */}
         <Select
-          value={selectedType || ""}
+          value={selectedType || "all"}
           onValueChange={(value) =>
-            updateSearch({ type: value || undefined })
+            updateSearch({ type: value === "all" ? undefined : value })
           }
         >
           <SelectTrigger className="w-40">
             <SelectValue placeholder="All Types" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Types</SelectItem>
+            <SelectItem value="all">All Types</SelectItem>
             {resourceTypes.map((type) => (
               <SelectItem key={type.value} value={type.value}>
                 {type.label}
