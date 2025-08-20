@@ -1,3 +1,9 @@
+## [0.15.0] - 2025-08-20
+
+### Changes
+- feat: unified stats cards system and dark mode improvements ([#59](https://github.com/malinmalliyawadu/volunteer-portal/pull/59)) by @malinmalliyawadu
+
+
 ## [0.14.0] - 2025-08-20
 
 ### Changes
