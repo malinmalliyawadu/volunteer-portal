@@ -1,3 +1,9 @@
+## [0.14.0] - 2025-08-20
+
+### Changes
+- feat: implement Animata-inspired avatar list for friends joining shifts ([#58](https://github.com/malinmalliyawadu/volunteer-portal/pull/58)) by @malinmalliyawadu
+
+
 ## [0.13.0] - 2025-08-20
 
 ### Changes
