@@ -85,10 +85,10 @@ export default async function GroupBookingDetailPage({
 
   // Check if the current user is the leader
   const isLeader = groupBooking.leaderId === userId;
-  
+
   // Check if the current user is a member
-  const isMember = groupBooking.signups.some(s => s.user.id === userId);
-  
+  const isMember = groupBooking.signups.some((s) => s.user.id === userId);
+
   // If not leader or member, redirect
   if (!isLeader && !isMember) {
     redirect("/shifts/mine");
@@ -96,26 +96,30 @@ export default async function GroupBookingDetailPage({
 
   // Categorize invitations and members
   const acceptedMembers = groupBooking.signups.filter(
-    s => s.status !== "CANCELED"
+    (s) => s.status !== "CANCELED"
   );
   const pendingInvites = groupBooking.invitations.filter(
-    i => i.status === "PENDING"
+    (i) => i.status === "PENDING"
   );
   const declinedInvites = groupBooking.invitations.filter(
-    i => i.status === "DECLINED"
+    (i) => i.status === "DECLINED"
   );
   const expiredInvites = groupBooking.invitations.filter(
-    i => i.status === "EXPIRED"
+    (i) => i.status === "EXPIRED"
   );
 
   // Check member registration status
-  const membersWithStatus = acceptedMembers.map(signup => {
+  const membersWithStatus = acceptedMembers.map((signup) => {
     const user = signup.user;
     const hasBasicInfo = user.firstName && user.lastName && user.phone;
-    const hasEmergencyContact = user.emergencyContactName && user.emergencyContactPhone;
-    const hasAgreements = user.volunteerAgreementAccepted && user.healthSafetyPolicyAccepted;
-    const isComplete = user.profileCompleted || (hasBasicInfo && hasEmergencyContact && hasAgreements);
-    
+    const hasEmergencyContact =
+      user.emergencyContactName && user.emergencyContactPhone;
+    const hasAgreements =
+      user.volunteerAgreementAccepted && user.healthSafetyPolicyAccepted;
+    const isComplete =
+      user.profileCompleted ||
+      (hasBasicInfo && hasEmergencyContact && hasAgreements);
+
     return {
       ...signup,
       registrationStatus: isComplete ? "complete" : "incomplete",
@@ -127,8 +131,12 @@ export default async function GroupBookingDetailPage({
     };
   });
 
-  const completeMembers = membersWithStatus.filter(m => m.registrationStatus === "complete");
-  const incompleteMembers = membersWithStatus.filter(m => m.registrationStatus === "incomplete");
+  const completeMembers = membersWithStatus.filter(
+    (m) => m.registrationStatus === "complete"
+  );
+  const incompleteMembers = membersWithStatus.filter(
+    (m) => m.registrationStatus === "incomplete"
+  );
 
   function StatusBadge({ status }: { status: string }) {
     switch (status) {
@@ -176,7 +184,7 @@ export default async function GroupBookingDetailPage({
   }
 
   return (
-    <PageContainer testId="group-booking-detail-page">
+    <PageContainer testid="group-booking-detail-page">
       <PageHeader
         title={groupBooking.name}
         description={groupBooking.description || "Group booking details"}
@@ -198,7 +206,9 @@ export default async function GroupBookingDetailPage({
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4 text-muted-foreground" />
               <div>
-                <p className="text-sm font-medium">{groupBooking.shift.shiftType.name}</p>
+                <p className="text-sm font-medium">
+                  {groupBooking.shift.shiftType.name}
+                </p>
                 <p className="text-xs text-muted-foreground">
                   {format(groupBooking.shift.start, "EEE, dd MMM yyyy")}
                 </p>
@@ -209,7 +219,8 @@ export default async function GroupBookingDetailPage({
               <div>
                 <p className="text-sm font-medium">Time</p>
                 <p className="text-xs text-muted-foreground">
-                  {format(groupBooking.shift.start, "h:mm a")} – {format(groupBooking.shift.end, "h:mm a")}
+                  {format(groupBooking.shift.start, "h:mm a")} –{" "}
+                  {format(groupBooking.shift.end, "h:mm a")}
                 </p>
               </div>
             </div>
@@ -244,8 +255,10 @@ export default async function GroupBookingDetailPage({
                   Registration Incomplete
                 </p>
                 <p className="text-sm text-amber-700 dark:text-amber-400 mt-1">
-                  {incompleteMembers.length} member{incompleteMembers.length > 1 ? "s have" : " has"} not completed 
-                  their registration. The group cannot be approved until all members complete their profiles.
+                  {incompleteMembers.length} member
+                  {incompleteMembers.length > 1 ? "s have" : " has"} not
+                  completed their registration. The group cannot be approved
+                  until all members complete their profiles.
                 </p>
               </div>
             </div>
@@ -277,14 +290,21 @@ export default async function GroupBookingDetailPage({
                       </div>
                       <div>
                         <p className="font-medium">
-                          {member.user.firstName} {member.user.lastName || member.user.name || member.user.email}
+                          {member.user.firstName}{" "}
+                          {member.user.lastName ||
+                            member.user.name ||
+                            member.user.email}
                         </p>
-                        <p className="text-sm text-muted-foreground">{member.user.email}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {member.user.email}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       {member.user.id === groupBooking.leaderId && (
-                        <Badge variant="outline" className="text-xs">Leader</Badge>
+                        <Badge variant="outline" className="text-xs">
+                          Leader
+                        </Badge>
                       )}
                       <Badge className="bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300">
                         <CheckCircle className="h-3 w-3 mr-1" />
@@ -322,21 +342,32 @@ export default async function GroupBookingDetailPage({
                         <p className="font-medium">
                           {member.user.name || member.user.email}
                         </p>
-                        <p className="text-sm text-muted-foreground">{member.user.email}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {member.user.email}
+                        </p>
                         <div className="flex gap-2 mt-1">
                           {member.missingFields.basicInfo && (
-                            <span className="text-xs text-amber-600">Missing: Basic Info</span>
+                            <span className="text-xs text-amber-600">
+                              Missing: Basic Info
+                            </span>
                           )}
                           {member.missingFields.emergencyContact && (
-                            <span className="text-xs text-amber-600">Missing: Emergency Contact</span>
+                            <span className="text-xs text-amber-600">
+                              Missing: Emergency Contact
+                            </span>
                           )}
                           {member.missingFields.agreements && (
-                            <span className="text-xs text-amber-600">Missing: Agreements</span>
+                            <span className="text-xs text-amber-600">
+                              Missing: Agreements
+                            </span>
                           )}
                         </div>
                       </div>
                     </div>
-                    <Badge variant="outline" className="bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300">
+                    <Badge
+                      variant="outline"
+                      className="bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300"
+                    >
                       <AlertCircle className="h-3 w-3 mr-1" />
                       Incomplete
                     </Badge>
@@ -381,7 +412,10 @@ export default async function GroupBookingDetailPage({
                         )}
                       </div>
                     </div>
-                    <Badge variant="outline" className="bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
+                    <Badge
+                      variant="outline"
+                      className="bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300"
+                    >
                       <Clock className="h-3 w-3 mr-1" />
                       Awaiting Response
                     </Badge>
@@ -398,7 +432,8 @@ export default async function GroupBookingDetailPage({
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                 <UserX className="h-5 w-5" />
-                Unable to Join ({declinedInvites.length + expiredInvites.length})
+                Unable to Join ({declinedInvites.length + expiredInvites.length}
+                )
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -413,13 +448,20 @@ export default async function GroupBookingDetailPage({
                         <UserX className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                       </div>
                       <div>
-                        <p className="font-medium line-through text-gray-600">{invite.email}</p>
+                        <p className="font-medium line-through text-gray-600">
+                          {invite.email}
+                        </p>
                         <p className="text-sm text-muted-foreground">
-                          {invite.status === "DECLINED" ? "Declined invitation" : "Invitation expired"}
+                          {invite.status === "DECLINED"
+                            ? "Declined invitation"
+                            : "Invitation expired"}
                         </p>
                       </div>
                     </div>
-                    <Badge variant="outline" className="bg-gray-100 text-gray-700 dark:bg-gray-900/50 dark:text-gray-300">
+                    <Badge
+                      variant="outline"
+                      className="bg-gray-100 text-gray-700 dark:bg-gray-900/50 dark:text-gray-300"
+                    >
                       {invite.status === "DECLINED" ? "Declined" : "Expired"}
                     </Badge>
                   </div>

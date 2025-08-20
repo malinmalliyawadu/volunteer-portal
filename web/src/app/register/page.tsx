@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signIn, getProviders } from "next-auth/react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -29,6 +29,9 @@ import {
   CommunicationStep,
   UserProfileFormData,
 } from "@/components/forms/user-profile-form";
+import { MotionSpinner } from "@/components/motion-spinner";
+import { MotionPageContainer } from "@/components/motion-page-container";
+import { MotionCard } from "@/components/motion-card";
 
 interface Provider {
   id: string;
@@ -463,7 +466,7 @@ export default function RegisterPage() {
                       data-testid={`oauth-${provider.id}-button`}
                     >
                       {oauthLoading === provider.id ? (
-                        <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                        <MotionSpinner size="sm" />
                       ) : (
                         <>
                           {getProviderIcon(provider.id)}
@@ -572,8 +575,8 @@ export default function RegisterPage() {
   }, []);
 
   return (
-    <div className="min-h-screen" data-testid="register-page">
-      <div className="max-w-4xl mx-auto p-6 space-y-8 animate-fade-in">
+    <MotionPageContainer className="min-h-screen" data-testid="register-page">
+      <div className="max-w-4xl mx-auto p-6 space-y-8">
         <PageHeader
           title="Join Everybody Eats"
           description="Create your volunteer account and start making a difference in your community. The registration process takes about 5-10 minutes to complete."
@@ -647,7 +650,7 @@ export default function RegisterPage() {
         </div>
 
         {/* Form Content */}
-        <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm" data-testid="registration-form-card">
+        <MotionCard className="shadow-lg border-0 bg-white/80 backdrop-blur-sm" data-testid="registration-form-card">
           <CardHeader className="pb-6">
             <CardTitle className="flex items-center gap-3 text-xl" data-testid="form-step-title">
               {React.createElement(steps[currentStep].icon, {
@@ -682,7 +685,7 @@ export default function RegisterPage() {
                 >
                   {loading ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <MotionSpinner size="sm" color="white" />
                       {currentStep === steps.length - 1
                         ? "Creating Account..."
                         : "Processing..."}
@@ -702,8 +705,8 @@ export default function RegisterPage() {
               </div>
             </form>
           </CardContent>
-        </Card>
+        </MotionCard>
       </div>
-    </div>
+    </MotionPageContainer>
   );
 }

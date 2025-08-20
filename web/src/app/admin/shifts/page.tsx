@@ -182,7 +182,7 @@ export default async function AdminShiftsPage({
       location?: string;
     };
   } = {};
-  
+
   if (selectedLocation || dateFrom || dateTo) {
     groupBookingFilter.shift = {
       ...(selectedLocation && { location: selectedLocation }),
@@ -190,62 +190,63 @@ export default async function AdminShiftsPage({
     };
   }
 
-  const [upcomingCount, pastCount, upcoming, past, allGroupBookings] = await Promise.all([
-    prisma.shift.count({ where: upcomingFilter }),
-    prisma.shift.count({ where: pastFilter }),
-    prisma.shift.findMany({
-      where: upcomingFilter,
-      orderBy: { start: "asc" },
-      include: { 
-        shiftType: true, 
-        signups: { include: { user: true } },
-        groupBookings: {
-          include: {
-            leader: { select: { id: true, name: true, email: true } },
-            signups: { include: { user: true } },
-            invitations: true,
+  const [upcomingCount, pastCount, upcoming, past, allGroupBookings] =
+    await Promise.all([
+      prisma.shift.count({ where: upcomingFilter }),
+      prisma.shift.count({ where: pastFilter }),
+      prisma.shift.findMany({
+        where: upcomingFilter,
+        orderBy: { start: "asc" },
+        include: {
+          shiftType: true,
+          signups: { include: { user: true } },
+          groupBookings: {
+            include: {
+              leader: { select: { id: true, name: true, email: true } },
+              signups: { include: { user: true } },
+              invitations: true,
+            },
           },
         },
-      },
-      skip: (uPage - 1) * uSize,
-      take: uSize,
-    }),
-    prisma.shift.findMany({
-      where: pastFilter,
-      orderBy: { start: "desc" },
-      include: { 
-        shiftType: true, 
-        signups: { include: { user: true } },
-        groupBookings: {
-          include: {
-            leader: { select: { id: true, name: true, email: true } },
-            signups: { include: { user: true } },
-            invitations: true,
+        skip: (uPage - 1) * uSize,
+        take: uSize,
+      }),
+      prisma.shift.findMany({
+        where: pastFilter,
+        orderBy: { start: "desc" },
+        include: {
+          shiftType: true,
+          signups: { include: { user: true } },
+          groupBookings: {
+            include: {
+              leader: { select: { id: true, name: true, email: true } },
+              signups: { include: { user: true } },
+              invitations: true,
+            },
           },
         },
-      },
-      skip: (pPage - 1) * pSize,
-      take: pSize,
-    }),
-    // Fetch all group bookings separately for the dedicated section
-    prisma.groupBooking.findMany({
-      where: groupBookingFilter,
-      include: {
-        shift: {
-          include: { shiftType: true },
+        skip: (pPage - 1) * pSize,
+        take: pSize,
+      }),
+      // Fetch all group bookings separately for the dedicated section
+      prisma.groupBooking.findMany({
+        where: groupBookingFilter,
+        include: {
+          shift: {
+            include: { shiftType: true },
+          },
+          leader: { select: { id: true, name: true, email: true } },
+          signups: {
+            include: { user: true },
+          },
+          invitations: true,
         },
-        leader: { select: { id: true, name: true, email: true } },
-        signups: { 
-          include: { user: true },
-        },
-        invitations: true,
-      },
-      orderBy: [
-        { status: "asc" }, // PENDING first, then CONFIRMED, etc.
-        { createdAt: "desc" },
-      ],
-    }),
-  ]);
+        orderBy: [
+          { status: "asc" }, // PENDING first, then CONFIRMED, etc.
+          { createdAt: "desc" },
+        ],
+      }),
+    ]);
 
   type ShiftWithAll = (typeof upcoming)[number];
 
@@ -513,7 +514,7 @@ export default async function AdminShiftsPage({
             </div>
           </div>
 
-          {s.signups.filter(signup => !signup.groupBookingId).length === 0 ? (
+          {s.signups.filter((signup) => !signup.groupBookingId).length === 0 ? (
             <div
               className="text-center py-8 sm:py-10 bg-gradient-to-br from-slate-50 to-gray-50 rounded-xl border border-slate-100"
               data-testid={`no-signups-${s.id}`}
@@ -521,7 +522,9 @@ export default async function AdminShiftsPage({
               <div className="h-12 w-12 mx-auto mb-3 rounded-full bg-white shadow-sm flex items-center justify-center">
                 <Users className="h-6 w-6 text-slate-400" />
               </div>
-              <p className="text-slate-600 font-medium">No individual signups yet</p>
+              <p className="text-slate-600 font-medium">
+                No individual signups yet
+              </p>
               <p className="text-sm text-slate-500 mt-1">
                 Individual volunteers will appear here once they sign up
               </p>
@@ -535,7 +538,12 @@ export default async function AdminShiftsPage({
                     <Users className="h-4 w-4" />
                     Individual Signups
                     <span className="text-xs font-normal text-slate-500">
-                      ({s.signups.filter(signup => !signup.groupBookingId).length} individuals)
+                      (
+                      {
+                        s.signups.filter((signup) => !signup.groupBookingId)
+                          .length
+                      }{" "}
+                      individuals)
                     </span>
                   </h4>
                 </div>
@@ -548,7 +556,7 @@ export default async function AdminShiftsPage({
                 </div>
                 <div className="space-y-1.5 mt-2">
                   {s.signups
-                    .filter(signup => !signup.groupBookingId)
+                    .filter((signup) => !signup.groupBookingId)
                     .slice()
                     .sort(
                       (
@@ -691,455 +699,500 @@ export default async function AdminShiftsPage({
   }
 
   return (
-    <PageContainer testId="admin-shifts-page">
+    <PageContainer testid="admin-shifts-page">
       <PageHeader
-          title="Admin · Shifts"
-          description="Manage volunteer shifts and view signup details"
-          actions={
-            <Button
-              asChild
-              size="sm"
-              className="btn-primary gap-2"
-              data-testid="create-shift-button"
-            >
-              <Link href="/admin/shifts/new">
-                <Plus className="h-4 w-4" />
-                Create shift
-              </Link>
-            </Button>
-          }
-        />
-
-        {/* Success Messages */}
-        {created && (
-          <Alert
-            className="mb-6 border-green-200 bg-green-50"
-            data-testid="shift-created-message"
+        title="Admin · Shifts"
+        description="Manage volunteer shifts and view signup details"
+        actions={
+          <Button
+            asChild
+            size="sm"
+            className="btn-primary gap-2"
+            data-testid="create-shift-button"
           >
-            <CheckCircle className="h-4 w-4 text-green-600" />
-            <AlertDescription className="text-green-800">
-              {created === "1"
-                ? "Shift created successfully!"
-                : `${created} shifts created successfully!`}
-            </AlertDescription>
-          </Alert>
-        )}
+            <Link href="/admin/shifts/new">
+              <Plus className="h-4 w-4" />
+              Create shift
+            </Link>
+          </Button>
+        }
+      />
 
-        {updated && (
-          <Alert
-            className="mb-6 border-green-200 bg-green-50"
-            data-testid="shift-updated-message"
-          >
-            <CheckCircle className="h-4 w-4 text-green-600" />
-            <AlertDescription className="text-green-800">
-              Shift updated successfully!
-              {isPastEdit && " (Note: This was a past shift)"}
-            </AlertDescription>
-          </Alert>
-        )}
+      {/* Success Messages */}
+      {created && (
+        <Alert
+          className="mb-6 border-green-200 bg-green-50"
+          data-testid="shift-created-message"
+        >
+          <CheckCircle className="h-4 w-4 text-green-600" />
+          <AlertDescription className="text-green-800">
+            {created === "1"
+              ? "Shift created successfully!"
+              : `${created} shifts created successfully!`}
+          </AlertDescription>
+        </Alert>
+      )}
 
-        {deleted && (
-          <Alert
-            className="mb-6 border-green-200 bg-green-50"
-            data-testid="shift-deleted-message"
-          >
-            <CheckCircle className="h-4 w-4 text-green-600" />
-            <AlertDescription className="text-green-800">
-              Shift deleted successfully! All associated signups have been
-              removed.
-            </AlertDescription>
-          </Alert>
-        )}
+      {updated && (
+        <Alert
+          className="mb-6 border-green-200 bg-green-50"
+          data-testid="shift-updated-message"
+        >
+          <CheckCircle className="h-4 w-4 text-green-600" />
+          <AlertDescription className="text-green-800">
+            Shift updated successfully!
+            {isPastEdit && " (Note: This was a past shift)"}
+          </AlertDescription>
+        </Alert>
+      )}
 
-        {/* Filters */}
-        <div className="mb-8" data-testid="filters-section">
-          <Card className="shadow-md border-slate-200 bg-white/80 backdrop-blur-sm">
-            <CardHeader className="">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg font-semibold flex items-center gap-2.5">
-                  <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-sm">
-                    <Filter className="h-4 w-4 text-white" />
-                  </div>
-                  <span className="text-slate-800">Filters</span>
-                </CardTitle>
-                {(selectedLocation || dateFrom || dateTo) && (
-                  <Button
-                    asChild
-                    variant="ghost"
-                    size="sm"
-                    className="text-slate-500 hover:text-slate-700 gap-1"
-                    data-testid="clear-filters-button"
-                  >
-                    <Link href="/admin/shifts">
-                      <X className="h-3 w-3" />
-                      Clear all filters
-                    </Link>
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <FilterControls
-                selectedLocation={selectedLocation}
-                rawDateFrom={rawDateFrom}
-                rawDateTo={rawDateTo}
-                locations={LOCATIONS}
-              />
-            </CardContent>
-          </Card>
-        </div>
+      {deleted && (
+        <Alert
+          className="mb-6 border-green-200 bg-green-50"
+          data-testid="shift-deleted-message"
+        >
+          <CheckCircle className="h-4 w-4 text-green-600" />
+          <AlertDescription className="text-green-800">
+            Shift deleted successfully! All associated signups have been
+            removed.
+          </AlertDescription>
+        </Alert>
+      )}
 
-        {/* Group Bookings Section */}
-        {allGroupBookings.length > 0 && (
-          <section className="mb-12" data-testid="group-bookings-section">
-            <div className="flex items-center gap-3 mb-6">
-              <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-800 to-purple-600 bg-clip-text text-transparent">
-                Group Bookings
-              </h2>
-              <Badge
-                variant="outline"
-                className="bg-gradient-to-r from-purple-50 to-pink-50 text-purple-700 border-purple-200 font-semibold px-2.5 py-1"
-              >
-                {allGroupBookings.length}
-              </Badge>
+      {/* Filters */}
+      <div className="mb-8" data-testid="filters-section">
+        <Card className="shadow-md border-slate-200 bg-white/80 backdrop-blur-sm">
+          <CardHeader className="">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg font-semibold flex items-center gap-2.5">
+                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-sm">
+                  <Filter className="h-4 w-4 text-white" />
+                </div>
+                <span className="text-slate-800">Filters</span>
+              </CardTitle>
+              {(selectedLocation || dateFrom || dateTo) && (
+                <Button
+                  asChild
+                  variant="ghost"
+                  size="sm"
+                  className="text-slate-500 hover:text-slate-700 gap-1"
+                  data-testid="clear-filters-button"
+                >
+                  <Link href="/admin/shifts">
+                    <X className="h-3 w-3" />
+                    Clear all filters
+                  </Link>
+                </Button>
+              )}
             </div>
-            
-            <div className="grid gap-4" data-testid="group-bookings-list">
-              {allGroupBookings.map((groupBooking) => {
-                const pendingInvites = groupBooking.invitations.filter(inv => inv.status === "PENDING").length;
-                const hasPendingInvitations = pendingInvites > 0;
-                const hasIncompleteMembers = groupBooking.signups.some(signup => {
-                  const user = signup.user;
-                  const hasBasicInfo = user.firstName && user.lastName && user.phone;
-                  const hasEmergencyContact = user.emergencyContactName && user.emergencyContactPhone;
-                  const hasAgreements = user.volunteerAgreementAccepted && user.healthSafetyPolicyAccepted;
-                  const isProfileComplete = user.profileCompleted || (hasBasicInfo && hasEmergencyContact && hasAgreements);
-                  return !isProfileComplete;
-                });
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <FilterControls
+              selectedLocation={selectedLocation}
+              rawDateFrom={rawDateFrom}
+              rawDateTo={rawDateTo}
+              locations={LOCATIONS}
+            />
+          </CardContent>
+        </Card>
+      </div>
 
-                return (
-                  <Card
-                    key={groupBooking.id}
-                    className="group shadow-sm border-purple-200 hover:shadow-lg transition-all duration-300 hover:border-purple-300 bg-gradient-to-r from-purple-50/30 to-pink-50/30"
-                    data-testid={`group-booking-card-${groupBooking.id}`}
-                  >
-                    <CardContent className="p-6">
-                      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start gap-4 mb-4">
-                            <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center flex-shrink-0 shadow-md">
-                              <Users className="h-6 w-6 text-white" />
+      {/* Group Bookings Section */}
+      {allGroupBookings.length > 0 && (
+        <section className="mb-12" data-testid="group-bookings-section">
+          <div className="flex items-center gap-3 mb-6">
+            <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-800 to-purple-600 bg-clip-text text-transparent">
+              Group Bookings
+            </h2>
+            <Badge
+              variant="outline"
+              className="bg-gradient-to-r from-purple-50 to-pink-50 text-purple-700 border-purple-200 font-semibold px-2.5 py-1"
+            >
+              {allGroupBookings.length}
+            </Badge>
+          </div>
+
+          <div className="grid gap-4" data-testid="group-bookings-list">
+            {allGroupBookings.map((groupBooking) => {
+              const pendingInvites = groupBooking.invitations.filter(
+                (inv) => inv.status === "PENDING"
+              ).length;
+              const hasPendingInvitations = pendingInvites > 0;
+              const hasIncompleteMembers = groupBooking.signups.some(
+                (signup) => {
+                  const user = signup.user;
+                  const hasBasicInfo =
+                    user.firstName && user.lastName && user.phone;
+                  const hasEmergencyContact =
+                    user.emergencyContactName && user.emergencyContactPhone;
+                  const hasAgreements =
+                    user.volunteerAgreementAccepted &&
+                    user.healthSafetyPolicyAccepted;
+                  const isProfileComplete =
+                    user.profileCompleted ||
+                    (hasBasicInfo && hasEmergencyContact && hasAgreements);
+                  return !isProfileComplete;
+                }
+              );
+
+              return (
+                <Card
+                  key={groupBooking.id}
+                  className="group shadow-sm border-purple-200 hover:shadow-lg transition-all duration-300 hover:border-purple-300 bg-gradient-to-r from-purple-50/30 to-pink-50/30"
+                  data-testid={`group-booking-card-${groupBooking.id}`}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start gap-4 mb-4">
+                          <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center flex-shrink-0 shadow-md">
+                            <Users className="h-6 w-6 text-white" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-3 mb-2">
+                              <h3 className="font-bold text-xl text-slate-900 truncate">
+                                {groupBooking.name}
+                              </h3>
+                              <Badge
+                                className={`${
+                                  groupBooking.status === "PENDING"
+                                    ? "bg-amber-50 text-amber-700 border-amber-200"
+                                    : groupBooking.status === "CONFIRMED"
+                                    ? "bg-green-50 text-green-700 border-green-200"
+                                    : groupBooking.status === "PARTIAL"
+                                    ? "bg-blue-50 text-blue-700 border-blue-200"
+                                    : groupBooking.status === "WAITLISTED"
+                                    ? "bg-yellow-50 text-yellow-700 border-yellow-200"
+                                    : "bg-gray-50 text-gray-700 border-gray-200"
+                                }`}
+                              >
+                                {groupBooking.status.toLowerCase()}
+                              </Badge>
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-3 mb-2">
-                                <h3 className="font-bold text-xl text-slate-900 truncate">
-                                  {groupBooking.name}
-                                </h3>
-                                <Badge 
-                                  className={`${
-                                    groupBooking.status === "PENDING" 
-                                      ? "bg-amber-50 text-amber-700 border-amber-200"
-                                      : groupBooking.status === "CONFIRMED"
-                                      ? "bg-green-50 text-green-700 border-green-200"
-                                      : groupBooking.status === "PARTIAL"
-                                      ? "bg-blue-50 text-blue-700 border-blue-200"
-                                      : groupBooking.status === "WAITLISTED"
-                                      ? "bg-yellow-50 text-yellow-700 border-yellow-200"
-                                      : "bg-gray-50 text-gray-700 border-gray-200"
-                                  }`}
-                                >
-                                  {groupBooking.status.toLowerCase()}
-                                </Badge>
-                              </div>
-                              
-                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
-                                <div className="flex items-center gap-2">
-                                  <Users className="h-4 w-4 text-slate-500" />
-                                  <span className="text-slate-600">
-                                    Leader: <span className="font-medium text-slate-900">
-                                      {groupBooking.leader.name || groupBooking.leader.email}
-                                    </span>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+                              <div className="flex items-center gap-2">
+                                <Users className="h-4 w-4 text-slate-500" />
+                                <span className="text-slate-600">
+                                  Leader:{" "}
+                                  <span className="font-medium text-slate-900">
+                                    {groupBooking.leader.name ||
+                                      groupBooking.leader.email}
                                   </span>
-                                </div>
-                                
+                                </span>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                <Calendar className="h-4 w-4 text-slate-500" />
+                                <span className="text-slate-600">
+                                  <span className="font-medium text-slate-900">
+                                    {groupBooking.shift.shiftType.name}
+                                  </span>
+                                </span>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                <Clock className="h-4 w-4 text-slate-500" />
+                                <span className="text-slate-600">
+                                  <span className="font-medium text-slate-900">
+                                    {format(
+                                      groupBooking.shift.start,
+                                      "MMM d, h:mm a"
+                                    )}
+                                  </span>
+                                </span>
+                              </div>
+
+                              {groupBooking.shift.location && (
                                 <div className="flex items-center gap-2">
-                                  <Calendar className="h-4 w-4 text-slate-500" />
+                                  <MapPin className="h-4 w-4 text-slate-500" />
                                   <span className="text-slate-600">
                                     <span className="font-medium text-slate-900">
-                                      {groupBooking.shift.shiftType.name}
+                                      {groupBooking.shift.location}
                                     </span>
                                   </span>
                                 </div>
-                                
-                                <div className="flex items-center gap-2">
-                                  <Clock className="h-4 w-4 text-slate-500" />
-                                  <span className="text-slate-600">
-                                    <span className="font-medium text-slate-900">
-                                      {format(groupBooking.shift.start, "MMM d, h:mm a")}
-                                    </span>
-                                  </span>
-                                </div>
-                                
-                                {groupBooking.shift.location && (
-                                  <div className="flex items-center gap-2">
-                                    <MapPin className="h-4 w-4 text-slate-500" />
-                                    <span className="text-slate-600">
-                                      <span className="font-medium text-slate-900">
-                                        {groupBooking.shift.location}
-                                      </span>
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-                              
-                              {groupBooking.description && (
-                                <p className="text-sm text-slate-600 italic mt-3 max-w-md">
-                                  &quot;{groupBooking.description}&quot;
-                                </p>
                               )}
-                              
-                              <div className="flex flex-wrap gap-2 mt-4">
-                                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                                  {groupBooking.signups.length} members
+                            </div>
+
+                            {groupBooking.description && (
+                              <p className="text-sm text-slate-600 italic mt-3 max-w-md">
+                                &quot;{groupBooking.description}&quot;
+                              </p>
+                            )}
+
+                            <div className="flex flex-wrap gap-2 mt-4">
+                              <Badge
+                                variant="outline"
+                                className="bg-blue-50 text-blue-700 border-blue-200"
+                              >
+                                {groupBooking.signups.length} members
+                              </Badge>
+                              {pendingInvites > 0 && (
+                                <Badge
+                                  variant="outline"
+                                  className="bg-yellow-50 text-yellow-700 border-yellow-200"
+                                >
+                                  {pendingInvites} pending invites
                                 </Badge>
-                                {pendingInvites > 0 && (
-                                  <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
-                                    {pendingInvites} pending invites
-                                  </Badge>
-                                )}
-                                {hasIncompleteMembers && (
-                                  <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">
-                                    Incomplete profiles
-                                  </Badge>
-                                )}
-                              </div>
+                              )}
+                              {hasIncompleteMembers && (
+                                <Badge
+                                  variant="outline"
+                                  className="bg-orange-50 text-orange-700 border-orange-200"
+                                >
+                                  Incomplete profiles
+                                </Badge>
+                              )}
                             </div>
                           </div>
                         </div>
-                        
-                        <div className="flex-shrink-0">
-                          <GroupBookingAdminActions
-                            groupBookingId={groupBooking.id}
-                            status={groupBooking.status}
-                            groupName={groupBooking.name}
-                            hasIncompleteMembers={hasIncompleteMembers}
-                            hasPendingInvitations={hasPendingInvitations}
-                          />
-                        </div>
                       </div>
-                      
-                      {/* Group Members Preview */}
-                      <div className="border-t border-purple-100 pt-4 mt-6">
-                        <h4 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
-                          <Users className="h-4 w-4" />
-                          Members ({groupBooking.signups.length}) {pendingInvites > 0 && (
-                            <span className="text-amber-600">+ {pendingInvites} pending</span>
-                          )}
-                        </h4>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                          {/* Current Members (Signups) */}
-                          {groupBooking.signups
-                            .slice()
-                            .sort((a, b) => {
-                              // Leader first, then by status, then by name
-                              if (a.userId === groupBooking.leaderId) return -1;
-                              if (b.userId === groupBooking.leaderId) return 1;
-                              
-                              const statusOrder = { PENDING: 0, CONFIRMED: 1, WAITLISTED: 2, CANCELED: 3 };
-                              const aOrder = statusOrder[a.status as keyof typeof statusOrder];
-                              const bOrder = statusOrder[b.status as keyof typeof statusOrder];
-                              if (aOrder !== bOrder) return aOrder - bOrder;
-                              
-                              return (a.user.name ?? a.user.email).localeCompare(b.user.name ?? b.user.email);
-                            })
-                            .map((signup) => (
-                              <div
-                                key={signup.id}
-                                className="flex items-center gap-2 p-2 bg-white rounded-lg border border-slate-100 hover:border-slate-200 transition-colors"
-                              >
-                                <div className="h-7 w-7 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-white font-semibold text-xs flex-shrink-0">
-                                  {(signup.user.name ?? signup.user.email)?.[0]?.toUpperCase()}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-1">
-                                    <Link
-                                      href={`/admin/volunteers/${signup.user.id}`}
-                                      className="text-sm font-medium text-slate-900 hover:text-purple-600 transition-colors truncate"
+
+                      <div className="flex-shrink-0">
+                        <GroupBookingAdminActions
+                          groupBookingId={groupBooking.id}
+                          status={groupBooking.status}
+                          groupName={groupBooking.name}
+                          hasIncompleteMembers={hasIncompleteMembers}
+                          hasPendingInvitations={hasPendingInvitations}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Group Members Preview */}
+                    <div className="border-t border-purple-100 pt-4 mt-6">
+                      <h4 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                        <Users className="h-4 w-4" />
+                        Members ({groupBooking.signups.length}){" "}
+                        {pendingInvites > 0 && (
+                          <span className="text-amber-600">
+                            + {pendingInvites} pending
+                          </span>
+                        )}
+                      </h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                        {/* Current Members (Signups) */}
+                        {groupBooking.signups
+                          .slice()
+                          .sort((a, b) => {
+                            // Leader first, then by status, then by name
+                            if (a.userId === groupBooking.leaderId) return -1;
+                            if (b.userId === groupBooking.leaderId) return 1;
+
+                            const statusOrder = {
+                              PENDING: 0,
+                              CONFIRMED: 1,
+                              WAITLISTED: 2,
+                              CANCELED: 3,
+                            };
+                            const aOrder =
+                              statusOrder[a.status as keyof typeof statusOrder];
+                            const bOrder =
+                              statusOrder[b.status as keyof typeof statusOrder];
+                            if (aOrder !== bOrder) return aOrder - bOrder;
+
+                            return (a.user.name ?? a.user.email).localeCompare(
+                              b.user.name ?? b.user.email
+                            );
+                          })
+                          .map((signup) => (
+                            <div
+                              key={signup.id}
+                              className="flex items-center gap-2 p-2 bg-white rounded-lg border border-slate-100 hover:border-slate-200 transition-colors"
+                            >
+                              <div className="h-7 w-7 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-white font-semibold text-xs flex-shrink-0">
+                                {(signup.user.name ??
+                                  signup.user.email)?.[0]?.toUpperCase()}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-1">
+                                  <Link
+                                    href={`/admin/volunteers/${signup.user.id}`}
+                                    className="text-sm font-medium text-slate-900 hover:text-purple-600 transition-colors truncate"
+                                  >
+                                    {signup.user.name ?? "(No name)"}
+                                  </Link>
+                                  {signup.userId === groupBooking.leaderId && (
+                                    <Badge
+                                      variant="outline"
+                                      className="text-xs px-1.5 py-0.5"
                                     >
-                                      {signup.user.name ?? "(No name)"}
-                                    </Link>
-                                    {signup.userId === groupBooking.leaderId && (
-                                      <Badge variant="outline" className="text-xs px-1.5 py-0.5">
-                                        Leader
-                                      </Badge>
-                                    )}
-                                  </div>
-                                  <div className="text-xs text-slate-500 truncate">
-                                    {signup.user.email}
-                                  </div>
+                                      Leader
+                                    </Badge>
+                                  )}
                                 </div>
-                                <Badge
-                                  variant="outline"
-                                  className={`text-xs ${
-                                    signup.status === "PENDING" 
-                                      ? "bg-amber-50 text-amber-700 border-amber-200"
-                                      : signup.status === "CONFIRMED"
-                                      ? "bg-green-50 text-green-700 border-green-200"
-                                      : signup.status === "WAITLISTED"
-                                      ? "bg-yellow-50 text-yellow-700 border-yellow-200"
-                                      : "bg-gray-50 text-gray-700 border-gray-200"
-                                  }`}
-                                >
-                                  {signup.status.toLowerCase()}
-                                </Badge>
+                                <div className="text-xs text-slate-500 truncate">
+                                  {signup.user.email}
+                                </div>
                               </div>
-                            ))}
-                            
-                          {/* Pending Invitations */}
-                          {groupBooking.invitations
-                            .filter(invitation => invitation.status === "PENDING")
-                            .map((invitation) => (
-                              <div
-                                key={invitation.id}
-                                className="flex items-center gap-2 p-2 bg-amber-50 rounded-lg border border-amber-200 hover:border-amber-300 transition-colors"
+                              <Badge
+                                variant="outline"
+                                className={`text-xs ${
+                                  signup.status === "PENDING"
+                                    ? "bg-amber-50 text-amber-700 border-amber-200"
+                                    : signup.status === "CONFIRMED"
+                                    ? "bg-green-50 text-green-700 border-green-200"
+                                    : signup.status === "WAITLISTED"
+                                    ? "bg-yellow-50 text-yellow-700 border-yellow-200"
+                                    : "bg-gray-50 text-gray-700 border-gray-200"
+                                }`}
                               >
-                                <div className="h-7 w-7 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white font-semibold text-xs flex-shrink-0">
-                                  {invitation.email[0]?.toUpperCase()}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-1">
-                                    <span className="text-sm font-medium text-slate-900 truncate">
-                                      {invitation.email}
-                                    </span>
-                                  </div>
-                                  <div className="text-xs text-amber-600">
-                                    Invitation sent {new Date(invitation.createdAt).toLocaleDateString()}
-                                  </div>
-                                </div>
-                                <Badge
-                                  variant="outline"
-                                  className="text-xs bg-amber-100 text-amber-700 border-amber-300"
-                                >
-                                  awaiting response
-                                </Badge>
+                                {signup.status.toLowerCase()}
+                              </Badge>
+                            </div>
+                          ))}
+
+                        {/* Pending Invitations */}
+                        {groupBooking.invitations
+                          .filter(
+                            (invitation) => invitation.status === "PENDING"
+                          )
+                          .map((invitation) => (
+                            <div
+                              key={invitation.id}
+                              className="flex items-center gap-2 p-2 bg-amber-50 rounded-lg border border-amber-200 hover:border-amber-300 transition-colors"
+                            >
+                              <div className="h-7 w-7 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white font-semibold text-xs flex-shrink-0">
+                                {invitation.email[0]?.toUpperCase()}
                               </div>
-                            ))}
-                        </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-1">
+                                  <span className="text-sm font-medium text-slate-900 truncate">
+                                    {invitation.email}
+                                  </span>
+                                </div>
+                                <div className="text-xs text-amber-600">
+                                  Invitation sent{" "}
+                                  {new Date(
+                                    invitation.createdAt
+                                  ).toLocaleDateString()}
+                                </div>
+                              </div>
+                              <Badge
+                                variant="outline"
+                                className="text-xs bg-amber-100 text-amber-700 border-amber-300"
+                              >
+                                awaiting response
+                              </Badge>
+                            </div>
+                          ))}
                       </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          </section>
-        )}
-
-        {/* Upcoming Shifts */}
-        <section className="mb-12" data-testid="upcoming-shifts-section">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-            <div className="flex items-center gap-3">
-              <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
-                Upcoming Shifts
-              </h2>
-              <Badge
-                variant="outline"
-                className="bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border-blue-200 font-semibold px-2.5 py-1"
-              >
-                {upcomingCount}
-              </Badge>
-            </div>
-            <div data-testid="upcoming-pagination">
-              <Pagination
-                page={uPage}
-                totalPages={uTotalPages}
-                size={uSize}
-                type="u"
-              />
-            </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
-          {upcoming.length === 0 ? (
-            <Card className="shadow-md border-slate-200 bg-white/80 backdrop-blur-sm">
-              <CardContent
-                className="text-center py-16"
-                data-testid="no-upcoming-shifts-message"
-              >
-                <div className="h-20 w-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-slate-100 to-gray-100 flex items-center justify-center shadow-inner">
-                  <Calendar className="h-10 w-10 text-slate-400" />
-                </div>
-                <h3 className="text-xl font-semibold text-slate-800 mb-2">
-                  No upcoming shifts
-                </h3>
-                <p className="text-slate-600 max-w-md mx-auto">
-                  {selectedLocation || dateFrom || dateTo
-                    ? "No upcoming shifts found matching your filters. Try adjusting your search criteria."
-                    : "There are no upcoming shifts scheduled at the moment"}
-                </p>
-                <Button asChild className="mt-6" size="sm">
-                  <Link href="/admin/shifts/new">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create a shift
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-6" data-testid="upcoming-shifts-list">
-              {upcoming.map((s: ShiftWithAll) => (
-                <ShiftCard key={s.id} s={s} />
-              ))}
-            </div>
-          )}
         </section>
+      )}
 
-        {/* Historical Shifts */}
-        <section data-testid="historical-shifts-section">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-            <div className="flex items-center gap-3">
-              <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
-                Historical Shifts
-              </h2>
-              <Badge
-                variant="outline"
-                className="bg-gradient-to-r from-slate-50 to-gray-50 text-slate-700 border-slate-300 font-semibold px-2.5 py-1"
-              >
-                {pastCount}
-              </Badge>
-            </div>
-            <div data-testid="historical-pagination">
-              <Pagination
-                page={pPage}
-                totalPages={pTotalPages}
-                size={pSize}
-                type="p"
-              />
-            </div>
+      {/* Upcoming Shifts */}
+      <section className="mb-12" data-testid="upcoming-shifts-section">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <div className="flex items-center gap-3">
+            <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
+              Upcoming Shifts
+            </h2>
+            <Badge
+              variant="outline"
+              className="bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border-blue-200 font-semibold px-2.5 py-1"
+            >
+              {upcomingCount}
+            </Badge>
           </div>
-          {past.length === 0 ? (
-            <Card className="shadow-md border-slate-200 bg-white/80 backdrop-blur-sm">
-              <CardContent
-                className="text-center py-16"
-                data-testid="no-historical-shifts-message"
-              >
-                <div className="h-20 w-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-slate-100 to-gray-100 flex items-center justify-center shadow-inner">
-                  <Clock className="h-10 w-10 text-slate-400" />
-                </div>
-                <h3 className="text-xl font-semibold text-slate-800 mb-2">
-                  No historical shifts
-                </h3>
-                <p className="text-slate-600 max-w-md mx-auto">
-                  {selectedLocation || dateFrom || dateTo
-                    ? "No past shifts found matching your filters. Try adjusting your search criteria."
-                    : "There are no past shifts to display yet"}
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-6" data-testid="historical-shifts-list">
-              {past.map((s: ShiftWithAll) => (
-                <ShiftCard key={s.id} s={s} />
-              ))}
-            </div>
-          )}
+          <div data-testid="upcoming-pagination">
+            <Pagination
+              page={uPage}
+              totalPages={uTotalPages}
+              size={uSize}
+              type="u"
+            />
+          </div>
+        </div>
+        {upcoming.length === 0 ? (
+          <Card className="shadow-md border-slate-200 bg-white/80 backdrop-blur-sm">
+            <CardContent
+              className="text-center py-16"
+              data-testid="no-upcoming-shifts-message"
+            >
+              <div className="h-20 w-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-slate-100 to-gray-100 flex items-center justify-center shadow-inner">
+                <Calendar className="h-10 w-10 text-slate-400" />
+              </div>
+              <h3 className="text-xl font-semibold text-slate-800 mb-2">
+                No upcoming shifts
+              </h3>
+              <p className="text-slate-600 max-w-md mx-auto">
+                {selectedLocation || dateFrom || dateTo
+                  ? "No upcoming shifts found matching your filters. Try adjusting your search criteria."
+                  : "There are no upcoming shifts scheduled at the moment"}
+              </p>
+              <Button asChild className="mt-6" size="sm">
+                <Link href="/admin/shifts/new">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create a shift
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-6" data-testid="upcoming-shifts-list">
+            {upcoming.map((s: ShiftWithAll) => (
+              <ShiftCard key={s.id} s={s} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Historical Shifts */}
+      <section data-testid="historical-shifts-section">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <div className="flex items-center gap-3">
+            <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
+              Historical Shifts
+            </h2>
+            <Badge
+              variant="outline"
+              className="bg-gradient-to-r from-slate-50 to-gray-50 text-slate-700 border-slate-300 font-semibold px-2.5 py-1"
+            >
+              {pastCount}
+            </Badge>
+          </div>
+          <div data-testid="historical-pagination">
+            <Pagination
+              page={pPage}
+              totalPages={pTotalPages}
+              size={pSize}
+              type="p"
+            />
+          </div>
+        </div>
+        {past.length === 0 ? (
+          <Card className="shadow-md border-slate-200 bg-white/80 backdrop-blur-sm">
+            <CardContent
+              className="text-center py-16"
+              data-testid="no-historical-shifts-message"
+            >
+              <div className="h-20 w-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-slate-100 to-gray-100 flex items-center justify-center shadow-inner">
+                <Clock className="h-10 w-10 text-slate-400" />
+              </div>
+              <h3 className="text-xl font-semibold text-slate-800 mb-2">
+                No historical shifts
+              </h3>
+              <p className="text-slate-600 max-w-md mx-auto">
+                {selectedLocation || dateFrom || dateTo
+                  ? "No past shifts found matching your filters. Try adjusting your search criteria."
+                  : "There are no past shifts to display yet"}
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-6" data-testid="historical-shifts-list">
+            {past.map((s: ShiftWithAll) => (
+              <ShiftCard key={s.id} s={s} />
+            ))}
+          </div>
+        )}
       </section>
     </PageContainer>
   );

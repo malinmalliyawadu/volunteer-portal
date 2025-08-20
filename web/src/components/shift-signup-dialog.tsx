@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { MotionSpinner } from "@/components/motion-spinner";
 
 interface ShiftSignupDialogProps {
   shift: {
@@ -182,7 +183,7 @@ export function ShiftSignupDialog({
           >
             {isSubmitting ? (
               <span className="flex items-center gap-2" data-testid="shift-signup-loading-text">
-                <span className="animate-spin">⏳</span>
+                <MotionSpinner className="w-4 h-4" />
                 {isWaitlist ? "Joining..." : "Signing up..."}
               </span>
             ) : isWaitlist ? (
