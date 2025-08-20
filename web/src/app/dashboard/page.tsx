@@ -4,15 +4,20 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import AchievementsCard from "@/components/achievements-card";
 import { PageHeader } from "@/components/page-header";
 import { PageContainer } from "@/components/page-container";
-import { StatsGrid, ContentSection, ContentGrid, BottomGrid } from "@/components/dashboard-animated";
+import {
+  StatsGrid,
+  ContentGrid,
+  BottomGrid,
+} from "@/components/dashboard-animated";
 import { MotionStatCard } from "@/components/motion-stat-card";
+import { MotionContentCard } from "@/components/motion-content-card";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -326,8 +331,7 @@ export default async function DashboardPage() {
 
       <ContentGrid>
         {/* Next Shift */}
-        <ContentSection delay={0.2}>
-        <Card className="h-fit flex-1 min-w-80">
+        <MotionContentCard className="h-fit flex-1 min-w-80" delay={0.2}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <svg
@@ -447,12 +451,10 @@ export default async function DashboardPage() {
               </div>
             )}
           </CardContent>
-        </Card>
-        </ContentSection>
+        </MotionContentCard>
 
         {/* Recent Activity */}
-        <ContentSection delay={0.3}>
-        <Card className="h-fit flex-1 min-w-80">
+        <MotionContentCard className="h-fit flex-1 min-w-80" delay={0.3}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <svg
@@ -536,13 +538,11 @@ export default async function DashboardPage() {
               </div>
             )}
           </CardContent>
-        </Card>
-        </ContentSection>
+        </MotionContentCard>
 
         {/* Friends Activity */}
         {friendsUpcomingShifts.length > 0 && (
-          <ContentSection delay={0.4}>
-          <Card className="h-fit flex-1 min-w-80">
+          <MotionContentCard className="h-fit flex-1 min-w-80" delay={0.4}>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -626,20 +626,18 @@ export default async function DashboardPage() {
                 )}
               </div>
             </CardContent>
-          </Card>
-          </ContentSection>
+          </MotionContentCard>
         )}
       </ContentGrid>
 
       <BottomGrid>
         {/* Achievements */}
-        <ContentSection delay={0.5}>
+        <div>
           <AchievementsCard />
-        </ContentSection>
+        </div>
 
         {/* Impact & Community Stats */}
-        <ContentSection delay={0.6}>
-        <Card className="h-fit">
+        <MotionContentCard className="h-fit" delay={0.6}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <svg
@@ -699,13 +697,11 @@ export default async function DashboardPage() {
               </div>
             </div>
           </CardContent>
-        </Card>
-        </ContentSection>
+        </MotionContentCard>
       </BottomGrid>
 
       {/* Quick Actions */}
-      <ContentSection delay={0.7}>
-      <Card className="h-fit">
+      <MotionContentCard className="h-fit" delay={0.7}>
         <CardHeader>
           <CardTitle>Quick Actions</CardTitle>
         </CardHeader>
@@ -799,8 +795,7 @@ export default async function DashboardPage() {
             </Button>
           </div>
         </CardContent>
-      </Card>
-      </ContentSection>
+      </MotionContentCard>
     </PageContainer>
   );
 }
