@@ -151,10 +151,7 @@ export default async function ProfilePage() {
           {/* Profile Details Grid */}
           <div className="grid md:grid-cols-2 gap-8">
             {/* Personal Information */}
-            <MotionCard 
-              className="h-fit"
-              delay={0.4}
-            >
+            <MotionCard className="h-fit">
               <CardContent className="px-6">
                 <div className="flex items-center gap-4 mb-6">
                   <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
@@ -173,7 +170,10 @@ export default async function ProfilePage() {
                     </svg>
                   </div>
                   <div>
-                    <h2 className="text-xl font-semibold" data-testid="personal-info-heading">
+                    <h2
+                      className="text-xl font-semibold"
+                      data-testid="personal-info-heading"
+                    >
                       Personal Information
                     </h2>
                     <p className="text-sm text-muted-foreground">
@@ -184,7 +184,10 @@ export default async function ProfilePage() {
 
                 <div className="space-y-4" data-testid="personal-info-section">
                   <div className="flex justify-between items-center py-3 border-b border-border">
-                    <span className="text-sm font-medium text-muted-foreground" data-testid="personal-info-name-label">
+                    <span
+                      className="text-sm font-medium text-muted-foreground"
+                      data-testid="personal-info-name-label"
+                    >
                       Name
                     </span>
                     <span className="font-medium">
@@ -192,7 +195,10 @@ export default async function ProfilePage() {
                     </span>
                   </div>
                   <div className="flex justify-between items-center py-3 border-b border-border">
-                    <span className="text-sm font-medium text-muted-foreground" data-testid="personal-info-email-label">
+                    <span
+                      className="text-sm font-medium text-muted-foreground"
+                      data-testid="personal-info-email-label"
+                    >
                       Email
                     </span>
                     <span className="font-medium">
@@ -218,7 +224,10 @@ export default async function ProfilePage() {
                     </div>
                   )}
                   <div className="flex justify-between items-center py-3">
-                    <span className="text-sm font-medium text-muted-foreground" data-testid="personal-info-account-type-label">
+                    <span
+                      className="text-sm font-medium text-muted-foreground"
+                      data-testid="personal-info-account-type-label"
+                    >
                       Account Type
                     </span>
                     <span className="font-medium">
@@ -232,10 +241,7 @@ export default async function ProfilePage() {
             </MotionCard>
 
             {/* Emergency Contact & Availability */}
-            <MotionCard 
-              className="h-fit"
-              delay={0.5}
-            >
+            <MotionCard className="h-fit">
               <CardContent className="px-6">
                 <div className="flex items-center gap-4 mb-6">
                   <div className="w-12 h-12 bg-accent/20 rounded-lg flex items-center justify-center">
@@ -254,18 +260,29 @@ export default async function ProfilePage() {
                     </svg>
                   </div>
                   <div>
-                    <h2 className="text-xl font-semibold" data-testid="emergency-contact-heading">Emergency Contact</h2>
+                    <h2
+                      className="text-xl font-semibold"
+                      data-testid="emergency-contact-heading"
+                    >
+                      Emergency Contact
+                    </h2>
                     <p className="text-sm text-muted-foreground">
                       Emergency contact information
                     </p>
                   </div>
                 </div>
 
-                <div className="space-y-4" data-testid="emergency-contact-section">
+                <div
+                  className="space-y-4"
+                  data-testid="emergency-contact-section"
+                >
                   {userProfile?.emergencyContactName ? (
                     <>
                       <div className="flex justify-between items-center py-3 border-b border-border">
-                        <span className="text-sm font-medium text-muted-foreground" data-testid="emergency-contact-name-label">
+                        <span
+                          className="text-sm font-medium text-muted-foreground"
+                          data-testid="emergency-contact-name-label"
+                        >
                           Name
                         </span>
                         <span className="font-medium">
@@ -303,10 +320,7 @@ export default async function ProfilePage() {
             </MotionCard>
 
             {/* Availability Information */}
-            <MotionCard 
-              className="h-fit"
-              delay={0.6}
-            >
+            <MotionCard className="h-fit">
               <CardContent className="px-6">
                 <div className="flex items-center gap-4 mb-6">
                   <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -325,7 +339,12 @@ export default async function ProfilePage() {
                     </svg>
                   </div>
                   <div>
-                    <h2 className="text-xl font-semibold" data-testid="availability-heading">Availability</h2>
+                    <h2
+                      className="text-xl font-semibold"
+                      data-testid="availability-heading"
+                    >
+                      Availability
+                    </h2>
                     <p className="text-sm text-muted-foreground">
                       When and where you can volunteer
                     </p>
@@ -381,10 +400,7 @@ export default async function ProfilePage() {
             </MotionCard>
 
             {/* Quick Actions */}
-            <MotionCard 
-              className="h-fit"
-              delay={0.7}
-            >
+            <MotionCard className="h-fit">
               <CardContent className="p-6">
                 <div className="flex items-center gap-4 mb-6">
                   <div className="w-12 h-12 bg-accent/20 rounded-lg flex items-center justify-center">
@@ -409,7 +425,12 @@ export default async function ProfilePage() {
                     </svg>
                   </div>
                   <div>
-                    <h2 className="text-xl font-semibold" data-testid="quick-actions-heading">Quick Actions</h2>
+                    <h2
+                      className="text-xl font-semibold"
+                      data-testid="quick-actions-heading"
+                    >
+                      Quick Actions
+                    </h2>
                     <p className="text-sm text-muted-foreground">
                       Manage your volunteer experience
                     </p>
@@ -503,7 +524,7 @@ export default async function ProfilePage() {
           </div>
         </div>
       ) : (
-        <MotionCard delay={0.2}>
+        <MotionCard>
           <CardContent className="p-8 text-center">
             <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg

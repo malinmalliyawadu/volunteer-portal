@@ -183,7 +183,7 @@ export function ShiftSignupDialog({
           >
             {isSubmitting ? (
               <span className="flex items-center gap-2" data-testid="shift-signup-loading-text">
-                <MotionSpinner className="w-4 h-4">⏳</MotionSpinner>
+                <MotionSpinner className="w-4 h-4" />
                 {isWaitlist ? "Joining..." : "Signing up..."}
               </span>
             ) : isWaitlist ? (

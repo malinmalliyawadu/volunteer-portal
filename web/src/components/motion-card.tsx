@@ -2,14 +2,14 @@
 
 import * as React from "react";
 import { motion } from "motion/react";
-import { 
-  Card, 
-  CardHeader, 
-  CardFooter, 
-  CardTitle, 
-  CardAction, 
-  CardDescription, 
-  CardContent 
+import {
+  Card,
+  CardHeader,
+  CardFooter,
+  CardTitle,
+  CardAction,
+  CardDescription,
+  CardContent,
 } from "@/components/ui/card";
 import { cardHoverVariants } from "@/lib/motion";
 
@@ -22,15 +22,19 @@ interface MotionCardProps extends React.ComponentProps<"div"> {
  * Motion-enhanced Card component
  * Adds hover lift animation while maintaining all Card functionality
  */
-function MotionCard({ 
+function MotionCard({
   enableMotion = true,
   hoverEffect = true,
   className,
   children,
-  ...props 
+  ...props
 }: MotionCardProps) {
   if (!enableMotion || !hoverEffect) {
-    return <Card className={className} {...props}>{children}</Card>;
+    return (
+      <Card className={className} {...props}>
+        {children}
+      </Card>
+    );
   }
 
   return (
