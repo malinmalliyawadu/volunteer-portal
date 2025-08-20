@@ -178,13 +178,13 @@ export default function LoginPage() {
   const getProviderButtonStyle = (providerId: string) => {
     switch (providerId) {
       case "google":
-        return "bg-white hover:bg-gray-50 text-gray-900 border border-gray-300";
+        return "bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600";
       case "facebook":
         return "bg-[#1877F2] hover:bg-[#166FE5] text-white";
       case "apple":
-        return "bg-black hover:bg-gray-900 text-white";
+        return "bg-black dark:bg-white hover:bg-gray-900 dark:hover:bg-gray-100 text-white dark:text-black";
       default:
-        return "bg-gray-100 hover:bg-gray-200 text-gray-900";
+        return "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100";
     }
   };
 
