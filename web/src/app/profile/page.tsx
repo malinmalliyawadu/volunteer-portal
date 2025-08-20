@@ -1,13 +1,14 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
-import { Card, CardContent } from "@/components/ui/card";
+import { CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import Link from "next/link";
 import { PageHeader } from "@/components/page-header";
 import { PageContainer } from "@/components/page-container";
+import { MotionCard } from "@/components/motion-card";
 
 export default async function ProfilePage() {
   const session = await getServerSession(authOptions);
@@ -71,7 +72,7 @@ export default async function ProfilePage() {
       {session?.user ? (
         <div className="space-y-8">
           {/* Profile Header */}
-          <Card className="animate-slide-up">
+          <MotionCard>
             <CardContent className="p-8">
               <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
                 <div className="relative">
@@ -145,14 +146,14 @@ export default async function ProfilePage() {
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </MotionCard>
 
           {/* Profile Details Grid */}
           <div className="grid md:grid-cols-2 gap-8">
             {/* Personal Information */}
-            <Card
-              className="animate-slide-up h-fit"
-              style={{ animationDelay: "0.4s" }}
+            <MotionCard 
+              className="h-fit"
+              delay={0.4}
             >
               <CardContent className="px-6">
                 <div className="flex items-center gap-4 mb-6">
@@ -228,12 +229,12 @@ export default async function ProfilePage() {
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </MotionCard>
 
             {/* Emergency Contact & Availability */}
-            <Card
-              className="animate-slide-up h-fit"
-              style={{ animationDelay: "0.5s" }}
+            <MotionCard 
+              className="h-fit"
+              delay={0.5}
             >
               <CardContent className="px-6">
                 <div className="flex items-center gap-4 mb-6">
@@ -299,12 +300,12 @@ export default async function ProfilePage() {
                   )}
                 </div>
               </CardContent>
-            </Card>
+            </MotionCard>
 
             {/* Availability Information */}
-            <Card
-              className="animate-slide-up h-fit"
-              style={{ animationDelay: "0.6s" }}
+            <MotionCard 
+              className="h-fit"
+              delay={0.6}
             >
               <CardContent className="px-6">
                 <div className="flex items-center gap-4 mb-6">
@@ -377,12 +378,12 @@ export default async function ProfilePage() {
                     )}
                 </div>
               </CardContent>
-            </Card>
+            </MotionCard>
 
             {/* Quick Actions */}
-            <Card
-              className="animate-slide-up h-fit"
-              style={{ animationDelay: "0.7s" }}
+            <MotionCard 
+              className="h-fit"
+              delay={0.7}
             >
               <CardContent className="p-6">
                 <div className="flex items-center gap-4 mb-6">
@@ -498,11 +499,11 @@ export default async function ProfilePage() {
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </MotionCard>
           </div>
         </div>
       ) : (
-        <Card className="animate-slide-up">
+        <MotionCard delay={0.2}>
           <CardContent className="p-8 text-center">
             <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg
@@ -527,7 +528,7 @@ export default async function ProfilePage() {
               <Link href="/login">Sign in to your account</Link>
             </Button>
           </CardContent>
-        </Card>
+        </MotionCard>
       )}
     </PageContainer>
   );
