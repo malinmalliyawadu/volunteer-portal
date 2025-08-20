@@ -1,3 +1,9 @@
+## [0.13.0] - 2025-08-20
+
+### Changes
+- Add social media links to footer ([#56](https://github.com/malinmalliyawadu/volunteer-portal/pull/56)) by @malinmalliyawadu
+
+
 ## [0.12.0] - 2025-08-20
 
 ### Changes
