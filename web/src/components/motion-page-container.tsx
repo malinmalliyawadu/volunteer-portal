@@ -21,6 +21,7 @@ export function MotionPageContainer({
   animate = true,
   ...props
 }: MotionPageContainerProps) {
+  // If animations are disabled, just return a regular div
   if (!animate) {
     return (
       <div 
