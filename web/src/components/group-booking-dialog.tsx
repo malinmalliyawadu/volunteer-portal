@@ -581,14 +581,14 @@ export function GroupBookingDialog({
           )}
 
           {/* Info Box */}
-          <div className="rounded-lg border p-4 bg-blue-50 border-blue-200" data-testid="info-box">
+          <div className="rounded-lg border p-4 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800/50" data-testid="info-box">
             <div className="flex items-start gap-2">
-              <Check className="h-4 w-4 text-blue-600 mt-0.5" />
+              <Check className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5" />
               <div className="text-sm">
-                <p className="font-medium text-blue-900 mb-1">
+                <p className="font-medium text-blue-900 dark:text-blue-100 mb-1">
                   How Group Bookings Work
                 </p>
-                <ul className="text-blue-700 space-y-1 text-xs">
+                <ul className="text-blue-700 dark:text-blue-300 space-y-1 text-xs">
                   <li>• You&apos;ll be added to each group automatically as the leader</li>
                   <li>• Assign members to specific shifts using the assignment matrix</li>
                   <li>• Invitation emails will be sent to all members</li>
