@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { StatsCard } from "@/components/ui/stats-card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import AchievementsCard from "@/components/achievements-card";
@@ -16,8 +17,9 @@ import {
   ContentGrid,
   BottomGrid,
 } from "@/components/dashboard-animated";
-import { MotionStatCard } from "@/components/motion-stat-card";
 import { MotionContentCard } from "@/components/motion-content-card";
+import { CheckCircle, Clock, Calendar, TrendingUp } from "lucide-react";
+import { AnimatedStatsGrid } from "@/components/animated-stats-grid";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -212,122 +214,38 @@ export default async function DashboardPage() {
       ></PageHeader>
 
       {/* Stats Overview */}
-      <StatsGrid>
-        <MotionStatCard>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                <svg
-                  className="w-6 h-6 text-primary"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{completedShifts.length}</p>
-                <p className="text-sm text-muted-foreground">
-                  Shifts Completed
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </MotionStatCard>
-
-        <MotionStatCard>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center">
-                <svg
-                  className="w-6 h-6 text-accent"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{totalHours}</p>
-                <p className="text-sm text-muted-foreground">
-                  Hours Contributed
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </MotionStatCard>
-
-        <MotionStatCard>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                <svg
-                  className="w-6 h-6 text-green-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{upcomingShifts}</p>
-                <p className="text-sm text-muted-foreground">
-                  Confirmed Shifts
-                  {pendingShifts > 0 && (
-                    <span className="block text-orange-600 font-medium">
-                      +{pendingShifts} pending approval
-                    </span>
-                  )}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </MotionStatCard>
-
-        <MotionStatCard>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                <svg
-                  className="w-6 h-6 text-blue-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-                  />
-                </svg>
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{monthlyShifts}</p>
-                <p className="text-sm text-muted-foreground">This Month</p>
-              </div>
-            </div>
-          </CardContent>
-        </MotionStatCard>
-      </StatsGrid>
+      <AnimatedStatsGrid
+        stats={[
+          {
+            title: "Shifts Completed",
+            value: completedShifts.length,
+            iconType: "checkCircle",
+            variant: "green",
+          },
+          {
+            title: "Hours Contributed",
+            value: totalHours,
+            iconType: "clock",
+            variant: "amber",
+          },
+          {
+            title: "Confirmed Shifts",
+            value: upcomingShifts,
+            subtitle:
+              pendingShifts > 0
+                ? `+${pendingShifts} pending approval`
+                : undefined,
+            iconType: "calendar",
+            variant: "blue",
+          },
+          {
+            title: "This Month",
+            value: monthlyShifts,
+            iconType: "trendingUp",
+            variant: "purple",
+          },
+        ]}
+      />
 
       <ContentGrid>
         {/* Next Shift */}

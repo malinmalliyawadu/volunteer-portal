@@ -78,10 +78,10 @@ test.describe("My Shifts Calendar Page", () => {
       await expect(totalHoursCard).toBeVisible();
 
       // Check that each card has a numeric value
-      const completedCount = await page.getByTestId("completed-shifts-count").textContent();
-      const upcomingCount = await page.getByTestId("upcoming-shifts-count").textContent();
-      const thisMonthCount = await page.getByTestId("this-month-shifts-count").textContent();
-      const totalHoursCount = await page.getByTestId("total-hours-count").textContent();
+      const completedCount = await page.getByTestId("completed-shifts-card-count").textContent();
+      const upcomingCount = await page.getByTestId("upcoming-shifts-card-count").textContent();
+      const thisMonthCount = await page.getByTestId("this-month-shifts-card-count").textContent();
+      const totalHoursCount = await page.getByTestId("total-hours-card-count").textContent();
 
       expect(completedCount).toMatch(/^\d+$/);
       expect(upcomingCount).toMatch(/^\d+$/);
@@ -510,10 +510,10 @@ test.describe("My Shifts Calendar Page", () => {
       expect(count).toBe(4); // Should have 4 stat cards
 
       // Check each stat card's number display
-      const completedCount = await page.getByTestId("completed-shifts-count").textContent();
-      const upcomingCount = await page.getByTestId("upcoming-shifts-count").textContent();
-      const thisMonthCount = await page.getByTestId("this-month-shifts-count").textContent();
-      const totalHoursCount = await page.getByTestId("total-hours-count").textContent();
+      const completedCount = await page.getByTestId("completed-shifts-card-count").textContent();
+      const upcomingCount = await page.getByTestId("upcoming-shifts-card-count").textContent();
+      const thisMonthCount = await page.getByTestId("this-month-shifts-card-count").textContent();
+      const totalHoursCount = await page.getByTestId("total-hours-card-count").textContent();
 
       expect(completedCount).toMatch(/^\d+$/);
       expect(upcomingCount).toMatch(/^\d+$/);

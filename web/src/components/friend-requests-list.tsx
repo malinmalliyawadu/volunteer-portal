@@ -16,8 +16,8 @@ export function FriendRequestsList({ pendingRequests }: FriendRequestsListProps)
     return (
       <Card className="border-dashed border-2">
         <CardContent className="py-12 text-center">
-          <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Mail className="h-10 w-10 text-blue-500" />
+          <div className="w-20 h-20 bg-blue-50 dark:bg-blue-950/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Mail className="h-10 w-10 text-blue-500 dark:text-blue-400" />
           </div>
           <h3 className="text-xl font-semibold mb-3 text-foreground">All caught up!</h3>
           <p className="text-muted-foreground mb-6 max-w-md mx-auto">
@@ -53,12 +53,12 @@ export function FriendRequestsList({ pendingRequests }: FriendRequestsListProps)
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-start space-x-4">
                   <div className="relative">
-                    <Avatar className="h-14 w-14 ring-2 ring-blue-100 group-hover:ring-blue-200 transition-all">
+                    <Avatar className="h-14 w-14 ring-2 ring-blue-100 dark:ring-blue-900/50 group-hover:ring-blue-200 dark:group-hover:ring-blue-800/50 transition-all">
                       <AvatarImage 
                         src={request.fromUser.profilePhotoUrl || undefined} 
                         alt={displayName}
                       />
-                      <AvatarFallback className="bg-gradient-to-br from-blue-100 to-blue-50 text-blue-700 font-semibold text-lg">
+                      <AvatarFallback className="bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-950/50 dark:to-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold text-lg">
                         {(request.fromUser.firstName?.[0] || 
                           request.fromUser.name?.[0] || 
                           request.fromUser.email[0]).toUpperCase()}
@@ -77,7 +77,7 @@ export function FriendRequestsList({ pendingRequests }: FriendRequestsListProps)
                         {displayName}
                       </h3>
                       {isRecent && (
-                        <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-200 text-xs">
+                        <Badge variant="secondary" className="bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800/50 text-xs">
                           New
                         </Badge>
                       )}

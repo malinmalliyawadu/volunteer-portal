@@ -113,7 +113,7 @@ export default async function ProfilePage() {
                     {userProfile?.volunteerAgreementAccepted && (
                       <Badge
                         variant="outline"
-                        className="text-green-600 border-green-200"
+                        className="text-green-600 border-green-200 dark:text-green-400 dark:border-green-800"
                       >
                         Agreement Signed
                       </Badge>
@@ -154,9 +154,9 @@ export default async function ProfilePage() {
             <MotionCard className="h-fit">
               <CardContent className="px-6">
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                  <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/50 rounded-lg flex items-center justify-center">
                     <svg
-                      className="w-6 h-6 text-primary"
+                      className="w-6 h-6 text-blue-600 dark:text-blue-400"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -244,9 +244,9 @@ export default async function ProfilePage() {
             <MotionCard className="h-fit">
               <CardContent className="px-6">
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="w-12 h-12 bg-accent/20 rounded-lg flex items-center justify-center">
+                  <div className="w-12 h-12 bg-green-100 dark:bg-green-900/50 rounded-lg flex items-center justify-center">
                     <svg
-                      className="w-6 h-6 text-primary"
+                      className="w-6 h-6 text-green-600 dark:text-green-400"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -323,9 +323,9 @@ export default async function ProfilePage() {
             <MotionCard className="h-fit">
               <CardContent className="px-6">
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/50 rounded-lg flex items-center justify-center">
                     <svg
-                      className="w-6 h-6 text-blue-600"
+                      className="w-6 h-6 text-purple-600 dark:text-purple-400"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -403,9 +403,9 @@ export default async function ProfilePage() {
             <MotionCard className="h-fit">
               <CardContent className="p-6">
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="w-12 h-12 bg-accent/20 rounded-lg flex items-center justify-center">
+                  <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/50 rounded-lg flex items-center justify-center">
                     <svg
-                      className="w-6 h-6 text-primary"
+                      className="w-6 h-6 text-amber-600 dark:text-amber-400"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -490,7 +490,7 @@ export default async function ProfilePage() {
                   </Button>
 
                   <div className="pt-4 border-t border-border">
-                    <div className="bg-primary/5 rounded-lg p-4 border border-primary/20">
+                    <div className="bg-primary/5 dark:bg-primary/10 rounded-lg p-4 border border-primary/20 dark:border-primary/30">
                       <div className="flex items-start gap-3">
                         <svg
                           className="w-5 h-5 text-primary mt-0.5"

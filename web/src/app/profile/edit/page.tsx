@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { GradientButton } from "@/components/ui/gradient-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
@@ -383,7 +384,7 @@ export default function EditProfilePage() {
         </PageHeader>
 
         {initialLoading ? (
-          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+          <Card className="shadow-lg border-0 bg-card/80 dark:bg-card/90 backdrop-blur-sm">
             <CardContent className="p-8">
               <div className="flex items-center justify-center py-12">
                 <div className="flex items-center gap-3">
@@ -398,7 +399,7 @@ export default function EditProfilePage() {
         ) : (
           <>
             {/* Progress Indicator */}
-            <div className="bg-white rounded-xl shadow-sm border border-border p-6">
+            <div className="bg-card dark:bg-card rounded-xl shadow-sm border border-border p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold">
                   Profile Setup Progress
@@ -407,7 +408,7 @@ export default function EditProfilePage() {
                   Step {currentSection + 1} of {sections.length}
                 </Badge>
               </div>
-              <div className="flex items-center space-x-2 mb-4">
+              <div className="hidden md:flex items-center space-x-2 mb-4">
                 {sections.map((section, index) => {
                   const Icon = section.icon;
                   return (
@@ -420,9 +421,9 @@ export default function EditProfilePage() {
                       <div
                         className={`flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 cursor-pointer hover:scale-105 ${
                           index === currentSection
-                            ? `${section.color} text-white shadow-lg`
+                            ? `${section.color} text-white dark:text-white shadow-lg`
                             : index < currentSection
-                            ? "bg-green-500 text-white hover:bg-green-600"
+                            ? "bg-green-500 text-white dark:text-white hover:bg-green-600 dark:hover:bg-green-600"
                             : "bg-muted text-muted-foreground hover:bg-muted/80"
                         }`}
                         onClick={() => setCurrentSection(index)}
@@ -433,7 +434,7 @@ export default function EditProfilePage() {
                       {index < sections.length - 1 && (
                         <div
                           className={`flex-1 h-1 mx-2 rounded-full transition-all duration-200 ${
-                            index < currentSection ? "bg-green-500" : "bg-muted"
+                            index < currentSection ? "bg-green-500 dark:bg-green-600" : "bg-muted dark:bg-muted"
                           }`}
                         />
                       )}
@@ -458,7 +459,7 @@ export default function EditProfilePage() {
                     onClick={() => setCurrentSection(index)}
                     className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-200 ${
                       index === currentSection
-                        ? "bg-primary text-white shadow-sm"
+                        ? "bg-primary text-white dark:text-white shadow-sm"
                         : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
                     }`}
                   >
@@ -469,7 +470,7 @@ export default function EditProfilePage() {
             </div>
 
             {/* Form Content */}
-            <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+            <Card className="shadow-lg border-0 bg-card/80 dark:bg-card/90 backdrop-blur-sm">
               <CardHeader className="pb-6">
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-3 text-xl">
@@ -479,15 +480,15 @@ export default function EditProfilePage() {
                     {sections[currentSection].title}
                   </CardTitle>
                   {/* Always visible save button */}
-                  <Button
+                  <GradientButton
                     onClick={handleSubmit}
                     disabled={loading}
                     size="sm"
-                    className="flex items-center gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                    className="flex items-center gap-2"
                   >
                     <Save className="h-4 w-4" />
                     {loading ? "Saving..." : "Save"}
-                  </Button>
+                  </GradientButton>
                 </div>
               </CardHeader>
               <CardContent>
@@ -519,14 +520,14 @@ export default function EditProfilePage() {
                           <ArrowLeft className="h-4 w-4 rotate-180" />
                         </Button>
                       ) : (
-                        <Button
+                        <GradientButton
                           type="submit"
                           disabled={loading}
-                          className="flex items-center gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                          className="flex items-center gap-2"
                         >
                           <Save className="h-4 w-4" />
                           {loading ? "Saving..." : "Save Profile"}
-                        </Button>
+                        </GradientButton>
                       )}
                     </div>
                   </div>

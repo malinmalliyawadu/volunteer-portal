@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { PageContainer } from "@/components/page-container";
+import { AnimatedStatsGrid } from "@/components/animated-stats-grid";
 import {
   ArrowLeft,
   Users,
@@ -276,7 +277,7 @@ export default async function FriendProfilePage({
               {daysSinceFriendship <= 30 && (
                 <Badge
                   variant="secondary"
-                  className="bg-green-100 text-green-700 border-green-200 w-fit"
+                  className="bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800 w-fit"
                 >
                   <Clock className="h-3 w-3 mr-1" />
                   New Friend
@@ -287,86 +288,46 @@ export default async function FriendProfilePage({
         </div>
 
         {/* Enhanced Friendship & Activity Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="hover:shadow-lg transition-all duration-200 hover:-translate-y-1">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full flex items-center justify-center">
-                  <Heart className="w-7 h-7 text-primary" />
-                </div>
-                <div>
-                  <p className="text-3xl font-bold text-primary">
-                    {daysSinceFriendship}
-                  </p>
-                  <p className="text-sm text-muted-foreground font-medium">
-                    Days Connected
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-all duration-200 hover:-translate-y-1">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 bg-gradient-to-br from-green-100 to-green-50 rounded-full flex items-center justify-center">
-                  <Handshake className="w-7 h-7 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-3xl font-bold text-green-600">
-                    {sharedShiftsCount}
-                  </p>
-                  <p className="text-sm text-muted-foreground font-medium">
-                    Shared Shifts
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-all duration-200 hover:-translate-y-1">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 bg-gradient-to-br from-blue-100 to-blue-50 rounded-full flex items-center justify-center">
-                  <TrendingUp className="w-7 h-7 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-3xl font-bold text-blue-600">
-                    {friendTotalShifts}
-                  </p>
-                  <p className="text-sm text-muted-foreground font-medium">
-                    Total Shifts
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-all duration-200 hover:-translate-y-1">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 bg-gradient-to-br from-purple-100 to-purple-50 rounded-full flex items-center justify-center">
-                  <Clock className="w-7 h-7 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-3xl font-bold text-purple-600">
-                    {friendTotalHours}
-                  </p>
-                  <p className="text-sm text-muted-foreground font-medium">
-                    Hours Volunteered
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <AnimatedStatsGrid
+          data-testid="friend-stats-grid"
+          stats={[
+            {
+              title: "Days Connected",
+              value: daysSinceFriendship,
+              iconType: "heart",
+              variant: "red",
+              testId: "days-connected",
+            },
+            {
+              title: "Shared Shifts",
+              value: sharedShiftsCount,
+              iconType: "handshake",
+              variant: "green",
+              testId: "shared-shifts",
+            },
+            {
+              title: "Total Shifts",
+              value: friendTotalShifts,
+              iconType: "trendingUp",
+              variant: "blue",
+              testId: "total-shifts",
+            },
+            {
+              title: "Hours Volunteered",
+              value: friendTotalHours,
+              iconType: "clock",
+              variant: "purple",
+              testId: "hours-volunteered",
+            },
+          ]}
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Enhanced Friend's Activity Summary */}
           <Card className="hover:shadow-lg transition-all duration-200">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                <div className="w-8 h-8 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center">
                   <Users className="h-4 w-4 text-primary" />
                 </div>
                 <span className="text-xl">{displayName}&apos;s Activity</span>
@@ -414,8 +375,8 @@ export default async function FriendProfilePage({
           <Card className="hover:shadow-lg transition-all duration-200">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                  <UserCheck className="h-4 w-4 text-green-600" />
+                <div className="w-8 h-8 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center">
+                  <UserCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
                 </div>
                 <span className="text-xl">Shared Volunteering</span>
               </CardTitle>
@@ -458,7 +419,7 @@ export default async function FriendProfilePage({
                 </div>
               ) : (
                 <div className="text-center py-12">
-                  <div className="w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <div className="w-16 h-16 bg-muted/50 dark:bg-muted/20 rounded-full flex items-center justify-center mx-auto mb-4">
                     <UserCheck className="h-8 w-8 text-muted-foreground/50" />
                   </div>
                   <h3 className="font-semibold mb-2">No shared shifts yet</h3>
@@ -504,7 +465,7 @@ export default async function FriendProfilePage({
                       key={signup.id}
                       className="flex items-center gap-3 p-3 border rounded-lg"
                     >
-                      <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                      <div className="w-12 h-12 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center">
                         <Calendar className="w-6 h-6 text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">

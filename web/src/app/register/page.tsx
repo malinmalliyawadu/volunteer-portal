@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signIn, getProviders } from "next-auth/react";
 import { Button } from "@/components/ui/button";
+import { GradientButton } from "@/components/ui/gradient-button";
 import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
@@ -342,13 +343,13 @@ export default function RegisterPage() {
   const getProviderButtonStyle = (providerId: string) => {
     switch (providerId) {
       case "google":
-        return "bg-white hover:bg-gray-50 text-gray-900 border border-gray-300";
+        return "bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600";
       case "facebook":
         return "bg-[#1877F2] hover:bg-[#166FE5] text-white";
       case "apple":
-        return "bg-black hover:bg-gray-900 text-white";
+        return "bg-black dark:bg-white hover:bg-gray-900 dark:hover:bg-gray-100 text-white dark:text-black";
       default:
-        return "bg-gray-100 hover:bg-gray-200 text-gray-900";
+        return "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100";
     }
   };
 
@@ -592,7 +593,7 @@ export default function RegisterPage() {
         </PageHeader>
 
         {/* Progress Indicator */}
-        <div className="bg-white rounded-xl shadow-sm border border-border p-6" data-testid="progress-indicator">
+        <div className="bg-card dark:bg-card rounded-xl shadow-sm border border-border p-6" data-testid="progress-indicator">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold" data-testid="progress-title">Registration Progress</h2>
             <Badge variant="outline" className="text-xs" data-testid="step-counter">
@@ -614,9 +615,9 @@ export default function RegisterPage() {
                   <div
                     className={`flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 ${
                       index === currentStep
-                        ? `${step.color} text-white shadow-lg`
+                        ? `${step.color} text-white dark:text-white shadow-lg`
                         : index < currentStep
-                        ? "bg-green-500 text-white"
+                        ? "bg-green-500 text-white dark:text-white hover:bg-green-600 dark:hover:bg-green-600"
                         : "bg-muted text-muted-foreground"
                     }`}
                     data-testid={`step-${index + 1}-icon`}
@@ -630,7 +631,7 @@ export default function RegisterPage() {
                   {index < steps.length - 1 && (
                     <div
                       className={`flex-1 h-1 mx-2 rounded-full transition-all duration-200 ${
-                        index < currentStep ? "bg-green-500" : "bg-muted"
+                        index < currentStep ? "bg-green-500 dark:bg-green-600" : "bg-muted dark:bg-muted"
                       }`}
                     />
                   )}
@@ -650,7 +651,7 @@ export default function RegisterPage() {
         </div>
 
         {/* Form Content */}
-        <MotionCard className="shadow-lg border-0 bg-white/80 backdrop-blur-sm" data-testid="registration-form-card">
+        <MotionCard className="shadow-lg border-0 bg-card/80 dark:bg-card/90 backdrop-blur-sm" data-testid="registration-form-card">
           <CardHeader className="pb-6">
             <CardTitle className="flex items-center gap-3 text-xl" data-testid="form-step-title">
               {React.createElement(steps[currentStep].icon, {
@@ -677,10 +678,10 @@ export default function RegisterPage() {
                   Previous
                 </Button>
 
-                <Button
+                <GradientButton
                   type="submit"
                   disabled={loading}
-                  className="flex items-center gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                  className="flex items-center gap-2"
                   data-testid="next-submit-button"
                 >
                   {loading ? (
@@ -701,7 +702,7 @@ export default function RegisterPage() {
                       <ArrowRight className="h-4 w-4" />
                     </>
                   )}
-                </Button>
+                </GradientButton>
               </div>
             </form>
           </CardContent>

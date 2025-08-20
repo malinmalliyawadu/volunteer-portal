@@ -253,6 +253,8 @@ export function ProfileImageUpload({
                 key={`profile-img-${imageKey}`}
                 src={currentImage}
                 alt="Profile"
+                width={96}
+                height={96}
                 className="w-full h-full object-cover"
                 onError={(e) => {
                   console.error("Failed to load profile image");
@@ -319,6 +321,8 @@ export function ProfileImageUpload({
                         ref={imgRef}
                         alt="Crop preview"
                         src={imageSrc}
+                        width={800}
+                        height={600}
                         style={{ maxHeight: "400px", maxWidth: "100%" }}
                         onLoad={onImageLoad}
                       />
