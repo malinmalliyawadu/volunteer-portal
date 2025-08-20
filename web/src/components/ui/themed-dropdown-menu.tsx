@@ -15,7 +15,6 @@ export {
   DropdownMenu as ThemedDropdownMenu,
   DropdownMenuTrigger as ThemedDropdownMenuTrigger,
   DropdownMenuLabel as ThemedDropdownMenuLabel,
-  DropdownMenuSeparator as ThemedDropdownMenuSeparator,
 }
 
 interface ThemedDropdownMenuContentProps extends React.ComponentPropsWithoutRef<typeof DropdownMenuContent> {
@@ -109,5 +108,24 @@ export function ThemedDropdownMenuText({
         </div>
       )}
     </div>
+  )
+}
+
+interface ThemedDropdownMenuSeparatorProps extends React.ComponentPropsWithoutRef<typeof DropdownMenuSeparator> {
+  className?: string
+}
+
+export function ThemedDropdownMenuSeparator({
+  className,
+  ...props
+}: ThemedDropdownMenuSeparatorProps) {
+  return (
+    <DropdownMenuSeparator
+      className={cn(
+        "bg-border dark:bg-emerald-800/30 -mx-1 my-1 h-px",
+        className
+      )}
+      {...props}
+    />
   )
 }
