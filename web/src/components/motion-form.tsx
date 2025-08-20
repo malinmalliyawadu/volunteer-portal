@@ -67,8 +67,9 @@ export function MotionFormSection({
  */
 export function MotionFormError({ 
   children,
-  show 
-}: { children: React.ReactNode; show: boolean }) {
+  show,
+  ...props
+}: { children: React.ReactNode; show: boolean; [key: string]: any }) {
   return (
     <AnimatePresence>
       {show && (
@@ -78,6 +79,7 @@ export function MotionFormError({
           exit={{ opacity: 0, height: 0 }}
           transition={{ duration: 0.2 }}
           className="text-sm text-destructive"
+          {...props}
         >
           {children}
         </motion.div>
@@ -136,8 +138,9 @@ export function MotionFormSubmit({
  */
 export function MotionFormSuccess({ 
   children,
-  show 
-}: { children: React.ReactNode; show: boolean }) {
+  show,
+  ...props 
+}: { children: React.ReactNode; show: boolean; [key: string]: any }) {
   return (
     <AnimatePresence>
       {show && (
@@ -150,6 +153,7 @@ export function MotionFormSuccess({
             ease: [0.4, 0, 0.2, 1]
           }}
           className="p-4 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg"
+          {...props}
         >
           {children}
         </motion.div>
