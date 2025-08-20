@@ -4,7 +4,13 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Search, X } from "lucide-react";
 import { ResourceCategory } from "@prisma/client";
@@ -43,7 +49,7 @@ export function ResourceSearch({
 
   const updateSearch = (params: Record<string, string | undefined>) => {
     const newSearchParams = new URLSearchParams(searchParams);
-    
+
     Object.entries(params).forEach(([key, value]) => {
       if (value) {
         newSearchParams.set(key, value);
@@ -77,10 +83,12 @@ export function ResourceSearch({
             placeholder="Search resources..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-10"
+            className="pl-10 h-14"
           />
         </div>
-        <Button type="submit" className="px-6">Search</Button>
+        <Button type="submit" className="px-6">
+          Search
+        </Button>
       </form>
 
       {/* Filters */}
@@ -133,7 +141,7 @@ export function ResourceSearch({
 
         {/* Clear Filters */}
         {hasFilters && (
-          <Button variant="outline" onClick={clearFilters}>
+          <Button variant="outline" size="sm" onClick={clearFilters}>
             <X className="h-4 w-4 mr-2" />
             Clear Filters
           </Button>
@@ -154,10 +162,11 @@ export function ResourceSearch({
               </button>
             </Badge>
           )}
-          
+
           {selectedCategory && (
             <Badge variant="secondary" className="gap-1">
-              Category: {categories.find(c => c.id === selectedCategory)?.name}
+              Category:{" "}
+              {categories.find((c) => c.id === selectedCategory)?.name}
               <button
                 onClick={() => updateSearch({ category: undefined })}
                 className="ml-1 hover:bg-gray-200 rounded-full p-0.5"
@@ -166,10 +175,10 @@ export function ResourceSearch({
               </button>
             </Badge>
           )}
-          
+
           {selectedType && (
             <Badge variant="secondary" className="gap-1">
-              Type: {resourceTypes.find(t => t.value === selectedType)?.label}
+              Type: {resourceTypes.find((t) => t.value === selectedType)?.label}
               <button
                 onClick={() => updateSearch({ type: undefined })}
                 className="ml-1 hover:bg-gray-200 rounded-full p-0.5"

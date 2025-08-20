@@ -1,12 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { Resource, ResourceCategory } from "@prisma/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-// Button import removed as it's not used
 import { FileText, Video, Link2, Image, Headphones, BookOpen, Download, ExternalLink, Eye } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-// Link import removed as it's not used
+import { ResourceDialog } from "./resource-dialog";
 
 interface ResourceWithRelations extends Resource {
   category: ResourceCategory;
@@ -58,22 +58,17 @@ function getCreatorName(creator: ResourceWithRelations["creator"]): string {
 }
 
 export function ResourceGrid({ resources, showCategory = false }: ResourceGridProps) {
-  const handleResourceClick = async (resource: Resource) => {
-    // Track resource access
-    try {
-      await fetch(`/api/resources/${resource.id}/access`, {
-        method: "POST",
-      });
-    } catch (error) {
-      console.error("Failed to track resource access:", error);
-    }
+  const [selectedResource, setSelectedResource] = useState<ResourceWithRelations | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-    // Open resource
-    if (resource.url) {
-      window.open(resource.url, "_blank");
-    } else if (resource.filePath) {
-      window.open(resource.filePath, "_blank");
-    }
+  const handleResourceClick = (resource: ResourceWithRelations) => {
+    setSelectedResource(resource);
+    setIsDialogOpen(true);
+  };
+
+  const handleDialogClose = () => {
+    setIsDialogOpen(false);
+    setSelectedResource(null);
   };
 
   if (resources.length === 0) {
@@ -85,17 +80,18 @@ export function ResourceGrid({ resources, showCategory = false }: ResourceGridPr
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {resources.map((resource) => {
-        const Icon = typeIcons[resource.type];
-        const typeColor = typeColors[resource.type];
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {resources.map((resource) => {
+          const Icon = typeIcons[resource.type];
+          const typeColor = typeColors[resource.type];
 
-        return (
-          <Card
-            key={resource.id}
-            className="hover:shadow-md transition-shadow cursor-pointer group"
-            onClick={() => handleResourceClick(resource)}
-          >
+          return (
+            <Card
+              key={resource.id}
+              className="hover:shadow-md transition-shadow cursor-pointer group"
+              onClick={() => handleResourceClick(resource)}
+            >
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-2 mb-2">
@@ -179,8 +175,15 @@ export function ResourceGrid({ resources, showCategory = false }: ResourceGridPr
               </div>
             </CardContent>
           </Card>
-        );
-      })}
-    </div>
+          );
+        })}
+      </div>
+      
+      <ResourceDialog
+        resource={selectedResource}
+        isOpen={isDialogOpen}
+        onClose={handleDialogClose}
+      />
+    </>
   );
 }
