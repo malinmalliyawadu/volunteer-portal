@@ -378,6 +378,14 @@ export default async function AdminDashboardPage({
               asChild
               variant="outline"
               className="w-full"
+              data-testid="user-migration-button"
+            >
+              <Link href="/admin/migration">User Migration</Link>
+            </Button>
+            <Button
+              asChild
+              variant="outline"
+              className="w-full"
               data-testid="view-public-shifts-button"
             >
               <Link href="/shifts">View Public Shifts</Link>

@@ -33,6 +33,16 @@ model User {
   volunteerAgreementAccepted   Boolean                @default(false)
   healthSafetyPolicyAccepted   Boolean                @default(false)
   profileCompleted             Boolean                @default(false)
+  
+  // Migration invitation tracking
+  isMigrated                   Boolean                @default(false)
+  migrationInvitationSent      Boolean                @default(false)
+  migrationInvitationSentAt    DateTime?
+  migrationInvitationCount     Int                    @default(0)
+  migrationLastSentAt          DateTime?
+  migrationInvitationToken     String?                @unique
+  migrationTokenExpiresAt      DateTime?
+  
   createdAt                    DateTime               @default(now())
   updatedAt                    DateTime               @updatedAt
   signups                      Signup[]

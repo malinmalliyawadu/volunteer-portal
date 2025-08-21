@@ -16,6 +16,8 @@
     "prisma:generate": "prisma generate",
     "prisma:deploy": "prisma migrate deploy",
     "prisma:reset": "prisma migrate reset",
+    "migrate-users": "tsx scripts/migrate-users.ts",
+    "validate-migration": "tsx scripts/validate-migration.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {
@@ -28,12 +30,14 @@
     "@radix-ui/react-dropdown-menu": "^2.1.15",
     "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-popover": "^1.1.14",
+    "@radix-ui/react-progress": "^1.1.7",
     "@radix-ui/react-radio-group": "^1.3.7",
     "@radix-ui/react-select": "^2.2.5",
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-tabs": "^1.1.12",
     "@radix-ui/react-tooltip": "^1.2.8",
     "bcrypt": "^6.0.0",
+    "bcryptjs": "^2.4.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
@@ -55,13 +59,16 @@
     "@eslint/eslintrc": "^3",
     "@playwright/test": "^1.54.2",
     "@tailwindcss/postcss": "^4",
+    "@types/bcrypt": "^5.0.2",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "csv-parse": "^5.6.0",
     "eslint": "^9",
     "eslint-config-next": "15.4.6",
     "prisma": "^6.14.0",
     "tailwindcss": "^4",
+    "tsx": "^4.19.2",
     "typescript": "^5"
   }
 }
