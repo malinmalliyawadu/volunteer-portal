@@ -1,15 +1,38 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Mail, Send, Users, Search, Filter, CheckCircle, Clock, AlertCircle, Copy, ExternalLink } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Mail,
+  Send,
+  Users,
+  Search,
+  Filter,
+  CheckCircle,
+  Clock,
+  AlertCircle,
+  Copy,
+  ExternalLink,
+} from "lucide-react";
 import { toast } from "sonner";
 
 interface MigratedUser {
@@ -40,16 +63,25 @@ interface InvitationResult {
   success: boolean;
 }
 
+const isTokenExpired = (expiresAt?: string): boolean => {
+  if (!expiresAt) return false;
+  return new Date(expiresAt) < new Date();
+};
+
 export function UserInvitations() {
   const [users, setUsers] = useState<MigratedUser[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState<"all" | "pending" | "invited" | "expired" | "completed">("all");
+  const [filterStatus, setFilterStatus] = useState<
+    "all" | "pending" | "invited" | "expired" | "completed"
+  >("all");
   const [customMessage, setCustomMessage] = useState("");
   const [showInvitationDialog, setShowInvitationDialog] = useState(false);
-  const [invitationResults, setInvitationResults] = useState<InvitationResult[]>([]);
+  const [invitationResults, setInvitationResults] = useState<
+    InvitationResult[]
+  >([]);
 
   const defaultTemplate: InvitationTemplate = {
     subject: "Welcome to the New Everybody Eats Volunteer Portal!",
@@ -70,7 +102,7 @@ If you have any questions or need assistance, please don't hesitate to reach out
 Thank you for your continued support of Everybody Eats!
 
 Best regards,
-The Everybody Eats Team`
+The Everybody Eats Team`,
   };
 
   const fetchMigratedUsers = async () => {
@@ -93,17 +125,26 @@ The Everybody Eats Team`
     fetchMigratedUsers();
   }, []);
 
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = searchTerm === "" || 
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch =
+      searchTerm === "" ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchTerm.toLowerCase());
+      `${user.firstName} ${user.lastName}`
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
 
     const tokenExpired = isTokenExpired(user.tokenExpiresAt);
-    const matchesFilter = 
+    const matchesFilter =
       filterStatus === "all" ||
       (filterStatus === "pending" && !user.invitationSent) ||
-      (filterStatus === "invited" && user.invitationSent && !user.registrationCompleted && !tokenExpired) ||
-      (filterStatus === "expired" && user.invitationSent && !user.registrationCompleted && tokenExpired) ||
+      (filterStatus === "invited" &&
+        user.invitationSent &&
+        !user.registrationCompleted &&
+        !tokenExpired) ||
+      (filterStatus === "expired" &&
+        user.invitationSent &&
+        !user.registrationCompleted &&
+        tokenExpired) ||
       (filterStatus === "completed" && user.registrationCompleted);
 
     return matchesSearch && matchesFilter;
@@ -123,7 +164,7 @@ The Everybody Eats Team`
     if (selectedUsers.size === filteredUsers.length) {
       setSelectedUsers(new Set());
     } else {
-      setSelectedUsers(new Set(filteredUsers.map(user => user.id)));
+      setSelectedUsers(new Set(filteredUsers.map((user) => user.id)));
     }
   };
 
@@ -140,20 +181,20 @@ The Everybody Eats Team`
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userIds: Array.from(selectedUsers),
-          customMessage: customMessage.trim() || undefined
-        })
+          customMessage: customMessage.trim() || undefined,
+        }),
       });
 
       if (response.ok) {
         const result = await response.json();
         toast.success(`Successfully sent ${result.sent} invitations!`);
-        
+
         // Show dialog with registration URLs if available
         if (result.invitations && result.invitations.length > 0) {
           setInvitationResults(result.invitations);
           setShowInvitationDialog(true);
         }
-        
+
         setSelectedUsers(new Set());
         await fetchMigratedUsers(); // Refresh the list
       } else {
@@ -168,17 +209,12 @@ The Everybody Eats Team`
     }
   };
 
-  const isTokenExpired = (expiresAt?: string): boolean => {
-    if (!expiresAt) return false;
-    return new Date(expiresAt) < new Date();
-  };
-
   const resendInvitation = async (userId: string) => {
     try {
       const response = await fetch("/api/admin/migration/resend-invitation", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId })
+        body: JSON.stringify({ userId }),
       });
 
       if (response.ok) {
@@ -194,14 +230,28 @@ The Everybody Eats Team`
     }
   };
 
-  const pendingUsers = users.filter(u => !u.invitationSent);
-  const invitedUsers = users.filter(u => u.invitationSent && !u.registrationCompleted && !isTokenExpired(u.tokenExpiresAt));
-  const expiredUsers = users.filter(u => u.invitationSent && !u.registrationCompleted && isTokenExpired(u.tokenExpiresAt));
-  const completedUsers = users.filter(u => u.registrationCompleted);
+  const pendingUsers = users.filter((u) => !u.invitationSent);
+  const invitedUsers = users.filter(
+    (u) =>
+      u.invitationSent &&
+      !u.registrationCompleted &&
+      !isTokenExpired(u.tokenExpiresAt)
+  );
+  const expiredUsers = users.filter(
+    (u) =>
+      u.invitationSent &&
+      !u.registrationCompleted &&
+      isTokenExpired(u.tokenExpiresAt)
+  );
+  const completedUsers = users.filter((u) => u.registrationCompleted);
 
   const formatDateTime = (dateString?: string): string => {
     if (!dateString) return "Never";
-    return new Date(dateString).toLocaleDateString() + " at " + new Date(dateString).toLocaleTimeString();
+    return (
+      new Date(dateString).toLocaleDateString() +
+      " at " +
+      new Date(dateString).toLocaleTimeString()
+    );
   };
 
   const copyToClipboard = async (text: string) => {
@@ -215,10 +265,13 @@ The Everybody Eats Team`
   };
 
   const copyAllUrls = async () => {
-    const urls = invitationResults.map(result => 
-      `${result.firstName} ${result.lastName} (${result.email}): ${result.registrationUrl}`
-    ).join('\n');
-    
+    const urls = invitationResults
+      .map(
+        (result) =>
+          `${result.firstName} ${result.lastName} (${result.email}): ${result.registrationUrl}`
+      )
+      .join("\n");
+
     try {
       await navigator.clipboard.writeText(urls);
       toast.success("All URLs copied to clipboard!");
@@ -288,12 +341,15 @@ The Everybody Eats Team`
         <CardHeader>
           <CardTitle>Email Template</CardTitle>
           <CardDescription>
-            Customize the invitation message sent to migrated users. Use {"{firstName}"} and {"{registrationLink}"} as placeholders.
+            Customize the invitation message sent to migrated users. Use{" "}
+            {"{firstName}"} and {"{registrationLink}"} as placeholders.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <label className="text-sm font-medium">Custom Message (optional)</label>
+            <label className="text-sm font-medium">
+              Custom Message (optional)
+            </label>
             <Textarea
               placeholder="Add a personal message to the default template..."
               value={customMessage}
@@ -302,12 +358,13 @@ The Everybody Eats Team`
               className="mt-1"
             />
           </div>
-          
+
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              <strong>Default template includes:</strong> Welcome message, registration link, 
-              instructions for setting up password and profile, and contact information.
+              <strong>Default template includes:</strong> Welcome message,
+              registration link, instructions for setting up password and
+              profile, and contact information.
             </AlertDescription>
           </Alert>
         </CardContent>
@@ -320,7 +377,8 @@ The Everybody Eats Team`
             <div>
               <CardTitle>Migrated Users</CardTitle>
               <CardDescription>
-                Send invitation emails to migrated users to complete their registration
+                Send invitation emails to migrated users to complete their
+                registration
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">
@@ -330,7 +388,9 @@ The Everybody Eats Team`
                 className="flex items-center gap-2"
               >
                 <Send className="h-4 w-4" />
-                {isSending ? "Sending..." : `Send Invitations (${selectedUsers.size})`}
+                {isSending
+                  ? "Sending..."
+                  : `Send Invitations (${selectedUsers.size})`}
               </Button>
             </div>
           </div>
@@ -371,7 +431,10 @@ The Everybody Eats Team`
               {/* Select All */}
               <div className="flex items-center space-x-2 py-2 border-b">
                 <Checkbox
-                  checked={selectedUsers.size === filteredUsers.length && filteredUsers.length > 0}
+                  checked={
+                    selectedUsers.size === filteredUsers.length &&
+                    filteredUsers.length > 0
+                  }
                   onCheckedChange={toggleAllUsers}
                 />
                 <span className="text-sm font-medium">
@@ -382,9 +445,12 @@ The Everybody Eats Team`
               {/* User Rows */}
               {filteredUsers.map((user) => {
                 const tokenExpired = isTokenExpired(user.tokenExpiresAt);
-                
+
                 return (
-                  <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div
+                    key={user.id}
+                    className="flex items-center justify-between p-4 border rounded-lg"
+                  >
                     <div className="flex items-center space-x-3">
                       <Checkbox
                         checked={selectedUsers.has(user.id)}
@@ -394,13 +460,15 @@ The Everybody Eats Team`
                         <div className="font-medium">
                           {user.firstName} {user.lastName}
                         </div>
-                        <div className="text-sm text-muted-foreground">{user.email}</div>
-                        
+                        <div className="text-sm text-muted-foreground">
+                          {user.email}
+                        </div>
+
                         {/* Invitation Statistics */}
                         {user.invitationSent && (
                           <div className="text-xs text-muted-foreground mt-1 space-y-1">
                             <div>
-                              Invitations sent: {user.invitationCount} 
+                              Invitations sent: {user.invitationCount}
                               {user.invitationCount > 1 && (
                                 <span className="ml-1">
                                   (last: {formatDateTime(user.lastSentAt)})
@@ -408,25 +476,40 @@ The Everybody Eats Team`
                               )}
                             </div>
                             {user.tokenExpiresAt && (
-                              <div className={tokenExpired ? "text-red-600" : "text-amber-600"}>
-                                Link {tokenExpired ? "expired" : "expires"}: {formatDateTime(user.tokenExpiresAt)}
+                              <div
+                                className={
+                                  tokenExpired
+                                    ? "text-red-600"
+                                    : "text-amber-600"
+                                }
+                              >
+                                Link {tokenExpired ? "expired" : "expires"}:{" "}
+                                {formatDateTime(user.tokenExpiresAt)}
                               </div>
                             )}
                           </div>
                         )}
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-2">
                       {user.registrationCompleted ? (
-                        <Badge variant="default" className="bg-green-100 text-green-800">
+                        <Badge
+                          variant="default"
+                          className="bg-green-100 text-green-800"
+                        >
                           <CheckCircle className="h-3 w-3 mr-1" />
                           Completed
                         </Badge>
                       ) : user.invitationSent ? (
                         <div className="flex items-center gap-2">
                           <div className="flex flex-col gap-1">
-                            <Badge variant="secondary" className={tokenExpired ? "bg-red-100 text-red-800" : ""}>
+                            <Badge
+                              variant="secondary"
+                              className={
+                                tokenExpired ? "bg-red-100 text-red-800" : ""
+                              }
+                            >
                               <Mail className="h-3 w-3 mr-1" />
                               {tokenExpired ? "Expired" : "Invited"}
                             </Badge>
@@ -440,7 +523,11 @@ The Everybody Eats Team`
                             size="sm"
                             variant="outline"
                             onClick={() => resendInvitation(user.id)}
-                            className={tokenExpired ? "border-red-300 text-red-700 hover:bg-red-50" : ""}
+                            className={
+                              tokenExpired
+                                ? "border-red-300 text-red-700 hover:bg-red-50"
+                                : ""
+                            }
                           >
                             {tokenExpired ? "Send New" : "Resend"}
                           </Button>
@@ -458,17 +545,19 @@ The Everybody Eats Team`
             </div>
           ) : (
             <div className="text-center py-8 text-muted-foreground">
-              {searchTerm || filterStatus !== "all" 
+              {searchTerm || filterStatus !== "all"
                 ? "No users match your search criteria"
-                : "No migrated users found. Upload and migrate users from the Upload CSV tab."
-              }
+                : "No migrated users found. Upload and migrate users from the Upload CSV tab."}
             </div>
           )}
         </CardContent>
       </Card>
 
       {/* Registration URLs Dialog */}
-      <Dialog open={showInvitationDialog} onOpenChange={setShowInvitationDialog}>
+      <Dialog
+        open={showInvitationDialog}
+        onOpenChange={setShowInvitationDialog}
+      >
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -476,14 +565,16 @@ The Everybody Eats Team`
               Registration URLs Generated
             </DialogTitle>
             <DialogDescription>
-              Here are the registration URLs for the invited users. You can copy individual URLs or all URLs at once.
+              Here are the registration URLs for the invited users. You can copy
+              individual URLs or all URLs at once.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <p className="text-sm text-muted-foreground">
-                {invitationResults.length} invitation{invitationResults.length !== 1 ? 's' : ''} sent
+                {invitationResults.length} invitation
+                {invitationResults.length !== 1 ? "s" : ""} sent
               </p>
               <Button
                 onClick={copyAllUrls}
@@ -498,7 +589,14 @@ The Everybody Eats Team`
 
             <div className="space-y-3 max-h-96 overflow-y-auto border rounded-lg p-4">
               {invitationResults.map((result, index) => (
-                <div key={index} className={`p-3 rounded-lg border ${result.success ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+                <div
+                  key={index}
+                  className={`p-3 rounded-lg border ${
+                    result.success
+                      ? "bg-green-50 border-green-200"
+                      : "bg-red-50 border-red-200"
+                  }`}
+                >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="font-medium">
@@ -510,8 +608,13 @@ The Everybody Eats Team`
                       {result.success ? (
                         <div className="space-y-2">
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-medium text-green-700">Registration URL:</span>
-                            <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300">
+                            <span className="text-xs font-medium text-green-700">
+                              Registration URL:
+                            </span>
+                            <Badge
+                              variant="outline"
+                              className="bg-green-100 text-green-800 border-green-300"
+                            >
                               <CheckCircle className="h-3 w-3 mr-1" />
                               Sent
                             </Badge>
@@ -526,15 +629,19 @@ The Everybody Eats Team`
                             <AlertCircle className="h-3 w-3 mr-1" />
                             Failed
                           </Badge>
-                          <span className="text-sm text-red-600">Failed to generate URL</span>
+                          <span className="text-sm text-red-600">
+                            Failed to generate URL
+                          </span>
                         </div>
                       )}
                     </div>
-                    
+
                     {result.success && (
                       <div className="flex items-center gap-2">
                         <Button
-                          onClick={() => copyToClipboard(result.registrationUrl)}
+                          onClick={() =>
+                            copyToClipboard(result.registrationUrl)
+                          }
                           variant="outline"
                           size="sm"
                           className="flex items-center gap-1"
@@ -543,7 +650,9 @@ The Everybody Eats Team`
                           Copy
                         </Button>
                         <Button
-                          onClick={() => window.open(result.registrationUrl, '_blank')}
+                          onClick={() =>
+                            window.open(result.registrationUrl, "_blank")
+                          }
                           variant="outline"
                           size="sm"
                           className="flex items-center gap-1"
@@ -561,9 +670,10 @@ The Everybody Eats Team`
             <Alert>
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                <strong>Important:</strong> These registration URLs are secure and unique for each user. 
-                They expire in 7 days. You can share these URLs directly with users if needed, 
-                or use them for testing the registration flow.
+                <strong>Important:</strong> These registration URLs are secure
+                and unique for each user. They expire in 7 days. You can share
+                these URLs directly with users if needed, or use them for
+                testing the registration flow.
               </AlertDescription>
             </Alert>
           </div>
