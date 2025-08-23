@@ -112,44 +112,50 @@ export function AccountStep({
   formData,
   onInputChange,
   loading,
+  hideEmail = false,
 }: {
   formData: UserProfileFormData;
   onInputChange: (field: string, value: string | boolean) => void;
   loading: boolean;
+  hideEmail?: boolean;
 }) {
   return (
     <div className="space-y-6" data-testid="account-step">
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6" data-testid="welcome-message">
-        <div className="flex items-start space-x-3">
-          <UserPlus className="h-5 w-5 text-blue-600 mt-0.5" />
-          <div>
-            <h4 className="text-sm font-medium text-blue-800">
-              Welcome to Everybody Eats!
-            </h4>
-            <p className="text-sm text-blue-700">
-              Create your volunteer account to start making a difference in your
-              community.
-            </p>
+      {!hideEmail && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6" data-testid="welcome-message">
+          <div className="flex items-start space-x-3">
+            <UserPlus className="h-5 w-5 text-blue-600 mt-0.5" />
+            <div>
+              <h4 className="text-sm font-medium text-blue-800">
+                Welcome to Everybody Eats!
+              </h4>
+              <p className="text-sm text-blue-700">
+                Create your volunteer account to start making a difference in your
+                community.
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
-      <div className="space-y-2" data-testid="email-field">
-        <Label htmlFor="email" className="text-sm font-medium">
-          Email Address *
-        </Label>
-        <Input
-          id="email"
-          type="email"
-          value={formData.email || ""}
-          onChange={(e) => onInputChange("email", e.target.value)}
-          placeholder="your.email@example.com"
-          disabled={loading}
-          className="h-11"
-          required
-          data-testid="email-input"
-        />
-      </div>
+      {!hideEmail && (
+        <div className="space-y-2" data-testid="email-field">
+          <Label htmlFor="email" className="text-sm font-medium">
+            Email Address *
+          </Label>
+          <Input
+            id="email"
+            type="email"
+            value={formData.email || ""}
+            onChange={(e) => onInputChange("email", e.target.value)}
+            placeholder="your.email@example.com"
+            disabled={loading}
+            className="h-11"
+            required
+            data-testid="email-input"
+          />
+        </div>
+      )}
 
       <div className="space-y-2" data-testid="password-field">
         <Label htmlFor="password" className="text-sm font-medium">

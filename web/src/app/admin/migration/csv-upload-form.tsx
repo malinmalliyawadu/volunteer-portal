@@ -391,7 +391,7 @@ export function CSVUploadForm() {
                             </div>
                             {error.value && (
                               <div className="text-red-600 text-xs mt-1 font-mono">
-                                Value: "{error.value}"
+                                Value: &quot;{error.value}&quot;
                               </div>
                             )}
                           </div>
@@ -608,7 +608,7 @@ export function CSVUploadForm() {
                       </div>
                       {error.value && (
                         <div className="text-red-600 text-xs mt-1 font-mono">
-                          Value: "{error.value}"
+                          Value: &quot;{error.value}&quot;
                         </div>
                       )}
                     </div>

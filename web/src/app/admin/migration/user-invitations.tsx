@@ -411,7 +411,7 @@ The Everybody Eats Team`,
               <Filter className="h-4 w-4 text-muted-foreground" />
               <select
                 value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value as any)}
+                onChange={(e) => setFilterStatus(e.target.value as "all" | "pending" | "invited" | "completed")}
                 className="border rounded-md px-3 py-2 text-sm"
               >
                 <option value="all">All Users</option>

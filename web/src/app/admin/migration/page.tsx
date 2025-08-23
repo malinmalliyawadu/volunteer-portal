@@ -7,6 +7,7 @@ import { PageContainer } from "@/components/page-container";
 import { CSVUploadForm } from "./csv-upload-form";
 import { MigrationStatus } from "./migration-status";
 import { UserInvitations } from "./user-invitations";
+import { MigratedUsers } from "./migrated-users";
 
 export const metadata: Metadata = {
   title: "User Migration | Admin Dashboard",
@@ -76,12 +77,12 @@ export default function MigrationPage() {
                     <tr className="border-b">
                       <td className="p-2 font-mono">First Name</td>
                       <td className="p-2">No*</td>
-                      <td className="p-2">User's first name</td>
+                      <td className="p-2">User&apos;s first name</td>
                     </tr>
                     <tr className="border-b">
                       <td className="p-2 font-mono">Last Name</td>
                       <td className="p-2">No*</td>
-                      <td className="p-2">User's last name</td>
+                      <td className="p-2">User&apos;s last name</td>
                     </tr>
                     <tr className="border-b">
                       <td className="p-2 font-mono">Email</td>
@@ -157,20 +158,7 @@ export default function MigrationPage() {
         </TabsContent>
 
         <TabsContent value="users" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Migrated Users</CardTitle>
-              <CardDescription>
-                Review and manage users that have been migrated from the legacy system.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                This section will show migrated users with their status and allow bulk operations.
-                Implementation coming soon.
-              </p>
-            </CardContent>
-          </Card>
+          <MigratedUsers />
         </TabsContent>
       </Tabs>
     </PageContainer>

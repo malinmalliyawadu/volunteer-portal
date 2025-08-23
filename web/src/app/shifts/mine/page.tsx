@@ -9,6 +9,7 @@ import {
 } from "date-fns";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
+import { safeParseAvailability } from "@/lib/parse-availability";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -165,9 +166,7 @@ export default async function MyShiftsPage({
     },
   });
 
-  const userPreferredLocations = currentUser?.availableLocations
-    ? JSON.parse(currentUser.availableLocations)
-    : [];
+  const userPreferredLocations = safeParseAvailability(currentUser?.availableLocations);
 
   // Get user's friend IDs
   const userFriendIds = await prisma.friendship

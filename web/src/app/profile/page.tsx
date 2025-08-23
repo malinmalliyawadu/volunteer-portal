@@ -9,6 +9,7 @@ import Link from "next/link";
 import { PageHeader } from "@/components/page-header";
 import { PageContainer } from "@/components/page-container";
 import { MotionCard } from "@/components/motion-card";
+import { safeParseAvailability } from "@/lib/parse-availability";
 
 export default async function ProfilePage() {
   const session = await getServerSession(authOptions);
@@ -55,12 +56,8 @@ export default async function ProfilePage() {
           .toUpperCase()
       : "U";
 
-  const availableDays = userProfile?.availableDays
-    ? JSON.parse(userProfile.availableDays)
-    : [];
-  const availableLocations = userProfile?.availableLocations
-    ? JSON.parse(userProfile.availableLocations)
-    : [];
+  const availableDays = safeParseAvailability(userProfile?.availableDays);
+  const availableLocations = safeParseAvailability(userProfile?.availableLocations);
 
   return (
     <PageContainer testid="profile-page">

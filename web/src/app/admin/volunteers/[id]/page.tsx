@@ -23,6 +23,7 @@ import {
 import { PageHeader } from "@/components/page-header";
 import { cn } from "@/lib/utils";
 import { PageContainer } from "@/components/page-container";
+import { safeParseAvailability } from "@/lib/parse-availability";
 
 interface AdminVolunteerPageProps {
   params: Promise<{ id: string }>;
@@ -118,12 +119,8 @@ export default async function AdminVolunteerPage({
         .toUpperCase()
     : "V";
 
-  const availableDays = volunteer.availableDays
-    ? JSON.parse(volunteer.availableDays)
-    : [];
-  const availableLocations = volunteer.availableLocations
-    ? JSON.parse(volunteer.availableLocations)
-    : [];
+  const availableDays = safeParseAvailability(volunteer.availableDays);
+  const availableLocations = safeParseAvailability(volunteer.availableLocations);
 
   // Calculate shift statistics (all shifts, not filtered)
   const allSignups = await prisma.signup.findMany({

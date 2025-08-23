@@ -9,41 +9,73 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 
 interface PageProps {
-  searchParams: {
+  searchParams: Promise<{
     token?: string;
-  };
+  }>;
 }
 
 async function validateToken(token: string) {
   if (!token) return null;
 
-  // For now, we'll find users by a simple token match
-  // TODO: When migration is complete, use the actual migrationInvitationToken field
-  const user = await prisma.user.findFirst({
-    where: {
-      profileCompleted: false,
-      role: "VOLUNTEER",
-      // TODO: Add token validation when migration fields are available
-      // migrationInvitationToken: token,
-      // migrationTokenExpiresAt: { gt: new Date() }
-    },
-    select: {
-      id: true,
-      email: true,
-      firstName: true,
-      lastName: true,
-      phone: true,
-      dateOfBirth: true,
-      emergencyContactName: true,
-      emergencyContactRelationship: true,
-      emergencyContactPhone: true,
-      medicalConditions: true,
-      availableDays: true,
-      availableLocations: true,
-    }
-  });
+  try {
+    // Find user by migration invitation token
+    const user = await prisma.user.findFirst({
+      where: {
+        migrationInvitationToken: token,
+        migrationTokenExpiresAt: { gt: new Date() }, // Token must not be expired
+        profileCompleted: false, // User hasn't completed registration yet
+        role: "VOLUNTEER",
+        isMigrated: true // Must be a migrated user
+      },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        phone: true,
+        dateOfBirth: true,
+        emergencyContactName: true,
+        emergencyContactRelationship: true,
+        emergencyContactPhone: true,
+        medicalConditions: true,
+        availableDays: true,
+        availableLocations: true,
+        migrationTokenExpiresAt: true, // Include for debugging
+      }
+    });
 
-  return user;
+    if (!user) {
+      // For debugging - check if token exists but doesn't match other criteria
+      const tokenExists = await prisma.user.findFirst({
+        where: { migrationInvitationToken: token },
+        select: { 
+          id: true, 
+          email: true, 
+          profileCompleted: true, 
+          migrationTokenExpiresAt: true,
+          isMigrated: true,
+          role: true 
+        }
+      });
+      
+      if (tokenExists) {
+        console.log(`Token found but user doesn't match criteria:`, {
+          email: tokenExists.email,
+          profileCompleted: tokenExists.profileCompleted,
+          tokenExpired: tokenExists.migrationTokenExpiresAt ? tokenExists.migrationTokenExpiresAt <= new Date() : 'no expiry',
+          isMigrated: tokenExists.isMigrated,
+          role: tokenExists.role
+        });
+      } else {
+        console.log(`Token not found in database: ${token}`);
+      }
+    }
+
+    return user;
+  } catch (error) {
+    console.error('Error validating migration token:', error);
+    return null;
+  }
 }
 
 export default async function MigrationRegistrationPage({ searchParams }: PageProps) {
@@ -54,7 +86,8 @@ export default async function MigrationRegistrationPage({ searchParams }: PagePr
     redirect("/dashboard");
   }
 
-  const { token } = searchParams;
+  const params = await searchParams;
+  const { token } = params;
 
   if (!token) {
     return (
@@ -101,7 +134,14 @@ export default async function MigrationRegistrationPage({ searchParams }: PagePr
             <Alert>
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                The registration link may have expired or already been used. Please contact the volunteer coordinator for a new invitation.
+                This registration link may have:
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  <li>Expired (links are valid for 7 days)</li>
+                  <li>Already been used to complete registration</li>
+                  <li>Been replaced by a newer invitation</li>
+                  <li>Invalid token format</li>
+                </ul>
+                Please contact the volunteer coordinator for a new invitation.
               </AlertDescription>
             </Alert>
           </CardContent>
@@ -125,7 +165,7 @@ export default async function MigrationRegistrationPage({ searchParams }: PagePr
             <CardHeader>
               <CardTitle>Complete Your Profile</CardTitle>
               <CardDescription>
-                We've migrated your information from the previous system. Please review and complete your profile setup.
+                We&apos;ve migrated your information from the previous system. Please review and complete your profile setup.
               </CardDescription>
             </CardHeader>
             <CardContent>

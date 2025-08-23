@@ -1,26 +1,44 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
+import { GradientButton } from "@/components/ui/gradient-button";
+import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useToast } from "@/hooks/use-toast";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
-import { Eye, EyeOff, User, Shield, Heart, CheckCircle } from "lucide-react";
-import { toast } from "sonner";
-import React from "react";
+  ArrowLeft,
+  ArrowRight,
+  UserPlus,
+  User,
+  Phone,
+  Shield,
+  FileText,
+  Check,
+  AlertCircle,
+  Camera,
+} from "lucide-react";
+import {
+  AccountStep,
+  PersonalInfoStep,
+  EmergencyContactStep,
+  MedicalInfoStep,
+  AvailabilityStep,
+  CommunicationStep,
+  UserProfileFormData,
+} from "@/components/forms/user-profile-form";
+import { MotionSpinner } from "@/components/motion-spinner";
+import { MotionCard } from "@/components/motion-card";
+import { safeParseAvailability } from "@/lib/parse-availability";
+import { ProfileImageUpload } from "@/components/ui/profile-image-upload";
+
+// Extend the form data to include profile image requirement for migration
+interface MigrationFormData extends UserProfileFormData {
+  profilePhotoUrl: string | null;
+}
 
 interface User {
   id: string;
@@ -42,117 +60,316 @@ interface MigrationRegistrationFormProps {
   token: string;
 }
 
+/**
+ * Migration registration form that reuses components from the main registration flow
+ * Eliminates duplication by leveraging existing form steps and validation logic
+ */
 export function MigrationRegistrationForm({
   user,
   token,
 }: MigrationRegistrationFormProps) {
   const router = useRouter();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [locationOptions, setLocationOptions] = useState<
+    Array<{ value: string; label: string }>
+  >([]);
+  const [volunteerAgreementContent, setVolunteerAgreementContent] = useState("");
+  const [healthSafetyPolicyContent, setHealthSafetyPolicyContent] = useState("");
+  const [volunteerAgreementOpen, setVolunteerAgreementOpen] = useState(false);
+  const [healthSafetyPolicyOpen, setHealthSafetyPolicyOpen] = useState(false);
 
-  // Form data state
-  const [formData, setFormData] = useState({
+  // Initialize form data with migrated user information
+  const [formData, setFormData] = useState<MigrationFormData>({
+    // Account info - email is pre-filled and password needs to be set
+    email: user.email,
+    password: "",
+    confirmPassword: "",
+
+    // Personal information - pre-filled from migrated data
     firstName: user.firstName || "",
     lastName: user.lastName || "",
     phone: user.phone || "",
     dateOfBirth: user.dateOfBirth
       ? new Date(user.dateOfBirth).toISOString().split("T")[0]
       : "",
-    pronouns: "",
-    password: "",
-    confirmPassword: "",
+    pronouns: "none",
+
+    // Emergency contact - pre-filled if available
     emergencyContactName: user.emergencyContactName || "",
     emergencyContactRelationship: user.emergencyContactRelationship || "",
     emergencyContactPhone: user.emergencyContactPhone || "",
+
+    // Medical & references - pre-filled if available
     medicalConditions: user.medicalConditions || "",
     willingToProvideReference: false,
-    howDidYouHearAboutUs: "Legacy system migration",
-    availableDays: user.availableDays || "",
-    availableLocations: user.availableLocations || "",
+    howDidYouHearAboutUs: "not_specified", // Will be set to "migration" on submit
+
+    // Availability - safely parse from JSON or text format
+    availableDays: user.availableDays
+      ? safeParseAvailability(user.availableDays)
+      : [],
+    availableLocations: user.availableLocations
+      ? safeParseAvailability(user.availableLocations)
+      : [],
+
+    // Communication & agreements
     emailNewsletterSubscription: true,
+    notificationPreference: "EMAIL",
     volunteerAgreementAccepted: false,
     healthSafetyPolicyAccepted: false,
+    
+    // Profile image (required for migration)
+    profilePhotoUrl: null,
   });
 
+  // Load policy content and location options
+  useEffect(() => {
+    const loadPolicyContent = async () => {
+      try {
+        const [volunteerResponse, healthSafetyResponse] = await Promise.all([
+          fetch("/content/volunteer-agreement.md"),
+          fetch("/content/health-safety-policy.md"),
+        ]);
+
+        if (volunteerResponse.ok) {
+          const volunteerText = await volunteerResponse.text();
+          setVolunteerAgreementContent(volunteerText);
+        }
+
+        if (healthSafetyResponse.ok) {
+          const healthSafetyText = await healthSafetyResponse.text();
+          setHealthSafetyPolicyContent(healthSafetyText);
+        }
+      } catch (error) {
+        console.error("Failed to load policy content:", error);
+      }
+    };
+
+    const loadLocationOptions = async () => {
+      try {
+        const response = await fetch("/api/locations");
+        if (response.ok) {
+          const locations = await response.json();
+          setLocationOptions(locations);
+        } else {
+          setLocationOptions([]);
+        }
+      } catch (error) {
+        console.error("Failed to load locations:", error);
+        setLocationOptions([]);
+      }
+    };
+
+    loadPolicyContent();
+    loadLocationOptions();
+  }, []);
+
+  // Define steps with migration-specific configuration
   const steps = [
-    { id: "personal", title: "Personal Info", icon: User },
-    { id: "emergency", title: "Emergency Contact", icon: Heart },
-    { id: "security", title: "Security", icon: Shield },
-    { id: "agreements", title: "Agreements", icon: CheckCircle },
+    {
+      id: "personal",
+      title: "Review Your Information",
+      description: "Verify your migrated details",
+      icon: User,
+      color: "bg-blue-500",
+    },
+    {
+      id: "emergency",
+      title: "Emergency Contact",
+      description: "Confirm emergency contact",
+      icon: Phone,
+      color: "bg-red-500",
+    },
+    {
+      id: "medical",
+      title: "Medical & Availability",
+      description: "Update health info and schedule",
+      icon: Shield,
+      color: "bg-orange-500",
+    },
+    {
+      id: "photo",
+      title: "Profile Photo",
+      description: "Upload your profile photo",
+      icon: Camera,
+      color: "bg-purple-500",
+    },
+    {
+      id: "account",
+      title: "Set Password",
+      description: "Create your account password",
+      icon: UserPlus,
+      color: "bg-green-500",
+    },
+    {
+      id: "agreements",
+      title: "Final Steps",
+      description: "Review and accept policies",
+      icon: FileText,
+      color: "bg-indigo-500",
+    },
   ];
 
-  const updateFormData = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const validateStep = (step: number): boolean => {
-    switch (step) {
+  const handleImageChange = (base64Image: string | null) => {
+    setFormData((prev) => ({ ...prev, profilePhotoUrl: base64Image }));
+  };
+
+  const handleDayToggle = (day: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      availableDays: prev.availableDays.includes(day)
+        ? prev.availableDays.filter((d) => d !== day)
+        : [...prev.availableDays, day],
+    }));
+  };
+
+  const handleLocationToggle = (location: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      availableLocations: prev.availableLocations.includes(location)
+        ? prev.availableLocations.filter((l) => l !== location)
+        : [...prev.availableLocations, location],
+    }));
+  };
+
+  const validateCurrentStep = (): boolean => {
+    switch (currentStep) {
       case 0: // Personal info
-        return !!(formData.firstName && formData.lastName);
+        if (!formData.firstName || !formData.lastName) {
+          toast({
+            title: "Required fields missing",
+            description: "Please provide your first and last name",
+            variant: "destructive",
+          });
+          return false;
+        }
+        break;
       case 1: // Emergency contact
-        return !!(
-          formData.emergencyContactName &&
-          formData.emergencyContactRelationship &&
-          formData.emergencyContactPhone
-        );
-      case 2: // Security
-        return !!(
-          formData.password &&
-          formData.confirmPassword &&
-          formData.password === formData.confirmPassword &&
-          formData.password.length >= 8
-        );
-      case 3: // Agreements
-        return (
-          formData.volunteerAgreementAccepted &&
-          formData.healthSafetyPolicyAccepted
-        );
-      default:
-        return false;
+        if (
+          !formData.emergencyContactName ||
+          !formData.emergencyContactRelationship ||
+          !formData.emergencyContactPhone
+        ) {
+          toast({
+            title: "Required fields missing",
+            description: "Please provide complete emergency contact information",
+            variant: "destructive",
+          });
+          return false;
+        }
+        break;
+      case 3: // Photo upload
+        if (!formData.profilePhotoUrl) {
+          toast({
+            title: "Profile photo required",
+            description: "Please upload a profile photo to continue",
+            variant: "destructive",
+          });
+          return false;
+        }
+        break;
+      case 4: // Account setup
+        if (!formData.password || !formData.confirmPassword) {
+          toast({
+            title: "Required fields missing",
+            description: "Please set a password for your account",
+            variant: "destructive",
+          });
+          return false;
+        }
+        if (formData.password !== formData.confirmPassword) {
+          toast({
+            title: "Passwords don't match",
+            description: "Please ensure both password fields match",
+            variant: "destructive",
+          });
+          return false;
+        }
+        if (formData.password.length < 6) {
+          toast({
+            title: "Password too short",
+            description: "Password must be at least 6 characters long",
+            variant: "destructive",
+          });
+          return false;
+        }
+        break;
+      case 5: // Agreements
+        if (
+          !formData.volunteerAgreementAccepted ||
+          !formData.healthSafetyPolicyAccepted
+        ) {
+          toast({
+            title: "Agreements required",
+            description: "Please accept all required agreements to continue",
+            variant: "destructive",
+          });
+          return false;
+        }
+        break;
     }
+    return true;
   };
 
-  const nextStep = () => {
-    if (validateStep(currentStep)) {
-      setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1));
-    } else {
-      toast.error("Please complete all required fields before continuing");
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
     }
-  };
 
-  const prevStep = () => {
-    setCurrentStep((prev) => Math.max(prev - 1, 0));
-  };
-
-  const handleSubmit = async () => {
-    if (!validateStep(currentStep)) {
-      toast.error("Please complete all required fields");
+    // Validate current step
+    if (!validateCurrentStep()) {
       return;
     }
 
-    setIsSubmitting(true);
+    // If not on final step, move to next step
+    if (currentStep < steps.length - 1) {
+      setCurrentStep(currentStep + 1);
+      return;
+    }
+
+    // Final submission
+    setLoading(true);
 
     try {
-      const response = await fetch("/api/register/migrate", {
+      // Prepare data for submission
+      const processedData = {
+        ...formData,
+        pronouns: formData.pronouns === "none" ? null : formData.pronouns,
+        howDidYouHearAboutUs: "migration", // Mark as migration user
+        name: `${formData.firstName} ${formData.lastName}`.trim(),
+        migrationToken: token, // Include migration token
+      };
+
+      // Use the unified registration endpoint with migration flag
+      const response = await fetch("/api/auth/register", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
-          token,
-          ...formData,
+          ...processedData,
+          isMigration: true,
+          userId: user.id, // Include user ID for update instead of create
         }),
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || "Registration failed");
+        throw new Error(error.error || "Registration failed");
       }
 
-      const result = await response.json();
-      toast.success("Registration completed successfully!");
+      toast({
+        title: "Registration completed!",
+        description: "Your account has been successfully migrated. Signing you in...",
+      });
 
-      // Sign in the user automatically
+      // Auto sign-in after successful migration
       const signInResult = await signIn("credentials", {
         email: user.email,
         password: formData.password,
@@ -162,58 +379,191 @@ export function MigrationRegistrationForm({
       if (signInResult?.ok) {
         router.push("/dashboard");
       } else {
-        router.push("/login?message=Registration completed. Please sign in.");
+        router.push("/login?message=migration-complete");
       }
     } catch (error) {
-      console.error("Registration error:", error);
-      toast.error(
-        error instanceof Error ? error.message : "Registration failed"
-      );
+      toast({
+        title: "Registration failed",
+        description:
+          error instanceof Error ? error.message : "Failed to complete registration",
+        variant: "destructive",
+      });
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   };
 
-  const progress = ((currentStep + 1) / steps.length) * 100;
+  const prevStep = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const renderCurrentStep = () => {
+    switch (currentStep) {
+      case 0: // Personal info
+        return (
+          <div className="space-y-6">
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                We&apos;ve pre-filled your information from the previous system.
+                Please review and update as needed.
+              </AlertDescription>
+            </Alert>
+            <PersonalInfoStep
+              formData={formData}
+              onInputChange={handleInputChange}
+              loading={loading}
+              isRegistration={true}
+            />
+          </div>
+        );
+      case 1: // Emergency contact
+        return (
+          <EmergencyContactStep
+            formData={formData}
+            onInputChange={handleInputChange}
+            loading={loading}
+          />
+        );
+      case 2: // Medical & Availability
+        return (
+          <div className="space-y-8">
+            <MedicalInfoStep
+              formData={formData}
+              onInputChange={handleInputChange}
+              loading={loading}
+            />
+            <div className="border-t pt-8">
+              <AvailabilityStep
+                formData={formData}
+                onDayToggle={handleDayToggle}
+                onLocationToggle={handleLocationToggle}
+                loading={loading}
+                locationOptions={locationOptions}
+              />
+            </div>
+          </div>
+        );
+      case 3: // Photo upload
+        return (
+          <div className="space-y-6">
+            <Alert>
+              <Camera className="h-4 w-4" />
+              <AlertDescription>
+                Please upload a profile photo. This helps other volunteers recognize you during shifts.
+              </AlertDescription>
+            </Alert>
+            <div className="flex justify-center">
+              <ProfileImageUpload
+                currentImage={formData.profilePhotoUrl}
+                onImageChange={handleImageChange}
+                disabled={loading}
+                size="lg"
+                fallbackText={`${formData.firstName} ${formData.lastName}`.trim()}
+              />
+            </div>
+          </div>
+        );
+      case 4: // Account setup
+        return (
+          <div className="space-y-6">
+            <Alert>
+              <Shield className="h-4 w-4" />
+              <AlertDescription>
+                Create a secure password for your new account.
+                Your email address ({user.email}) will be your username.
+              </AlertDescription>
+            </Alert>
+            <AccountStep
+              formData={formData}
+              onInputChange={handleInputChange}
+              loading={loading}
+              hideEmail={true} // Hide email field since it's pre-filled
+            />
+          </div>
+        );
+      case 5: // Agreements
+        return (
+          <CommunicationStep
+            formData={formData}
+            onInputChange={handleInputChange}
+            loading={loading}
+            volunteerAgreementContent={volunteerAgreementContent}
+            healthSafetyPolicyContent={healthSafetyPolicyContent}
+            volunteerAgreementOpen={volunteerAgreementOpen}
+            setVolunteerAgreementOpen={setVolunteerAgreementOpen}
+            healthSafetyPolicyOpen={healthSafetyPolicyOpen}
+            setHealthSafetyPolicyOpen={setHealthSafetyPolicyOpen}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
+  // Handle form changes for SelectField components
+  useEffect(() => {
+    const handleSelectChange = (name: string, value: string) => {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handleFormData = (e: CustomEvent) => {
+      handleSelectChange(e.detail.name, e.detail.value);
+    };
+
+    window.addEventListener(
+      "selectFieldChange",
+      handleFormData as EventListener
+    );
+    return () =>
+      window.removeEventListener(
+        "selectFieldChange",
+        handleFormData as EventListener
+      );
+  }, []);
 
   return (
-    <div className="space-y-6">
-      {/* Progress */}
-      <div className="space-y-2">
-        <div className="flex justify-between text-sm">
-          <span>
+    <div className="space-y-8">
+      {/* Progress Indicator */}
+      <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold">Migration Progress</h2>
+          <Badge variant="outline" className="text-xs">
             Step {currentStep + 1} of {steps.length}
-          </span>
-          <span>{Math.round(progress)}% complete</span>
+          </Badge>
         </div>
-        <Progress value={progress} className="w-full" />
-      </div>
 
-      {/* Step Navigation */}
-      <div className="flex justify-center">
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2 mb-4">
           {steps.map((step, index) => {
             const Icon = step.icon;
-            const isActive = index === currentStep;
-            const isCompleted = index < currentStep;
-
             return (
-              <div key={step.id} className="flex items-center">
+              <div
+                key={step.id}
+                className={`flex-1 flex items-center ${
+                  index === steps.length - 1 ? "grow-0" : ""
+                }`}
+              >
                 <div
-                  className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
-                    isCompleted
-                      ? "bg-green-100 border-green-500 text-green-700"
-                      : isActive
-                      ? "bg-blue-100 border-blue-500 text-blue-700"
-                      : "bg-gray-100 border-gray-300 text-gray-400"
+                  className={`flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 ${
+                    index === currentStep
+                      ? `${step.color} text-white shadow-lg`
+                      : index < currentStep
+                      ? "bg-green-500 text-white hover:bg-green-600"
+                      : "bg-muted text-muted-foreground"
                   }`}
                 >
-                  <Icon className="h-5 w-5" />
+                  {index < currentStep ? (
+                    <Check className="h-5 w-5" />
+                  ) : (
+                    <Icon className="h-5 w-5" />
+                  )}
                 </div>
                 {index < steps.length - 1 && (
                   <div
-                    className={`w-8 h-0.5 ${
-                      isCompleted ? "bg-green-500" : "bg-gray-300"
+                    className={`flex-1 h-1 mx-2 rounded-full transition-all duration-200 ${
+                      index < currentStep ? "bg-green-500" : "bg-muted"
                     }`}
                   />
                 )}
@@ -221,371 +571,72 @@ export function MigrationRegistrationForm({
             );
           })}
         </div>
+
+        <div className="text-center">
+          <h3 className="font-medium text-foreground">
+            {steps[currentStep].title}
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            {steps[currentStep].description}
+          </p>
+        </div>
       </div>
 
       {/* Form Content */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      <MotionCard className="shadow-lg border-0 bg-card/80 backdrop-blur-sm">
+        <CardHeader className="pb-6">
+          <CardTitle className="flex items-center gap-3 text-xl">
             {React.createElement(steps[currentStep].icon, {
-              className: "h-5 w-5",
+              className: "h-6 w-6",
             })}
             {steps[currentStep].title}
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Step 0: Personal Information */}
-          {currentStep === 0 && (
-            <div className="space-y-4">
-              <Alert>
-                <User className="h-4 w-4" />
-                <AlertDescription>
-                  We've pre-filled your information from the previous system.
-                  Please review and update as needed.
-                </AlertDescription>
-              </Alert>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-8">
+            <div className="min-h-[400px]">{renderCurrentStep()}</div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="firstName">First Name *</Label>
-                  <Input
-                    id="firstName"
-                    value={formData.firstName}
-                    onChange={(e) =>
-                      updateFormData("firstName", e.target.value)
-                    }
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="lastName">Last Name *</Label>
-                  <Input
-                    id="lastName"
-                    value={formData.lastName}
-                    onChange={(e) => updateFormData("lastName", e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
+            {/* Navigation Buttons */}
+            <div className="flex items-center justify-between pt-6 border-t border-border">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={prevStep}
+                disabled={currentStep === 0 || loading}
+                className="flex items-center gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Previous
+              </Button>
 
-              <div>
-                <Label htmlFor="email">Email Address</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={user.email}
-                  disabled
-                  className="bg-muted"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="phone">Phone Number</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => updateFormData("phone", e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="dateOfBirth">Date of Birth</Label>
-                  <Input
-                    id="dateOfBirth"
-                    type="date"
-                    value={formData.dateOfBirth}
-                    onChange={(e) =>
-                      updateFormData("dateOfBirth", e.target.value)
-                    }
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="pronouns">Pronouns (optional)</Label>
-                <Input
-                  id="pronouns"
-                  placeholder="e.g., they/them, she/her, he/him"
-                  value={formData.pronouns}
-                  onChange={(e) => updateFormData("pronouns", e.target.value)}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Step 1: Emergency Contact */}
-          {currentStep === 1 && (
-            <div className="space-y-4">
-              <Alert>
-                <Heart className="h-4 w-4" />
-                <AlertDescription>
-                  Emergency contact information is required for all volunteers.
-                </AlertDescription>
-              </Alert>
-
-              <div>
-                <Label htmlFor="emergencyContactName">
-                  Emergency Contact Name *
-                </Label>
-                <Input
-                  id="emergencyContactName"
-                  value={formData.emergencyContactName}
-                  onChange={(e) =>
-                    updateFormData("emergencyContactName", e.target.value)
-                  }
-                  required
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="emergencyContactRelationship">
-                  Relationship *
-                </Label>
-                <Input
-                  id="emergencyContactRelationship"
-                  placeholder="e.g., Spouse, Parent, Sibling, Friend"
-                  value={formData.emergencyContactRelationship}
-                  onChange={(e) =>
-                    updateFormData(
-                      "emergencyContactRelationship",
-                      e.target.value
-                    )
-                  }
-                  required
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="emergencyContactPhone">
-                  Emergency Contact Phone *
-                </Label>
-                <Input
-                  id="emergencyContactPhone"
-                  type="tel"
-                  value={formData.emergencyContactPhone}
-                  onChange={(e) =>
-                    updateFormData("emergencyContactPhone", e.target.value)
-                  }
-                  required
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="medicalConditions">
-                  Medical Conditions or Allergies
-                </Label>
-                <Textarea
-                  id="medicalConditions"
-                  placeholder="Please list any medical conditions, allergies, or other health information we should be aware of..."
-                  value={formData.medicalConditions}
-                  onChange={(e) =>
-                    updateFormData("medicalConditions", e.target.value)
-                  }
-                  rows={3}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Step 2: Security */}
-          {currentStep === 2 && (
-            <div className="space-y-4">
-              <Alert>
-                <Shield className="h-4 w-4" />
-                <AlertDescription>
-                  Create a secure password for your new account. Your password
-                  must be at least 8 characters long.
-                </AlertDescription>
-              </Alert>
-
-              <div>
-                <Label htmlFor="password">Password *</Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    value={formData.password}
-                    onChange={(e) => updateFormData("password", e.target.value)}
-                    required
-                    minLength={8}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="confirmPassword">Confirm Password *</Label>
-                <div className="relative">
-                  <Input
-                    id="confirmPassword"
-                    type={showConfirmPassword ? "text" : "password"}
-                    value={formData.confirmPassword}
-                    onChange={(e) =>
-                      updateFormData("confirmPassword", e.target.value)
-                    }
-                    required
-                    minLength={8}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {formData.password !== formData.confirmPassword &&
-                formData.confirmPassword && (
-                  <Alert>
-                    <AlertDescription>Passwords do not match.</AlertDescription>
-                  </Alert>
+              <GradientButton
+                type="submit"
+                disabled={loading}
+                className="flex items-center gap-2"
+              >
+                {loading ? (
+                  <>
+                    <MotionSpinner size="sm" color="white" />
+                    {currentStep === steps.length - 1
+                      ? "Completing Migration..."
+                      : "Processing..."}
+                  </>
+                ) : currentStep === steps.length - 1 ? (
+                  <>
+                    <UserPlus className="h-4 w-4" />
+                    Complete Migration
+                  </>
+                ) : (
+                  <>
+                    Next
+                    <ArrowRight className="h-4 w-4" />
+                  </>
                 )}
-
-              {formData.password && formData.password.length < 8 && (
-                <Alert>
-                  <AlertDescription>
-                    Password must be at least 8 characters long.
-                  </AlertDescription>
-                </Alert>
-              )}
+              </GradientButton>
             </div>
-          )}
-
-          {/* Step 3: Agreements */}
-          {currentStep === 3 && (
-            <div className="space-y-4">
-              <Alert>
-                <CheckCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Please review and accept the following agreements to complete
-                  your registration.
-                </AlertDescription>
-              </Alert>
-
-              <div className="space-y-4">
-                <div className="flex items-start space-x-2">
-                  <Checkbox
-                    id="volunteerAgreement"
-                    checked={formData.volunteerAgreementAccepted}
-                    onCheckedChange={(checked) =>
-                      updateFormData("volunteerAgreementAccepted", checked)
-                    }
-                    required
-                  />
-                  <Label
-                    htmlFor="volunteerAgreement"
-                    className="text-sm leading-relaxed"
-                  >
-                    I agree to the volunteer terms and conditions, and
-                    understand my responsibilities as an Everybody Eats
-                    volunteer. *
-                  </Label>
-                </div>
-
-                <div className="flex items-start space-x-2">
-                  <Checkbox
-                    id="healthSafetyPolicy"
-                    checked={formData.healthSafetyPolicyAccepted}
-                    onCheckedChange={(checked) =>
-                      updateFormData("healthSafetyPolicyAccepted", checked)
-                    }
-                    required
-                  />
-                  <Label
-                    htmlFor="healthSafetyPolicy"
-                    className="text-sm leading-relaxed"
-                  >
-                    I have read and agree to follow the health and safety
-                    policies. *
-                  </Label>
-                </div>
-
-                <div className="flex items-start space-x-2">
-                  <Checkbox
-                    id="emailNewsletter"
-                    checked={formData.emailNewsletterSubscription}
-                    onCheckedChange={(checked) =>
-                      updateFormData("emailNewsletterSubscription", checked)
-                    }
-                  />
-                  <Label
-                    htmlFor="emailNewsletter"
-                    className="text-sm leading-relaxed"
-                  >
-                    I would like to receive email newsletters and updates about
-                    volunteer opportunities.
-                  </Label>
-                </div>
-
-                <div className="flex items-start space-x-2">
-                  <Checkbox
-                    id="willingToProvideReference"
-                    checked={formData.willingToProvideReference}
-                    onCheckedChange={(checked) =>
-                      updateFormData("willingToProvideReference", checked)
-                    }
-                  />
-                  <Label
-                    htmlFor="willingToProvideReference"
-                    className="text-sm leading-relaxed"
-                  >
-                    I am willing to provide a reference if requested.
-                  </Label>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Navigation Buttons */}
-          <div className="flex justify-between pt-6 border-t">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={prevStep}
-              disabled={currentStep === 0}
-            >
-              Previous
-            </Button>
-
-            {currentStep < steps.length - 1 ? (
-              <Button
-                type="button"
-                onClick={nextStep}
-                disabled={!validateStep(currentStep)}
-              >
-                Next
-              </Button>
-            ) : (
-              <Button
-                type="button"
-                onClick={handleSubmit}
-                disabled={!validateStep(currentStep) || isSubmitting}
-              >
-                {isSubmitting
-                  ? "Completing Registration..."
-                  : "Complete Registration"}
-              </Button>
-            )}
-          </div>
+          </form>
         </CardContent>
-      </Card>
+      </MotionCard>
     </div>
   );
 }
