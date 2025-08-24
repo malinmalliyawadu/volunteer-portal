@@ -1,66 +1,52 @@
-import { test, expect } from '@playwright/test';
-import { PrismaClient } from '@prisma/client';
+import { test, expect } from './base';
+import type { Page } from '@playwright/test';
 
-const prisma = new PrismaClient();
+// Helper function to login as admin
+async function loginAsAdmin(page: Page) {
+  try {
+    await page.goto('/login');
+    await page.waitForLoadState('load');
+
+    const adminLoginButton = page.getByTestId('quick-login-admin-button');
+    await adminLoginButton.waitFor({ state: 'visible', timeout: 10000 });
+    await adminLoginButton.click();
+
+    await page.waitForURL((url) => !url.pathname.includes('/login'), {
+      timeout: 15000,
+    });
+    await page.waitForLoadState('load');
+  } catch (error) {
+    console.log('Error during admin login:', error);
+    throw error;
+  }
+}
+
+// Helper function to login as volunteer
+async function loginAsVolunteer(page: Page) {
+  try {
+    await page.goto('/login');
+    await page.waitForLoadState('load');
+
+    const volunteerLoginButton = page.getByTestId('quick-login-volunteer-button');
+    await volunteerLoginButton.waitFor({ state: 'visible', timeout: 10000 });
+    await volunteerLoginButton.click();
+
+    await page.waitForURL((url) => !url.pathname.includes('/login'), {
+      timeout: 15000,
+    });
+    await page.waitForLoadState('load');
+  } catch (error) {
+    console.log('Error during volunteer login:', error);
+    throw error;
+  }
+}
 
 test.describe('Admin Navigation', () => {
-  let adminUser: any;
-  let regularUser: any;
-
-  test.beforeAll(async () => {
-    const timestamp = Date.now();
-    
-    // Create admin user
-    adminUser = await prisma.user.create({
-      data: {
-        email: `admin-nav-test-${timestamp}@example.com`,
-        firstName: 'Admin',
-        lastName: 'Navigation',
-        name: 'Admin Navigation',
-        hashedPassword: 'hashed-password',
-        role: 'ADMIN',
-        profileCompleted: true,
-        volunteerAgreementAccepted: true,
-        healthSafetyPolicyAccepted: true,
-      }
-    });
-
-    // Create regular user for comparison
-    regularUser = await prisma.user.create({
-      data: {
-        email: `regular-nav-test-${timestamp}@example.com`,
-        firstName: 'Regular',
-        lastName: 'User',
-        name: 'Regular User',
-        hashedPassword: 'hashed-password',
-        role: 'VOLUNTEER',
-        profileCompleted: true,
-        volunteerAgreementAccepted: true,
-        healthSafetyPolicyAccepted: true,
-      }
-    });
-  });
-
-  test.afterAll(async () => {
-    // Clean up test data
-    await prisma.user.deleteMany({
-      where: { 
-        email: { 
-          in: [adminUser.email, regularUser.email] 
-        } 
-      }
-    });
-    await prisma.$disconnect();
-  });
 
   test.describe('Admin Header Navigation', () => {
     test('admin sees migration link in desktop navigation', async ({ page }) => {
       // Login as admin
-      await page.goto('/login');
-      await page.fill('input[type="email"]', adminUser.email);
-      await page.fill('input[type="password"]', 'password');
-      await page.click('button[type="submit"]');
-      await page.waitForURL('/admin');
+      await loginAsAdmin(page);
 
       // Check desktop navigation (hidden lg:flex)
       const desktopNav = page.locator('.hidden.lg\\:flex');
@@ -72,8 +58,8 @@ test.describe('Admin Navigation', () => {
       await expect(desktopNav.locator('a[href="/admin/users"]')).toContainText('Manage Users');
       await expect(desktopNav.locator('a[href="/admin/migration"]')).toContainText('Migration');
 
-      // Verify migration link is visible and clickable
-      const migrationLink = desktopNav.locator('a[href="/admin/migration"]');
+      // Verify migration link is visible and clickable in the header nav
+      const migrationLink = desktopNav.locator('a[href="/admin/migration"]').first();
       await expect(migrationLink).toBeVisible();
       
       // Click migration link
@@ -81,7 +67,7 @@ test.describe('Admin Navigation', () => {
       await page.waitForURL('/admin/migration');
       
       // Verify we're on the migration page
-      await expect(page.locator('h1')).toContainText('Migration Management');
+      await expect(page.locator('h1')).toContainText('User Migration');
     });
 
     test('admin sees migration link in mobile navigation', async ({ page }) => {
@@ -89,11 +75,7 @@ test.describe('Admin Navigation', () => {
       await page.setViewportSize({ width: 375, height: 812 });
       
       // Login as admin
-      await page.goto('/login');
-      await page.fill('input[type="email"]', adminUser.email);
-      await page.fill('input[type="password"]', 'password');
-      await page.click('button[type="submit"]');
-      await page.waitForURL('/admin');
+      await loginAsAdmin(page);
 
       // Open mobile menu
       const mobileMenuButton = page.locator('button[aria-label="Toggle mobile menu"]');
@@ -116,11 +98,7 @@ test.describe('Admin Navigation', () => {
 
     test('regular users do not see admin navigation links', async ({ page }) => {
       // Login as regular user
-      await page.goto('/login');
-      await page.fill('input[type="email"]', regularUser.email);
-      await page.fill('input[type="password"]', 'password');
-      await page.click('button[type="submit"]');
-      await page.waitForURL('/dashboard');
+      await loginAsVolunteer(page);
 
       // Check that admin links are not visible
       await expect(page.locator('a[href="/admin"]')).not.toBeVisible();
@@ -129,21 +107,18 @@ test.describe('Admin Navigation', () => {
       await expect(page.locator('a[href="/admin/migration"]')).not.toBeVisible();
 
       // Instead, regular users should see volunteer-specific links
-      await expect(page.locator('a[href="/dashboard"]')).toContainText('Dashboard');
-      await expect(page.locator('a[href="/shifts"]')).toContainText('Shifts');
-      await expect(page.locator('a[href="/shifts/mine"]')).toContainText('My Shifts');
-      await expect(page.locator('a[href="/friends"]')).toContainText('Friends');
+      const headerNav = page.locator('.hidden.lg\\:flex');
+      await expect(headerNav.locator('a[href="/dashboard"]')).toContainText('Dashboard');
+      await expect(headerNav.locator('a[href="/shifts"]')).toContainText('Shifts');
+      await expect(headerNav.locator('a[href="/shifts/mine"]')).toContainText('My Shifts');
+      await expect(headerNav.locator('a[href="/friends"]')).toContainText('Friends');
     });
 
     test('migration navigation link has correct styling and behavior', async ({ page }) => {
       // Login as admin
-      await page.goto('/login');
-      await page.fill('input[type="email"]', adminUser.email);
-      await page.fill('input[type="password"]', 'password');
-      await page.click('button[type="submit"]');
-      await page.waitForURL('/admin');
+      await loginAsAdmin(page);
 
-      const migrationLink = page.locator('a[href="/admin/migration"]');
+      const migrationLink = page.locator('nav a[href="/admin/migration"]').first();
       
       // Check link styling (should have consistent button styles)
       await expect(migrationLink).toHaveClass(/text-white\/90/);
@@ -164,46 +139,38 @@ test.describe('Admin Navigation', () => {
 
     test('migration link works correctly from different admin pages', async ({ page }) => {
       // Login as admin
-      await page.goto('/login');
-      await page.fill('input[type="email"]', adminUser.email);
-      await page.fill('input[type="password"]', 'password');
-      await page.click('button[type="submit"]');
-      await page.waitForURL('/admin');
+      await loginAsAdmin(page);
 
       // Test from admin dashboard
       await page.goto('/admin');
-      await page.click('a[href="/admin/migration"]');
+      await page.click('nav a[href="/admin/migration"]');
       await page.waitForURL('/admin/migration');
-      await expect(page.locator('h1')).toContainText('Migration Management');
+      await expect(page.locator('h1')).toContainText('User Migration');
 
       // Test from admin users page
       await page.goto('/admin/users');
-      await page.click('a[href="/admin/migration"]');
+      await page.click('nav a[href="/admin/migration"]');
       await page.waitForURL('/admin/migration');
-      await expect(page.locator('h1')).toContainText('Migration Management');
+      await expect(page.locator('h1')).toContainText('User Migration');
 
       // Test from admin shifts page
       await page.goto('/admin/shifts');
-      await page.click('a[href="/admin/migration"]');
+      await page.click('nav a[href="/admin/migration"]');
       await page.waitForURL('/admin/migration');
-      await expect(page.locator('h1')).toContainText('Migration Management');
+      await expect(page.locator('h1')).toContainText('User Migration');
     });
   });
 
   test.describe('Navigation State Management', () => {
     test('migration link shows active state when on migration page', async ({ page }) => {
       // Login as admin
-      await page.goto('/login');
-      await page.fill('input[type="email"]', adminUser.email);
-      await page.fill('input[type="password"]', 'password');
-      await page.click('button[type="submit"]');
-      await page.waitForURL('/admin');
+      await loginAsAdmin(page);
 
       // Navigate to migration page
       await page.goto('/admin/migration');
 
       // Check that migration link has active styling
-      const migrationLink = page.locator('a[href="/admin/migration"]');
+      const migrationLink = page.locator('nav a[href="/admin/migration"]').first();
       await expect(migrationLink).toHaveClass(/bg-white\/15/);
       await expect(migrationLink).toHaveClass(/text-white/);
       
@@ -217,11 +184,7 @@ test.describe('Admin Navigation', () => {
 
     test('migration link accessibility and keyboard navigation', async ({ page }) => {
       // Login as admin
-      await page.goto('/login');
-      await page.fill('input[type="email"]', adminUser.email);
-      await page.fill('input[type="password"]', 'password');
-      await page.click('button[type="submit"]');
-      await page.waitForURL('/admin');
+      await loginAsAdmin(page);
 
       // Test keyboard navigation to migration link
       await page.keyboard.press('Tab'); // Should focus on first interactive element
@@ -240,7 +203,7 @@ test.describe('Admin Navigation', () => {
       if (currentFocus === '/admin/migration') {
         await page.keyboard.press('Enter');
         await page.waitForURL('/admin/migration');
-        await expect(page.locator('h1')).toContainText('Migration Management');
+        await expect(page.locator('h1')).toContainText('User Migration');
       }
     });
   });

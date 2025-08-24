@@ -1,15 +1,32 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './base';
 import { readFileSync } from 'fs';
 import path from 'path';
+import type { Page } from '@playwright/test';
+
+// Helper function to login as admin
+async function loginAsAdmin(page: Page) {
+  try {
+    await page.goto('/login');
+    await page.waitForLoadState('load');
+
+    const adminLoginButton = page.getByTestId('quick-login-admin-button');
+    await adminLoginButton.waitFor({ state: 'visible', timeout: 10000 });
+    await adminLoginButton.click();
+
+    await page.waitForURL((url) => !url.pathname.includes('/login'), {
+      timeout: 15000,
+    });
+    await page.waitForLoadState('load');
+  } catch (error) {
+    console.log('Error during admin login:', error);
+    throw error;
+  }
+}
 
 test.describe('Admin Migration System', () => {
   test.beforeEach(async ({ page }) => {
     // Login as admin
-    await page.goto('/login');
-    await page.fill('input[name="email"]', 'admin@everybodyeats.nz');
-    await page.fill('input[name="password"]', 'admin123');
-    await page.click('button[type="submit"]');
-    await expect(page).toHaveURL('/admin');
+    await loginAsAdmin(page);
     
     // Navigate to migration page
     await page.click('[data-testid="user-migration-button"]');
