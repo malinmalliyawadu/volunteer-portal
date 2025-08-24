@@ -531,7 +531,7 @@ export function CSVUploadForm() {
                 <h4 className="font-medium mb-2">Created Users:</h4>
                 <div className="max-h-60 overflow-y-auto border rounded-lg p-3 bg-green-50">
                   <div className="space-y-2">
-                    {migrationResult.createdUsers.map((user, index) => (
+                    {migrationResult.createdUsers.map((user) => (
                       <div key={user.id} className="flex items-center justify-between p-2 bg-white border border-green-200 rounded text-sm">
                         <div>
                           <div className="font-medium">

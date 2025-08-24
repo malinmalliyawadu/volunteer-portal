@@ -6,14 +6,12 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { StatsCard } from "@/components/ui/stats-card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import AchievementsCard from "@/components/achievements-card";
 import { PageHeader } from "@/components/page-header";
 import { PageContainer } from "@/components/page-container";
 import {
-  StatsGrid,
   ContentGrid,
   BottomGrid,
 } from "@/components/dashboard-animated";

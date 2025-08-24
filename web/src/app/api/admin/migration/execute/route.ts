@@ -77,7 +77,7 @@ class UserMigrator {
         const rowNumber = i + 2; // +2 for header row and 0-based index
 
         try {
-          const tempPassword = await this.processUser(record, rowNumber);
+          const tempPassword = await this.processUser(record);
           this.result.successful++;
           
           if (tempPassword && !this.dryRun) {
@@ -104,7 +104,7 @@ class UserMigrator {
     }
   }
 
-  private async processUser(record: LegacyUser, rowNumber: number): Promise<string | null> {
+  private async processUser(record: LegacyUser): Promise<string | null> {
     // Validate required fields
     if (!record.Email?.trim()) {
       throw new Error('Email is required');

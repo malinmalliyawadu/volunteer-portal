@@ -50,10 +50,6 @@ interface MigratedUser {
   invitationToken?: string;
 }
 
-interface InvitationTemplate {
-  subject: string;
-  message: string;
-}
 
 interface InvitationResult {
   email: string;
@@ -83,27 +79,6 @@ export function UserInvitations() {
     InvitationResult[]
   >([]);
 
-  const defaultTemplate: InvitationTemplate = {
-    subject: "Welcome to the New Everybody Eats Volunteer Portal!",
-    message: `Hi {firstName},
-
-We've successfully migrated your volunteer profile to our new portal! To get started, please complete your registration by clicking the link below:
-
-{registrationLink}
-
-This link will allow you to:
-• Set up your new password
-• Review and update your profile information
-• Browse and sign up for volunteer shifts
-• Connect with other volunteers
-
-If you have any questions or need assistance, please don't hesitate to reach out to our volunteer coordinator.
-
-Thank you for your continued support of Everybody Eats!
-
-Best regards,
-The Everybody Eats Team`,
-  };
 
   const fetchMigratedUsers = async () => {
     setIsLoading(true);
