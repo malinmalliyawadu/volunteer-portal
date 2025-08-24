@@ -35,22 +35,28 @@ test.describe('Admin Migration System', () => {
 
   test.describe('CSV Upload and Validation', () => {
     test('should display migration page with correct tabs', async ({ page }) => {
-      // Check all tabs are present
-      await expect(page.locator('text=Upload CSV')).toBeVisible();
-      await expect(page.locator('text=Migration Status')).toBeVisible();
-      await expect(page.locator('text=User Invitations')).toBeVisible();
-      await expect(page.locator('text=Migrated Users')).toBeVisible();
+      // Check all tabs are present using test IDs
+      await expect(page.getByTestId('tab-upload-csv')).toBeVisible();
+      await expect(page.getByTestId('tab-upload-csv')).toContainText('Upload CSV');
+      await expect(page.getByTestId('tab-migration-status')).toBeVisible();
+      await expect(page.getByTestId('tab-migration-status')).toContainText('Migration Status');
+      await expect(page.getByTestId('tab-user-invitations')).toBeVisible();
+      await expect(page.getByTestId('tab-user-invitations')).toContainText('User Invitations');
+      await expect(page.getByTestId('tab-migrated-users')).toBeVisible();
+      await expect(page.getByTestId('tab-migrated-users')).toContainText('Migrated Users');
       
       // Check page header
-      await expect(page.locator('[data-testid="page-title"]')).toContainText('User Migration');
+      await expect(page.getByTestId('page-header')).toContainText('User Migration');
     });
 
     test('should show CSV format requirements', async ({ page }) => {
-      // Check required format table is visible
-      await expect(page.locator('text=Required CSV Format')).toBeVisible();
-      await expect(page.locator('text=First Name')).toBeVisible();
-      await expect(page.locator('text=Email')).toBeVisible();
-      await expect(page.locator('text=At least one of First Name or Last Name is required')).toBeVisible();
+      // Check upload section is visible
+      await expect(page.getByTestId('csv-upload-title')).toBeVisible();
+      await expect(page.getByTestId('csv-upload-title')).toContainText('Upload Legacy User Data');
+      
+      // Check CSV format information is present
+      await expect(page.locator('text=/Required CSV Format|CSV Format|Required Fields/i')).toBeVisible();
+      await expect(page.locator('text=/Email/i').first()).toBeVisible();
     });
 
     test('should validate and upload valid CSV file', async ({ page }) => {

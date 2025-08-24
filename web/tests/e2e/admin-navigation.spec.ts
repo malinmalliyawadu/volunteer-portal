@@ -48,18 +48,20 @@ test.describe('Admin Navigation', () => {
       // Login as admin
       await loginAsAdmin(page);
 
-      // Check desktop navigation (hidden lg:flex)
-      const desktopNav = page.locator('.hidden.lg\\:flex');
-      
-      // Verify all admin links are present
-      await expect(desktopNav.locator('a[href="/admin"]')).toContainText('Dashboard');
-      await expect(desktopNav.locator('a[href="/shifts"]')).toContainText('Shifts');
-      await expect(desktopNav.locator('a[href="/admin/shifts"]')).toContainText('Manage Shifts');
-      await expect(desktopNav.locator('a[href="/admin/users"]')).toContainText('Manage Users');
-      await expect(desktopNav.locator('a[href="/admin/migration"]')).toContainText('Migration');
+      // Verify all admin links are present using test IDs
+      await expect(page.getByTestId('nav-admin-dashboard')).toBeVisible();
+      await expect(page.getByTestId('nav-admin-dashboard')).toContainText('Dashboard');
+      await expect(page.getByTestId('nav-shifts')).toBeVisible();
+      await expect(page.getByTestId('nav-shifts')).toContainText('Shifts');
+      await expect(page.getByTestId('nav-admin-manage-shifts')).toBeVisible();
+      await expect(page.getByTestId('nav-admin-manage-shifts')).toContainText('Manage Shifts');
+      await expect(page.getByTestId('nav-admin-manage-users')).toBeVisible();
+      await expect(page.getByTestId('nav-admin-manage-users')).toContainText('Manage Users');
+      await expect(page.getByTestId('nav-admin-migration')).toBeVisible();
+      await expect(page.getByTestId('nav-admin-migration')).toContainText('Migration');
 
-      // Verify migration link is visible and clickable in the header nav
-      const migrationLink = desktopNav.locator('a[href="/admin/migration"]').first();
+      // Verify migration link is clickable
+      const migrationLink = page.getByTestId('nav-admin-migration');
       await expect(migrationLink).toBeVisible();
       
       // Click migration link
@@ -101,24 +103,27 @@ test.describe('Admin Navigation', () => {
       await loginAsVolunteer(page);
 
       // Check that admin links are not visible
-      await expect(page.locator('a[href="/admin"]')).not.toBeVisible();
-      await expect(page.locator('a[href="/admin/shifts"]')).not.toBeVisible();
-      await expect(page.locator('a[href="/admin/users"]')).not.toBeVisible();
-      await expect(page.locator('a[href="/admin/migration"]')).not.toBeVisible();
+      await expect(page.getByTestId('nav-admin-dashboard')).not.toBeVisible();
+      await expect(page.getByTestId('nav-admin-manage-shifts')).not.toBeVisible();
+      await expect(page.getByTestId('nav-admin-manage-users')).not.toBeVisible();
+      await expect(page.getByTestId('nav-admin-migration')).not.toBeVisible();
 
       // Instead, regular users should see volunteer-specific links
-      const headerNav = page.locator('.hidden.lg\\:flex');
-      await expect(headerNav.locator('a[href="/dashboard"]')).toContainText('Dashboard');
-      await expect(headerNav.locator('a[href="/shifts"]')).toContainText('Shifts');
-      await expect(headerNav.locator('a[href="/shifts/mine"]')).toContainText('My Shifts');
-      await expect(headerNav.locator('a[href="/friends"]')).toContainText('Friends');
+      await expect(page.getByTestId('nav-volunteer-dashboard')).toBeVisible();
+      await expect(page.getByTestId('nav-volunteer-dashboard')).toContainText('Dashboard');
+      await expect(page.getByTestId('nav-shifts')).toBeVisible();
+      await expect(page.getByTestId('nav-shifts')).toContainText('Shifts');
+      await expect(page.getByTestId('nav-my-shifts')).toBeVisible();
+      await expect(page.getByTestId('nav-my-shifts')).toContainText('My Shifts');
+      await expect(page.getByTestId('nav-friends')).toBeVisible();
+      await expect(page.getByTestId('nav-friends')).toContainText('Friends');
     });
 
     test('migration navigation link has correct styling and behavior', async ({ page }) => {
       // Login as admin
       await loginAsAdmin(page);
 
-      const migrationLink = page.locator('nav a[href="/admin/migration"]').first();
+      const migrationLink = page.getByTestId('nav-admin-migration');
       
       // Check link styling (should have consistent button styles)
       await expect(migrationLink).toHaveClass(/text-white\/90/);
@@ -170,7 +175,7 @@ test.describe('Admin Navigation', () => {
       await page.goto('/admin/migration');
 
       // Check that migration link has active styling
-      const migrationLink = page.locator('nav a[href="/admin/migration"]').first();
+      const migrationLink = page.getByTestId('nav-admin-migration');
       await expect(migrationLink).toHaveClass(/bg-white\/15/);
       await expect(migrationLink).toHaveClass(/text-white/);
       

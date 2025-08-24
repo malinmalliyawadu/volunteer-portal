@@ -20,32 +20,33 @@ export default function MigrationPage() {
       <PageHeader
         title="User Migration"
         description="Import users from the legacy volunteer portal and send invitations to join the new system."
+        data-testid="page-header"
       />
 
       <Tabs defaultValue="upload" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="upload" className="flex items-center gap-2">
+        <TabsList className="grid w-full grid-cols-4" data-testid="migration-tabs">
+          <TabsTrigger value="upload" className="flex items-center gap-2" data-testid="tab-upload-csv">
             <Upload className="h-4 w-4" />
             Upload CSV
           </TabsTrigger>
-          <TabsTrigger value="status" className="flex items-center gap-2">
+          <TabsTrigger value="status" className="flex items-center gap-2" data-testid="tab-migration-status">
             <CheckCircle className="h-4 w-4" />
             Migration Status
           </TabsTrigger>
-          <TabsTrigger value="invitations" className="flex items-center gap-2">
+          <TabsTrigger value="invitations" className="flex items-center gap-2" data-testid="tab-user-invitations">
             <Mail className="h-4 w-4" />
             User Invitations
           </TabsTrigger>
-          <TabsTrigger value="users" className="flex items-center gap-2">
+          <TabsTrigger value="users" className="flex items-center gap-2" data-testid="tab-migrated-users">
             <Users className="h-4 w-4" />
             Migrated Users
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="upload" className="space-y-6">
+        <TabsContent value="upload" className="space-y-6" data-testid="tab-content-upload">
           <Card>
             <CardHeader>
-              <CardTitle>Upload Legacy User Data</CardTitle>
+              <CardTitle data-testid="csv-upload-title">Upload Legacy User Data</CardTitle>
               <CardDescription>
                 Upload a CSV file containing user data from the legacy volunteer portal.
                 The system will validate the data before allowing migration.
