@@ -37,22 +37,22 @@ import { ProfileImageUpload } from "@/components/ui/profile-image-upload";
 
 // Extend the form data to include profile image requirement for migration
 interface MigrationFormData extends UserProfileFormData {
-  profilePhotoUrl: string | null;
+  profilePhotoUrl?: string;
 }
 
 interface User {
   id: string;
   email: string;
-  firstName?: string;
-  lastName?: string;
-  phone?: string;
-  dateOfBirth?: Date;
-  emergencyContactName?: string;
-  emergencyContactRelationship?: string;
-  emergencyContactPhone?: string;
-  medicalConditions?: string;
-  availableDays?: string;
-  availableLocations?: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  phone?: string | null;
+  dateOfBirth?: Date | null;
+  emergencyContactName?: string | null;
+  emergencyContactRelationship?: string | null;
+  emergencyContactPhone?: string | null;
+  medicalConditions?: string | null;
+  availableDays?: string | null;
+  availableLocations?: string | null;
 }
 
 interface MigrationRegistrationFormProps {
@@ -121,7 +121,7 @@ export function MigrationRegistrationForm({
     healthSafetyPolicyAccepted: false,
     
     // Profile image (required for migration)
-    profilePhotoUrl: null,
+    profilePhotoUrl: undefined,
   });
 
   // Load policy content and location options
@@ -217,7 +217,7 @@ export function MigrationRegistrationForm({
   };
 
   const handleImageChange = (base64Image: string | null) => {
-    setFormData((prev) => ({ ...prev, profilePhotoUrl: base64Image }));
+    setFormData((prev) => ({ ...prev, profilePhotoUrl: base64Image || undefined }));
   };
 
   const handleDayToggle = (day: string) => {

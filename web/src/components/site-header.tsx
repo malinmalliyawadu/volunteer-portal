@@ -156,6 +156,15 @@ export function SiteHeader({
                     Manage Users
                   </Link>
                 </Button>
+                <Button
+                  asChild
+                  variant="ghost"
+                  className={getLinkClassName("/admin/migration")}
+                >
+                  <Link href="/admin/migration">
+                    Migration
+                  </Link>
+                </Button>
               </>
             ) : null}
           </div>

@@ -114,19 +114,20 @@ test.describe('Migration Registration Flow', () => {
     });
 
     test('should complete step 1: Personal Information', async ({ page }) => {
-      // Check step indicator
-      await expect(page.locator('[data-testid="step-indicator"]')).toContainText('Step 1 of 4');
-      await expect(page.locator('text=Personal Information')).toBeVisible();
+      // Check step indicator - now 6 steps with photo upload
+      await expect(page.locator('[data-testid="step-indicator"]')).toContainText('Step 1 of 6');
+      await expect(page.locator('text=Review Your Information')).toBeVisible();
       
-      // Form should be pre-filled, just need to set password
-      await page.fill('input[name="password"]', 'SecurePassword123!');
-      await page.fill('input[name="confirmPassword"]', 'SecurePassword123!');
+      // Form should be pre-filled, verify values
+      await expect(page.locator('input[name="firstName"]')).toHaveValue('Migration');
+      await expect(page.locator('input[name="lastName"]')).toHaveValue('Tester');
+      await expect(page.locator('input[name="email"]')).toHaveValue('migration-test@example.com');
       
       // Proceed to next step
-      await page.click('button:has-text("Continue")');
+      await page.click('button:has-text("Next")');
       
       // Check step 2 is now active
-      await expect(page.locator('[data-testid="step-indicator"]')).toContainText('Step 2 of 4');
+      await expect(page.locator('[data-testid="step-indicator"]')).toContainText('Step 2 of 6');
       await expect(page.locator('text=Emergency Contact')).toBeVisible();
     });
 
@@ -150,9 +151,7 @@ test.describe('Migration Registration Flow', () => {
 
     test('should complete step 2: Emergency Contact', async ({ page }) => {
       // Complete step 1 first
-      await page.fill('input[name="password"]', 'SecurePassword123!');
-      await page.fill('input[name="confirmPassword"]', 'SecurePassword123!');
-      await page.click('button:has-text("Continue")');
+      await page.click('button:has-text("Next")');
       
       // Fill emergency contact info
       await page.fill('input[name="emergencyContactName"]', 'John Emergency');
@@ -160,11 +159,123 @@ test.describe('Migration Registration Flow', () => {
       await page.fill('input[name="emergencyContactPhone"]', '+64 21 555 8888');
       
       // Proceed to next step
-      await page.click('button:has-text("Continue")');
+      await page.click('button:has-text("Next")');
       
-      // Check step 3 is now active
-      await expect(page.locator('[data-testid="step-indicator"]')).toContainText('Step 3 of 4');
-      await expect(page.locator('text=Volunteer Preferences')).toBeVisible();
+      // Check step 3 is now active - Medical & Availability
+      await expect(page.locator('[data-testid="step-indicator"]')).toContainText('Step 3 of 6');
+      await expect(page.locator('text=Medical & Availability')).toBeVisible();
+    });
+
+    test('should complete step 3: Medical & Availability', async ({ page }) => {
+      // Navigate to step 3
+      await page.click('button:has-text("Next")');
+      await page.fill('input[name="emergencyContactName"]', 'John Emergency');
+      await page.fill('input[name="emergencyContactRelationship"]', 'Brother');
+      await page.fill('input[name="emergencyContactPhone"]', '+64 21 555 8888');
+      await page.click('button:has-text("Next")');
+      
+      // Fill medical information (optional)
+      await page.fill('textarea[name="medicalConditions"]', 'No known allergies or conditions');
+      
+      // Select availability preferences
+      await page.check('input[value="Monday"]');
+      await page.check('input[value="Wednesday"]');
+      await page.check('input[value="Friday"]');
+      
+      // Select location preferences
+      await page.check('input[value="Wellington"]');
+      await page.check('input[value="Glenn Innes"]');
+      
+      // Proceed to photo upload step
+      await page.click('button:has-text("Next")');
+      
+      // Check step 4 is now active - Profile Photo
+      await expect(page.locator('[data-testid="step-indicator"]')).toContainText('Step 4 of 6');
+      await expect(page.locator('text=Profile Photo')).toBeVisible();
+    });
+
+    test('should require profile photo upload in step 4', async ({ page }) => {
+      // Navigate to photo upload step
+      await page.click('button:has-text("Next")');
+      await page.fill('input[name="emergencyContactName"]', 'John Emergency');
+      await page.fill('input[name="emergencyContactRelationship"]', 'Brother');
+      await page.fill('input[name="emergencyContactPhone"]', '+64 21 555 8888');
+      await page.click('button:has-text("Next")');
+      await page.click('button:has-text("Next")');
+      
+      // Check photo upload component is visible
+      await expect(page.locator('text=Profile Photo')).toBeVisible();
+      await expect(page.locator('text=Upload your profile photo')).toBeVisible();
+      await expect(page.locator('[data-testid="profile-image-upload"]')).toBeVisible();
+      
+      // Try to proceed without uploading photo
+      await page.click('button:has-text("Next")');
+      
+      // Should show validation error
+      await expect(page.locator('text=Profile photo required')).toBeVisible();
+      await expect(page.locator('text=Please upload a profile photo to continue')).toBeVisible();
+    });
+
+    test('should complete step 4: Profile Photo Upload', async ({ page }) => {
+      // Navigate to photo upload step
+      await page.click('button:has-text("Next")');
+      await page.fill('input[name="emergencyContactName"]', 'John Emergency');
+      await page.fill('input[name="emergencyContactRelationship"]', 'Brother');
+      await page.fill('input[name="emergencyContactPhone"]', '+64 21 555 8888');
+      await page.click('button:has-text("Next")');
+      await page.click('button:has-text("Next")');
+      
+      // Upload a test image (base64 data)
+      const testImageBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
+      
+      // Mock file upload
+      await page.evaluate((imageData) => {
+        const uploadComponent = document.querySelector('[data-testid="profile-image-upload"]');
+        if (uploadComponent) {
+          // Simulate image upload by triggering the onImageChange callback
+          const event = new CustomEvent('imageChange', { detail: imageData });
+          uploadComponent.dispatchEvent(event);
+        }
+      }, testImageBase64);
+      
+      // Proceed to next step
+      await page.click('button:has-text("Next")');
+      
+      // Check step 5 is now active - Set Password
+      await expect(page.locator('[data-testid="step-indicator"]')).toContainText('Step 5 of 6');
+      await expect(page.locator('text=Set Password')).toBeVisible();
+    });
+
+    test('should complete step 5: Set Password', async ({ page }) => {
+      // Navigate through all previous steps
+      await page.click('button:has-text("Next")');
+      await page.fill('input[name="emergencyContactName"]', 'John Emergency');
+      await page.fill('input[name="emergencyContactRelationship"]', 'Brother');
+      await page.fill('input[name="emergencyContactPhone"]', '+64 21 555 8888');
+      await page.click('button:has-text("Next")');
+      await page.click('button:has-text("Next")');
+      
+      // Upload photo
+      const testImageBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
+      await page.evaluate((imageData) => {
+        const uploadComponent = document.querySelector('[data-testid="profile-image-upload"]');
+        if (uploadComponent) {
+          const event = new CustomEvent('imageChange', { detail: imageData });
+          uploadComponent.dispatchEvent(event);
+        }
+      }, testImageBase64);
+      await page.click('button:has-text("Next")');
+      
+      // Set password
+      await page.fill('input[name="password"]', 'SecurePassword123!');
+      await page.fill('input[name="confirmPassword"]', 'SecurePassword123!');
+      
+      // Proceed to final step
+      await page.click('button:has-text("Next")');
+      
+      // Check step 6 is now active - Final Steps
+      await expect(page.locator('[data-testid="step-indicator"]')).toContainText('Step 6 of 6');
+      await expect(page.locator('text=Final Steps')).toBeVisible();
     });
 
     test('should allow skipping optional emergency contact', async ({ page }) => {
