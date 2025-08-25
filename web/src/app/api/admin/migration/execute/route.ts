@@ -78,13 +78,18 @@ class UserMigrator {
 
         try {
           const tempPassword = await this.processUser(record);
-          this.result.successful++;
           
-          if (tempPassword && !this.dryRun) {
-            this.result.temporaryPasswords?.push({
-              email: record.Email.trim().toLowerCase(),
-              password: tempPassword
-            });
+          if (tempPassword === 'SKIPPED') {
+            this.result.skipped++;
+          } else {
+            this.result.successful++;
+            
+            if (tempPassword && !this.dryRun) {
+              this.result.temporaryPasswords?.push({
+                email: record.Email.trim().toLowerCase(),
+                password: tempPassword
+              });
+            }
           }
         } catch (error) {
           this.result.failed++;
@@ -123,8 +128,8 @@ class UserMigrator {
       });
 
       if (existingUser) {
-        this.result.skipped++;
-        throw new Error('User already exists');
+        // Don't create, but don't treat as error
+        return 'SKIPPED';
       }
     }
 

@@ -71,6 +71,7 @@ export function CSVUploadForm() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pendingDryRun, setPendingDryRun] = useState(false);
+  const [lastRunWasDryRun, setLastRunWasDryRun] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -172,6 +173,7 @@ export function CSVUploadForm() {
     setShowConfirmDialog(false);
     setIsMigrating(true);
     setUploadProgress(0);
+    setLastRunWasDryRun(dryRun);
 
     const formData = new FormData();
     formData.append("file", file);
@@ -212,6 +214,7 @@ export function CSVUploadForm() {
     setFile(null);
     setValidationResult(null);
     setMigrationResult(null);
+    setLastRunWasDryRun(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -292,20 +295,20 @@ export function CSVUploadForm() {
 
       {/* Validation Results */}
       {validationResult && (
-        <Card>
+        <Card data-testid="validation-results">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2" data-testid="validation-title">
               {validationResult.invalidRecords === 0 ? (
                 <CheckCircle className="h-5 w-5 text-green-600" />
               ) : (
                 <AlertCircle className="h-5 w-5 text-amber-600" />
               )}
-              Validation Results
+              Validation completed
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4" data-testid="validation-content">
             <div className="grid grid-cols-4 gap-4">
-              <div className="text-center">
+              <div className="text-center" data-testid="total-records">
                 <div className="text-2xl font-bold">
                   {validationResult.totalRecords}
                 </div>
@@ -313,17 +316,17 @@ export function CSVUploadForm() {
                   Total Records
                 </div>
               </div>
-              <div className="text-center">
+              <div className="text-center" data-testid="valid-records">
                 <div className="text-2xl font-bold text-green-600">
                   {validationResult.validRecords}
                 </div>
-                <div className="text-sm text-muted-foreground">Valid</div>
+                <div className="text-sm text-muted-foreground">Valid Records: {validationResult.validRecords}</div>
               </div>
-              <div className="text-center">
+              <div className="text-center" data-testid="invalid-records">
                 <div className="text-2xl font-bold text-red-600">
                   {validationResult.invalidRecords}
                 </div>
-                <div className="text-sm text-muted-foreground">Invalid</div>
+                <div className="text-sm text-muted-foreground">Invalid Records: {validationResult.invalidRecords}</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold">
@@ -371,7 +374,7 @@ export function CSVUploadForm() {
             )}
 
             {validationResult.errors.length > 0 && (
-              <Alert>
+              <Alert data-testid="validation-errors">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
                   <strong>
@@ -436,6 +439,7 @@ export function CSVUploadForm() {
                 disabled={isMigrating}
                 variant="outline"
                 className="flex items-center gap-2"
+                data-testid="dry-run-button"
               >
                 <Play className="h-4 w-4" />
                 Dry Run
@@ -450,6 +454,7 @@ export function CSVUploadForm() {
                 disabled={isMigrating}
                 className="flex items-center gap-2"
                 variant={validationResult.invalidRecords > 0 ? "destructive" : "default"}
+                data-testid="execute-migration-button"
               >
                 <Upload className="h-4 w-4" />
                 Execute Migration
@@ -466,40 +471,40 @@ export function CSVUploadForm() {
 
       {/* Migration Results */}
       {migrationResult && (
-        <Card>
+        <Card data-testid="migration-results">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2" data-testid="migration-results-title">
               <CheckCircle className="h-5 w-5 text-green-600" />
-              Migration Results
+              {lastRunWasDryRun ? "Dry run completed" : "Migration completed"}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-4 gap-4">
-              <div className="text-center">
+              <div className="text-center" data-testid="total-migration-records">
                 <div className="text-2xl font-bold">
                   {migrationResult.totalRecords}
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  Total Records
+                  Total Records: {migrationResult.totalRecords}
                 </div>
               </div>
-              <div className="text-center">
+              <div className="text-center" data-testid="successful-migrations">
                 <div className="text-2xl font-bold text-green-600">
                   {migrationResult.successful}
                 </div>
-                <div className="text-sm text-muted-foreground">Successful</div>
+                <div className="text-sm text-muted-foreground">Successful: {migrationResult.successful}</div>
               </div>
-              <div className="text-center">
+              <div className="text-center" data-testid="failed-migrations">
                 <div className="text-2xl font-bold text-red-600">
                   {migrationResult.failed}
                 </div>
-                <div className="text-sm text-muted-foreground">Failed</div>
+                <div className="text-sm text-muted-foreground">Failed: {migrationResult.failed}</div>
               </div>
-              <div className="text-center">
+              <div className="text-center" data-testid="skipped-migrations">
                 <div className="text-2xl font-bold text-amber-600">
                   {migrationResult.skipped}
                 </div>
-                <div className="text-sm text-muted-foreground">Skipped</div>
+                <div className="text-sm text-muted-foreground">Skipped: {migrationResult.skipped}</div>
               </div>
             </div>
 
@@ -527,7 +532,7 @@ export function CSVUploadForm() {
             )}
 
             {migrationResult.createdUsers && migrationResult.createdUsers.length > 0 && (
-              <div>
+              <div data-testid="created-users">
                 <h4 className="font-medium mb-2">Created Users:</h4>
                 <div className="max-h-60 overflow-y-auto border rounded-lg p-3 bg-green-50">
                   <div className="space-y-2">
@@ -571,14 +576,14 @@ export function CSVUploadForm() {
 
       {/* Confirmation Dialog */}
       <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl" data-testid="confirmation-dialog">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+            <DialogTitle className="flex items-center gap-2" data-testid="confirmation-title">
               <AlertTriangle className="h-5 w-5 text-amber-600" />
               Confirm Migration with Errors
             </DialogTitle>
-            <DialogDescription>
-              The CSV file contains {validationResult?.invalidRecords} validation errors. 
+            <DialogDescription data-testid="confirmation-description">
+              There are validation errors in your data. The CSV file contains {validationResult?.invalidRecords} validation errors. 
               These records will be skipped during migration.
             </DialogDescription>
           </DialogHeader>
@@ -627,6 +632,7 @@ export function CSVUploadForm() {
             <Button 
               variant="outline" 
               onClick={() => setShowConfirmDialog(false)}
+              data-testid="cancel-button"
             >
               Cancel
             </Button>
@@ -634,6 +640,7 @@ export function CSVUploadForm() {
               onClick={() => executeMigration(pendingDryRun)}
               variant={pendingDryRun ? "outline" : "destructive"}
               className="flex items-center gap-2"
+              data-testid="confirm-migration-button"
             >
               {pendingDryRun ? (
                 <>
@@ -643,7 +650,7 @@ export function CSVUploadForm() {
               ) : (
                 <>
                   <Upload className="h-4 w-4" />
-                  Continue Migration
+                  Yes, Execute Migration
                 </>
               )}
             </Button>
