@@ -1,10 +1,8 @@
 import { test, expect } from "@playwright/test";
-import { PrismaClient } from "@prisma/client";
 import { randomBytes } from "crypto";
 import { addDays } from "date-fns";
 import path from "path";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 // Helper function to upload a test profile image
 async function uploadTestImage(page: any) {
