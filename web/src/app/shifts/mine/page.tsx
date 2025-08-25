@@ -631,10 +631,91 @@ export default async function MyShiftsPage({
         ]}
       />
 
-      {/* Calendar View */}
+      {/* Schedule View - Calendar on desktop, List on mobile */}
       <Card data-testid="calendar-view">
         <CardHeader className="pb-4">
-          <div className="flex items-center justify-between">
+          {/* Mobile Header Layout */}
+          <div className="sm:hidden">
+            <CardTitle className="flex items-center gap-3 mb-3">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg">
+                <Calendar className="h-5 w-5" />
+              </div>
+              <div>
+                <div className="text-xl font-bold" data-testid="calendar-title">
+                  {format(viewMonth, "MMMM yyyy")}
+                </div>
+                <div
+                  className="text-sm text-muted-foreground font-normal"
+                  data-testid="calendar-description"
+                >
+                  Your volunteer schedule
+                </div>
+              </div>
+            </CardTitle>
+            <div
+              className="flex items-center justify-center gap-1.5"
+              data-testid="calendar-navigation"
+            >
+              <Button
+                variant="outline"
+                size="sm"
+                asChild
+                className="hover:bg-blue-50 hover:border-blue-300 transition-colors flex-1 h-8 px-2 text-xs"
+                data-testid="prev-month-button"
+              >
+                <Link
+                  href={{
+                    pathname: "/shifts/mine",
+                    query: {
+                      month: prevMonth.getTime().toString(),
+                    },
+                  }}
+                  className="flex items-center justify-center"
+                >
+                  <ChevronLeft className="h-3 w-3 mr-1" />
+                  Previous
+                </Link>
+              </Button>
+
+              {/* Current Month Button - only show if not already viewing current month */}
+              {viewMonth.getMonth() !== currentMonth.getMonth() ||
+              viewMonth.getFullYear() !== currentMonth.getFullYear() ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  asChild
+                  className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100 hover:border-blue-300 h-8 px-2 text-xs"
+                  data-testid="today-button"
+                >
+                  <Link href="/shifts/mine">Today</Link>
+                </Button>
+              ) : null}
+
+              <Button
+                variant="outline"
+                size="sm"
+                asChild
+                className="hover:bg-blue-50 hover:border-blue-300 transition-colors flex-1 h-8 px-2 text-xs"
+                data-testid="next-month-button"
+              >
+                <Link
+                  href={{
+                    pathname: "/shifts/mine",
+                    query: {
+                      month: nextMonth.getTime().toString(),
+                    },
+                  }}
+                  className="flex items-center justify-center"
+                >
+                  Next
+                  <ChevronRight className="h-3 w-3 ml-1" />
+                </Link>
+              </Button>
+            </div>
+          </div>
+
+          {/* Desktop Header Layout */}
+          <div className="hidden sm:flex items-center justify-between">
             <CardTitle className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg">
                 <Calendar className="h-5 w-5" />
@@ -652,7 +733,7 @@ export default async function MyShiftsPage({
               </div>
             </CardTitle>
             <div
-              className="flex items-center gap-1 sm:gap-2"
+              className="flex items-center gap-2"
               data-testid="calendar-navigation"
             >
               <Button
@@ -672,7 +753,7 @@ export default async function MyShiftsPage({
                   className="flex items-center"
                 >
                   <ChevronLeft className="h-4 w-4" />
-                  <span className="hidden sm:inline ml-1">Prev</span>
+                  <span className="ml-1">Prev</span>
                 </Link>
               </Button>
 
@@ -706,7 +787,7 @@ export default async function MyShiftsPage({
                   }}
                   className="flex items-center"
                 >
-                  <span className="hidden sm:inline mr-1">Next</span>
+                  <span className="mr-1">Next</span>
                   <ChevronRight className="h-4 w-4" />
                 </Link>
               </Button>
@@ -714,9 +795,9 @@ export default async function MyShiftsPage({
           </div>
         </CardHeader>
         <CardContent className="p-6">
-          {/* Calendar Grid */}
+          {/* Desktop Calendar Grid */}
           <div
-            className="grid grid-cols-7 gap-1 sm:gap-3"
+            className="hidden sm:grid grid-cols-7 gap-3"
             data-testid="calendar-grid"
           >
             {/* Day headers */}
@@ -730,8 +811,7 @@ export default async function MyShiftsPage({
                       : "text-foreground"
                   }`}
                 >
-                  <div className="hidden sm:block">{day}</div>
-                  <div className="sm:hidden">{day.slice(0, 1)}</div>
+                  {day}
                 </div>
               )
             )}
@@ -750,7 +830,7 @@ export default async function MyShiftsPage({
                 <div
                   key={dateKey}
                   className={`
-                    min-h-[120px] sm:min-h-[140px] p-2 sm:p-3 rounded-xl relative flex flex-col
+                    min-h-[140px] p-3 rounded-xl relative flex flex-col
                     transition-all duration-200 ease-in-out hover:scale-[1.02] hover:shadow-lg
                     ${
                       isPast
@@ -767,7 +847,7 @@ export default async function MyShiftsPage({
                   <div className="flex items-center justify-between mb-2">
                     <div
                       className={`
-                        text-sm font-bold w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center
+                        text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center
                         ${
                           isPast
                             ? "text-gray-400 dark:text-gray-600"
@@ -809,10 +889,10 @@ export default async function MyShiftsPage({
                                 `}
                               >
                                 <div className="text-center space-y-1">
-                                  <div className="text-lg sm:text-xl">
+                                  <div className="text-xl">
                                     {theme.emoji}
                                   </div>
-                                  <div className="font-bold text-xs sm:text-sm">
+                                  <div className="font-bold text-sm">
                                     {format(shift.shift.start, "HH:mm")}
                                   </div>
                                   <div className="text-xs opacity-90 font-medium line-clamp-2">
@@ -855,12 +935,7 @@ export default async function MyShiftsPage({
                               className="flex items-center gap-1"
                             >
                               <CalendarPlus className="h-3 w-3" />
-                              <span className="hidden sm:inline">
-                                {availableShifts.length} available
-                              </span>
-                              <span className="sm:hidden">
-                                {availableShifts.length}
-                              </span>
+                              {availableShifts.length} available
                             </Link>
                           </Button>
                         ) : (
@@ -874,6 +949,183 @@ export default async function MyShiftsPage({
                 </div>
               );
             })}
+          </div>
+
+          {/* Mobile List View */}
+          <div className="sm:hidden space-y-3" data-testid="mobile-list-view">
+            {calendarDays.map((day) => {
+              const dateKey = format(day, "yyyy-MM-dd");
+              const dayShifts = shiftsByDate.get(dateKey) || [];
+              const availableShifts = availableShiftsByDate.get(dateKey) || [];
+              const isToday = isSameDay(day, now);
+              const isPast = day < now && !isToday;
+              const shift = dayShifts[0];
+
+              // Skip days without shifts or available shifts unless it's today
+              if (!shift && availableShifts.length === 0 && !isToday) {
+                return null;
+              }
+
+              return (
+                      <div
+                        key={dateKey}
+                        className={`
+                          p-4 rounded-xl border transition-all duration-200
+                          ${
+                            isPast
+                              ? "bg-gray-50/70 dark:bg-gray-900/30 border-gray-200/60 dark:border-gray-700/60"
+                              : isToday
+                              ? "bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-indigo-950/40 border-blue-300 dark:border-blue-700 shadow-md ring-1 ring-blue-200/40 dark:ring-blue-800/40"
+                              : "bg-white dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 hover:shadow-md"
+                          }
+                        `}
+                      >
+                        {/* Date Header */}
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`
+                                w-10 h-10 rounded-full flex items-center justify-center font-bold
+                                ${
+                                  isPast
+                                    ? "bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600"
+                                    : isToday
+                                    ? "bg-blue-500 text-white shadow-md"
+                                    : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                                }
+                              `}
+                            >
+                              {format(day, "d")}
+                            </div>
+                            <div>
+                              <div className="font-semibold text-sm">
+                                {format(day, "EEEE")}
+                                {isToday && (
+                                  <span className="ml-2 text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full">
+                                    Today
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {format(day, "MMMM d, yyyy")}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Shift Content */}
+                        {shift ? (
+                          <ShiftDetailsDialog shift={shift}>
+                            <div className="cursor-pointer">
+                              {(() => {
+                                const theme = getShiftTheme(shift.shift.shiftType.name);
+                                return (
+                                  <div
+                                    className={`
+                                      relative p-4 rounded-lg text-white shadow-md 
+                                      transition-all duration-200 ease-in-out hover:shadow-lg
+                                      ${
+                                        isPast
+                                          ? `bg-gradient-to-br ${theme.gradient} opacity-50`
+                                          : `bg-gradient-to-br ${theme.gradient} hover:shadow-xl`
+                                      }
+                                    `}
+                                  >
+                                    <div className="space-y-3">
+                                      <div className="flex items-center gap-4">
+                                        <div className="text-3xl">
+                                          {theme.emoji}
+                                        </div>
+                                        <div className="flex-1">
+                                          <div className="font-bold text-lg">
+                                            {shift.shift.shiftType.name}
+                                          </div>
+                                          <div className="text-sm opacity-90 flex items-center gap-2 mt-1">
+                                            <Timer className="h-4 w-4" />
+                                            {format(shift.shift.start, "h:mm a")} - {format(shift.shift.end, "h:mm a")}
+                                          </div>
+                                          {shift.shift.location && (
+                                            <div className="text-sm opacity-75 mt-1">
+                                              📍 {shift.shift.location}
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                      
+                                      <div className="flex items-center justify-between">
+                                        <div>
+                                          <StatusBadge status={shift.status} isPast={isPast} />
+                                        </div>
+                                        {shift.shift.signups.length > 0 && (
+                                          <div className="flex items-center gap-1">
+                                            <div className="flex items-center gap-1 bg-white/20 rounded-full px-2 py-1">
+                                              <UserCheck className="h-3 w-3" />
+                                              <span className="text-xs font-medium">
+                                                {shift.shift.signups.length} friend{shift.shift.signups.length !== 1 ? 's' : ''} joining
+                                              </span>
+                                            </div>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                    {/* Subtle gradient overlay for better readability */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent rounded-lg pointer-events-none" />
+                                  </div>
+                                );
+                              })()}
+                            </div>
+                          </ShiftDetailsDialog>
+                        ) : availableShifts.length > 0 ? (
+                          <div className="space-y-2">
+                            <div className="text-sm font-medium text-muted-foreground">
+                              {availableShifts.length} shift{availableShifts.length !== 1 ? 's' : ''} available
+                            </div>
+                            <Button
+                              asChild
+                              className="w-full justify-start gap-2 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
+                            >
+                              <Link href="/shifts">
+                                <CalendarPlus className="h-4 w-4" />
+                                Browse Available Shifts
+                              </Link>
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="text-center py-4 text-muted-foreground">
+                            <div className="text-2xl mb-2">📅</div>
+                            <div className="text-sm font-medium">
+                              No shifts scheduled
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+            
+            {/* Show message if no shifts in the month */}
+            {calendarDays.every((day) => {
+              const dateKey = format(day, "yyyy-MM-dd");
+              const dayShifts = shiftsByDate.get(dateKey) || [];
+              const availableShifts = availableShiftsByDate.get(dateKey) || [];
+              const isToday = isSameDay(day, now);
+              return dayShifts.length === 0 && availableShifts.length === 0 && !isToday;
+            }) && (
+              <div className="text-center py-8 text-muted-foreground">
+                <div className="text-4xl mb-3">📅</div>
+                <div className="text-lg font-medium mb-2">
+                  No shifts in {format(viewMonth, "MMMM yyyy")}
+                </div>
+                <div className="text-sm mb-4">
+                  Check out other months or browse available shifts
+                </div>
+                <Button asChild className="gap-2">
+                  <Link href="/shifts">
+                    <CalendarPlus className="h-4 w-4" />
+                    Browse Shifts
+                  </Link>
+                </Button>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
