@@ -641,12 +641,12 @@ export default async function MyShiftsPage({
                 <Calendar className="h-5 w-5" />
               </div>
               <div>
-                <div className="text-xl font-bold" data-testid="calendar-title">
+                <div className="text-xl font-bold" data-testid="mobile-calendar-title">
                   {format(viewMonth, "MMMM yyyy")}
                 </div>
                 <div
                   className="text-sm text-muted-foreground font-normal"
-                  data-testid="calendar-description"
+                  data-testid="mobile-calendar-description"
                 >
                   Your volunteer schedule
                 </div>
@@ -654,14 +654,14 @@ export default async function MyShiftsPage({
             </CardTitle>
             <div
               className="flex items-center justify-center gap-1.5"
-              data-testid="calendar-navigation"
+              data-testid="mobile-calendar-navigation"
             >
               <Button
                 variant="outline"
                 size="sm"
                 asChild
                 className="hover:bg-blue-50 hover:border-blue-300 transition-colors flex-1 h-8 px-2 text-xs"
-                data-testid="prev-month-button"
+                data-testid="mobile-prev-month-button"
               >
                 <Link
                   href={{
@@ -685,7 +685,7 @@ export default async function MyShiftsPage({
                   size="sm"
                   asChild
                   className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100 hover:border-blue-300 h-8 px-2 text-xs"
-                  data-testid="today-button"
+                  data-testid="mobile-today-button"
                 >
                   <Link href="/shifts/mine">Today</Link>
                 </Button>
@@ -696,7 +696,7 @@ export default async function MyShiftsPage({
                 size="sm"
                 asChild
                 className="hover:bg-blue-50 hover:border-blue-300 transition-colors flex-1 h-8 px-2 text-xs"
-                data-testid="next-month-button"
+                data-testid="mobile-next-month-button"
               >
                 <Link
                   href={{
