@@ -100,7 +100,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            className="absolute right-0 top-full mt-2 w-96 max-h-96 overflow-hidden z-[100] bg-background border border-border rounded-lg shadow-lg"
+            className="fixed sm:absolute right-2 sm:right-0 top-14 sm:top-full left-2 sm:left-auto mt-0 sm:mt-2 w-auto sm:w-96 max-h-96 overflow-hidden z-[100] bg-background border border-border rounded-lg shadow-lg"
             variants={dropdownVariants}
             initial="hidden"
             animate="visible"
