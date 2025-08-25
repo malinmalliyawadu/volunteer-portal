@@ -69,43 +69,48 @@ export function MigrationStatus() {
     <div className="space-y-6">
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
+        <Card data-testid="total-migrations-card">
           <CardContent className="pt-6">
             <div className="flex items-center space-x-2">
               <Users className="h-4 w-4 text-blue-600" />
-              <span className="text-sm font-medium">Total Migrated</span>
+              <span className="text-sm font-medium">Total Migrations</span>
             </div>
             <div className="text-2xl font-bold">{stats.totalMigrated}</div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center space-x-2">
-              <Mail className="h-4 w-4 text-amber-600" />
-              <span className="text-sm font-medium">Pending Invitations</span>
-            </div>
-            <div className="text-2xl font-bold">{stats.pendingInvitations}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
+        <Card data-testid="successful-migrations-card">
           <CardContent className="pt-6">
             <div className="flex items-center space-x-2">
               <CheckCircle className="h-4 w-4 text-green-600" />
-              <span className="text-sm font-medium">Completed</span>
+              <span className="text-sm font-medium">Successful</span>
             </div>
             <div className="text-2xl font-bold">{stats.completedRegistrations}</div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card data-testid="failed-migrations-card">
           <CardContent className="pt-6">
             <div className="flex items-center space-x-2">
               <AlertCircle className="h-4 w-4 text-red-600" />
               <span className="text-sm font-medium">Failed</span>
             </div>
             <div className="text-2xl font-bold">{stats.failedInvitations}</div>
+          </CardContent>
+        </Card>
+
+        <Card data-testid="last-migration-card">
+          <CardContent className="pt-6">
+            <div className="flex items-center space-x-2">
+              <Mail className="h-4 w-4 text-amber-600" />
+              <span className="text-sm font-medium">Last Migration</span>
+            </div>
+            <div className="text-2xl font-bold">
+              {stats.lastMigrationDate 
+                ? new Date(stats.lastMigrationDate).toLocaleDateString()
+                : 'Never'
+              }
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -149,9 +154,9 @@ export function MigrationStatus() {
       </Card>
 
       {/* Recent Activity */}
-      <Card>
+      <Card data-testid="recent-migration-activity">
         <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
+          <CardTitle>Recent Migration Activity</CardTitle>
           <CardDescription>
             Latest migration and registration events
           </CardDescription>

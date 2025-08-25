@@ -260,7 +260,7 @@ export function UserInvitations() {
     <div className="space-y-6">
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <Card>
+        <Card data-testid="total-migrated-card">
           <CardContent className="pt-6">
             <div className="flex items-center space-x-2">
               <Users className="h-4 w-4 text-blue-600" />
@@ -270,7 +270,7 @@ export function UserInvitations() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card data-testid="pending-invitations-card">
           <CardContent className="pt-6">
             <div className="flex items-center space-x-2">
               <Clock className="h-4 w-4 text-amber-600" />
@@ -280,7 +280,7 @@ export function UserInvitations() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card data-testid="invited-users-card">
           <CardContent className="pt-6">
             <div className="flex items-center space-x-2">
               <Mail className="h-4 w-4 text-purple-600" />
@@ -290,7 +290,7 @@ export function UserInvitations() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card data-testid="expired-invitations-card">
           <CardContent className="pt-6">
             <div className="flex items-center space-x-2">
               <AlertCircle className="h-4 w-4 text-red-600" />
@@ -300,7 +300,7 @@ export function UserInvitations() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card data-testid="completed-registrations-card">
           <CardContent className="pt-6">
             <div className="flex items-center space-x-2">
               <CheckCircle className="h-4 w-4 text-green-600" />
@@ -331,6 +331,7 @@ export function UserInvitations() {
               onChange={(e) => setCustomMessage(e.target.value)}
               rows={4}
               className="mt-1"
+              data-testid="custom-message-textarea"
             />
           </div>
 
@@ -361,11 +362,12 @@ export function UserInvitations() {
                 onClick={sendInvitations}
                 disabled={selectedUsers.size === 0 || isSending}
                 className="flex items-center gap-2"
+                data-testid="send-invitations-button"
               >
                 <Send className="h-4 w-4" />
                 {isSending
                   ? "Sending..."
-                  : `Send Invitations (${selectedUsers.size})`}
+                  : `Send Invitations`}
               </Button>
             </div>
           </div>
@@ -380,6 +382,7 @@ export function UserInvitations() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
+                data-testid="search-users-input"
               />
             </div>
             <div className="flex items-center gap-2">
@@ -388,6 +391,7 @@ export function UserInvitations() {
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value as "all" | "pending" | "invited" | "completed")}
                 className="border rounded-md px-3 py-2 text-sm"
+                data-testid="filter-status-select"
               >
                 <option value="all">All Users</option>
                 <option value="pending">Pending Invitations</option>
@@ -533,7 +537,7 @@ export function UserInvitations() {
         open={showInvitationDialog}
         onOpenChange={setShowInvitationDialog}
       >
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto" data-testid="registration-urls-dialog">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Mail className="h-5 w-5" />
@@ -556,6 +560,7 @@ export function UserInvitations() {
                 variant="outline"
                 size="sm"
                 className="flex items-center gap-2"
+                data-testid="copy-all-urls-button"
               >
                 <Copy className="h-4 w-4" />
                 Copy All URLs
