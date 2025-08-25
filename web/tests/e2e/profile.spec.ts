@@ -1,31 +1,5 @@
 import { test, expect } from "./base";
-import type { Page } from "@playwright/test";
-
-// Helper function to login
-async function loginAsVolunteer(page: Page) {
-  try {
-    await page.goto("/login");
-    await page.waitForLoadState("load");
-
-    const volunteerLoginButton = page.getByRole("button", {
-      name: /login as volunteer/i,
-    });
-    await volunteerLoginButton.waitFor({ state: "visible", timeout: 5000 });
-    await volunteerLoginButton.click();
-
-    try {
-      await page.waitForURL((url) => !url.pathname.includes("/login"), {
-        timeout: 10000,
-      });
-    } catch (error) {
-      console.log("Login may have failed or taken too long");
-    }
-
-    await page.waitForLoadState("load");
-  } catch (error) {
-    console.log("Error during login:", error);
-  }
-}
+import { loginAsVolunteer } from "./helpers/auth";
 
 test.describe("Profile Page", () => {
   test.beforeEach(async ({ page }) => {

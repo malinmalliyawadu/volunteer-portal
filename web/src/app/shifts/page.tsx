@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/collapsible";
 import { GroupBookingDialogWrapper } from "@/components/group-booking-dialog-wrapper";
 import { PageContainer } from "@/components/page-container";
+import { safeParseAvailability } from "@/lib/parse-availability";
 
 const LOCATIONS = ["Wellington", "Glenn Innes", "Onehunga"] as const;
 type LocationOption = (typeof LOCATIONS)[number];
@@ -422,9 +423,7 @@ export default async function ShiftsPageRedesigned({
   }
 
   // Parse user's preferred locations
-  const userPreferredLocations = currentUser?.availableLocations
-    ? JSON.parse(currentUser.availableLocations)
-    : [];
+  const userPreferredLocations = safeParseAvailability(currentUser?.availableLocations);
 
   // Handle location filtering
   const rawLocation = Array.isArray(params.location)

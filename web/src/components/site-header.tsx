@@ -97,7 +97,10 @@ export function SiteHeader({
                 variant="ghost"
                 className={getLinkClassName(isAdmin ? "/admin" : "/dashboard")}
               >
-                <Link href={isAdmin ? "/admin" : "/dashboard"}>
+                <Link 
+                  href={isAdmin ? "/admin" : "/dashboard"}
+                  data-testid={isAdmin ? "nav-admin-dashboard" : "nav-volunteer-dashboard"}
+                >
                   Dashboard
                 </Link>
               </Button>
@@ -108,7 +111,7 @@ export function SiteHeader({
               variant="ghost"
               className={getLinkClassName("/shifts")}
             >
-              <Link href="/shifts">
+              <Link href="/shifts" data-testid="nav-shifts">
                 Shifts
               </Link>
             </Button>
@@ -120,7 +123,7 @@ export function SiteHeader({
                   variant="ghost"
                   className={getLinkClassName("/shifts/mine")}
                 >
-                  <Link href="/shifts/mine">
+                  <Link href="/shifts/mine" data-testid="nav-my-shifts">
                     My Shifts
                   </Link>
                 </Button>
@@ -129,7 +132,7 @@ export function SiteHeader({
                   variant="ghost"
                   className={getLinkClassName("/friends")}
                 >
-                  <Link href="/friends">
+                  <Link href="/friends" data-testid="nav-friends">
                     Friends
                   </Link>
                 </Button>
@@ -143,7 +146,7 @@ export function SiteHeader({
                   variant="ghost"
                   className={getLinkClassName("/admin/shifts")}
                 >
-                  <Link href="/admin/shifts">
+                  <Link href="/admin/shifts" data-testid="nav-admin-manage-shifts">
                     Manage Shifts
                   </Link>
                 </Button>
@@ -152,8 +155,17 @@ export function SiteHeader({
                   variant="ghost"
                   className={getLinkClassName("/admin/users")}
                 >
-                  <Link href="/admin/users">
+                  <Link href="/admin/users" data-testid="nav-admin-manage-users">
                     Manage Users
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="ghost"
+                  className={getLinkClassName("/admin/migration")}
+                >
+                  <Link href="/admin/migration" data-testid="nav-admin-migration">
+                    Migration
                   </Link>
                 </Button>
               </>

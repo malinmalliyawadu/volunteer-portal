@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
+import { safeParseAvailability } from "@/lib/parse-availability";
 
 const updateProfileSchema = z.object({
   firstName: z.string().optional(),
@@ -67,13 +68,11 @@ export async function GET() {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
-  // Parse JSON fields
+  // Parse JSON fields safely (handles both JSON arrays and plain text from migration)
   const userWithParsedFields = {
     ...user,
-    availableDays: user.availableDays ? JSON.parse(user.availableDays) : [],
-    availableLocations: user.availableLocations
-      ? JSON.parse(user.availableLocations)
-      : [],
+    availableDays: safeParseAvailability(user.availableDays),
+    availableLocations: safeParseAvailability(user.availableLocations),
   };
 
   return NextResponse.json(userWithParsedFields);
@@ -203,15 +202,11 @@ export async function PUT(req: Request) {
       },
     });
 
-    // Parse JSON fields for response
+    // Parse JSON fields for response safely
     const responseUser = {
       ...updatedUser,
-      availableDays: updatedUser.availableDays
-        ? JSON.parse(updatedUser.availableDays)
-        : [],
-      availableLocations: updatedUser.availableLocations
-        ? JSON.parse(updatedUser.availableLocations)
-        : [],
+      availableDays: safeParseAvailability(updatedUser.availableDays),
+      availableLocations: safeParseAvailability(updatedUser.availableLocations),
     };
 
     return NextResponse.json(responseUser);

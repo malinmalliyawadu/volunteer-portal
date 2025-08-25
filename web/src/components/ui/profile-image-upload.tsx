@@ -236,7 +236,7 @@ export function ProfileImageUpload({
   }, []);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3" data-testid="profile-image-upload">
       <Label className="text-sm font-medium">Profile Photo</Label>
 
       <div className="flex items-center gap-4">
@@ -297,7 +297,7 @@ export function ProfileImageUpload({
           </Button>
 
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-2xl" data-testid="crop-dialog">
               <DialogHeader>
                 <DialogTitle>Crop Your Profile Photo</DialogTitle>
                 <DialogDescription>
@@ -344,6 +344,7 @@ export function ProfileImageUpload({
                     onClick={handleCropComplete}
                     disabled={!completedCrop || isProcessing}
                     className="gap-2"
+                    data-testid="apply-crop-button"
                   >
                     <Upload className="h-4 w-4" />
                     {isProcessing ? "Processing..." : "Apply Crop"}

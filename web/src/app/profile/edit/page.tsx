@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -166,7 +166,7 @@ export default function EditProfilePage() {
     };
 
     loadProfileData();
-  }, [toast]);
+  }, []); // Remove toast dependency
 
   const sections = [
     {
@@ -206,87 +206,93 @@ export default function EditProfilePage() {
     },
   ];
 
-  const handleSubmit = async (e?: React.FormEvent) => {
-    if (e) {
-      e.preventDefault();
-    }
-    setLoading(true);
-
-    try {
-      // Process form data to handle special placeholder values
-      const processedData = {
-        ...formData,
-        pronouns: formData.pronouns === "none" ? null : formData.pronouns,
-        howDidYouHearAboutUs:
-          formData.howDidYouHearAboutUs === "not_specified"
-            ? null
-            : formData.howDidYouHearAboutUs,
-      };
-
-      const response = await fetch("/api/profile", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(processedData),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to update profile");
+  const handleSubmit = useCallback(
+    async (e?: React.FormEvent) => {
+      if (e) {
+        e.preventDefault();
       }
+      setLoading(true);
 
-      toast({
-        title: "Profile saved successfully!",
-        description: "Your changes have been saved.",
-      });
+      try {
+        // Process form data to handle special placeholder values
+        const processedData = {
+          ...formData,
+          pronouns: formData.pronouns === "none" ? null : formData.pronouns,
+          howDidYouHearAboutUs:
+            formData.howDidYouHearAboutUs === "not_specified"
+              ? null
+              : formData.howDidYouHearAboutUs,
+        };
 
-      router.push("/profile");
-    } catch (error) {
-      toast({
-        title: "Error updating profile",
-        description:
-          error instanceof Error ? error.message : "Failed to update profile",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+        const response = await fetch("/api/profile", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(processedData),
+        });
 
-  const handleInputChange = (field: string, value: string | boolean) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || "Failed to update profile");
+        }
 
-  const handleDayToggle = (day: string) => {
+        toast({
+          title: "Profile saved successfully!",
+          description: "Your changes have been saved.",
+        });
+
+        router.push("/profile");
+      } catch (error) {
+        toast({
+          title: "Error updating profile",
+          description:
+            error instanceof Error ? error.message : "Failed to update profile",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    },
+    [formData, toast, router]
+  );
+
+  const handleInputChange = useCallback(
+    (field: string, value: string | boolean) => {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+    },
+    []
+  );
+
+  const handleDayToggle = useCallback((day: string) => {
     setFormData((prev) => ({
       ...prev,
       availableDays: prev.availableDays.includes(day)
         ? prev.availableDays.filter((d) => d !== day)
         : [...prev.availableDays, day],
     }));
-  };
+  }, []);
 
-  const handleLocationToggle = (location: string) => {
+  const handleLocationToggle = useCallback((location: string) => {
     setFormData((prev) => ({
       ...prev,
       availableLocations: prev.availableLocations.includes(location)
         ? prev.availableLocations.filter((l) => l !== location)
         : [...prev.availableLocations, location],
     }));
-  };
+  }, []);
 
-  const nextSection = () => {
+  const nextSection = useCallback(() => {
     if (currentSection < sections.length - 1) {
       setCurrentSection(currentSection + 1);
     }
-  };
+  }, [currentSection, sections.length]);
 
-  const prevSection = () => {
+  const prevSection = useCallback(() => {
     if (currentSection > 0) {
       setCurrentSection(currentSection - 1);
     }
-  };
+  }, [currentSection]);
 
   const renderCurrentSection = () => {
     switch (currentSection) {
@@ -346,11 +352,11 @@ export default function EditProfilePage() {
   };
 
   // Handle form changes for SelectField components
-  useEffect(() => {
-    const handleSelectChange = (name: string, value: string) => {
-      setFormData((prev) => ({ ...prev, [name]: value }));
-    };
+  const handleSelectChange = useCallback((name: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  }, []);
 
+  useEffect(() => {
     const handleFormData = (e: CustomEvent) => {
       handleSelectChange(e.detail.name, e.detail.value);
     };
@@ -364,7 +370,7 @@ export default function EditProfilePage() {
         "selectFieldChange",
         handleFormData as EventListener
       );
-  }, []);
+  }, [handleSelectChange]);
 
   return (
     <div className="min-h-screen">
@@ -434,7 +440,9 @@ export default function EditProfilePage() {
                       {index < sections.length - 1 && (
                         <div
                           className={`flex-1 h-1 mx-2 rounded-full transition-all duration-200 ${
-                            index < currentSection ? "bg-green-500 dark:bg-green-600" : "bg-muted dark:bg-muted"
+                            index < currentSection
+                              ? "bg-green-500 dark:bg-green-600"
+                              : "bg-muted dark:bg-muted"
                           }`}
                         />
                       )}
