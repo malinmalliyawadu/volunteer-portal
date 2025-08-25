@@ -1,3 +1,9 @@
+## [0.18.0] - 2025-08-25
+
+### Changes
+- Improve mobile UX for My Shifts page ([#63](https://github.com/malinmalliyawadu/volunteer-portal/pull/63)) by @malinmalliyawadu
+
+
 ## [0.17.0] - 2025-08-25
 
 ### Changes
