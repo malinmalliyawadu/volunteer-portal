@@ -1,3 +1,9 @@
+## [0.19.0] - 2025-08-25
+
+### Changes
+- feat: Campaign Monitor email integration for user migration ([#68](https://github.com/malinmalliyawadu/volunteer-portal/pull/68)) by @malinmalliyawadu
+
+
 ## [0.18.4] - 2025-08-25
 
 ### Changes
