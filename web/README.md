@@ -53,7 +53,7 @@ npm run prisma:seed
 ```
 
 3. **⚙️ Set up environment variables:**
-   Create a `.env.local` file in the root directory with your configuration.
+   Create a `.env.local` file in the root directory. See the [Environment Variables](#-environment-variables) section below for detailed configuration.
 
 4. **🔒 Generate auth secret:**
 
@@ -99,6 +99,55 @@ Open [http://localhost:3000](http://localhost:3000) to see the volunteer portal.
 - 📝 `/src/types/` - TypeScript type definitions
 - 🗄️ `/prisma/` - Database schema and migrations
 - 🖼️ `/public/` - Static assets
+
+## ⚙️ Environment Variables
+
+Create a `.env.local` file in the root directory with the following configuration:
+
+### Required Variables
+
+```bash
+# Database Configuration
+DATABASE_URL="postgresql://postgres:password@localhost:5432/volunteer-portal"
+DIRECT_URL="postgresql://postgres:password@localhost:5432/volunteer-portal"
+
+# Authentication
+NEXTAUTH_SECRET="your-secret-here"
+NEXTAUTH_URL="http://localhost:3000"
+
+# Campaign Monitor (for user migration emails)
+CAMPAIGN_MONITOR_API_KEY="your-campaign-monitor-api-key"
+CAMPAIGN_MONITOR_MIGRATION_EMAIL_ID="your-smart-email-template-id"
+```
+
+### Optional OAuth Providers
+
+```bash
+# Google OAuth
+GOOGLE_CLIENT_ID=""
+GOOGLE_CLIENT_SECRET=""
+
+# Facebook OAuth
+FACEBOOK_CLIENT_ID=""
+FACEBOOK_CLIENT_SECRET=""
+
+# Apple OAuth
+APPLE_CLIENT_ID=""
+APPLE_CLIENT_SECRET=""
+```
+
+### Campaign Monitor Setup
+
+The application uses Campaign Monitor for sending migration invitation emails:
+
+1. **Get API Key**: Sign in to your Campaign Monitor account and navigate to Account Settings > API Keys
+2. **Create Smart Email Template**: Create a transactional email template for migration invites
+3. **Get Template ID**: Copy the Smart Email ID from your template settings
+4. **Configure Variables**: The email template should support these merge variables:
+   - `{firstName}` - User's first name
+   - `{link}` - Migration registration URL
+
+**Note**: Both `CAMPAIGN_MONITOR_API_KEY` and `CAMPAIGN_MONITOR_MIGRATION_EMAIL_ID` are required for the user migration system to work properly.
 
 ## 🤝 Contributing
 

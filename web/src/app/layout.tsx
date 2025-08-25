@@ -4,10 +4,9 @@ import "./globals.css";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
-import { SiteHeader } from "@/components/site-header";
+import { SiteHeaderWrapper } from "@/components/site-header-wrapper";
 import { SiteFooter } from "@/components/site-footer";
-import { ThemeProvider } from "@/components/theme-provider";
-import { MotionConfig } from "@/components/motion-config";
+import { Providers } from "@/components/providers";
 import { Toaster } from "sonner";
 
 const libreFranklin = Libre_Franklin({
@@ -47,13 +46,6 @@ export default async function RootLayout({
     });
   }
 
-  // Use profile name if available, otherwise fall back to session name/email
-  const displayName =
-    userProfile?.name ||
-    (session?.user as { name?: string | null })?.name ||
-    (session?.user as { email?: string | null })?.email ||
-    "Account";
-
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -63,18 +55,8 @@ export default async function RootLayout({
       <body
         className={`${libreFranklin.variable} ${fraunces.variable} antialiased`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <MotionConfig />
-          <SiteHeader
-            session={session}
-            userProfile={userProfile}
-            displayName={displayName}
-          />
+        <Providers>
+          <SiteHeaderWrapper initialUserProfile={userProfile} />
           <main className="min-h-screen">
             <div className="max-w-6xl mx-auto px-4 py-6">
               {children}
@@ -82,7 +64,7 @@ export default async function RootLayout({
           </main>
           <SiteFooter session={session} />
           <Toaster />
-        </ThemeProvider>
+        </Providers>
       </body>
     </html>
   );

@@ -179,16 +179,19 @@ test.describe('Friends System', () => {
     // Navigate to friends page
     await page.goto('/friends');
 
-    // Should start on Friends tab (be more specific about which active element)
-    await expect(page.locator('[data-testid="friends-tab"][data-state="active"]')).toBeVisible();
+    // Should start on Friends tab - check that it exists and is active
+    const friendsTab = page.locator('[data-testid="friends-tab"]');
+    await expect(friendsTab).toBeVisible();
+    await expect(friendsTab).toHaveAttribute('data-state', 'active');
 
     // Click on Requests tab
     await page.click('[data-testid="requests-tab"]');
-    await expect(page.locator('[data-testid="requests-tab"][data-state="active"]')).toBeVisible();
+    const requestsTab = page.locator('[data-testid="requests-tab"]');
+    await expect(requestsTab).toHaveAttribute('data-state', 'active');
 
     // Click back to Friends tab
     await page.click('[data-testid="friends-tab"]');
-    await expect(page.locator('[data-testid="friends-tab"][data-state="active"]')).toBeVisible();
+    await expect(friendsTab).toHaveAttribute('data-state', 'active');
   });
 
   test('should search friends when friends exist', async ({ page }) => {

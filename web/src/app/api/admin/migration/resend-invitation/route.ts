@@ -3,40 +3,47 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
 import { randomBytes } from "crypto";
+import { getEmailService } from "@/lib/email-service";
 
 interface InvitationWebhookData {
   email: string;
   firstName: string;
   lastName: string;
   registrationLink: string;
-  customMessage?: string;
 }
 
 async function sendInvitationWebhook(data: InvitationWebhookData): Promise<boolean> {
-  const webhookUrl = process.env.EMAIL_WEBHOOK_URL;
-  
-  if (!webhookUrl) {
-    console.log(`📧 Would resend invitation email to: ${data.email}`);
-    console.log(`📧 Registration link: ${data.registrationLink}`);
-    return true; // Simulate success for development
-  }
-
   try {
-    const response = await fetch(webhookUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.EMAIL_WEBHOOK_TOKEN || ''}`,
-      },
-      body: JSON.stringify({
-        type: 'migration_invitation_resend',
-        data,
-      }),
+    const emailService = getEmailService();
+    await emailService.sendMigrationInvite({
+      to: data.email,
+      firstName: data.firstName,
+      migrationLink: data.registrationLink
     });
-
-    return response.ok;
+    console.log(`📧 Resent migration invitation email to: ${data.email}`);
+    return true;
   } catch (error) {
-    console.error('Webhook error:', error);
+    console.error('Error resending migration invitation email:', error);
+    // Fallback to webhook if Campaign Monitor fails
+    const webhookUrl = process.env.EMAIL_WEBHOOK_URL;
+    if (webhookUrl) {
+      try {
+        const response = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${process.env.EMAIL_WEBHOOK_TOKEN || ''}`,
+          },
+          body: JSON.stringify({
+            type: 'migration_invitation_resend',
+            data,
+          }),
+        });
+        return response.ok;
+      } catch (webhookError) {
+        console.error('Webhook fallback error:', webhookError);
+      }
+    }
     return false;
   }
 }
@@ -80,7 +87,7 @@ export async function POST(request: NextRequest) {
     // Generate new invitation token (or reuse existing one)
     let invitationToken = user.migrationInvitationToken;
     if (!invitationToken) {
-      invitationToken = randomBytes(32).toString('hex');
+      invitationToken = randomBytes(32).toString('base64url');
     }
 
     const expiresAt = new Date();
@@ -95,8 +102,7 @@ export async function POST(request: NextRequest) {
       email: user.email,
       firstName: user.firstName || "",
       lastName: user.lastName || "",
-      registrationLink,
-      customMessage: "This is a reminder to complete your registration with the new volunteer portal."
+      registrationLink
     };
 
     // Send via webhook

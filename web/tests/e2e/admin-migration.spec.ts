@@ -325,15 +325,12 @@ test.describe('Admin Migration System', () => {
       await expect(page.getByTestId('registration-urls-dialog')).not.toBeVisible();
     });
 
-    test('should show custom message option', async ({ page }) => {
+    test('should send invitations without custom message template', async ({ page }) => {
       // Wait for users to load first
       await expect(page.getByTestId('total-migrated-card')).toBeVisible({ timeout: 10000 });
       
-      // Check custom message textarea
-      await expect(page.getByTestId('custom-message-textarea')).toBeVisible();
-      
-      // Add custom message
-      await page.getByTestId('custom-message-textarea').fill('Welcome to our new volunteer portal!');
+      // Verify custom message textarea is NOT present (removed functionality)
+      await expect(page.getByTestId('custom-message-textarea')).not.toBeVisible();
       
       // Skip if no migrated users exist
       const totalMigratedCard = page.getByTestId('total-migrated-card');
@@ -357,7 +354,7 @@ test.describe('Admin Migration System', () => {
       
       await page.getByTestId('send-invitations-button').click();
       
-      // Verify invitation sent with custom message
+      // Verify invitation sent successfully (using Campaign Monitor templates)
       await expect(page.locator('text=Successfully sent')).toBeVisible({ timeout: 10000 });
     });
   });
