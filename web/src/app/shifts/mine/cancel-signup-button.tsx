@@ -4,14 +4,14 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogTrigger,
+} from "@/components/ui/responsive-dialog";
 
 interface CancelSignupButtonProps {
   shiftId: string;
@@ -51,22 +51,22 @@ export function CancelSignupButton({
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+    <ResponsiveDialog open={open} onOpenChange={setOpen}>
+      <ResponsiveDialogTrigger asChild>
         <Button variant="outline" size="sm" data-testid="cancel-shift-button" className="text-red-600 border-red-200 hover:bg-red-50">
           Cancel Shift Signup
         </Button>
-      </DialogTrigger>
-      <DialogContent data-testid="cancel-shift-dialog">
-        <DialogHeader>
-          <DialogTitle data-testid="cancel-dialog-title">Cancel Shift Signup</DialogTitle>
-          <DialogDescription data-testid="cancel-dialog-description">
+      </ResponsiveDialogTrigger>
+      <ResponsiveDialogContent data-testid="cancel-shift-dialog">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle data-testid="cancel-dialog-title">Cancel Shift Signup</ResponsiveDialogTitle>
+          <ResponsiveDialogDescription data-testid="cancel-dialog-description">
             Are you sure you want to cancel your signup for &quot;{shiftName}
             &quot;? This action cannot be undone, but you may be able to sign up
             again if spots are still available.
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
+        <ResponsiveDialogFooter>
           <Button
             variant="outline"
             onClick={() => setOpen(false)}
@@ -83,8 +83,8 @@ export function CancelSignupButton({
           >
             {isLoading ? "Canceling..." : "Cancel Signup"}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

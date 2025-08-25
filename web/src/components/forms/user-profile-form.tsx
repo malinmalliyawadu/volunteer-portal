@@ -7,13 +7,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SelectField } from "@/components/ui/select-field";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogTrigger,
+} from "@/components/ui/responsive-dialog";
 import { Button } from "@/components/ui/button";
 import { PolicyContent } from "@/components/markdown-content";
 import { ProfileImageUpload } from "@/components/ui/profile-image-upload";
@@ -684,11 +684,11 @@ export function CommunicationStep({
                   <span className="text-sm font-medium">
                     I have read and agree with the *
                   </span>
-                  <Dialog
+                  <ResponsiveDialog
                     open={volunteerAgreementOpen}
                     onOpenChange={setVolunteerAgreementOpen}
                   >
-                    <DialogTrigger asChild>
+                    <ResponsiveDialogTrigger asChild>
                       <Button
                         variant="link"
                         className="p-0 h-auto text-sm font-medium text-primary underline"
@@ -696,17 +696,17 @@ export function CommunicationStep({
                         Volunteer Agreement
                         <ExternalLink className="h-3 w-3 ml-1" />
                       </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                      <DialogHeader>
-                        <DialogTitle>Volunteer Agreement</DialogTitle>
-                        <DialogDescription>
+                    </ResponsiveDialogTrigger>
+                    <ResponsiveDialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                      <ResponsiveDialogHeader>
+                        <ResponsiveDialogTitle>Volunteer Agreement</ResponsiveDialogTitle>
+                        <ResponsiveDialogDescription>
                           Please read the complete volunteer agreement below.
-                        </DialogDescription>
-                      </DialogHeader>
+                        </ResponsiveDialogDescription>
+                      </ResponsiveDialogHeader>
                       <PolicyContent content={volunteerAgreementContent} />
-                    </DialogContent>
-                  </Dialog>
+                    </ResponsiveDialogContent>
+                  </ResponsiveDialog>
                 </div>
               </div>
               <p className="text-xs text-muted-foreground mt-1">
@@ -732,11 +732,11 @@ export function CommunicationStep({
                   <span className="text-sm font-medium">
                     I have read and agree with the *
                   </span>
-                  <Dialog
+                  <ResponsiveDialog
                     open={healthSafetyPolicyOpen}
                     onOpenChange={setHealthSafetyPolicyOpen}
                   >
-                    <DialogTrigger asChild>
+                    <ResponsiveDialogTrigger asChild>
                       <Button
                         variant="link"
                         className="p-0 h-auto text-sm font-medium text-primary underline"
@@ -744,18 +744,18 @@ export function CommunicationStep({
                         Health and Safety Policy
                         <ExternalLink className="h-3 w-3 ml-1" />
                       </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                      <DialogHeader>
-                        <DialogTitle>Health and Safety Policy</DialogTitle>
-                        <DialogDescription>
+                    </ResponsiveDialogTrigger>
+                    <ResponsiveDialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                      <ResponsiveDialogHeader>
+                        <ResponsiveDialogTitle>Health and Safety Policy</ResponsiveDialogTitle>
+                        <ResponsiveDialogDescription>
                           Please read the complete health and safety policy
                           below.
-                        </DialogDescription>
-                      </DialogHeader>
+                        </ResponsiveDialogDescription>
+                      </ResponsiveDialogHeader>
                       <PolicyContent content={healthSafetyPolicyContent} />
-                    </DialogContent>
-                  </Dialog>
+                    </ResponsiveDialogContent>
+                  </ResponsiveDialog>
                 </div>
               </div>
               <p className="text-xs text-muted-foreground mt-1">

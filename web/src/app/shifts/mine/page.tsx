@@ -18,12 +18,12 @@ import { AnimatedStatsGrid } from "@/components/animated-stats-grid";
 import { Button } from "@/components/ui/button";
 import { AvatarList } from "@/components/ui/avatar-list";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogTrigger,
+} from "@/components/ui/responsive-dialog";
 import { CancelSignupButton } from "./cancel-signup-button";
 import { PageHeader } from "@/components/page-header";
 import {
@@ -368,11 +368,11 @@ export default async function MyShiftsPage({
     const isPastShift = shift.shift.end < now;
 
     return (
-      <Dialog>
-        <DialogTrigger asChild>{children}</DialogTrigger>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-3">
+      <ResponsiveDialog>
+        <ResponsiveDialogTrigger asChild>{children}</ResponsiveDialogTrigger>
+        <ResponsiveDialogContent className="max-w-md">
+          <ResponsiveDialogHeader>
+            <ResponsiveDialogTitle className="flex items-center gap-3">
               <div
                 className={`p-2 rounded-xl bg-gradient-to-br ${theme.gradient} shadow-lg flex items-center justify-center text-white text-lg`}
               >
@@ -386,8 +386,8 @@ export default async function MyShiftsPage({
                   {format(shift.shift.start, "EEEE, MMMM d, yyyy")}
                 </div>
               </div>
-            </DialogTitle>
-          </DialogHeader>
+            </ResponsiveDialogTitle>
+          </ResponsiveDialogHeader>
 
           <div className="space-y-4">
             {/* Status */}
@@ -521,8 +521,8 @@ export default async function MyShiftsPage({
               </div>
             )}
           </div>
-        </DialogContent>
-      </Dialog>
+        </ResponsiveDialogContent>
+      </ResponsiveDialog>
     );
   }
 

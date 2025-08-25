@@ -15,12 +15,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from "@/components/ui/responsive-dialog";
 import {
   Mail,
   Send,
@@ -533,21 +533,21 @@ export function UserInvitations() {
       </Card>
 
       {/* Registration URLs Dialog */}
-      <Dialog
+      <ResponsiveDialog
         open={showInvitationDialog}
         onOpenChange={setShowInvitationDialog}
       >
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto" data-testid="registration-urls-dialog">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+        <ResponsiveDialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto" data-testid="registration-urls-dialog">
+          <ResponsiveDialogHeader>
+            <ResponsiveDialogTitle className="flex items-center gap-2">
               <Mail className="h-5 w-5" />
               Registration URLs Generated
-            </DialogTitle>
-            <DialogDescription>
+            </ResponsiveDialogTitle>
+            <ResponsiveDialogDescription>
               Here are the registration URLs for the invited users. You can copy
               individual URLs or all URLs at once.
-            </DialogDescription>
-          </DialogHeader>
+            </ResponsiveDialogDescription>
+          </ResponsiveDialogHeader>
 
           <div className="space-y-4">
             <div className="flex justify-between items-center">
@@ -657,8 +657,8 @@ export function UserInvitations() {
               </AlertDescription>
             </Alert>
           </div>
-        </DialogContent>
-      </Dialog>
+        </ResponsiveDialogContent>
+      </ResponsiveDialog>
     </div>
   );
 }

@@ -3,14 +3,14 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogTrigger,
+} from "@/components/ui/responsive-dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { InfoBox } from "@/components/ui/info-box";
@@ -87,19 +87,19 @@ export function ShiftSignupDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild data-testid="shift-signup-trigger">{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-md" data-testid="shift-signup-dialog">
-        <DialogHeader data-testid="shift-signup-dialog-header">
-          <DialogTitle className="flex items-center gap-2" data-testid="shift-signup-dialog-title">
+    <ResponsiveDialog open={open} onOpenChange={setOpen}>
+      <ResponsiveDialogTrigger asChild data-testid="shift-signup-trigger">{children}</ResponsiveDialogTrigger>
+      <ResponsiveDialogContent className="sm:max-w-md" data-testid="shift-signup-dialog">
+        <ResponsiveDialogHeader data-testid="shift-signup-dialog-header">
+          <ResponsiveDialogTitle className="flex items-center gap-2" data-testid="shift-signup-dialog-title">
             {isWaitlist ? "🎯 Join Waitlist" : "✨ Confirm Signup"}
-          </DialogTitle>
-          <DialogDescription data-testid="shift-signup-dialog-description">
+          </ResponsiveDialogTitle>
+          <ResponsiveDialogDescription data-testid="shift-signup-dialog-description">
             {isWaitlist
               ? "Join the waitlist for this shift. You'll be notified if a spot becomes available."
               : "Please confirm that you want to sign up for this volunteer shift."}
-          </DialogDescription>
-        </DialogHeader>
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
 
         <div className="space-y-4 py-4" data-testid="shift-signup-dialog-content-body">
           {/* Shift Details */}
@@ -162,7 +162,7 @@ export function ShiftSignupDialog({
           </InfoBox>
         </div>
 
-        <DialogFooter className="flex gap-2" data-testid="shift-signup-dialog-footer">
+        <ResponsiveDialogFooter className="flex gap-2" data-testid="shift-signup-dialog-footer">
           <Button
             variant="outline"
             onClick={() => setOpen(false)}
@@ -188,8 +188,8 @@ export function ShiftSignupDialog({
               "✨ Confirm Signup"
             )}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }
