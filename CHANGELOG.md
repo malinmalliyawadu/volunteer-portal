@@ -1,3 +1,9 @@
+## [0.18.2] - 2025-08-25
+
+### Changes
+- Enhance responsive dialog and improve dark mode styling ([#65](https://github.com/malinmalliyawadu/volunteer-portal/pull/65)) by @malinmalliyawadu
+
+
 ## [0.18.1] - 2025-08-25
 
 ### Changes
