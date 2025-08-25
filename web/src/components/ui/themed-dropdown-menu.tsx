@@ -50,7 +50,7 @@ export function ThemedDropdownMenuItem({
   return (
     <DropdownMenuItem
       className={cn(
-        "cursor-pointer flex items-center gap-3 p-3 rounded-lg transition-colors",
+        "cursor-pointer flex items-center gap-2 p-2 rounded-lg transition-colors",
         variant === "default" && "hover:bg-primary/5 dark:hover:bg-emerald-900/30",
         variant === "destructive" && "hover:bg-red-50 dark:hover:bg-red-950/30 text-red-600 dark:text-red-400",
         className
@@ -76,7 +76,7 @@ export function ThemedDropdownMenuIcon({
   return (
     <div
       className={cn(
-        "w-8 h-8 rounded-lg flex items-center justify-center",
+        "w-6 h-6 rounded-md flex items-center justify-center",
         variant === "default" && "bg-primary/10 dark:bg-emerald-800/40",
         variant === "destructive" && "bg-red-100 dark:bg-red-900/40",
         variant === "active" && "bg-primary/10 dark:bg-emerald-800/40",
