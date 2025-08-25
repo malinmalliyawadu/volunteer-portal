@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
 import { randomBytes } from "crypto";
+import { getEmailService } from "@/lib/email-service";
 
 interface InvitationWebhookData {
   email: string;
@@ -13,30 +14,37 @@ interface InvitationWebhookData {
 }
 
 async function sendInvitationWebhook(data: InvitationWebhookData): Promise<boolean> {
-  const webhookUrl = process.env.EMAIL_WEBHOOK_URL;
-  
-  if (!webhookUrl) {
-    console.log(`📧 Would send invitation email to: ${data.email}`);
-    console.log(`📧 Registration link: ${data.registrationLink}`);
-    return true; // Simulate success for development
-  }
-
   try {
-    const response = await fetch(webhookUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.EMAIL_WEBHOOK_TOKEN || ''}`,
-      },
-      body: JSON.stringify({
-        type: 'migration_invitation',
-        data,
-      }),
+    const emailService = getEmailService();
+    await emailService.sendMigrationInvite({
+      to: data.email,
+      firstName: data.firstName,
+      migrationLink: data.registrationLink
     });
-
-    return response.ok;
+    console.log(`📧 Sent migration invitation email to: ${data.email}`);
+    return true;
   } catch (error) {
-    console.error('Webhook error:', error);
+    console.error('Error sending migration invitation email:', error);
+    // Fallback to webhook if Campaign Monitor fails
+    const webhookUrl = process.env.EMAIL_WEBHOOK_URL;
+    if (webhookUrl) {
+      try {
+        const response = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${process.env.EMAIL_WEBHOOK_TOKEN || ''}`,
+          },
+          body: JSON.stringify({
+            type: 'migration_invitation',
+            data,
+          }),
+        });
+        return response.ok;
+      } catch (webhookError) {
+        console.error('Webhook fallback error:', webhookError);
+      }
+    }
     return false;
   }
 }
