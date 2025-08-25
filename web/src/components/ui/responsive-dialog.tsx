@@ -2,6 +2,8 @@
 
 import * as React from "react";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import { cn } from "@/lib/utils";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Dialog,
   DialogClose,
@@ -132,17 +134,21 @@ const ResponsiveDialogContent = ({
 
   if (isDesktop) {
     return (
-      <DialogContent className={className} {...props}>
-        {children}
+      <DialogContent className={cn("max-h-[85vh] overflow-hidden flex flex-col p-0", className)} {...props}>
+        <ScrollArea className="h-full max-h-[calc(85vh-2rem)] p-6">
+          {children}
+        </ScrollArea>
       </DialogContent>
     );
   }
 
   return (
     <DrawerContent className={className} {...props}>
-      <div className="px-4">
-        {children}
-      </div>
+      <ScrollArea className="h-full max-h-[calc(80vh-5rem)]">
+        <div className="px-4 pb-8">
+          {children}
+        </div>
+      </ScrollArea>
     </DrawerContent>
   );
 };
@@ -168,24 +174,41 @@ const ResponsiveDialogTitle = ({
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
   if (isDesktop) {
-    return <DialogTitle className={className} {...props}>{children}</DialogTitle>;
+    return (
+      <DialogTitle className={className} {...props}>
+        {children}
+      </DialogTitle>
+    );
   }
 
-  return <DrawerTitle className={className} {...props}>{children}</DrawerTitle>;
+  return (
+    <DrawerTitle className={className} {...props}>
+      {children}
+    </DrawerTitle>
+  );
 };
 
 const ResponsiveDialogDescription = ({
   className,
   children,
   ...props
-}: ResponsiveDialogDescriptionProps & React.HTMLAttributes<HTMLParagraphElement>) => {
+}: ResponsiveDialogDescriptionProps &
+  React.HTMLAttributes<HTMLParagraphElement>) => {
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
   if (isDesktop) {
-    return <DialogDescription className={className} {...props}>{children}</DialogDescription>;
+    return (
+      <DialogDescription className={className} {...props}>
+        {children}
+      </DialogDescription>
+    );
   }
 
-  return <DrawerDescription className={className} {...props}>{children}</DrawerDescription>;
+  return (
+    <DrawerDescription className={className} {...props}>
+      {children}
+    </DrawerDescription>
+  );
 };
 
 const ResponsiveDialogFooter = ({
