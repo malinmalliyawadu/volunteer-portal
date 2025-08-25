@@ -73,6 +73,27 @@ export function NotificationBell({ userId }: NotificationBellProps) {
     }
   }, [isOpen]);
 
+  // Prevent body scroll when dropdown is open (mobile only)
+  useEffect(() => {
+    const handleBodyScroll = () => {
+      if (isOpen && window.innerWidth < 640) { // Only on mobile (sm breakpoint)
+        document.body.style.overflow = 'hidden';
+      } else {
+        document.body.style.overflow = 'unset';
+      }
+    };
+
+    handleBodyScroll();
+
+    // Listen for resize events to handle orientation changes
+    window.addEventListener('resize', handleBodyScroll);
+
+    return () => {
+      document.body.style.overflow = 'unset';
+      window.removeEventListener('resize', handleBodyScroll);
+    };
+  }, [isOpen]);
+
   return (
     <div className="relative" ref={containerRef}>
       <Button
@@ -99,19 +120,30 @@ export function NotificationBell({ userId }: NotificationBellProps) {
 
       <AnimatePresence>
         {isOpen && (
-          <motion.div
-            className="fixed sm:absolute right-2 sm:right-0 top-14 sm:top-full left-2 sm:left-auto mt-0 sm:mt-2 w-auto sm:w-96 max-h-96 overflow-hidden z-[100] bg-background border border-border rounded-lg shadow-lg"
-            variants={dropdownVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            data-testid="notification-dropdown"
-          >
-            <NotificationList
-              onNotificationsRead={handleNotificationsRead}
-              onClose={() => setIsOpen(false)}
+          <>
+            {/* Mobile backdrop */}
+            <motion.div
+              className="fixed inset-0 bg-black/20 z-[90] sm:hidden"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsOpen(false)}
             />
-          </motion.div>
+            
+            <motion.div
+              className="fixed sm:absolute right-2 sm:right-0 top-14 sm:top-full left-2 sm:left-auto mt-0 sm:mt-2 w-auto sm:w-96 max-h-96 overflow-hidden z-[100] bg-background border border-border rounded-lg shadow-lg"
+              variants={dropdownVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              data-testid="notification-dropdown"
+            >
+              <NotificationList
+                onNotificationsRead={handleNotificationsRead}
+                onClose={() => setIsOpen(false)}
+              />
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </div>
