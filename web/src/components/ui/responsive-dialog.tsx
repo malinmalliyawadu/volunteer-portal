@@ -163,27 +163,29 @@ const ResponsiveDialogHeader = ({
 const ResponsiveDialogTitle = ({
   className,
   children,
-}: ResponsiveDialogTitleProps) => {
+  ...props
+}: ResponsiveDialogTitleProps & React.HTMLAttributes<HTMLHeadingElement>) => {
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
   if (isDesktop) {
-    return <DialogTitle className={className}>{children}</DialogTitle>;
+    return <DialogTitle className={className} {...props}>{children}</DialogTitle>;
   }
 
-  return <DrawerTitle className={className}>{children}</DrawerTitle>;
+  return <DrawerTitle className={className} {...props}>{children}</DrawerTitle>;
 };
 
 const ResponsiveDialogDescription = ({
   className,
   children,
-}: ResponsiveDialogDescriptionProps) => {
+  ...props
+}: ResponsiveDialogDescriptionProps & React.HTMLAttributes<HTMLParagraphElement>) => {
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
   if (isDesktop) {
-    return <DialogDescription className={className}>{children}</DialogDescription>;
+    return <DialogDescription className={className} {...props}>{children}</DialogDescription>;
   }
 
-  return <DrawerDescription className={className}>{children}</DrawerDescription>;
+  return <DrawerDescription className={className} {...props}>{children}</DrawerDescription>;
 };
 
 const ResponsiveDialogFooter = ({
