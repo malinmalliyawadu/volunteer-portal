@@ -1,3 +1,9 @@
+## [0.18.1] - 2025-08-25
+
+### Changes
+- Fix theme toggle menu active state and improve design ([#64](https://github.com/malinmalliyawadu/volunteer-portal/pull/64)) by @malinmalliyawadu
+
+
 ## [0.18.0] - 2025-08-25
 
 ### Changes
