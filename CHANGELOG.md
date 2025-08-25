@@ -1,3 +1,9 @@
+## [0.18.3] - 2025-08-25
+
+### Changes
+- Improve drawer and responsive dialog scroll handling ([#66](https://github.com/malinmalliyawadu/volunteer-portal/pull/66)) by @malinmalliyawadu
+
+
 ## [0.18.2] - 2025-08-25
 
 ### Changes
