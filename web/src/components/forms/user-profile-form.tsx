@@ -4,6 +4,7 @@ import React from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { SelectField } from "@/components/ui/select-field";
 import {
   Dialog,
@@ -122,7 +123,10 @@ export function AccountStep({
   return (
     <div className="space-y-6" data-testid="account-step">
       {!hideEmail && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6" data-testid="welcome-message">
+        <div
+          className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6"
+          data-testid="welcome-message"
+        >
           <div className="flex items-start space-x-3">
             <UserPlus className="h-5 w-5 text-blue-600 mt-0.5" />
             <div>
@@ -130,8 +134,8 @@ export function AccountStep({
                 Welcome to Everybody Eats!
               </h4>
               <p className="text-sm text-blue-700">
-                Create your volunteer account to start making a difference in your
-                community.
+                Create your volunteer account to start making a difference in
+                your community.
               </p>
             </div>
           </div>
@@ -172,7 +176,10 @@ export function AccountStep({
           required
           data-testid="password-input"
         />
-        <p className="text-xs text-muted-foreground" data-testid="password-hint">
+        <p
+          className="text-xs text-muted-foreground"
+          data-testid="password-hint"
+        >
           Password must be at least 6 characters long
         </p>
       </div>
@@ -442,6 +449,7 @@ export function MedicalInfoStep({
         </Label>
         <Textarea
           id="medicalConditions"
+          data-testid="medical-conditions-textarea"
           value={formData.medicalConditions}
           onChange={(e) => onInputChange("medicalConditions", e.target.value)}
           placeholder="Please list any medical conditions, allergies, or dietary restrictions that may be relevant to your volunteer work. Leave blank if none."
@@ -456,29 +464,24 @@ export function MedicalInfoStep({
       </div>
 
       <div className="space-y-4">
-        <div className="flex items-start space-x-3 p-4 rounded-lg border border-border bg-muted/20">
-          <input
-            type="checkbox"
-            id="willingToProvideReference"
-            checked={formData.willingToProvideReference}
-            onChange={(e) =>
-              onInputChange("willingToProvideReference", e.target.checked)
-            }
-            disabled={loading}
-            className="h-4 w-4 mt-1"
-          />
-          <div>
-            <Label
-              htmlFor="willingToProvideReference"
-              className="text-sm font-medium"
-            >
-              I am willing to provide references if requested
-            </Label>
-            <p className="text-xs text-muted-foreground mt-1">
-              References may be requested for certain volunteer positions or
-              activities.
-            </p>
-          </div>
+        <div className="p-4 rounded-lg border border-border bg-muted/20">
+          <Label className="flex items-start space-x-3 text-sm font-medium cursor-pointer">
+            <Checkbox
+              checked={formData.willingToProvideReference}
+              onCheckedChange={(checked) =>
+                onInputChange("willingToProvideReference", checked)
+              }
+              disabled={loading}
+              className="mt-1"
+            />
+            <div>
+              <span>I am willing to provide references if requested</span>
+              <p className="text-xs text-muted-foreground mt-1 font-normal">
+                References may be requested for certain volunteer positions or
+                activities.
+              </p>
+            </div>
+          </Label>
         </div>
       </div>
 
@@ -531,27 +534,23 @@ export function AvailabilityStep({
           {daysOfWeek.map((day) => (
             <div
               key={day.value}
-              className={`flex items-center space-x-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+              className={`p-3 rounded-lg border cursor-pointer transition-colors ${
                 formData.availableDays.includes(day.value)
                   ? "bg-primary/10 border-primary"
                   : "bg-background border-border hover:bg-muted/50"
               }`}
-              onClick={() => !loading && onDayToggle(day.value)}
             >
-              <input
-                type="checkbox"
-                id={`day-${day.value}`}
-                checked={formData.availableDays.includes(day.value)}
-                onChange={() => onDayToggle(day.value)}
-                disabled={loading}
-                className="h-4 w-4"
-                data-testid={`available-day-${day.value}`}
-              />
               <Label
-                htmlFor={`day-${day.value}`}
-                className="text-sm font-medium cursor-pointer"
+                data-testid={`available-day-${day.value}-label`}
+                className="flex items-center space-x-3 text-sm font-medium cursor-pointer"
               >
-                {day.label}
+                <Checkbox
+                  checked={formData.availableDays.includes(day.value)}
+                  onCheckedChange={() => onDayToggle(day.value)}
+                  disabled={loading}
+                  data-testid={`available-day-${day.value}`}
+                />
+                <span>{day.label}</span>
               </Label>
             </div>
           ))}
@@ -572,27 +571,23 @@ export function AvailabilityStep({
           {locationOptions.map((location) => (
             <div
               key={location.value}
-              className={`flex items-center space-x-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+              className={`p-3 rounded-lg border cursor-pointer transition-colors ${
                 formData.availableLocations.includes(location.value)
                   ? "bg-primary/10 border-primary"
                   : "bg-background border-border hover:bg-muted/50"
               }`}
-              onClick={() => !loading && onLocationToggle(location.value)}
             >
-              <input
-                type="checkbox"
-                id={`location-${location.value}`}
-                checked={formData.availableLocations.includes(location.value)}
-                onChange={() => onLocationToggle(location.value)}
-                disabled={loading}
-                className="h-4 w-4"
-                data-testid={`available-location-${location.value.toLowerCase()}`}
-              />
               <Label
-                htmlFor={`location-${location.value}`}
-                className="text-sm font-medium cursor-pointer"
+                data-testid={`available-location-${location.value.toLowerCase()}-label`}
+                className="flex items-center space-x-3 text-sm font-medium cursor-pointer"
               >
-                {location.label}
+                <Checkbox
+                  checked={formData.availableLocations.includes(location.value)}
+                  onCheckedChange={() => onLocationToggle(location.value)}
+                  disabled={loading}
+                  data-testid={`available-location-${location.value.toLowerCase()}`}
+                />
+                <span>{location.label}</span>
               </Label>
             </div>
           ))}
@@ -629,28 +624,23 @@ export function CommunicationStep({
   return (
     <div className="space-y-6">
       <div className="space-y-4">
-        <div className="flex items-start space-x-3 p-4 rounded-lg border border-border bg-muted/20">
-          <input
-            type="checkbox"
-            id="emailNewsletterSubscription"
-            checked={formData.emailNewsletterSubscription}
-            onChange={(e) =>
-              onInputChange("emailNewsletterSubscription", e.target.checked)
-            }
-            disabled={loading}
-            className="h-4 w-4 mt-1"
-          />
-          <div>
-            <Label
-              htmlFor="emailNewsletterSubscription"
-              className="text-sm font-medium"
-            >
-              Subscribe to email newsletter
-            </Label>
-            <p className="text-xs text-muted-foreground mt-1">
-              Stay updated with news, events, and volunteer opportunities.
-            </p>
-          </div>
+        <div className="p-4 rounded-lg border border-border bg-muted/20">
+          <Label className="flex items-start space-x-3 text-sm font-medium cursor-pointer">
+            <Checkbox
+              checked={formData.emailNewsletterSubscription}
+              onCheckedChange={(checked) =>
+                onInputChange("emailNewsletterSubscription", checked)
+              }
+              disabled={loading}
+              className="mt-1"
+            />
+            <div>
+              <span>Subscribe to email newsletter</span>
+              <p className="text-xs text-muted-foreground mt-1 font-normal">
+                Stay updated with news, events, and volunteer opportunities.
+              </p>
+            </div>
+          </Label>
         </div>
       </div>
 
@@ -678,49 +668,46 @@ export function CommunicationStep({
           Required Agreements
         </h3>
         <div className="space-y-4">
-          <div className="flex items-start space-x-3 p-4 rounded-lg border border-border bg-muted/20">
-            <input
-              type="checkbox"
-              id="volunteerAgreementAccepted"
-              data-testid="volunteer-agreement-checkbox"
-              checked={formData.volunteerAgreementAccepted}
-              onChange={(e) =>
-                onInputChange("volunteerAgreementAccepted", e.target.checked)
-              }
-              disabled={loading}
-              className="h-4 w-4 mt-1"
-            />
-            <div className="flex-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                <Label
-                  htmlFor="volunteerAgreementAccepted"
-                  className="text-sm font-medium cursor-pointer"
-                >
-                  I have read and agree with the *
-                </Label>
-                <Dialog
-                  open={volunteerAgreementOpen}
-                  onOpenChange={setVolunteerAgreementOpen}
-                >
-                  <DialogTrigger asChild>
-                    <Button
-                      variant="link"
-                      className="p-0 h-auto text-sm font-medium text-primary underline"
-                    >
-                      Volunteer Agreement
-                      <ExternalLink className="h-3 w-3 ml-1" />
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                    <DialogHeader>
-                      <DialogTitle>Volunteer Agreement</DialogTitle>
-                      <DialogDescription>
-                        Please read the complete volunteer agreement below.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <PolicyContent content={volunteerAgreementContent} />
-                  </DialogContent>
-                </Dialog>
+          <div className="p-4 rounded-lg border border-border bg-muted/20">
+            <div className="flex items-start space-x-3">
+              <Checkbox
+                data-testid="volunteer-agreement-checkbox"
+                checked={formData.volunteerAgreementAccepted}
+                onCheckedChange={(checked) =>
+                  onInputChange("volunteerAgreementAccepted", checked)
+                }
+                disabled={loading}
+                className="mt-1"
+              />
+              <div className="flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-sm font-medium">
+                    I have read and agree with the *
+                  </span>
+                  <Dialog
+                    open={volunteerAgreementOpen}
+                    onOpenChange={setVolunteerAgreementOpen}
+                  >
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="link"
+                        className="p-0 h-auto text-sm font-medium text-primary underline"
+                      >
+                        Volunteer Agreement
+                        <ExternalLink className="h-3 w-3 ml-1" />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle>Volunteer Agreement</DialogTitle>
+                        <DialogDescription>
+                          Please read the complete volunteer agreement below.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <PolicyContent content={volunteerAgreementContent} />
+                    </DialogContent>
+                  </Dialog>
+                </div>
               </div>
               <p className="text-xs text-muted-foreground mt-1">
                 This agreement outlines your responsibilities and expectations
@@ -729,49 +716,47 @@ export function CommunicationStep({
             </div>
           </div>
 
-          <div className="flex items-start space-x-3 p-4 rounded-lg border border-border bg-muted/20">
-            <input
-              type="checkbox"
-              id="healthSafetyPolicyAccepted"
-              data-testid="health-safety-policy-checkbox"
-              checked={formData.healthSafetyPolicyAccepted}
-              onChange={(e) =>
-                onInputChange("healthSafetyPolicyAccepted", e.target.checked)
-              }
-              disabled={loading}
-              className="h-4 w-4 mt-1"
-            />
-            <div className="flex-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                <Label
-                  htmlFor="healthSafetyPolicyAccepted"
-                  className="text-sm font-medium cursor-pointer"
-                >
-                  I have read and agree with the *
-                </Label>
-                <Dialog
-                  open={healthSafetyPolicyOpen}
-                  onOpenChange={setHealthSafetyPolicyOpen}
-                >
-                  <DialogTrigger asChild>
-                    <Button
-                      variant="link"
-                      className="p-0 h-auto text-sm font-medium text-primary underline"
-                    >
-                      Health and Safety Policy
-                      <ExternalLink className="h-3 w-3 ml-1" />
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                    <DialogHeader>
-                      <DialogTitle>Health and Safety Policy</DialogTitle>
-                      <DialogDescription>
-                        Please read the complete health and safety policy below.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <PolicyContent content={healthSafetyPolicyContent} />
-                  </DialogContent>
-                </Dialog>
+          <div className="p-4 rounded-lg border border-border bg-muted/20">
+            <div className="flex items-start space-x-3">
+              <Checkbox
+                data-testid="health-safety-policy-checkbox"
+                checked={formData.healthSafetyPolicyAccepted}
+                onCheckedChange={(checked) =>
+                  onInputChange("healthSafetyPolicyAccepted", checked)
+                }
+                disabled={loading}
+                className="mt-1"
+              />
+              <div className="flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-sm font-medium">
+                    I have read and agree with the *
+                  </span>
+                  <Dialog
+                    open={healthSafetyPolicyOpen}
+                    onOpenChange={setHealthSafetyPolicyOpen}
+                  >
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="link"
+                        className="p-0 h-auto text-sm font-medium text-primary underline"
+                      >
+                        Health and Safety Policy
+                        <ExternalLink className="h-3 w-3 ml-1" />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle>Health and Safety Policy</DialogTitle>
+                        <DialogDescription>
+                          Please read the complete health and safety policy
+                          below.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <PolicyContent content={healthSafetyPolicyContent} />
+                    </DialogContent>
+                  </Dialog>
+                </div>
               </div>
               <p className="text-xs text-muted-foreground mt-1">
                 This policy ensures the safety and well-being of all volunteers

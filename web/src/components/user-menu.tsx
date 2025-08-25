@@ -39,7 +39,7 @@ export function UserMenu({
           size="sm"
           className="relative text-white/90 hover:text-white hover:bg-white/10 transition-colors duration-200 rounded-lg px-2 py-1"
         >
-          <div className="flex items-center gap-2">
+          <div data-testid="user-menu" className="flex items-center gap-2">
             <Avatar className="w-7 h-7 border border-white/20">
               <AvatarImage
                 src={profilePhotoUrl || undefined}
@@ -185,6 +185,7 @@ export function UserMenu({
         <DropdownMenuSeparator className="my-2" />
 
         <DropdownMenuItem
+          data-testid="sign-out-button"
           onClick={() => signOut({ callbackUrl: "/" })}
           className="cursor-pointer flex items-center gap-3 p-3 rounded-lg hover:bg-red-50 focus:bg-red-50 text-red-600 focus:text-red-600 transition-colors"
         >

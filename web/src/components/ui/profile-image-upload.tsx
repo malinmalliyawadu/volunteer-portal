@@ -297,7 +297,7 @@ export function ProfileImageUpload({
           </Button>
 
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-2xl" data-testid="crop-dialog">
               <DialogHeader>
                 <DialogTitle>Crop Your Profile Photo</DialogTitle>
                 <DialogDescription>
@@ -344,6 +344,7 @@ export function ProfileImageUpload({
                     onClick={handleCropComplete}
                     disabled={!completedCrop || isProcessing}
                     className="gap-2"
+                    data-testid="apply-crop-button"
                   >
                     <Upload className="h-4 w-4" />
                     {isProcessing ? "Processing..." : "Apply Crop"}

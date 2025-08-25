@@ -610,6 +610,7 @@ export function MigrationRegistrationForm({
                 onClick={prevStep}
                 disabled={currentStep === 0 || loading}
                 className="flex items-center gap-2"
+                data-testid="previous-step-button"
               >
                 <ArrowLeft className="h-4 w-4" />
                 Previous
@@ -619,6 +620,7 @@ export function MigrationRegistrationForm({
                 type="submit"
                 disabled={loading}
                 className="flex items-center gap-2"
+                data-testid="next-step-button"
               >
                 {loading ? (
                   <>
