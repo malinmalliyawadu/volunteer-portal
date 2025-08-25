@@ -2,6 +2,8 @@
 
 import * as React from "react";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import { cn } from "@/lib/utils";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Dialog,
   DialogClose,
@@ -132,15 +134,21 @@ const ResponsiveDialogContent = ({
 
   if (isDesktop) {
     return (
-      <DialogContent className={className} {...props}>
-        {children}
+      <DialogContent className={cn("max-h-[85vh] overflow-hidden flex flex-col p-0", className)} {...props}>
+        <ScrollArea className="h-full max-h-[calc(85vh-2rem)] p-6">
+          {children}
+        </ScrollArea>
       </DialogContent>
     );
   }
 
   return (
     <DrawerContent className={className} {...props}>
-      <div className="px-4 pb-8">{children}</div>
+      <ScrollArea className="h-full max-h-[calc(80vh-5rem)]">
+        <div className="px-4 pb-8">
+          {children}
+        </div>
+      </ScrollArea>
     </DrawerContent>
   );
 };
