@@ -62,8 +62,8 @@ export async function POST(request: NextRequest) {
     
     const now = new Date();
     if (!token || !tokenExpiry || tokenExpiry < now) {
-      // Generate new token (URL-safe random string)
-      token = randomBytes(32).toString('base64url');
+      // Generate new token
+      token = randomBytes(32).toString('hex');
       tokenExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days from now
 
       // Update user with new token
