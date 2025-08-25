@@ -140,9 +140,7 @@ const ResponsiveDialogContent = ({
 
   return (
     <DrawerContent className={className} {...props}>
-      <div className="px-4">
-        {children}
-      </div>
+      <div className="px-4 pb-8">{children}</div>
     </DrawerContent>
   );
 };
@@ -168,24 +166,41 @@ const ResponsiveDialogTitle = ({
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
   if (isDesktop) {
-    return <DialogTitle className={className} {...props}>{children}</DialogTitle>;
+    return (
+      <DialogTitle className={className} {...props}>
+        {children}
+      </DialogTitle>
+    );
   }
 
-  return <DrawerTitle className={className} {...props}>{children}</DrawerTitle>;
+  return (
+    <DrawerTitle className={className} {...props}>
+      {children}
+    </DrawerTitle>
+  );
 };
 
 const ResponsiveDialogDescription = ({
   className,
   children,
   ...props
-}: ResponsiveDialogDescriptionProps & React.HTMLAttributes<HTMLParagraphElement>) => {
+}: ResponsiveDialogDescriptionProps &
+  React.HTMLAttributes<HTMLParagraphElement>) => {
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
   if (isDesktop) {
-    return <DialogDescription className={className} {...props}>{children}</DialogDescription>;
+    return (
+      <DialogDescription className={className} {...props}>
+        {children}
+      </DialogDescription>
+    );
   }
 
-  return <DrawerDescription className={className} {...props}>{children}</DrawerDescription>;
+  return (
+    <DrawerDescription className={className} {...props}>
+      {children}
+    </DrawerDescription>
+  );
 };
 
 const ResponsiveDialogFooter = ({

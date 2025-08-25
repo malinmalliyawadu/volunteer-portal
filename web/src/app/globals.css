@@ -70,8 +70,8 @@
   --card-foreground: oklch(0.985 0.001 106.423);
   --popover: oklch(0.15 0.002 240);
   --popover-foreground: oklch(0.985 0.001 106.423);
-  --primary: oklch(0.923 0.003 48.717);
-  --primary-foreground: oklch(0.216 0.006 56.043);
+  --primary: oklch(0.248 0.067 157.1);
+  --primary-foreground: oklch(0.985 0.001 106.423);
   --secondary: oklch(0.268 0.007 34.298);
   --secondary-foreground: oklch(0.985 0.001 106.423);
   --muted: oklch(0.12 0.005 34.298);
@@ -214,6 +214,16 @@ h6 {
 .btn-outline:hover {
   background: var(--ee-primary);
   color: white;
+}
+
+/* Dark mode specific styling for better contrast */
+.dark .btn-outline {
+  border-color: #4ade80; /* light green for better contrast */
+  color: #4ade80;
+}
+.dark .btn-outline:hover {
+  background: #4ade80;
+  color: #0f1114; /* dark background color for contrast */
 }
 
 .header-link {

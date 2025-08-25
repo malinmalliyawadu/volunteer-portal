@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,10 +12,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import AchievementsCard from "@/components/achievements-card";
 import { PageHeader } from "@/components/page-header";
 import { PageContainer } from "@/components/page-container";
-import {
-  ContentGrid,
-  BottomGrid,
-} from "@/components/dashboard-animated";
+import { ContentGrid, BottomGrid } from "@/components/dashboard-animated";
 import { MotionContentCard } from "@/components/motion-content-card";
 import { CheckCircle, Clock, Calendar, TrendingUp } from "lucide-react";
 import { AnimatedStatsGrid } from "@/components/animated-stats-grid";
@@ -464,43 +462,57 @@ export default async function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-primary dark:text-emerald-400 mb-2">
-                  {totalHours * 15}
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Estimated meals helped prepare
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Based on ~15 meals per volunteer hour
-                </p>
-              </div>
-
-              <div className="text-center">
-                <div className="text-3xl font-bold text-accent dark:text-yellow-400 mb-2">
-                  {totalVolunteers}
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Active volunteers in our community
-                </p>
-                {favoriteShiftType && (
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Your specialty: {favoriteShiftType}
+            <div className="space-y-6">
+              {/* Stats Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-primary dark:text-emerald-400 mb-2">
+                    {totalHours * 15}
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Estimated meals helped prepare
                   </p>
-                )}
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Based on ~15 meals per volunteer hour
+                  </p>
+                </div>
+
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-accent dark:text-yellow-400 mb-2">
+                    {totalVolunteers}
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Active volunteers in our community
+                  </p>
+                  {favoriteShiftType && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Your specialty: {favoriteShiftType}
+                    </p>
+                  )}
+                </div>
+
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">
+                    {Math.round(totalHours * 2.5 * 10) / 10}kg
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Estimated food waste prevented
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Based on rescue food operations
+                  </p>
+                </div>
               </div>
 
-              <div className="text-center">
-                <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">
-                  {Math.round(totalHours * 2.5 * 10) / 10}kg
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Estimated food waste prevented
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Based on rescue food operations
-                </p>
+              {/* Illustration */}
+              <div className="flex justify-center">
+                <Image
+                  src="/illustration.png"
+                  alt="Community impact illustration"
+                  width={200}
+                  height={160}
+                  className="w-auto h-32 object-contain"
+                />
               </div>
             </div>
           </CardContent>
