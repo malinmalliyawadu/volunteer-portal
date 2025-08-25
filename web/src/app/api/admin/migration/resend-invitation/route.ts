@@ -102,8 +102,7 @@ export async function POST(request: NextRequest) {
       email: user.email,
       firstName: user.firstName || "",
       lastName: user.lastName || "",
-      registrationLink,
-      customMessage: "This is a reminder to complete your registration with the new volunteer portal."
+      registrationLink
     };
 
     // Send via webhook
