@@ -503,17 +503,6 @@ export default async function DashboardPage() {
                   </p>
                 </div>
               </div>
-
-              {/* Illustration */}
-              <div className="flex justify-center">
-                <Image
-                  src="/illustration.png"
-                  alt="Community impact illustration"
-                  width={200}
-                  height={160}
-                  className="w-auto h-32 object-contain"
-                />
-              </div>
             </div>
           </CardContent>
         </MotionContentCard>
