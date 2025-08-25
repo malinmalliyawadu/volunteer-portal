@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from "@/components/ui/responsive-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -74,17 +74,17 @@ export function SendFriendRequestForm({
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent
+    <ResponsiveDialog open={open} onOpenChange={handleClose}>
+      <ResponsiveDialogContent
         className="sm:max-w-md"
         data-testid="send-friend-request-dialog"
       >
-        <DialogHeader>
-          <DialogTitle className="flex items-center space-x-2">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle className="flex items-center space-x-2">
             <UserPlus className="h-5 w-5" />
             <span>Send Friend Request</span>
-          </DialogTitle>
-        </DialogHeader>
+          </ResponsiveDialogTitle>
+        </ResponsiveDialogHeader>
 
         <form
           id="friend-request-form"
@@ -175,7 +175,7 @@ export function SendFriendRequestForm({
             </Button>
           </div>
         </form>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

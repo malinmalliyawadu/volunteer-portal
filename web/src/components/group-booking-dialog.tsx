@@ -3,13 +3,13 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from "@/components/ui/responsive-dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -217,17 +217,17 @@ export function GroupBookingDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto" data-testid="group-booking-dialog">
-        <DialogHeader data-testid="group-booking-dialog-header">
-          <DialogTitle className="flex items-center gap-2" data-testid="group-booking-dialog-title">
+    <ResponsiveDialog open={open} onOpenChange={handleOpenChange}>
+      <ResponsiveDialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto" data-testid="group-booking-dialog">
+        <ResponsiveDialogHeader data-testid="group-booking-dialog-header">
+          <ResponsiveDialogTitle className="flex items-center gap-2" data-testid="group-booking-dialog-title">
             <Users className="h-5 w-5 text-primary" />
             Create Group Booking
-          </DialogTitle>
-          <DialogDescription data-testid="group-booking-dialog-description">
+          </ResponsiveDialogTitle>
+          <ResponsiveDialogDescription data-testid="group-booking-dialog-description">
             Create a group booking and invite friends, family, or colleagues to volunteer together.
-          </DialogDescription>
-        </DialogHeader>
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
 
         <div className="space-y-6 py-4" data-testid="group-booking-dialog-content">
           {/* Location and Date Header */}
@@ -599,7 +599,7 @@ export function GroupBookingDialog({
           </InfoBox>
         </div>
 
-        <DialogFooter className="flex gap-2" data-testid="group-booking-dialog-footer">
+        <ResponsiveDialogFooter className="flex gap-2" data-testid="group-booking-dialog-footer">
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
@@ -626,8 +626,8 @@ export function GroupBookingDialog({
               </span>
             )}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogTrigger,
+} from "@/components/ui/responsive-dialog";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangleIcon, UserMinusIcon } from "lucide-react";
@@ -39,8 +39,8 @@ export function RemoveFriendButton({ friendId }: RemoveFriendButtonProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+    <ResponsiveDialog open={open} onOpenChange={setOpen}>
+      <ResponsiveDialogTrigger asChild>
         <Button
           variant="ghost"
           size="sm"
@@ -49,17 +49,17 @@ export function RemoveFriendButton({ friendId }: RemoveFriendButtonProps) {
         >
           Remove
         </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-md" data-testid="remove-friend-dialog">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-red-600" data-testid="remove-friend-dialog-title">
+      </ResponsiveDialogTrigger>
+      <ResponsiveDialogContent className="sm:max-w-md" data-testid="remove-friend-dialog">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle className="flex items-center gap-2 text-red-600" data-testid="remove-friend-dialog-title">
             <UserMinusIcon className="h-5 w-5" />
             Remove Friend
-          </DialogTitle>
-          <DialogDescription>
+          </ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>
             Are you sure you want to remove this person from your friends list?
-          </DialogDescription>
-        </DialogHeader>
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
 
         <div className="space-y-4">
           <Alert>
@@ -80,7 +80,7 @@ export function RemoveFriendButton({ friendId }: RemoveFriendButtonProps) {
           </Alert>
         </div>
 
-        <DialogFooter className="flex-col sm:flex-row gap-2">
+        <ResponsiveDialogFooter className="flex-col sm:flex-row gap-2">
           <Button
             variant="outline"
             onClick={() => setOpen(false)}
@@ -109,8 +109,8 @@ export function RemoveFriendButton({ friendId }: RemoveFriendButtonProps) {
               </>
             )}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

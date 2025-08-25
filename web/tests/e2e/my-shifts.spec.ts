@@ -1,6 +1,37 @@
 import { test, expect } from "./base";
 import type { Page } from "@playwright/test";
 
+// Helper function to get responsive element by viewport
+async function getResponsiveElement(page: Page, mobileTestId: string, desktopTestId: string) {
+  const viewport = page.viewportSize();
+  const isMobile = viewport && viewport.width < 768;
+  
+  if (isMobile) {
+    return page.getByTestId(mobileTestId);
+  } else {
+    return page.getByTestId(desktopTestId);
+  }
+}
+
+// Helper function to get calendar title regardless of viewport
+async function getCalendarTitle(page: Page) {
+  return getResponsiveElement(page, "mobile-calendar-title", "calendar-title");
+}
+
+// Helper function to get navigation buttons
+async function getNavigationButton(page: Page, buttonType: "prev" | "next" | "today") {
+  const viewport = page.viewportSize();
+  const isMobile = viewport && viewport.width < 768;
+  
+  if (buttonType === "today") {
+    const prefix = isMobile ? "mobile-" : "";
+    return page.getByTestId(`${prefix}today-button`);
+  } else {
+    const prefix = isMobile ? "mobile-" : "";
+    return page.getByTestId(`${prefix}${buttonType}-month-button`);
+  }
+}
+
 // Helper function to login as volunteer
 async function loginAsVolunteer(page: Page) {
   try {
@@ -95,7 +126,7 @@ test.describe("My Shifts Calendar Page", () => {
       await expect(calendarView).toBeVisible();
 
       // Check calendar title shows current month/year
-      const calendarTitle = page.getByTestId("calendar-title");
+      const calendarTitle = await getCalendarTitle(page);
       await expect(calendarTitle).toBeVisible();
       
       const titleText = await calendarTitle.textContent();
@@ -111,10 +142,10 @@ test.describe("My Shifts Calendar Page", () => {
       await expect(navigation).toBeVisible();
 
       // Check navigation buttons
-      const prevButton = page.getByTestId("prev-month-button");
+      const prevButton = await getNavigationButton(page, "prev");
       await expect(prevButton).toBeVisible();
 
-      const nextButton = page.getByTestId("next-month-button");
+      const nextButton = await getNavigationButton(page, "next");
       await expect(nextButton).toBeVisible();
     });
 
@@ -130,20 +161,31 @@ test.describe("My Shifts Calendar Page", () => {
         await expect(dayHeader).toBeVisible();
       }
 
-      // Check that calendar has day cells (should be at least 28 days in any month)
-      const dayCells = page.locator(".min-h-\\[120px\\]");
-      const dayCount = await dayCells.count();
-      expect(dayCount).toBeGreaterThanOrEqual(28);
+      // Check that calendar has day cells or mobile list items
+      const viewport = page.viewportSize();
+      const isMobile = viewport && viewport.width < 768;
+      
+      if (isMobile) {
+        // On mobile, look for mobile list view
+        const mobileListView = page.getByTestId("mobile-list-view");
+        await expect(mobileListView).toBeVisible();
+      } else {
+        // On desktop, look for calendar grid cells
+        const dayCells = page.locator(".min-h-\\[140px\\]");
+        const dayCount = await dayCells.count();
+        expect(dayCount).toBeGreaterThanOrEqual(28);
+      }
     });
   });
 
   test.describe("Calendar Navigation", () => {
     test("should navigate to previous month", async ({ page }) => {
       // Get current month from title
-      const initialTitle = await page.getByTestId("calendar-title").textContent();
+      const calendarTitle = await getCalendarTitle(page);
+      const initialTitle = await calendarTitle.textContent();
       
       // Click previous month button
-      const prevButton = page.getByTestId("prev-month-button");
+      const prevButton = await getNavigationButton(page, "prev");
       await prevButton.click();
       await page.waitForLoadState("load");
 
@@ -152,16 +194,18 @@ test.describe("My Shifts Calendar Page", () => {
       await page.waitForTimeout(500); // Give time for any URL updates
 
       // Check month title has changed
-      const newTitle = await page.getByTestId("calendar-title").textContent();
+      const newCalendarTitle = await getCalendarTitle(page);
+      const newTitle = await newCalendarTitle.textContent();
       expect(newTitle).not.toBe(initialTitle);
     });
 
     test("should navigate to next month", async ({ page }) => {
       // Get current month from title
-      const initialTitle = await page.getByTestId("calendar-title").textContent();
+      const calendarTitle = await getCalendarTitle(page);
+      const initialTitle = await calendarTitle.textContent();
       
       // Click next month button
-      const nextButton = page.getByTestId("next-month-button");
+      const nextButton = await getNavigationButton(page, "next");
       await nextButton.click();
       await page.waitForLoadState("load");
 
@@ -170,18 +214,19 @@ test.describe("My Shifts Calendar Page", () => {
       await page.waitForTimeout(500); // Give time for any URL updates
 
       // Check month title has changed
-      const newTitle = await page.getByTestId("calendar-title").textContent();
+      const newCalendarTitle = await getCalendarTitle(page);
+      const newTitle = await newCalendarTitle.textContent();
       expect(newTitle).not.toBe(initialTitle);
     });
 
     test("should show 'Today' button when not viewing current month", async ({ page }) => {
       // Navigate to next month
-      const nextButton = page.getByTestId("next-month-button");
+      const nextButton = await getNavigationButton(page, "next");
       await nextButton.click();
       await page.waitForLoadState("load");
 
       // Today button should now be visible
-      const todayButton = page.getByTestId("today-button");
+      const todayButton = await getNavigationButton(page, "today");
       await expect(todayButton).toBeVisible();
 
       // Click today button to return to current month
@@ -459,28 +504,30 @@ test.describe("My Shifts Calendar Page", () => {
       const statsGrid = page.getByTestId("stats-overview");
       await expect(statsGrid).toBeVisible();
 
-      // Check calendar is still accessible
+      // On mobile, calendar grid should be hidden and mobile view should be visible
       const calendarGrid = page.getByTestId("calendar-grid");
-      await expect(calendarGrid).toBeVisible();
+      await expect(calendarGrid).toBeHidden();
+      
+      const mobileListView = page.getByTestId("mobile-list-view");
+      await expect(mobileListView).toBeVisible();
 
       // Check navigation buttons are accessible
-      const prevButton = page.getByTestId("prev-month-button");
+      const prevButton = await getNavigationButton(page, "prev");
       await expect(prevButton).toBeVisible();
     });
 
-    test("should show abbreviated day headers on mobile", async ({ page }) => {
+    test("should show mobile list view on mobile", async ({ page }) => {
       await page.setViewportSize({ width: 375, height: 667 });
       await page.reload();
       await page.waitForLoadState("load");
 
-      // Mobile should show abbreviated day names (S, M, T, W, T, F, S)
-      const abbreviatedDays = page.locator(".sm\\:hidden");
-      const count = await abbreviatedDays.count();
+      // Mobile should show list view instead of calendar grid
+      const mobileListView = page.getByTestId("mobile-list-view");
+      await expect(mobileListView).toBeVisible();
       
-      if (count > 0) {
-        const firstAbbrev = await abbreviatedDays.first().textContent();
-        expect(firstAbbrev?.length).toBeLessThanOrEqual(1);
-      }
+      // Calendar grid should be hidden on mobile
+      const calendarGrid = page.getByTestId("calendar-grid");
+      await expect(calendarGrid).toBeHidden();
     });
   });
 
@@ -529,17 +576,17 @@ test.describe("My Shifts Calendar Page", () => {
       await expect(mainHeading).toBeVisible();
 
       // Check calendar heading
-      const calendarHeading = page.getByTestId("calendar-title");
+      const calendarHeading = await getCalendarTitle(page);
       await expect(calendarHeading).toBeVisible();
     });
 
     test("should have accessible navigation buttons", async ({ page }) => {
       // Navigation buttons should be proper links
-      const prevButton = page.getByTestId("prev-month-button");
+      const prevButton = await getNavigationButton(page, "prev");
       await expect(prevButton).toBeVisible();
       await expect(prevButton).toHaveAttribute("href");
 
-      const nextButton = page.getByTestId("next-month-button");
+      const nextButton = await getNavigationButton(page, "next");
       await expect(nextButton).toBeVisible();
       await expect(nextButton).toHaveAttribute("href");
 
@@ -548,7 +595,7 @@ test.describe("My Shifts Calendar Page", () => {
       await nextButton.click();
       await page.waitForLoadState("load");
       
-      const todayButton = page.getByTestId("today-button");
+      const todayButton = await getNavigationButton(page, "today");
       if (await todayButton.isVisible()) {
         await expect(todayButton).toHaveAttribute("href");
       }

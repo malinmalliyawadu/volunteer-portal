@@ -10,12 +10,12 @@ import ReactCrop, {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from "@/components/ui/responsive-dialog";
 import { Camera, Upload, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -296,15 +296,15 @@ export function ProfileImageUpload({
             {currentImage ? "Change Photo" : "Upload Photo"}
           </Button>
 
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogContent className="max-w-2xl" data-testid="crop-dialog">
-              <DialogHeader>
-                <DialogTitle>Crop Your Profile Photo</DialogTitle>
-                <DialogDescription>
+          <ResponsiveDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <ResponsiveDialogContent className="max-w-2xl" data-testid="crop-dialog">
+              <ResponsiveDialogHeader>
+                <ResponsiveDialogTitle>Crop Your Profile Photo</ResponsiveDialogTitle>
+                <ResponsiveDialogDescription>
                   Adjust the crop area to frame your photo perfectly. The image
                   will be resized to a square format.
-                </DialogDescription>
-              </DialogHeader>
+                </ResponsiveDialogDescription>
+              </ResponsiveDialogHeader>
 
               <div className="space-y-4">
                 {imageSrc && (
@@ -351,8 +351,8 @@ export function ProfileImageUpload({
                   </Button>
                 </div>
               </div>
-            </DialogContent>
-          </Dialog>
+            </ResponsiveDialogContent>
+          </ResponsiveDialog>
 
           {/* Hidden file input */}
           <input

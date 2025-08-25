@@ -13,7 +13,7 @@ import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Upload, File, AlertCircle, CheckCircle, X, Play, AlertTriangle } from "lucide-react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { ResponsiveDialog, ResponsiveDialogContent, ResponsiveDialogDescription, ResponsiveDialogHeader, ResponsiveDialogTitle, ResponsiveDialogFooter } from "@/components/ui/responsive-dialog";
 import { toast } from "sonner";
 
 interface ValidationResult {
@@ -575,18 +575,18 @@ export function CSVUploadForm() {
       )}
 
       {/* Confirmation Dialog */}
-      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <DialogContent className="max-w-2xl" data-testid="confirmation-dialog">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2" data-testid="confirmation-title">
+      <ResponsiveDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <ResponsiveDialogContent className="max-w-2xl" data-testid="confirmation-dialog">
+          <ResponsiveDialogHeader>
+            <ResponsiveDialogTitle className="flex items-center gap-2" data-testid="confirmation-title">
               <AlertTriangle className="h-5 w-5 text-amber-600" />
               Confirm Migration with Errors
-            </DialogTitle>
-            <DialogDescription data-testid="confirmation-description">
+            </ResponsiveDialogTitle>
+            <ResponsiveDialogDescription data-testid="confirmation-description">
               There are validation errors in your data. The CSV file contains {validationResult?.invalidRecords} validation errors. 
               These records will be skipped during migration.
-            </DialogDescription>
-          </DialogHeader>
+            </ResponsiveDialogDescription>
+          </ResponsiveDialogHeader>
           
           <div className="space-y-4">
             <Alert>
@@ -628,7 +628,7 @@ export function CSVUploadForm() {
             )}
           </div>
 
-          <DialogFooter>
+          <ResponsiveDialogFooter>
             <Button 
               variant="outline" 
               onClick={() => setShowConfirmDialog(false)}
@@ -654,9 +654,9 @@ export function CSVUploadForm() {
                 </>
               )}
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </ResponsiveDialogFooter>
+        </ResponsiveDialogContent>
+      </ResponsiveDialog>
     </div>
   );
 }
