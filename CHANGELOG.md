@@ -1,3 +1,9 @@
+## [0.17.0] - 2025-08-25
+
+### Changes
+- feat: implement comprehensive user migration system ([#62](https://github.com/malinmalliyawadu/volunteer-portal/pull/62)) by @malinmalliyawadu
+
+
 ## [0.16.0] - 2025-08-20
 
 ### Changes
