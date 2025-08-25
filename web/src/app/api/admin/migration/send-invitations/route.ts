@@ -96,8 +96,8 @@ export async function POST(request: NextRequest) {
 
     for (const user of users) {
       try {
-        // Generate invitation token
-        const invitationToken = randomBytes(32).toString('hex');
+        // Generate invitation token (URL-safe)
+        const invitationToken = randomBytes(32).toString('base64url');
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + 7); // 7 days expiry
 

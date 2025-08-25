@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
     // Generate new invitation token (or reuse existing one)
     let invitationToken = user.migrationInvitationToken;
     if (!invitationToken) {
-      invitationToken = randomBytes(32).toString('hex');
+      invitationToken = randomBytes(32).toString('base64url');
     }
 
     const expiresAt = new Date();
