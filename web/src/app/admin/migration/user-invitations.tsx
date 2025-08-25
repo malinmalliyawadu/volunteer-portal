@@ -11,7 +11,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -73,7 +72,6 @@ export function UserInvitations() {
   const [filterStatus, setFilterStatus] = useState<
     "all" | "pending" | "invited" | "expired" | "completed"
   >("all");
-  const [customMessage, setCustomMessage] = useState("");
   const [showInvitationDialog, setShowInvitationDialog] = useState(false);
   const [invitationResults, setInvitationResults] = useState<
     InvitationResult[]
@@ -156,7 +154,6 @@ export function UserInvitations() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userIds: Array.from(selectedUsers),
-          customMessage: customMessage.trim() || undefined,
         }),
       });
 
@@ -311,40 +308,6 @@ export function UserInvitations() {
         </Card>
       </div>
 
-      {/* Email Template */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Email Template</CardTitle>
-          <CardDescription>
-            Customize the invitation message sent to migrated users. Use{" "}
-            {"{firstName}"} and {"{registrationLink}"} as placeholders.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <label className="text-sm font-medium">
-              Custom Message (optional)
-            </label>
-            <Textarea
-              placeholder="Add a personal message to the default template..."
-              value={customMessage}
-              onChange={(e) => setCustomMessage(e.target.value)}
-              rows={4}
-              className="mt-1"
-              data-testid="custom-message-textarea"
-            />
-          </div>
-
-          <Alert>
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              <strong>Default template includes:</strong> Welcome message,
-              registration link, instructions for setting up password and
-              profile, and contact information.
-            </AlertDescription>
-          </Alert>
-        </CardContent>
-      </Card>
 
       {/* User Management */}
       <Card>

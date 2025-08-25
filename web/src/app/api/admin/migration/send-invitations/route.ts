@@ -10,7 +10,6 @@ interface InvitationWebhookData {
   firstName: string;
   lastName: string;
   registrationLink: string;
-  customMessage?: string;
 }
 
 async function sendInvitationWebhook(data: InvitationWebhookData): Promise<boolean> {
@@ -57,7 +56,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
-    const { userIds, customMessage } = await request.json();
+    const { userIds } = await request.json();
 
     if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
       return NextResponse.json({ error: "No users selected" }, { status: 400 });
@@ -111,8 +110,7 @@ export async function POST(request: NextRequest) {
           email: user.email,
           firstName: user.firstName || "",
           lastName: user.lastName || "",
-          registrationLink,
-          customMessage
+          registrationLink
         };
 
         // Send via webhook

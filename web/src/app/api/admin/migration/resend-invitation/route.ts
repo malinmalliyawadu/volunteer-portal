@@ -10,7 +10,6 @@ interface InvitationWebhookData {
   firstName: string;
   lastName: string;
   registrationLink: string;
-  customMessage?: string;
 }
 
 async function sendInvitationWebhook(data: InvitationWebhookData): Promise<boolean> {
