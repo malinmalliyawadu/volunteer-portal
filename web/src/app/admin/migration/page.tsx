@@ -4,6 +4,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Upload, Users, Mail, CheckCircle } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { PageContainer } from "@/components/page-container";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth-options";
+import { redirect } from "next/navigation";
 import { CSVUploadForm } from "./csv-upload-form";
 import { MigrationStatus } from "./migration-status";
 import { UserInvitations } from "./user-invitations";
@@ -14,7 +17,17 @@ export const metadata: Metadata = {
   description: "Migrate users from legacy volunteer portal",
 };
 
-export default function MigrationPage() {
+export default async function MigrationPage() {
+  // Check authentication and admin role
+  const session = await getServerSession(authOptions);
+  const role = (session?.user as { role?: "ADMIN" | "VOLUNTEER" } | undefined)?.role;
+
+  if (!session?.user) {
+    redirect("/login?callbackUrl=/admin/migration");
+  }
+  if (role !== "ADMIN") {
+    redirect("/dashboard");
+  }
   return (
     <PageContainer>
       <PageHeader
