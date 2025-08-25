@@ -1,3 +1,9 @@
+## [0.18.4] - 2025-08-25
+
+### Changes
+- feat: integrate PostHog for analytics and ingestion ([#67](https://github.com/malinmalliyawadu/volunteer-portal/pull/67)) by @malinmalliyawadu
+
+
 ## [0.18.3] - 2025-08-25
 
 ### Changes
