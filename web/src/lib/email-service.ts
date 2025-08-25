@@ -1,4 +1,4 @@
-import createsend from 'createsend-node';
+import createsend from "createsend-node";
 
 interface EmailData {
   firstName: string;
@@ -14,7 +14,10 @@ interface SendEmailParams {
 
 interface CampaignMonitorAPI {
   transactional: {
-    sendSmartEmail: (details: unknown, callback: (err: Error | null, res: unknown) => void) => void;
+    sendSmartEmail: (
+      details: unknown,
+      callback: (err: Error | null, res: unknown) => void
+    ) => void;
   };
 }
 
@@ -24,39 +27,43 @@ class EmailService {
 
   constructor() {
     const apiKey = process.env.CAMPAIGN_MONITOR_API_KEY;
-    
+
     if (!apiKey) {
-      throw new Error('CAMPAIGN_MONITOR_API_KEY is not configured');
+      throw new Error("CAMPAIGN_MONITOR_API_KEY is not configured");
     }
 
     const auth = { apiKey };
     this.api = new createsend(auth) as CampaignMonitorAPI;
-    
+
     // Smart email ID for migration invites
     const smartEmailId = process.env.CAMPAIGN_MONITOR_MIGRATION_EMAIL_ID;
     if (!smartEmailId) {
-      throw new Error('CAMPAIGN_MONITOR_MIGRATION_EMAIL_ID is not configured');
+      throw new Error("CAMPAIGN_MONITOR_MIGRATION_EMAIL_ID is not configured");
     }
     this.smartEmailID = smartEmailId;
   }
 
-  async sendMigrationInvite({ to, firstName, migrationLink }: SendEmailParams): Promise<void> {
+  async sendMigrationInvite({
+    to,
+    firstName,
+    migrationLink,
+  }: SendEmailParams): Promise<void> {
     const details = {
       smartEmailID: this.smartEmailID,
       to: `${firstName} <${to}>`,
       data: {
         firstName,
-        link: migrationLink
-      } as EmailData
+        link: migrationLink,
+      } as EmailData,
     };
 
     return new Promise<void>((resolve, reject) => {
-      this.api.transactional.sendSmartEmail(details, (err: Error | null, res: unknown) => {
+      this.api.transactional.sendSmartEmail(details, (err: Error | null) => {
         if (err) {
-          console.error('Error sending migration invite email:', err);
+          console.error("Error sending migration invite email:", err);
           reject(err);
         } else {
-          console.log('Migration invite email sent successfully to:', to);
+          console.log("Migration invite email sent successfully to:", to);
           resolve();
         }
       });

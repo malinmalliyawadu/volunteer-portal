@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/themed-dropdown-menu";
 
 export function ThemeToggle() {
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
 
   // Avoid hydration mismatch
@@ -50,13 +50,19 @@ export function ThemeToggle() {
         </Button>
       </ThemedDropdownMenuTrigger>
       <ThemedDropdownMenuContent align="end" className="w-40 p-1">
-        <ThemedDropdownMenuItem 
+        <ThemedDropdownMenuItem
           onClick={() => setTheme("light")}
-          className={theme === "light" ? "bg-primary/10 dark:bg-emerald-900/50" : ""}
+          className={
+            theme === "light" ? "bg-primary/10 dark:bg-emerald-900/50" : ""
+          }
         >
           <ThemedDropdownMenuIcon
             variant={theme === "light" ? "active" : "default"}
-            className={theme === "light" ? "bg-primary dark:bg-emerald-700" : "bg-gray-100 dark:bg-emerald-900/40"}
+            className={
+              theme === "light"
+                ? "bg-primary dark:bg-emerald-700"
+                : "bg-gray-100 dark:bg-emerald-900/40"
+            }
           >
             <Sun
               className={`h-3.5 w-3.5 ${
@@ -66,16 +72,30 @@ export function ThemeToggle() {
               }`}
             />
           </ThemedDropdownMenuIcon>
-          <span className={`text-sm font-medium ${theme === "light" ? "text-primary dark:text-emerald-300" : "dark:text-gray-100"}`}>Light</span>
+          <span
+            className={`text-sm font-medium ${
+              theme === "light"
+                ? "text-primary dark:text-emerald-300"
+                : "dark:text-gray-100"
+            }`}
+          >
+            Light
+          </span>
         </ThemedDropdownMenuItem>
-        
-        <ThemedDropdownMenuItem 
+
+        <ThemedDropdownMenuItem
           onClick={() => setTheme("dark")}
-          className={theme === "dark" ? "bg-primary/10 dark:bg-emerald-900/50" : ""}
+          className={
+            theme === "dark" ? "bg-primary/10 dark:bg-emerald-900/50" : ""
+          }
         >
           <ThemedDropdownMenuIcon
             variant={theme === "dark" ? "active" : "default"}
-            className={theme === "dark" ? "bg-primary dark:bg-emerald-700" : "bg-gray-100 dark:bg-emerald-900/40"}
+            className={
+              theme === "dark"
+                ? "bg-primary dark:bg-emerald-700"
+                : "bg-gray-100 dark:bg-emerald-900/40"
+            }
           >
             <Moon
               className={`h-3.5 w-3.5 ${
@@ -85,16 +105,30 @@ export function ThemeToggle() {
               }`}
             />
           </ThemedDropdownMenuIcon>
-          <span className={`text-sm font-medium ${theme === "dark" ? "text-primary dark:text-emerald-300" : "dark:text-gray-100"}`}>Dark</span>
+          <span
+            className={`text-sm font-medium ${
+              theme === "dark"
+                ? "text-primary dark:text-emerald-300"
+                : "dark:text-gray-100"
+            }`}
+          >
+            Dark
+          </span>
         </ThemedDropdownMenuItem>
-        
-        <ThemedDropdownMenuItem 
+
+        <ThemedDropdownMenuItem
           onClick={() => setTheme("system")}
-          className={theme === "system" ? "bg-primary/10 dark:bg-emerald-900/50" : ""}
+          className={
+            theme === "system" ? "bg-primary/10 dark:bg-emerald-900/50" : ""
+          }
         >
           <ThemedDropdownMenuIcon
             variant={theme === "system" ? "active" : "default"}
-            className={theme === "system" ? "bg-primary dark:bg-emerald-700" : "bg-gray-100 dark:bg-emerald-900/40"}
+            className={
+              theme === "system"
+                ? "bg-primary dark:bg-emerald-700"
+                : "bg-gray-100 dark:bg-emerald-900/40"
+            }
           >
             <Monitor
               className={`h-3.5 w-3.5 ${
@@ -104,7 +138,15 @@ export function ThemeToggle() {
               }`}
             />
           </ThemedDropdownMenuIcon>
-          <span className={`text-sm font-medium ${theme === "system" ? "text-primary dark:text-emerald-300" : "dark:text-gray-100"}`}>System</span>
+          <span
+            className={`text-sm font-medium ${
+              theme === "system"
+                ? "text-primary dark:text-emerald-300"
+                : "dark:text-gray-100"
+            }`}
+          >
+            System
+          </span>
         </ThemedDropdownMenuItem>
       </ThemedDropdownMenuContent>
     </ThemedDropdownMenu>
