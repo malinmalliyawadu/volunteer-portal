@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth-options';
 import { getEmailService } from '@/lib/email-service';
 import { prisma } from '@/lib/prisma';
+import { randomBytes } from 'crypto';
 
 export async function POST(request: NextRequest) {
   try {
@@ -62,7 +63,7 @@ export async function POST(request: NextRequest) {
     const now = new Date();
     if (!token || !tokenExpiry || tokenExpiry < now) {
       // Generate new token (URL-safe random string)
-      token = Buffer.from(crypto.getRandomValues(new Uint8Array(32))).toString('base64url');
+      token = randomBytes(32).toString('base64url');
       tokenExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days from now
 
       // Update user with new token

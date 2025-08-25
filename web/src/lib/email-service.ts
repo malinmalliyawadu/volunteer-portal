@@ -33,7 +33,10 @@ class EmailService {
     this.api = new createsend(auth) as CampaignMonitorAPI;
     
     // Smart email ID for migration invites
-    this.smartEmailID = process.env.CAMPAIGN_MONITOR_MIGRATION_EMAIL_ID || 'f227bb2b-79d7-41fa-9717-5902d53b8838';
+    this.smartEmailID = process.env.CAMPAIGN_MONITOR_MIGRATION_EMAIL_ID;
+    if (!this.smartEmailID) {
+      throw new Error('CAMPAIGN_MONITOR_MIGRATION_EMAIL_ID is not configured');
+    }
   }
 
   async sendMigrationInvite({ to, firstName, migrationLink }: SendEmailParams): Promise<void> {
