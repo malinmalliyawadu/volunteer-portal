@@ -226,6 +226,7 @@ export function PersonalInfoStep({
           </Label>
           <Input
             id="firstName"
+            data-testid="first-name-input"
             value={formData.firstName}
             onChange={(e) => onInputChange("firstName", e.target.value)}
             placeholder="Your first name"
@@ -240,6 +241,7 @@ export function PersonalInfoStep({
           </Label>
           <Input
             id="lastName"
+            data-testid="last-name-input"
             value={formData.lastName}
             onChange={(e) => onInputChange("lastName", e.target.value)}
             placeholder="Your last name"
@@ -273,6 +275,7 @@ export function PersonalInfoStep({
         </Label>
         <Input
           id="phone"
+          data-testid="phone-input"
           type="tel"
           value={formData.phone}
           onChange={(e) => onInputChange("phone", e.target.value)}
@@ -367,6 +370,7 @@ export function EmergencyContactStep({
         </Label>
         <Input
           id="emergencyContactName"
+          data-testid="emergency-contact-name-input"
           value={formData.emergencyContactName}
           onChange={(e) =>
             onInputChange("emergencyContactName", e.target.value)
@@ -386,6 +390,7 @@ export function EmergencyContactStep({
         </Label>
         <Input
           id="emergencyContactRelationship"
+          data-testid="emergency-contact-relationship-input"
           value={formData.emergencyContactRelationship}
           onChange={(e) =>
             onInputChange("emergencyContactRelationship", e.target.value)
@@ -402,6 +407,7 @@ export function EmergencyContactStep({
         </Label>
         <Input
           id="emergencyContactPhone"
+          data-testid="emergency-contact-phone-input"
           type="tel"
           value={formData.emergencyContactPhone}
           onChange={(e) =>
@@ -676,6 +682,7 @@ export function CommunicationStep({
             <input
               type="checkbox"
               id="volunteerAgreementAccepted"
+              data-testid="volunteer-agreement-checkbox"
               checked={formData.volunteerAgreementAccepted}
               onChange={(e) =>
                 onInputChange("volunteerAgreementAccepted", e.target.checked)
@@ -726,6 +733,7 @@ export function CommunicationStep({
             <input
               type="checkbox"
               id="healthSafetyPolicyAccepted"
+              data-testid="health-safety-policy-checkbox"
               checked={formData.healthSafetyPolicyAccepted}
               onChange={(e) =>
                 onInputChange("healthSafetyPolicyAccepted", e.target.checked)

@@ -236,7 +236,7 @@ export function ProfileImageUpload({
   }, []);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3" data-testid="profile-image-upload">
       <Label className="text-sm font-medium">Profile Photo</Label>
 
       <div className="flex items-center gap-4">

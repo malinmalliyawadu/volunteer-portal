@@ -264,15 +264,8 @@ export function MigrationRegistrationForm({
           return false;
         }
         break;
-      case 3: // Photo upload
-        if (!formData.profilePhotoUrl) {
-          toast({
-            title: "Profile photo required",
-            description: "Please upload a profile photo to continue",
-            variant: "destructive",
-          });
-          return false;
-        }
+      case 3: // Photo upload - now optional
+        // Photo upload is optional, user can skip
         break;
       case 4: // Account setup
         if (!formData.password || !formData.confirmPassword) {
@@ -453,6 +446,7 @@ export function MigrationRegistrationForm({
               <Camera className="h-4 w-4" />
               <AlertDescription>
                 Please upload a profile photo. This helps other volunteers recognize you during shifts.
+                You can skip this step and add a photo later if needed.
               </AlertDescription>
             </Alert>
             <div className="flex justify-center">
@@ -463,6 +457,18 @@ export function MigrationRegistrationForm({
                 size="lg"
                 fallbackText={`${formData.firstName} ${formData.lastName}`.trim()}
               />
+            </div>
+            <div className="flex justify-center">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setCurrentStep(currentStep + 1)}
+                disabled={loading}
+                data-testid="skip-photo-button"
+                className="text-muted-foreground hover:text-foreground"
+              >
+                Skip for now
+              </Button>
             </div>
           </div>
         );
@@ -525,12 +531,12 @@ export function MigrationRegistrationForm({
   }, []);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8" data-testid="migration-registration-form">
       {/* Progress Indicator */}
       <div className="bg-card rounded-xl shadow-sm border border-border p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold">Migration Progress</h2>
-          <Badge variant="outline" className="text-xs">
+          <Badge variant="outline" className="text-xs" data-testid="step-indicator">
             Step {currentStep + 1} of {steps.length}
           </Badge>
         </div>
@@ -573,7 +579,7 @@ export function MigrationRegistrationForm({
         </div>
 
         <div className="text-center">
-          <h3 className="font-medium text-foreground">
+          <h3 className="font-medium text-foreground" data-testid="step-title">
             {steps[currentStep].title}
           </h3>
           <p className="text-sm text-muted-foreground">
@@ -585,7 +591,7 @@ export function MigrationRegistrationForm({
       {/* Form Content */}
       <MotionCard className="shadow-lg border-0 bg-card/80 backdrop-blur-sm">
         <CardHeader className="pb-6">
-          <CardTitle className="flex items-center gap-3 text-xl">
+          <CardTitle className="flex items-center gap-3 text-xl" data-testid="step-card-title">
             {React.createElement(steps[currentStep].icon, {
               className: "h-6 w-6",
             })}

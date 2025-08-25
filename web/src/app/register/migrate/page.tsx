@@ -94,7 +94,7 @@ export default async function MigrationRegistrationPage({ searchParams }: PagePr
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2" data-testid="no-token-title">
               <AlertCircle className="h-5 w-5 text-amber-600" />
               Invalid Registration Link
             </CardTitle>
@@ -122,7 +122,7 @@ export default async function MigrationRegistrationPage({ searchParams }: PagePr
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2" data-testid="error-title">
               <AlertCircle className="h-5 w-5 text-red-600" />
               Invalid or Expired Link
             </CardTitle>
@@ -133,7 +133,7 @@ export default async function MigrationRegistrationPage({ searchParams }: PagePr
           <CardContent>
             <Alert>
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
+              <AlertDescription data-testid="error-description">
                 This registration link may have:
                 <ul className="list-disc list-inside mt-2 space-y-1">
                   <li>Expired (links are valid for 7 days)</li>
