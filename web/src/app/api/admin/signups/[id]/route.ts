@@ -47,7 +47,13 @@ export async function PATCH(req: Request) {
     });
 
     if (!signup) {
-      return NextResponse.json({ error: "Signup not found" }, { status: 404 });
+      console.error(`Signup not found: signupId=${signupId}`);
+      
+      return NextResponse.json({ 
+        error: "Signup not found", 
+        signupId,
+        debug: "The signup may have been deleted, canceled, or the ID is incorrect. Please refresh the page to see the current status."
+      }, { status: 404 });
     }
 
     if (signup.status !== "PENDING") {
