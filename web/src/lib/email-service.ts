@@ -21,8 +21,8 @@ interface ShiftCancellationEmailData {
   shiftTime: string;
   location: string;
   cancellationTime: string;
-  remainingVolunteers: number;
-  shiftCapacity: number;
+  remainingVolunteers: string;
+  shiftCapacity: string;
 }
 
 interface SendShiftCancellationParams {

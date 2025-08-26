@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Edit, Bell, BellOff } from "lucide-react";
+import { Trash2, Bell, BellOff } from "lucide-react";
 import {
   Table,
   TableBody,

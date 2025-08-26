@@ -6,7 +6,8 @@ import { authOptions } from "@/lib/auth-options";
 // GET /api/admin/restaurant-managers/[id] - Get specific restaurant manager
 export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
-  if (session?.user?.role !== "ADMIN") {
+  const role = (session?.user as { role?: "ADMIN" | "VOLUNTEER" } | undefined)?.role;
+  if (role !== "ADMIN") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 
@@ -48,7 +49,8 @@ export async function GET(req: Request) {
 // PUT /api/admin/restaurant-managers/[id] - Update restaurant manager
 export async function PUT(req: Request) {
   const session = await getServerSession(authOptions);
-  if (session?.user?.role !== "ADMIN") {
+  const role = (session?.user as { role?: "ADMIN" | "VOLUNTEER" } | undefined)?.role;
+  if (role !== "ADMIN") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 
@@ -103,7 +105,8 @@ export async function PUT(req: Request) {
 // DELETE /api/admin/restaurant-managers/[id] - Remove restaurant manager assignment
 export async function DELETE(req: Request) {
   const session = await getServerSession(authOptions);
-  if (session?.user?.role !== "ADMIN") {
+  const role = (session?.user as { role?: "ADMIN" | "VOLUNTEER" } | undefined)?.role;
+  if (role !== "ADMIN") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 

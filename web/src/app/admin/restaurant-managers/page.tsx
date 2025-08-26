@@ -8,9 +8,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 export default async function RestaurantManagersPage() {
   const session = await getServerSession(authOptions);
-  
-  if (!session?.user || session.user.role !== "ADMIN") {
-    redirect("/login");
+  const role = (session?.user as { role?: "ADMIN" | "VOLUNTEER" } | undefined)?.role;
+
+  if (!session?.user) {
+    redirect("/login?callbackUrl=/admin/restaurant-managers");
+  }
+  if (role !== "ADMIN") {
+    redirect("/dashboard");
   }
 
   return (
