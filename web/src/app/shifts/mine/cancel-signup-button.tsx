@@ -53,7 +53,7 @@ export function CancelSignupButton({
           const errorData = JSON.parse(responseText);
           errorMessage = errorData.error || errorMessage;
           errorDetails = errorData.details || "";
-        } catch (parseError) {
+        } catch {
           console.error("[CANCEL] Response is not valid JSON:", responseText);
           errorMessage = `Failed to cancel signup (Status: ${response.status})`;
         }

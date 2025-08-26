@@ -203,7 +203,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     // Update the signup status to CANCELED
     // Track cancellation details only if canceling from CONFIRMED status
     console.log(`[DELETE] Updating signup ${existingSignup.id} to CANCELED`);
-    const updateData: any = { status: "CANCELED" };
+    const updateData: { status: "CANCELED"; canceledAt?: Date; previousStatus?: string } = { status: "CANCELED" };
     
     // Only track cancellation details for CONFIRMED cancellations
     if (existingSignup.status === "CONFIRMED") {

@@ -6,14 +6,14 @@ import { Badge } from "@/components/ui/badge";
 
 interface SignupActionsWrapperProps {
   signupId: string;
-  initialStatus: "PENDING" | "CONFIRMED" | "WAITLISTED" | "CANCELED";
+  initialStatus: "PENDING" | "CONFIRMED" | "WAITLISTED" | "CANCELED" | "NO_SHOW";
   volunteerName: string;
 }
 
 export function SignupActionsWrapper({ signupId, initialStatus, volunteerName }: SignupActionsWrapperProps) {
-  const [status, setStatus] = useState<"PENDING" | "CONFIRMED" | "WAITLISTED" | "CANCELED">(initialStatus);
+  const [status, setStatus] = useState<"PENDING" | "CONFIRMED" | "WAITLISTED" | "CANCELED" | "NO_SHOW">(initialStatus);
 
-  const handleStatusChange = (newStatus: "CONFIRMED" | "WAITLISTED" | "CANCELED", message?: string) => {
+  const handleStatusChange = (newStatus: "CONFIRMED" | "WAITLISTED" | "CANCELED") => {
     setStatus(newStatus);
   };
 
@@ -35,6 +35,12 @@ export function SignupActionsWrapper({ signupId, initialStatus, volunteerName }:
         return (
           <Badge className="bg-red-100 text-red-800 hover:bg-red-100">
             Canceled
+          </Badge>
+        );
+      case "NO_SHOW":
+        return (
+          <Badge className="bg-red-100 text-red-800 hover:bg-red-100">
+            No Show
           </Badge>
         );
       default:

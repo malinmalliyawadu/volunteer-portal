@@ -192,7 +192,7 @@ export default async function AdminDashboardPage({
 
   type SignupWithUserAndShift = {
     id: string;
-    status: "PENDING" | "CONFIRMED" | "WAITLISTED" | "CANCELED";
+    status: "PENDING" | "CONFIRMED" | "WAITLISTED" | "CANCELED" | "NO_SHOW";
     createdAt: Date;
     user: { id: string; name: string | null; email: string };
     shift: {

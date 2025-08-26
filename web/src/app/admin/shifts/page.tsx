@@ -282,7 +282,7 @@ export default async function AdminShiftsPage({
     name: string | null;
     email: string;
     phone: string | null;
-    status: "PENDING" | "CONFIRMED" | "WAITLISTED" | "CANCELED";
+    status: "PENDING" | "CONFIRMED" | "WAITLISTED" | "CANCELED" | "NO_SHOW";
     userId: string;
     signupId: string;
   }) {
@@ -550,6 +550,7 @@ export default async function AdminShiftsPage({
                           CONFIRMED: 1,
                           WAITLISTED: 2,
                           CANCELED: 3,
+                          NO_SHOW: 4,
                         };
                         const ao = order[a.status];
                         const bo = order[b.status];

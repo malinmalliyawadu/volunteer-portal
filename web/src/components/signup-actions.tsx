@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
-  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
@@ -16,8 +15,8 @@ import { toast } from "sonner";
 
 interface SignupActionsProps {
   signupId: string;
-  status: "PENDING" | "CONFIRMED" | "WAITLISTED" | "CANCELED";
-  onStatusChange?: (newStatus: "CONFIRMED" | "WAITLISTED" | "CANCELED", message?: string) => void;
+  status: "PENDING" | "CONFIRMED" | "WAITLISTED" | "CANCELED" | "NO_SHOW";
+  onStatusChange?: (newStatus: "CONFIRMED" | "WAITLISTED" | "CANCELED") => void;
 }
 
 export function SignupActions({ signupId, status, onStatusChange }: SignupActionsProps) {
@@ -56,7 +55,7 @@ export function SignupActions({ signupId, status, onStatusChange }: SignupAction
         
         // Update UI optimistically
         const newStatus = result.status as "CONFIRMED" | "WAITLISTED" | "CANCELED";
-        onStatusChange?.(newStatus, result.message);
+        onStatusChange?.(newStatus);
         
         // Show success toast
         toast.success(result.message || `Signup ${action}ed successfully`);
