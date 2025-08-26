@@ -2,9 +2,7 @@ import { Suspense } from "react";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { redirect } from "next/navigation";
-import RestaurantManagersTable from "./restaurant-managers-table";
-import RestaurantManagerForm from "./restaurant-manager-form";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import RestaurantManagersClient from "./restaurant-managers-client";
 
 export default async function RestaurantManagersPage() {
   const session = await getServerSession(authOptions);
@@ -26,37 +24,9 @@ export default async function RestaurantManagersPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Assignment Form */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Assign Restaurant Manager</CardTitle>
-            <CardDescription>
-              Select an admin user and assign them to restaurant locations for notifications.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Suspense fallback={<div>Loading form...</div>}>
-              <RestaurantManagerForm />
-            </Suspense>
-          </CardContent>
-        </Card>
-
-        {/* Current Assignments */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Current Assignments</CardTitle>
-            <CardDescription>
-              View and manage existing restaurant manager assignments.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Suspense fallback={<div>Loading assignments...</div>}>
-              <RestaurantManagersTable />
-            </Suspense>
-          </CardContent>
-        </Card>
-      </div>
+      <Suspense fallback={<div>Loading...</div>}>
+        <RestaurantManagersClient />
+      </Suspense>
     </div>
   );
 }

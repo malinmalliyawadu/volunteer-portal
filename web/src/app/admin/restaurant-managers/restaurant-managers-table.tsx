@@ -42,7 +42,12 @@ interface RestaurantManager {
   };
 }
 
-export default function RestaurantManagersTable() {
+interface RestaurantManagersTableProps {
+  refreshTrigger?: number;
+  onManagerUpdate?: () => void;
+}
+
+export default function RestaurantManagersTable({ refreshTrigger, onManagerUpdate }: RestaurantManagersTableProps) {
   const [managers, setManagers] = useState<RestaurantManager[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -65,6 +70,19 @@ export default function RestaurantManagersTable() {
 
   useEffect(() => {
     fetchManagers();
+  }, [refreshTrigger]);
+
+  useEffect(() => {
+    // Listen for updates from the form (backward compatibility)
+    const handleManagerUpdate = () => {
+      fetchManagers();
+    };
+
+    window.addEventListener('restaurant-manager-updated', handleManagerUpdate);
+    
+    return () => {
+      window.removeEventListener('restaurant-manager-updated', handleManagerUpdate);
+    };
   }, []);
 
   const toggleNotifications = async (managerId: string, currentState: boolean) => {
@@ -96,6 +114,12 @@ export default function RestaurantManagersTable() {
       toast.success(
         `Notifications ${!currentState ? 'enabled' : 'disabled'} for ${manager.user.email}`
       );
+
+      // Notify parent component
+      onManagerUpdate?.();
+      
+      // Emit event for backward compatibility
+      window.dispatchEvent(new CustomEvent('restaurant-manager-updated'));
     } catch (error) {
       console.error("Error updating notifications:", error);
       toast.error("Failed to update notification settings");
@@ -116,6 +140,12 @@ export default function RestaurantManagersTable() {
 
       setManagers(prev => prev.filter(m => m.id !== managerId));
       toast.success("Manager assignment removed successfully");
+
+      // Notify parent component
+      onManagerUpdate?.();
+      
+      // Emit event for backward compatibility
+      window.dispatchEvent(new CustomEvent('restaurant-manager-updated'));
     } catch (error) {
       console.error("Error deleting manager:", error);
       toast.error("Failed to remove manager assignment");

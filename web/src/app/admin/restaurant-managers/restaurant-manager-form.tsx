@@ -29,7 +29,11 @@ interface Location {
   label: string;
 }
 
-export default function RestaurantManagerForm() {
+interface RestaurantManagerFormProps {
+  onManagerAssigned?: () => void;
+}
+
+export default function RestaurantManagerForm({ onManagerAssigned }: RestaurantManagerFormProps) {
   const [users, setUsers] = useState<User[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [selectedUser, setSelectedUser] = useState<string>("");
@@ -119,7 +123,10 @@ export default function RestaurantManagerForm() {
       setSelectedLocations([]);
       setReceiveNotifications(true);
       
-      // Refresh the table by emitting a custom event
+      // Notify parent component to refresh
+      onManagerAssigned?.();
+      
+      // Also emit event for backward compatibility
       window.dispatchEvent(new CustomEvent('restaurant-manager-updated'));
       
     } catch (error) {
