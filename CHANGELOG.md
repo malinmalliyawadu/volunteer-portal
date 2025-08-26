@@ -1,3 +1,9 @@
+## [0.19.1] - 2025-08-26
+
+### Changes
+- Feature: Restaurant Manager Shift Cancellation Notifications ([#70](https://github.com/malinmalliyawadu/volunteer-portal/pull/70)) by @malinmalliyawadu
+
+
 ## [0.19.0] - 2025-08-25
 
 ### Changes
