@@ -160,12 +160,12 @@ export default function RestaurantManagersTable({ refreshTrigger, onManagerUpdat
   };
 
   if (loading) {
-    return <div className="text-center py-4">Loading assignments...</div>;
+    return <div className="text-center py-4" data-testid="loading-managers">Loading assignments...</div>;
   }
 
   if (managers.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
+      <div className="text-center py-8 text-muted-foreground" data-testid="empty-managers-state">
         <p>No restaurant managers assigned yet.</p>
         <p className="text-sm mt-1">Use the form to assign your first manager.</p>
       </div>
@@ -174,13 +174,13 @@ export default function RestaurantManagersTable({ refreshTrigger, onManagerUpdat
 
   return (
     <div className="space-y-4">
-      <Table>
+      <Table data-testid="managers-table">
         <TableHeader>
           <TableRow>
-            <TableHead>Manager</TableHead>
-            <TableHead>Locations</TableHead>
-            <TableHead className="text-center">Notifications</TableHead>
-            <TableHead className="text-center">Actions</TableHead>
+            <TableHead data-testid="manager-column-header">Manager</TableHead>
+            <TableHead data-testid="locations-column-header">Locations</TableHead>
+            <TableHead className="text-center" data-testid="notifications-column-header">Notifications</TableHead>
+            <TableHead className="text-center" data-testid="actions-column-header">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -212,6 +212,7 @@ export default function RestaurantManagersTable({ refreshTrigger, onManagerUpdat
                   onClick={() => toggleNotifications(manager.id, manager.receiveNotifications)}
                   disabled={editingId === manager.id}
                   className="h-8 w-8 p-0"
+                  data-testid={`notification-toggle-${manager.id}`}
                 >
                   {manager.receiveNotifications ? (
                     <Bell className="h-4 w-4 text-green-600" />
@@ -224,7 +225,7 @@ export default function RestaurantManagersTable({ refreshTrigger, onManagerUpdat
                 <div className="flex justify-center gap-1">
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive">
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive" data-testid={`delete-manager-${manager.id}`}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </AlertDialogTrigger>
@@ -237,7 +238,7 @@ export default function RestaurantManagersTable({ refreshTrigger, onManagerUpdat
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel data-testid="cancel-delete-button">Cancel</AlertDialogCancel>
                         <AlertDialogAction
                           onClick={() => deleteManager(manager.id)}
                           className="bg-destructive text-destructive-foreground hover:bg-destructive/90"

@@ -162,7 +162,7 @@ export default function RestaurantManagerForm({ onManagerAssigned }: RestaurantM
       <div className="space-y-2">
         <Label htmlFor="user-select">Admin User</Label>
         <Select value={selectedUser} onValueChange={setSelectedUser}>
-          <SelectTrigger>
+          <SelectTrigger data-testid="user-select">
             <SelectValue placeholder="Select an admin user..." />
           </SelectTrigger>
           <SelectContent>
@@ -180,9 +180,9 @@ export default function RestaurantManagerForm({ onManagerAssigned }: RestaurantM
 
       {/* Location Selection */}
       <div className="space-y-2">
-        <Label>Restaurant Locations</Label>
+        <Label data-testid="restaurant-locations-label">Restaurant Locations</Label>
         <Select onValueChange={handleLocationSelect}>
-          <SelectTrigger>
+          <SelectTrigger data-testid="location-select">
             <SelectValue placeholder="Add location..." />
           </SelectTrigger>
           <SelectContent>
@@ -198,7 +198,7 @@ export default function RestaurantManagerForm({ onManagerAssigned }: RestaurantM
         
         {/* Selected Locations */}
         {selectedLocations.length > 0 && (
-          <div className="flex flex-wrap gap-2 p-3 border rounded-md bg-muted/50">
+          <div className="flex flex-wrap gap-2 p-3 border rounded-md bg-muted/50" data-testid="selected-locations">
             {selectedLocations.map((location) => (
               <Badge key={location} variant="secondary" className="gap-1">
                 {location}
@@ -206,6 +206,7 @@ export default function RestaurantManagerForm({ onManagerAssigned }: RestaurantM
                   type="button"
                   onClick={() => removeLocation(location)}
                   className="ml-1 hover:bg-destructive/20 rounded-full p-0.5"
+                  data-testid={`remove-location-${location}`}
                 >
                   <X className="h-3 w-3" />
                 </button>
@@ -221,6 +222,7 @@ export default function RestaurantManagerForm({ onManagerAssigned }: RestaurantM
           id="notifications"
           checked={receiveNotifications}
           onCheckedChange={(checked) => setReceiveNotifications(checked === true)}
+          data-testid="notifications-checkbox"
         />
         <Label htmlFor="notifications" className="text-sm font-normal">
           Receive shift cancellation notifications via email
@@ -228,7 +230,7 @@ export default function RestaurantManagerForm({ onManagerAssigned }: RestaurantM
       </div>
 
       {/* Submit Button */}
-      <Button type="submit" disabled={loading || !selectedUser || selectedLocations.length === 0}>
+      <Button type="submit" disabled={loading || !selectedUser || selectedLocations.length === 0} data-testid="assign-manager-button">
         {loading ? "Assigning..." : "Assign Manager"}
       </Button>
     </form>

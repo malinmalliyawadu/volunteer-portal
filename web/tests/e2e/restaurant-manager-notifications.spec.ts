@@ -11,36 +11,37 @@ test.describe("Restaurant Manager Shift Cancellation Notifications", () => {
     await page.goto("/admin/restaurant-managers");
 
     // Check page loads correctly
-    await expect(page.getByRole("heading", { name: "Restaurant Manager Assignments" })).toBeVisible();
+    await expect(page.getByTestId("page-heading")).toBeVisible();
     await expect(page.getByText("Assign admins to restaurant locations")).toBeVisible();
 
     // Check form is present
     await expect(page.getByText("Admin User")).toBeVisible();
-    await expect(page.getByText("Restaurant Locations")).toBeVisible();
-    await expect(page.getByRole("checkbox", { name: /receive shift cancellation notifications/i })).toBeVisible();
+    await expect(page.getByTestId("restaurant-locations-label")).toBeVisible();
+    await expect(page.getByTestId("notifications-checkbox")).toBeVisible();
 
     // Verify assignment form has required elements
-    await expect(page.getByRole("combobox")).toBeVisible(); // User dropdown
-    await expect(page.getByRole("button", { name: "Assign Manager" })).toBeDisabled(); // Should be disabled initially
+    await expect(page.getByTestId("user-select")).toBeVisible(); // User dropdown
+    await expect(page.getByTestId("location-select")).toBeVisible(); // Location dropdown
+    await expect(page.getByTestId("assign-manager-button")).toBeDisabled(); // Should be disabled initially
   });
 
   test("restaurant manager assignment workflow", async ({ page }) => {
     await page.goto("/admin/restaurant-managers");
 
     // Select an admin user (assuming we have at least one admin)
-    await page.getByRole("combobox").first().click();
-    await page.getByRole("option").first().click();
+    await page.getByTestId("user-select").click();
+    await page.locator('[role="option"]').first().click();
 
     // Add a location
-    await page.getByRole("combobox").nth(1).click();
-    await page.getByRole("option").first().click();
+    await page.getByTestId("location-select").click();
+    await page.locator('[role="option"]').first().click();
 
     // Check notification preference is enabled by default
-    const notificationCheckbox = page.getByRole("checkbox", { name: /receive shift cancellation notifications/i });
+    const notificationCheckbox = page.getByTestId("notifications-checkbox");
     await expect(notificationCheckbox).toBeChecked();
 
     // Submit the form
-    await page.getByRole("button", { name: "Assign Manager" }).click();
+    await page.getByTestId("assign-manager-button").click();
 
     // Should show success message (assuming toast notifications)
     // Note: This might need to be adjusted based on your actual toast implementation
@@ -48,27 +49,37 @@ test.describe("Restaurant Manager Shift Cancellation Notifications", () => {
   });
 
   test("admin can view and manage restaurant manager assignments", async ({ page }) => {
-    // First create an assignment (reusing logic from previous test)
     await page.goto("/admin/restaurant-managers");
     
-    // If there are existing assignments, the table should be visible
+    // Check that the assignments section is visible
     const assignmentsSection = page.getByText("Current Assignments");
     await expect(assignmentsSection).toBeVisible();
 
-    // Check for table elements if assignments exist
-    const noAssignmentsText = page.getByText("No restaurant managers assigned yet");
-    const hasAssignments = await page.getByRole("table").isVisible().catch(() => false);
+    // Wait for loading to complete
+    const loadingState = page.getByTestId("loading-managers");
+    try {
+      await expect(loadingState).toBeHidden({ timeout: 5000 });
+    } catch {
+      // Loading state might not appear if load is fast
+    }
+
+    // Now check if we have a table or empty state
+    const table = page.getByTestId("managers-table");
+    const emptyState = page.getByTestId("empty-managers-state");
     
-    if (hasAssignments) {
-      // Test table functionality
-      await expect(page.getByRole("table")).toBeVisible();
-      await expect(page.getByRole("columnheader", { name: "Manager" })).toBeVisible();
-      await expect(page.getByRole("columnheader", { name: "Locations" })).toBeVisible();
-      await expect(page.getByRole("columnheader", { name: "Notifications" })).toBeVisible();
-      await expect(page.getByRole("columnheader", { name: "Actions" })).toBeVisible();
-    } else {
-      // Should show empty state message
-      await expect(noAssignmentsText).toBeVisible();
+    try {
+      // Try to find the table first
+      await expect(table).toBeVisible({ timeout: 3000 });
+      
+      // If table exists, verify its structure
+      await expect(page.getByTestId("manager-column-header")).toBeVisible();
+      await expect(page.getByTestId("locations-column-header")).toBeVisible();
+      await expect(page.getByTestId("notifications-column-header")).toBeVisible();
+      await expect(page.getByTestId("actions-column-header")).toBeVisible();
+      
+    } catch {
+      // If no table, should show empty state
+      await expect(emptyState).toBeVisible();
     }
   });
 
@@ -77,11 +88,11 @@ test.describe("Restaurant Manager Shift Cancellation Notifications", () => {
 
     // This test assumes there's at least one manager assignment
     // Check if there are any existing assignments
-    const hasAssignments = await page.getByRole("table").isVisible().catch(() => false);
+    const hasAssignments = await page.getByTestId("managers-table").isVisible().catch(() => false);
     
     if (hasAssignments) {
       // Find notification toggle buttons (Bell icons)
-      const notificationToggle = page.getByRole("button").filter({ has: page.locator('svg') }).first();
+      const notificationToggle = page.locator('[data-testid^="notification-toggle-"]').first();
       
       if (await notificationToggle.isVisible()) {
         await notificationToggle.click();
@@ -99,11 +110,11 @@ test.describe("Restaurant Manager Shift Cancellation Notifications", () => {
     await page.goto("/admin/restaurant-managers");
 
     // This test assumes there's at least one manager assignment
-    const hasAssignments = await page.getByRole("table").isVisible().catch(() => false);
+    const hasAssignments = await page.getByTestId("managers-table").isVisible().catch(() => false);
     
     if (hasAssignments) {
       // Find delete button (Trash icon)
-      const deleteButton = page.getByRole("button").filter({ has: page.locator('svg') }).filter({ hasText: /remove|delete/i }).first();
+      const deleteButton = page.locator('[data-testid^="delete-manager-"]').first();
       
       if (await deleteButton.isVisible()) {
         await deleteButton.click();
@@ -113,7 +124,7 @@ test.describe("Restaurant Manager Shift Cancellation Notifications", () => {
         await expect(page.getByText(/are you sure you want to remove/i)).toBeVisible();
         
         // Cancel the deletion
-        await page.getByRole("button", { name: "Cancel" }).click();
+        await page.getByTestId("cancel-delete-button").click();
         
         // Dialog should close
         await expect(page.getByText("Remove Manager Assignment")).not.toBeVisible();
@@ -133,7 +144,7 @@ test.describe("Restaurant Manager Shift Cancellation Notifications", () => {
     // Click the link and verify navigation
     await page.getByTestId("restaurant-managers-button").click();
     await expect(page).toHaveURL("/admin/restaurant-managers");
-    await expect(page.getByRole("heading", { name: "Restaurant Manager Assignments" })).toBeVisible();
+    await expect(page.getByTestId("page-heading")).toBeVisible();
   });
 });
 
@@ -207,12 +218,12 @@ test.describe("Restaurant Manager Assignment Data Validation", () => {
     await page.goto("/admin/restaurant-managers");
     
     // Try to submit form without selecting user
-    const submitButton = page.getByRole("button", { name: "Assign Manager" });
+    const submitButton = page.getByTestId("assign-manager-button");
     await expect(submitButton).toBeDisabled();
     
     // Select a user but no locations
-    await page.getByRole("combobox").first().click();
-    await page.getByRole("option").first().click();
+    await page.getByTestId("user-select").click();
+    await page.locator('[role="option"]').first().click();
     
     // Submit button should still be disabled
     await expect(submitButton).toBeDisabled();
@@ -222,38 +233,38 @@ test.describe("Restaurant Manager Assignment Data Validation", () => {
     await page.goto("/admin/restaurant-managers");
     
     // Select a user first
-    await page.getByRole("combobox").first().click();
-    await page.getByRole("option").first().click();
+    await page.getByTestId("user-select").click();
+    await page.locator('[role="option"]').first().click();
     
     // Add multiple locations
-    const locationDropdown = page.getByRole("combobox").nth(1);
+    const locationDropdown = page.getByTestId("location-select");
     
     // Add first location
     await locationDropdown.click();
-    await page.getByRole("option").first().click();
+    await page.locator('[role="option"]').first().click();
     
     // Should show selected location as badge
-    await expect(page.getByRole("button").filter({ has: page.locator('svg') })).toBeVisible();
+    await expect(page.getByTestId("selected-locations")).toBeVisible();
     
     // Form should now be submittable
-    await expect(page.getByRole("button", { name: "Assign Manager" })).toBeEnabled();
+    await expect(page.getByTestId("assign-manager-button")).toBeEnabled();
   });
 
   test("assignment form resets after successful submission", async ({ page }) => {
     await page.goto("/admin/restaurant-managers");
     
     // Fill out form
-    await page.getByRole("combobox").first().click();
-    await page.getByRole("option").first().click();
+    await page.getByTestId("user-select").click();
+    await page.locator('[role="option"]').first().click();
     
-    await page.getByRole("combobox").nth(1).click();
-    await page.getByRole("option").first().click();
+    await page.getByTestId("location-select").click();
+    await page.locator('[role="option"]').first().click();
     
     // Submit form
-    await page.getByRole("button", { name: "Assign Manager" }).click();
+    await page.getByTestId("assign-manager-button").click();
     
     // After successful submission, form should reset
     // Note: This test may need adjustment based on actual behavior
-    await expect(page.getByRole("combobox").first()).toHaveText("Select an admin user...");
+    await expect(page.getByTestId("user-select")).toHaveText("Select an admin user...");
   });
 });
