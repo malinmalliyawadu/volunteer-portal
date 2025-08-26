@@ -255,23 +255,15 @@ test.describe("My Shifts Calendar Page", () => {
       const calendarGrid = page.getByTestId("calendar-grid");
       await expect(calendarGrid).toBeVisible();
       
-      // Look for day number elements (circles with dates)
-      const dayElements = calendarGrid.locator(".w-6.h-6, .w-7.h-7, .text-sm.font-bold");
+      // Look for day number elements using specific test ID
+      const dayElements = page.getByTestId("calendar-day-number");
       const count = await dayElements.count();
+      expect(count).toBeGreaterThan(0);
       
-      if (count > 0) {
-        // Check first few day numbers if they exist
-        for (let i = 0; i < Math.min(count, 3); i++) {
-          const dayText = await dayElements.nth(i).textContent();
-          if (dayText && dayText.trim()) {
-            expect(dayText.trim()).toMatch(/^\d{1,2}$/);
-          }
-        }
-      } else {
-        // Alternative: check for any text that looks like day numbers in the grid
-        const textElements = calendarGrid.locator("text=/^\\d{1,2}$/");
-        const textCount = await textElements.count();
-        expect(textCount).toBeGreaterThan(0);
+      // Check first few day numbers
+      for (let i = 0; i < Math.min(count, 3); i++) {
+        const dayText = await dayElements.nth(i).textContent();
+        expect(dayText?.trim()).toMatch(/^\d{1,2}$/);
       }
     });
 

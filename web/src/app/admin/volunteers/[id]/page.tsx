@@ -99,9 +99,17 @@ export default async function AdminVolunteerPage({
         orderBy: {
           createdAt: "desc",
         },
-        where: selectedLocation
-          ? { shift: { location: selectedLocation } }
-          : {},
+        where: {
+          // Exclude canceled signups that were never confirmed (PENDING cancellations)
+          NOT: {
+            AND: [
+              { status: "CANCELED" },
+              { OR: [{ previousStatus: null }, { previousStatus: "PENDING" }] }
+            ]
+          },
+          // Apply location filter if specified
+          ...(selectedLocation ? { shift: { location: selectedLocation } } : {}),
+        },
       },
     },
   });
@@ -143,6 +151,18 @@ export default async function AdminVolunteerPage({
   const completedShifts = allSignups.filter(
     (signup: (typeof allSignups)[0]) =>
       signup.shift.start < now && signup.status === "CONFIRMED"
+  ).length;
+  
+  // Track confirmed cancellations (only matters for reporting)
+  const confirmedCancellations = volunteer.signups.filter(
+    (signup: (typeof volunteer.signups)[0]) =>
+      signup.status === "CANCELED" && signup.canceledAt && signup.previousStatus === "CONFIRMED"
+  ).length;
+  
+  // Track no-shows (manually set by admin)
+  const noShows = volunteer.signups.filter(
+    (signup: (typeof volunteer.signups)[0]) =>
+      signup.status === "NO_SHOW"
   ).length;
 
   const dayLabels: Record<string, string> = {
@@ -282,6 +302,26 @@ export default async function AdminVolunteerPage({
                   </div>
                   <div className="text-xs text-muted-foreground">Completed</div>
                 </div>
+                {confirmedCancellations > 0 && (
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-orange-600">
+                      {confirmedCancellations}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Canceled
+                    </div>
+                  </div>
+                )}
+                {noShows > 0 && (
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-red-600">
+                      {noShows}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      No-shows
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -571,12 +611,17 @@ export default async function AdminVolunteerPage({
                               signup.status === "CONFIRMED" &&
                                 "bg-green-100 text-green-800 border-green-200 hover:bg-green-100",
                               signup.status === "WAITLISTED" &&
-                                "bg-yellow-100 text-yellow-800 border-yellow-200 hover:bg-yellow-100"
+                                "bg-yellow-100 text-yellow-800 border-yellow-200 hover:bg-yellow-100",
+                              signup.status === "CANCELED" &&
+                                "bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-100",
+                              signup.status === "NO_SHOW" &&
+                                "bg-red-100 text-red-800 border-red-200 hover:bg-red-100"
                             )}
                           >
                             {signup.status === "CONFIRMED" && "Confirmed"}
                             {signup.status === "WAITLISTED" && "Waitlisted"}
                             {signup.status === "CANCELED" && "Canceled"}
+                            {signup.status === "NO_SHOW" && "No-show"}
                           </Badge>
                           {signup.shift.start < now && (
                             <Badge

@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AvatarList } from "@/components/ui/avatar-list";
 import { ShiftSignupDialog } from "@/components/shift-signup-dialog";
+import { CancelSignupButton } from "./mine/cancel-signup-button";
 import { PageHeader } from "@/components/page-header";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -302,47 +303,51 @@ function ShiftCard({
           </div>
 
           {/* Action button - anchored to bottom */}
-          {!mySignup && (
-            <div className="pt-4 mt-auto">
-              {session ? (
-                <ShiftSignupDialog
-                  shift={{
-                    id: shift.id,
-                    start: shift.start,
-                    end: shift.end,
-                    location: shift.location,
-                    capacity: shift.capacity,
-                    shiftType: {
-                      name: shift.shiftType.name,
-                      description: shift.shiftType.description,
-                    },
-                  }}
-                  confirmedCount={confirmedCount}
-                  isWaitlist={isFull}
-                >
-                  <Button
-                    className={`w-full font-medium transition-all duration-200 ${
-                      isFull
-                        ? "bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 hover:border-orange-300"
-                        : "bg-gradient-to-r " +
-                          theme.gradient +
-                          " hover:shadow-lg transform hover:scale-[1.02] text-white"
-                    }`}
-                    variant={isFull ? "outline" : "default"}
-                  >
-                    {isFull ? "🎯 Join Waitlist" : "✨ Sign Up Now"}
-                  </Button>
-                </ShiftSignupDialog>
-              ) : (
+          <div className="pt-4 mt-auto">
+            {mySignup ? (
+              <CancelSignupButton
+                shiftId={shift.id}
+                shiftName={shift.shiftType.name}
+                className="w-full"
+              />
+            ) : session ? (
+              <ShiftSignupDialog
+                shift={{
+                  id: shift.id,
+                  start: shift.start,
+                  end: shift.end,
+                  location: shift.location,
+                  capacity: shift.capacity,
+                  shiftType: {
+                    name: shift.shiftType.name,
+                    description: shift.shiftType.description,
+                  },
+                }}
+                confirmedCount={confirmedCount}
+                isWaitlist={isFull}
+              >
                 <Button
-                  asChild
-                  className={`w-full font-medium bg-gradient-to-r ${theme.gradient} hover:shadow-lg transform hover:scale-[1.02] text-white transition-all duration-200`}
+                  className={`w-full font-medium transition-all duration-200 ${
+                    isFull
+                      ? "bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 hover:border-orange-300"
+                      : "bg-gradient-to-r " +
+                        theme.gradient +
+                        " hover:shadow-lg transform hover:scale-[1.02] text-white"
+                  }`}
+                  variant={isFull ? "outline" : "default"}
                 >
-                  <Link href="/login?callbackUrl=/shifts">✨ Sign Up Now</Link>
+                  {isFull ? "🎯 Join Waitlist" : "✨ Sign Up Now"}
                 </Button>
-              )}
-            </div>
-          )}
+              </ShiftSignupDialog>
+            ) : (
+              <Button
+                asChild
+                className={`w-full font-medium bg-gradient-to-r ${theme.gradient} hover:shadow-lg transform hover:scale-[1.02] text-white transition-all duration-200`}
+              >
+                <Link href="/login?callbackUrl=/shifts">✨ Sign Up Now</Link>
+              </Button>
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>

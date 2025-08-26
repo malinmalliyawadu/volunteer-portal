@@ -192,7 +192,7 @@ export default async function AdminDashboardPage({
 
   type SignupWithUserAndShift = {
     id: string;
-    status: "PENDING" | "CONFIRMED" | "WAITLISTED" | "CANCELED";
+    status: "PENDING" | "CONFIRMED" | "WAITLISTED" | "CANCELED" | "NO_SHOW";
     createdAt: Date;
     user: { id: string; name: string | null; email: string };
     shift: {
@@ -373,6 +373,14 @@ export default async function AdminDashboardPage({
               data-testid="manage-users-button"
             >
               <Link href="/admin/users">Manage Users</Link>
+            </Button>
+            <Button
+              asChild
+              variant="outline"
+              className="w-full"
+              data-testid="restaurant-managers-button"
+            >
+              <Link href="/admin/restaurant-managers">Restaurant Managers</Link>
             </Button>
             <Button
               asChild

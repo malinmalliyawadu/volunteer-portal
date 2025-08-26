@@ -37,19 +37,6 @@ type ShiftType = {
   updatedAt: Date;
 };
 
-type Signup = {
-  id: string;
-  userId: string;
-  shiftId: string;
-  status: "PENDING" | "CONFIRMED" | "WAITLISTED" | "CANCELED";
-  createdAt: Date;
-  updatedAt: Date;
-  user: {
-    id: string;
-    name: string | null;
-    email: string;
-  };
-};
 
 export default async function EditShiftPage({
   params,
@@ -88,7 +75,7 @@ export default async function EditShiftPage({
 
   // Count active signups
   const activeSignups = shift.signups.filter(
-    (signup: Signup) => signup.status !== "CANCELED"
+    (signup) => signup.status !== "CANCELED" && signup.status !== "NO_SHOW"
   );
   const hasSignups = activeSignups.length > 0;
 
@@ -493,7 +480,7 @@ export default async function EditShiftPage({
                     >
                       {
                         shift.signups.filter(
-                          (s: Signup) => s.status === "CONFIRMED"
+                          (s) => s.status === "CONFIRMED"
                         ).length
                       }{" "}
                       confirmed
@@ -504,7 +491,7 @@ export default async function EditShiftPage({
                     >
                       {
                         shift.signups.filter(
-                          (s: Signup) => s.status === "PENDING"
+                          (s) => s.status === "PENDING"
                         ).length
                       }{" "}
                       pending
@@ -515,7 +502,7 @@ export default async function EditShiftPage({
                     >
                       {
                         shift.signups.filter(
-                          (s: Signup) => s.status === "WAITLISTED"
+                          (s) => s.status === "WAITLISTED"
                         ).length
                       }{" "}
                       waitlisted

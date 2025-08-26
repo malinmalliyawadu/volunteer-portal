@@ -846,6 +846,7 @@ export default async function MyShiftsPage({
                   {/* Date number */}
                   <div className="flex items-center justify-between mb-2">
                     <div
+                      data-testid="calendar-day-number"
                       className={`
                         text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center
                         ${
@@ -984,6 +985,7 @@ export default async function MyShiftsPage({
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-3">
                             <div
+                              data-testid="calendar-day-number"
                               className={`
                                 w-10 h-10 rounded-full flex items-center justify-center font-bold
                                 ${

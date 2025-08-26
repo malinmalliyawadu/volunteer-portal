@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { createShiftConfirmedNotification, createShiftWaitlistedNotification } from "@/lib/notifications";
 
-export async function PATCH(req: Request) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -21,9 +21,7 @@ export async function PATCH(req: Request) {
     );
   }
 
-  const url = new URL(req.url);
-  const segments = url.pathname.split("/");
-  const signupId = segments[segments.length - 2];
+  const { id: signupId } = await params;
 
   try {
     const body = await req.json();
@@ -47,7 +45,13 @@ export async function PATCH(req: Request) {
     });
 
     if (!signup) {
-      return NextResponse.json({ error: "Signup not found" }, { status: 404 });
+      console.error(`Signup not found: signupId=${signupId}`);
+      
+      return NextResponse.json({ 
+        error: "Signup not found", 
+        signupId,
+        debug: "The signup may have been deleted, canceled, or the ID is incorrect. Please refresh the page to see the current status."
+      }, { status: 404 });
     }
 
     if (signup.status !== "PENDING") {
