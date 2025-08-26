@@ -201,10 +201,21 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     }
 
     // Update the signup status to CANCELED
+    // Track cancellation details only if canceling from CONFIRMED status
     console.log(`[DELETE] Updating signup ${existingSignup.id} to CANCELED`);
+    const updateData: any = { status: "CANCELED" };
+    
+    // Only track cancellation details for CONFIRMED cancellations
+    if (existingSignup.status === "CONFIRMED") {
+      console.log(`[DELETE] Tracking CONFIRMED cancellation for reporting`);
+      updateData.canceledAt = new Date();
+      updateData.previousStatus = existingSignup.status;
+      // Could add cancellationReason if we collect it from user in future
+    }
+    
     const canceledSignup = await prisma.signup.update({
       where: { id: existingSignup.id },
-      data: { status: "CANCELED" },
+      data: updateData,
     });
 
     console.log(`[DELETE] Successfully canceled signup ${canceledSignup.id}`);

@@ -305,19 +305,11 @@ function ShiftCard({
           {/* Action button - anchored to bottom */}
           <div className="pt-4 mt-auto">
             {mySignup ? (
-              <div className="flex gap-2">
-                <Button
-                  asChild
-                  variant="outline"
-                  className="flex-1"
-                >
-                  <Link href="/shifts/mine">View My Shifts</Link>
-                </Button>
-                <CancelSignupButton
-                  shiftId={shift.id}
-                  shiftName={shift.shiftType.name}
-                />
-              </div>
+              <CancelSignupButton
+                shiftId={shift.id}
+                shiftName={shift.shiftType.name}
+                className="w-full"
+              />
             ) : session ? (
               <ShiftSignupDialog
                 shift={{

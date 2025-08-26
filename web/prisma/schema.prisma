@@ -99,11 +99,19 @@ model Signup {
   groupBookingId String?
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
+  
+  // Cancellation tracking - only tracks cancellations from CONFIRMED status
+  canceledAt     DateTime?     // When a CONFIRMED signup was canceled
+  previousStatus String?       // Status before cancellation (only set when canceling from CONFIRMED)
+  cancellationReason String?    // Optional reason for cancellation
+  
   shift          Shift         @relation(fields: [shiftId], references: [id])
   user           User          @relation(fields: [userId], references: [id])
   groupBooking   GroupBooking? @relation(fields: [groupBookingId], references: [id])
 
   @@unique([userId, shiftId])
+  @@index([status, canceledAt])
+  @@index([userId, canceledAt])
 }
 
 model Achievement {
@@ -183,6 +191,7 @@ enum SignupStatus {
   CONFIRMED
   WAITLISTED
   CANCELED
+  NO_SHOW
 }
 
 enum NotificationPreference {
