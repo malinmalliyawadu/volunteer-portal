@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import {
   ResponsiveDialog,
   ResponsiveDialogContent,
@@ -28,23 +29,57 @@ export function CancelSignupButton({
 
   const handleCancel = async () => {
     setIsLoading(true);
+    console.log(`[CANCEL] Starting cancellation for shift ${shiftId}`);
+    
     try {
       const response = await fetch(`/api/shifts/${shiftId}/signup`, {
         method: "DELETE",
       });
 
+      console.log(`[CANCEL] Response status: ${response.status}`);
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to cancel signup");
+        let errorMessage = "Failed to cancel signup";
+        let errorDetails = "";
+        
+        // Try to get the response text first
+        const responseText = await response.text();
+        console.log(`[CANCEL] Response text: ${responseText}`);
+        
+        // Then try to parse it as JSON
+        try {
+          const errorData = JSON.parse(responseText);
+          errorMessage = errorData.error || errorMessage;
+          errorDetails = errorData.details || "";
+        } catch (parseError) {
+          console.error("[CANCEL] Response is not valid JSON:", responseText);
+          errorMessage = `Failed to cancel signup (Status: ${response.status})`;
+        }
+        
+        const fullError = errorDetails ? `${errorMessage}: ${errorDetails}` : errorMessage;
+        throw new Error(fullError);
       }
 
+      // Parse successful response
+      try {
+        const result = await response.json();
+        console.log("[CANCEL] Signup canceled successfully:", result);
+      } catch {
+        console.warn("[CANCEL] Could not parse success response, but cancellation succeeded");
+      }
+
+      // Show success message
+      toast.success("Shift signup canceled successfully");
+      
       // Close dialog and refresh the page to show updated status
       setOpen(false);
       router.refresh();
     } catch (error) {
-      console.error("Error canceling signup:", error);
-      // You could add toast notification here for better UX
-      alert(error instanceof Error ? error.message : "Failed to cancel signup");
+      console.error("[CANCEL] Error canceling signup:", error);
+      
+      // Show error toast instead of alert
+      const errorMessage = error instanceof Error ? error.message : "Failed to cancel signup";
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

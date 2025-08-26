@@ -7,7 +7,7 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { SignupActions } from "@/components/signup-actions";
+import { SignupActionsWrapper } from "@/components/signup-actions-wrapper";
 import { FilterControls } from "@/components/filter-controls";
 import { DeleteShiftDialog } from "@/components/delete-shift-dialog";
 import { GroupBookingAdminActions } from "@/components/group-booking-admin-actions";
@@ -310,31 +310,12 @@ export default async function AdminShiftsPage({
           <span className="sm:hidden text-xs text-slate-500">Phone:</span>
           <span className="truncate">{phone ?? "—"}</span>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="sm:hidden text-xs text-slate-500">Status:</span>
-          {status === "PENDING" && (
-            <Badge className="bg-gradient-to-r from-amber-50 to-orange-50 text-orange-700 border-orange-200 font-medium shadow-sm">
-              Pending
-            </Badge>
-          )}
-          {status === "CONFIRMED" && (
-            <Badge className="bg-gradient-to-r from-emerald-50 to-green-50 text-green-700 border-green-200 font-medium shadow-sm">
-              Confirmed
-            </Badge>
-          )}
-          {status === "WAITLISTED" && (
-            <Badge className="bg-gradient-to-r from-yellow-50 to-amber-50 text-yellow-700 border-yellow-200 font-medium shadow-sm">
-              Waitlisted
-            </Badge>
-          )}
-          {status === "CANCELED" && (
-            <Badge className="bg-gradient-to-r from-gray-50 to-slate-50 text-gray-600 border-gray-200 font-medium">
-              Canceled
-            </Badge>
-          )}
-        </div>
-        <div className="flex justify-start sm:justify-end md:justify-start">
-          <SignupActions signupId={signupId} status={status} />
+        <div className="md:col-span-2">
+          <SignupActionsWrapper
+            signupId={signupId}
+            initialStatus={status}
+            volunteerName={name ?? "(No name)"}
+          />
         </div>
       </div>
     );

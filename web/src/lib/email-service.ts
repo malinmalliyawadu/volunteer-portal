@@ -55,27 +55,44 @@ class EmailService {
 
   constructor() {
     const apiKey = process.env.CAMPAIGN_MONITOR_API_KEY;
+    const isDevelopment = process.env.NODE_ENV === 'development';
 
     if (!apiKey) {
-      throw new Error("CAMPAIGN_MONITOR_API_KEY is not configured");
+      if (isDevelopment) {
+        console.warn("[EMAIL SERVICE] CAMPAIGN_MONITOR_API_KEY is not configured - emails will not be sent");
+      } else {
+        throw new Error("CAMPAIGN_MONITOR_API_KEY is not configured");
+      }
     }
 
-    const auth = { apiKey };
+    const auth = { apiKey: apiKey || 'dummy-key-for-dev' };
     this.api = new createsend(auth) as CampaignMonitorAPI;
 
     // Smart email ID for migration invites
     const migrationEmailId = process.env.CAMPAIGN_MONITOR_MIGRATION_EMAIL_ID;
     if (!migrationEmailId) {
-      throw new Error("CAMPAIGN_MONITOR_MIGRATION_EMAIL_ID is not configured");
+      if (isDevelopment) {
+        console.warn("[EMAIL SERVICE] CAMPAIGN_MONITOR_MIGRATION_EMAIL_ID is not configured - migration emails will not be sent");
+        this.migrationSmartEmailID = 'dummy-migration-id';
+      } else {
+        throw new Error("CAMPAIGN_MONITOR_MIGRATION_EMAIL_ID is not configured");
+      }
+    } else {
+      this.migrationSmartEmailID = migrationEmailId;
     }
-    this.migrationSmartEmailID = migrationEmailId;
 
     // Smart email ID for shift cancellation notifications
     const cancellationEmailId = process.env.CAMPAIGN_MONITOR_SHIFT_CANCELLATION_EMAIL_ID;
     if (!cancellationEmailId) {
-      throw new Error("CAMPAIGN_MONITOR_SHIFT_CANCELLATION_EMAIL_ID is not configured");
+      if (isDevelopment) {
+        console.warn("[EMAIL SERVICE] CAMPAIGN_MONITOR_SHIFT_CANCELLATION_EMAIL_ID is not configured - cancellation emails will not be sent");
+        this.shiftCancellationSmartEmailID = 'dummy-cancellation-id';
+      } else {
+        throw new Error("CAMPAIGN_MONITOR_SHIFT_CANCELLATION_EMAIL_ID is not configured");
+      }
+    } else {
+      this.shiftCancellationSmartEmailID = cancellationEmailId;
     }
-    this.shiftCancellationSmartEmailID = cancellationEmailId;
   }
 
   async sendMigrationInvite({
@@ -83,6 +100,14 @@ class EmailService {
     firstName,
     migrationLink,
   }: SendEmailParams): Promise<void> {
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    
+    // In development, skip email sending if configuration is missing
+    if (isDevelopment && this.migrationSmartEmailID === 'dummy-migration-id') {
+      console.log(`[EMAIL SERVICE] Would send migration email to ${to} (skipped in dev - no config)`);
+      return Promise.resolve();
+    }
+
     const details = {
       smartEmailID: this.migrationSmartEmailID,
       to: `${firstName} <${to}>`,
@@ -95,8 +120,13 @@ class EmailService {
     return new Promise<void>((resolve, reject) => {
       this.api.transactional.sendSmartEmail(details, (err: Error | null) => {
         if (err) {
-          console.error("Error sending migration invite email:", err);
-          reject(err);
+          if (isDevelopment) {
+            console.warn("[EMAIL SERVICE] Error sending migration invite email (development):", err.message);
+            resolve(); // Don't fail in development
+          } else {
+            console.error("Error sending migration invite email:", err);
+            reject(err);
+          }
         } else {
           console.log("Migration invite email sent successfully to:", to);
           resolve();
@@ -106,6 +136,14 @@ class EmailService {
   }
 
   async sendShiftCancellationNotification(params: SendShiftCancellationParams): Promise<void> {
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    
+    // In development, skip email sending if configuration is missing
+    if (isDevelopment && this.shiftCancellationSmartEmailID === 'dummy-cancellation-id') {
+      console.log(`[EMAIL SERVICE] Would send cancellation email to ${params.to} (skipped in dev - no config)`);
+      return Promise.resolve();
+    }
+
     const details = {
       smartEmailID: this.shiftCancellationSmartEmailID,
       to: `${params.managerName} <${params.to}>`,
@@ -126,8 +164,13 @@ class EmailService {
     return new Promise<void>((resolve, reject) => {
       this.api.transactional.sendSmartEmail(details, (err: Error | null) => {
         if (err) {
-          console.error("Error sending shift cancellation email:", err);
-          reject(err);
+          if (isDevelopment) {
+            console.warn("[EMAIL SERVICE] Error sending shift cancellation email (development):", err.message);
+            resolve(); // Don't fail in development
+          } else {
+            console.error("Error sending shift cancellation email:", err);
+            reject(err);
+          }
         } else {
           console.log("Shift cancellation email sent successfully to:", params.to);
           resolve();

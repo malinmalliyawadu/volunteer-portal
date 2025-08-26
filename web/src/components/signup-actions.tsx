@@ -1,13 +1,32 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
 interface SignupActionsProps {
   signupId: string;
   status: "PENDING" | "CONFIRMED" | "WAITLISTED" | "CANCELED";
+  onStatusChange?: (newStatus: "CONFIRMED" | "WAITLISTED" | "CANCELED", message?: string) => void;
 }
 
-export function SignupActions({ signupId, status }: SignupActionsProps) {
+export function SignupActions({ signupId, status, onStatusChange }: SignupActionsProps) {
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [errorDialog, setErrorDialog] = useState<{ open: boolean; title: string; message: string }>({
+    open: false,
+    title: "",
+    message: ""
+  });
   // Validate signupId
   if (!signupId || signupId.trim() === '') {
     console.error('Invalid signupId provided to SignupActions:', signupId);
@@ -19,6 +38,9 @@ export function SignupActions({ signupId, status }: SignupActionsProps) {
   }
 
   const handleSignupAction = async (action: "approve" | "reject") => {
+    if (isProcessing) return;
+    
+    setIsProcessing(true);
     try {
       console.log(`Processing ${action} for signup ID: ${signupId}`);
       
@@ -31,7 +53,13 @@ export function SignupActions({ signupId, status }: SignupActionsProps) {
       if (response.ok) {
         const result = await response.json();
         console.log(`Successfully ${action}ed signup:`, result);
-        window.location.reload(); // Refresh to show updated state
+        
+        // Update UI optimistically
+        const newStatus = result.status as "CONFIRMED" | "WAITLISTED" | "CANCELED";
+        onStatusChange?.(newStatus, result.message);
+        
+        // Show success toast
+        toast.success(result.message || `Signup ${action}ed successfully`);
       } else {
         const error = await response.json();
         console.error(`Failed to ${action} signup:`, error);
@@ -44,11 +72,21 @@ export function SignupActions({ signupId, status }: SignupActionsProps) {
           errorMessage += `\nSignup ID: ${error.signupId}`;
         }
         
-        alert(errorMessage);
+        setErrorDialog({
+          open: true,
+          title: `Failed to ${action} signup`,
+          message: errorMessage
+        });
       }
     } catch (error) {
       console.error("Signup action error:", error);
-      alert(`Network error while processing signup: ${error}`);
+      setErrorDialog({
+        open: true,
+        title: "Network Error",
+        message: `Network error while processing signup: ${error}`
+      });
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -57,22 +95,43 @@ export function SignupActions({ signupId, status }: SignupActionsProps) {
   }
 
   return (
-    <div className="flex gap-2">
-      <Button
-        size="sm"
-        onClick={() => handleSignupAction("approve")}
-        className="h-8 px-3 bg-green-600 hover:bg-green-700 text-white"
-      >
-        ✓ Approve
-      </Button>
-      <Button
-        size="sm"
-        variant="outline"
-        onClick={() => handleSignupAction("reject")}
-        className="h-8 px-3 border-red-200 text-red-600 hover:bg-red-50"
-      >
-        ✕ Reject
-      </Button>
-    </div>
+    <>
+      <div className="flex gap-2">
+        <Button
+          size="sm"
+          onClick={() => handleSignupAction("approve")}
+          disabled={isProcessing}
+          className="h-8 px-3 bg-green-600 hover:bg-green-700 text-white disabled:opacity-50"
+        >
+          {isProcessing ? "..." : "✓ Approve"}
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => handleSignupAction("reject")}
+          disabled={isProcessing}
+          className="h-8 px-3 border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-50"
+        >
+          {isProcessing ? "..." : "✕ Reject"}
+        </Button>
+      </div>
+
+      {/* Error Dialog */}
+      <AlertDialog open={errorDialog.open} onOpenChange={(open) => setErrorDialog(prev => ({ ...prev, open }))}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{errorDialog.title}</AlertDialogTitle>
+            <AlertDialogDescription className="whitespace-pre-line">
+              {errorDialog.message}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setErrorDialog(prev => ({ ...prev, open: false }))}>
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
