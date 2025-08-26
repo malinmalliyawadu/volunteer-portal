@@ -160,7 +160,7 @@ export default function RestaurantManagerForm({ onManagerAssigned }: RestaurantM
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* User Selection */}
       <div className="space-y-2">
-        <Label htmlFor="user-select">Admin User</Label>
+        <Label htmlFor="user-select" data-testid="admin-user-label">Admin User</Label>
         <Select value={selectedUser} onValueChange={setSelectedUser}>
           <SelectTrigger data-testid="user-select">
             <SelectValue placeholder="Select an admin user..." />
