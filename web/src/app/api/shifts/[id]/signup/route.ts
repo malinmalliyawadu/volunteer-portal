@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { checkAndUnlockAchievements } from "@/lib/achievements";
+import { getNotificationService } from "@/lib/notification-service";
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
@@ -151,10 +152,17 @@ export async function DELETE(req: Request) {
   const segments = url.pathname.split("/");
   const shiftId = segments[segments.length - 2];
 
-  // Find the existing signup
+  // Find the existing signup with full shift details for notifications
   const existingSignup = await prisma.signup.findUnique({
     where: { userId_shiftId: { userId: user.id, shiftId } },
-    include: { shift: true },
+    include: { 
+      shift: {
+        include: {
+          shiftType: true,
+          signups: true,
+        },
+      },
+    },
   });
 
   if (!existingSignup) {
@@ -182,6 +190,18 @@ export async function DELETE(req: Request) {
   const canceledSignup = await prisma.signup.update({
     where: { id: existingSignup.id },
     data: { status: "CANCELED" },
+  });
+
+  // Notify restaurant managers of the cancellation (async - don't await)
+  // This won't block the cancellation response even if notifications fail
+  const notificationService = getNotificationService();
+  notificationService.notifyManagersOfShiftCancellation({
+    shift: existingSignup.shift,
+    volunteer: user,
+    canceledSignup,
+  }).catch((error) => {
+    console.error("Failed to send manager notifications:", error);
+    // Continue - don't fail the cancellation due to notification errors
   });
 
   return NextResponse.json(canceledSignup);

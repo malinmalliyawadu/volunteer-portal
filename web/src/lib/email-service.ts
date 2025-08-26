@@ -12,6 +12,33 @@ interface SendEmailParams {
   migrationLink: string;
 }
 
+interface ShiftCancellationEmailData {
+  managerName: string;
+  volunteerName: string;
+  volunteerEmail: string;
+  shiftName: string;
+  shiftDate: string;
+  shiftTime: string;
+  location: string;
+  cancellationTime: string;
+  remainingVolunteers: number;
+  shiftCapacity: number;
+}
+
+interface SendShiftCancellationParams {
+  to: string;
+  managerName: string;
+  volunteerName: string;
+  volunteerEmail: string;
+  shiftName: string;
+  shiftDate: string;
+  shiftTime: string;
+  location: string;
+  cancellationTime: string;
+  remainingVolunteers: number;
+  shiftCapacity: number;
+}
+
 interface CampaignMonitorAPI {
   transactional: {
     sendSmartEmail: (
@@ -23,7 +50,8 @@ interface CampaignMonitorAPI {
 
 class EmailService {
   private api: CampaignMonitorAPI;
-  private smartEmailID: string;
+  private migrationSmartEmailID: string;
+  private shiftCancellationSmartEmailID: string;
 
   constructor() {
     const apiKey = process.env.CAMPAIGN_MONITOR_API_KEY;
@@ -36,11 +64,18 @@ class EmailService {
     this.api = new createsend(auth) as CampaignMonitorAPI;
 
     // Smart email ID for migration invites
-    const smartEmailId = process.env.CAMPAIGN_MONITOR_MIGRATION_EMAIL_ID;
-    if (!smartEmailId) {
+    const migrationEmailId = process.env.CAMPAIGN_MONITOR_MIGRATION_EMAIL_ID;
+    if (!migrationEmailId) {
       throw new Error("CAMPAIGN_MONITOR_MIGRATION_EMAIL_ID is not configured");
     }
-    this.smartEmailID = smartEmailId;
+    this.migrationSmartEmailID = migrationEmailId;
+
+    // Smart email ID for shift cancellation notifications
+    const cancellationEmailId = process.env.CAMPAIGN_MONITOR_SHIFT_CANCELLATION_EMAIL_ID;
+    if (!cancellationEmailId) {
+      throw new Error("CAMPAIGN_MONITOR_SHIFT_CANCELLATION_EMAIL_ID is not configured");
+    }
+    this.shiftCancellationSmartEmailID = cancellationEmailId;
   }
 
   async sendMigrationInvite({
@@ -49,7 +84,7 @@ class EmailService {
     migrationLink,
   }: SendEmailParams): Promise<void> {
     const details = {
-      smartEmailID: this.smartEmailID,
+      smartEmailID: this.migrationSmartEmailID,
       to: `${firstName} <${to}>`,
       data: {
         firstName,
@@ -69,6 +104,37 @@ class EmailService {
       });
     });
   }
+
+  async sendShiftCancellationNotification(params: SendShiftCancellationParams): Promise<void> {
+    const details = {
+      smartEmailID: this.shiftCancellationSmartEmailID,
+      to: `${params.managerName} <${params.to}>`,
+      data: {
+        managerName: params.managerName,
+        volunteerName: params.volunteerName,
+        volunteerEmail: params.volunteerEmail,
+        shiftName: params.shiftName,
+        shiftDate: params.shiftDate,
+        shiftTime: params.shiftTime,
+        location: params.location,
+        cancellationTime: params.cancellationTime,
+        remainingVolunteers: params.remainingVolunteers.toString(),
+        shiftCapacity: params.shiftCapacity.toString(),
+      } as ShiftCancellationEmailData,
+    };
+
+    return new Promise<void>((resolve, reject) => {
+      this.api.transactional.sendSmartEmail(details, (err: Error | null) => {
+        if (err) {
+          console.error("Error sending shift cancellation email:", err);
+          reject(err);
+        } else {
+          console.log("Shift cancellation email sent successfully to:", params.to);
+          resolve();
+        }
+      });
+    });
+  }
 }
 
 // Export singleton instance
@@ -81,4 +147,4 @@ export function getEmailService(): EmailService {
   return emailServiceInstance;
 }
 
-export type { SendEmailParams };
+export type { SendEmailParams, SendShiftCancellationParams, ShiftCancellationEmailData };
