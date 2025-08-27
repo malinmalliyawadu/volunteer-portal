@@ -11,6 +11,8 @@ import { DashboardNextShift } from "@/components/dashboard-next-shift";
 import { DashboardRecentActivity } from "@/components/dashboard-recent-activity";
 import { DashboardStatsSkeleton } from "@/components/dashboard-stats-skeleton";
 import { DashboardContentSkeleton } from "@/components/dashboard-content-skeleton";
+import { DashboardImpactStats } from "@/components/dashboard-impact-stats";
+import { DashboardQuickActions } from "@/components/dashboard-quick-actions";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -51,7 +53,15 @@ export default async function DashboardPage() {
         <Suspense fallback={<DashboardContentSkeleton />}>
           <AchievementsCard />
         </Suspense>
+
+        {/* Impact & Community Stats - streams in when ready */}
+        <Suspense fallback={<DashboardContentSkeleton />}>
+          <DashboardImpactStats userId={userId} />
+        </Suspense>
       </BottomGrid>
+
+      {/* Quick Actions - renders immediately (no data dependencies) */}
+      <DashboardQuickActions />
     </PageContainer>
   );
 }
