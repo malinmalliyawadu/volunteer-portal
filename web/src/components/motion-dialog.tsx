@@ -45,6 +45,8 @@ const MotionDialogContent = React.forwardRef<
   <MotionDialogPortal>
     <AnimatePresence>
       <MotionDialogOverlay />
+    </AnimatePresence>
+    <AnimatePresence>
       <DialogPrimitive.Content
         ref={ref}
         className={cn(
