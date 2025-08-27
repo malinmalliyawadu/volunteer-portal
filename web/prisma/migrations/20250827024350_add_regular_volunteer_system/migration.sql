@@ -1,9 +1,6 @@
 -- CreateEnum
 CREATE TYPE "public"."Frequency" AS ENUM ('WEEKLY', 'FORTNIGHTLY', 'MONTHLY');
 
--- CreateEnum
-CREATE TYPE "public"."TimePreference" AS ENUM ('MORNING', 'AFTERNOON', 'EVENING');
-
 -- AlterEnum
 ALTER TYPE "public"."SignupStatus" ADD VALUE 'REGULAR_PENDING';
 
@@ -15,12 +12,9 @@ CREATE TABLE "public"."RegularVolunteer" (
     "location" TEXT NOT NULL,
     "frequency" "public"."Frequency" NOT NULL DEFAULT 'WEEKLY',
     "availableDays" TEXT[],
-    "timePreference" "public"."TimePreference",
     "isActive" BOOLEAN NOT NULL DEFAULT true,
     "isPausedByUser" BOOLEAN NOT NULL DEFAULT false,
     "pausedUntil" TIMESTAMP(3),
-    "startDate" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "endDate" TIMESTAMP(3),
     "notes" TEXT,
     "volunteerNotes" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
