@@ -15,7 +15,7 @@ import { toast } from "sonner";
 
 interface SignupActionsProps {
   signupId: string;
-  status: "PENDING" | "CONFIRMED" | "WAITLISTED" | "CANCELED" | "NO_SHOW";
+  status: "PENDING" | "CONFIRMED" | "WAITLISTED" | "CANCELED" | "NO_SHOW" | "REGULAR_PENDING";
   onStatusChange?: (newStatus: "CONFIRMED" | "WAITLISTED" | "CANCELED") => void;
 }
 
@@ -89,7 +89,7 @@ export function SignupActions({ signupId, status, onStatusChange }: SignupAction
     }
   };
 
-  if (status !== "PENDING") {
+  if (status !== "PENDING" && status !== "REGULAR_PENDING") {
     return null;
   }
 

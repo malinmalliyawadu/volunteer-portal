@@ -137,7 +137,8 @@ export default async function NewShiftPage() {
     if (start <= now) redirect("/admin/shifts/new?error=past");
 
     try {
-      await prisma.shift.create({
+      // Create the shift
+      const shift = await prisma.shift.create({
         data: {
           shiftTypeId,
           start,
@@ -147,6 +148,90 @@ export default async function NewShiftPage() {
           notes: notes ?? null,
         },
       });
+
+      // Find matching regular volunteers
+      const dayOfWeek = start.toLocaleDateString("en-US", { weekday: "long" });
+      const regularVolunteers = await prisma.regularVolunteer.findMany({
+        where: {
+          shiftTypeId,
+          ...(location && { location }),
+          isActive: true,
+          isPausedByUser: false,
+          availableDays: {
+            has: dayOfWeek
+          }
+        }
+      });
+
+      // Filter by frequency
+      const matchingRegulars = regularVolunteers.filter(regular => {
+        if (regular.frequency === "WEEKLY") {
+          return true;
+        } else if (regular.frequency === "FORTNIGHTLY") {
+          const weeksSinceCreation = Math.floor(
+            (start.getTime() - regular.createdAt.getTime()) / (7 * 24 * 60 * 60 * 1000)
+          );
+          return weeksSinceCreation % 2 === 0;
+        } else if (regular.frequency === "MONTHLY") {
+          // Check if this is the first occurrence of this day in the month
+          const firstOccurrenceInMonth = new Date(start.getFullYear(), start.getMonth(), 1);
+          while (firstOccurrenceInMonth.getDay() !== start.getDay()) {
+            firstOccurrenceInMonth.setDate(firstOccurrenceInMonth.getDate() + 1);
+          }
+          return start.getDate() === firstOccurrenceInMonth.getDate();
+        }
+        return false;
+      });
+
+      // Create auto-signups for matching regular volunteers
+      if (matchingRegulars.length > 0) {
+        const signups = [];
+        const regularSignups = [];
+
+        for (const regular of matchingRegulars) {
+          // Check if user already has a shift on this day
+          const shiftDay = new Date(start);
+          shiftDay.setHours(0, 0, 0, 0);
+          const nextDay = new Date(shiftDay);
+          nextDay.setDate(nextDay.getDate() + 1);
+
+          const existingSignup = await prisma.signup.findFirst({
+            where: {
+              userId: regular.userId,
+              shift: {
+                start: {
+                  gte: shiftDay,
+                  lt: nextDay
+                }
+              },
+              status: {
+                in: ["CONFIRMED", "REGULAR_PENDING", "PENDING"]
+              }
+            }
+          });
+
+          if (!existingSignup) {
+            const signupId = crypto.randomUUID();
+            signups.push({
+              id: signupId,
+              userId: regular.userId,
+              shiftId: shift.id,
+              status: "REGULAR_PENDING" as const,
+              createdAt: new Date(),
+              updatedAt: new Date()
+            });
+            regularSignups.push({
+              regularVolunteerId: regular.id,
+              signupId: signupId
+            });
+          }
+        }
+
+        if (signups.length > 0) {
+          await prisma.signup.createMany({ data: signups });
+          await prisma.regularSignup.createMany({ data: regularSignups });
+        }
+      }
     } catch {
       redirect("/admin/shifts/new?error=create");
     }
@@ -258,9 +343,104 @@ export default async function NewShiftPage() {
     }
 
     try {
+      // Create all shifts
       await prisma.shift.createMany({
         data: shifts,
       });
+
+      // Get the created shifts
+      const createdShifts = await prisma.shift.findMany({
+        where: {
+          shiftTypeId,
+          location,
+          start: {
+            gte: shifts[0].start,
+            lte: shifts[shifts.length - 1].start
+          }
+        }
+      });
+
+      // Process regular volunteers for each shift
+      for (const shift of createdShifts) {
+        const dayOfWeek = shift.start.toLocaleDateString("en-US", { weekday: "long" });
+        const regularVolunteers = await prisma.regularVolunteer.findMany({
+          where: {
+            shiftTypeId: shift.shiftTypeId,
+            ...(shift.location && { location: shift.location }),
+            isActive: true,
+            isPausedByUser: false,
+            availableDays: {
+              has: dayOfWeek
+            }
+          }
+        });
+
+        // Filter by frequency
+        const matchingRegulars = regularVolunteers.filter(regular => {
+          if (regular.frequency === "WEEKLY") {
+            return true;
+          } else if (regular.frequency === "FORTNIGHTLY") {
+            const weeksSinceCreation = Math.floor(
+              (shift.start.getTime() - regular.createdAt.getTime()) / (7 * 24 * 60 * 60 * 1000)
+            );
+            return weeksSinceCreation % 2 === 0;
+          } else if (regular.frequency === "MONTHLY") {
+            const firstOccurrenceInMonth = new Date(shift.start.getFullYear(), shift.start.getMonth(), 1);
+            while (firstOccurrenceInMonth.getDay() !== shift.start.getDay()) {
+              firstOccurrenceInMonth.setDate(firstOccurrenceInMonth.getDate() + 1);
+            }
+            return shift.start.getDate() === firstOccurrenceInMonth.getDate();
+          }
+          return false;
+        });
+
+        // Create auto-signups
+        const signups = [];
+        const regularSignups = [];
+
+        for (const regular of matchingRegulars) {
+          const shiftDay = new Date(shift.start);
+          shiftDay.setHours(0, 0, 0, 0);
+          const nextDay = new Date(shiftDay);
+          nextDay.setDate(nextDay.getDate() + 1);
+
+          const existingSignup = await prisma.signup.findFirst({
+            where: {
+              userId: regular.userId,
+              shift: {
+                start: {
+                  gte: shiftDay,
+                  lt: nextDay
+                }
+              },
+              status: {
+                in: ["CONFIRMED", "REGULAR_PENDING", "PENDING"]
+              }
+            }
+          });
+
+          if (!existingSignup) {
+            const signupId = crypto.randomUUID();
+            signups.push({
+              id: signupId,
+              userId: regular.userId,
+              shiftId: shift.id,
+              status: "REGULAR_PENDING" as const,
+              createdAt: new Date(),
+              updatedAt: new Date()
+            });
+            regularSignups.push({
+              regularVolunteerId: regular.id,
+              signupId: signupId
+            });
+          }
+        }
+
+        if (signups.length > 0) {
+          await prisma.signup.createMany({ data: signups });
+          await prisma.regularSignup.createMany({ data: regularSignups });
+        }
+      }
     } catch (error) {
       console.error("Bulk creation error:", error);
       redirect("/admin/shifts/new?error=bulk_create");

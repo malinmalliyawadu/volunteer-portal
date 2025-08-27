@@ -1,23 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
-import { parse } from 'csv-parse/sync';
-import { z } from 'zod';
+import { parse } from "csv-parse/sync";
+import { z } from "zod";
 
 interface LegacyUser {
-  'First Name': string;
-  'Last Name': string;
-  'Email': string;
-  'Phone': string;
-  'Date of Birth': string;
-  'Contact Name': string;
-  'Contact Relationship': string;
-  'Contact Phone': string;
-  'Medical Conditions': string;
-  'Experience Points': string;
-  'Days Available': string;
-  'Locations': string;
-  'Positions': string;
+  "First Name": string;
+  "Last Name": string;
+  Email: string;
+  Phone: string;
+  "Date of Birth": string;
+  "Contact Name": string;
+  "Contact Relationship": string;
+  "Contact Phone": string;
+  "Medical Conditions": string;
+  "Experience Points": string;
+  "Days Available": string;
+  Locations: string;
+  Positions: string;
 }
 
 interface ValidationResult {
@@ -62,8 +62,8 @@ class CSVValidator {
         missingRequiredFields: 0,
         invalidDates: 0,
         invalidPhones: 0,
-        emptyFields: {}
-      }
+        emptyFields: {},
+      },
     };
   }
 
@@ -72,7 +72,7 @@ class CSVValidator {
       const records: LegacyUser[] = parse(csvContent, {
         columns: true,
         skip_empty_lines: true,
-        trim: true
+        trim: true,
       });
 
       this.result.totalRecords = records.length;
@@ -91,21 +91,31 @@ class CSVValidator {
 
         // Validate email (required)
         if (!record.Email?.trim()) {
-          this.addError(rowNumber, 'Email', record.Email, 'Email is required');
+          this.addError(rowNumber, "Email", record.Email, "Email is required");
           isValid = false;
           this.result.summary.missingRequiredFields++;
         } else {
           const email = record.Email.trim().toLowerCase();
           const emailValidation = emailSchema.safeParse(email);
-          
+
           if (!emailValidation.success) {
-            this.addError(rowNumber, 'Email', record.Email, 'Invalid email format');
+            this.addError(
+              rowNumber,
+              "Email",
+              record.Email,
+              "Invalid email format"
+            );
             isValid = false;
           } else {
             // Track duplicates
             emailCounts[email] = (emailCounts[email] || 0) + 1;
             if (emailSet.has(email)) {
-              this.addError(rowNumber, 'Email', record.Email, 'Duplicate email found');
+              this.addError(
+                rowNumber,
+                "Email",
+                record.Email,
+                "Duplicate email found"
+              );
               isValid = false;
             }
             emailSet.add(email);
@@ -113,16 +123,26 @@ class CSVValidator {
         }
 
         // Validate name (at least one required)
-        if (!record['First Name']?.trim() && !record['Last Name']?.trim()) {
-          this.addError(rowNumber, 'Name', '', 'At least first name or last name is required');
+        if (!record["First Name"]?.trim() && !record["Last Name"]?.trim()) {
+          this.addError(
+            rowNumber,
+            "Name",
+            "",
+            "At least first name or last name is required"
+          );
           isValid = false;
           this.result.summary.missingRequiredFields++;
         }
 
         // Validate date of birth
-        if (record['Date of Birth']?.trim()) {
-          if (!this.isValidDate(record['Date of Birth'])) {
-            this.addError(rowNumber, 'Date of Birth', record['Date of Birth'], 'Invalid date format (expected MM/DD/YYYY, DD/MM/YYYY, or YYYY-MM-DD)');
+        if (record["Date of Birth"]?.trim()) {
+          if (!this.isValidDate(record["Date of Birth"])) {
+            this.addError(
+              rowNumber,
+              "Date of Birth",
+              record["Date of Birth"],
+              "Invalid date format (expected MM/DD/YYYY, DD/MM/YYYY, or YYYY-MM-DD)"
+            );
             isValid = false;
             this.result.summary.invalidDates++;
           }
@@ -130,29 +150,54 @@ class CSVValidator {
 
         // Validate phone numbers
         if (record.Phone?.trim() && !this.isValidPhone(record.Phone)) {
-          this.addWarning(rowNumber, 'Phone', record.Phone, 'Phone format may need manual review');
+          this.addWarning(
+            rowNumber,
+            "Phone",
+            record.Phone,
+            "Phone format may need manual review"
+          );
           this.result.summary.invalidPhones++;
         }
 
-        if (record['Contact Phone']?.trim() && !this.isValidPhone(record['Contact Phone'])) {
-          this.addWarning(rowNumber, 'Contact Phone', record['Contact Phone'], 'Emergency contact phone format may need manual review');
+        if (
+          record["Contact Phone"]?.trim() &&
+          !this.isValidPhone(record["Contact Phone"])
+        ) {
+          this.addWarning(
+            rowNumber,
+            "Contact Phone",
+            record["Contact Phone"],
+            "Emergency contact phone format may need manual review"
+          );
         }
 
         // Check for incomplete emergency contact info
-        const hasContactName = !!record['Contact Name']?.trim();
-        const hasContactPhone = !!record['Contact Phone']?.trim();
-        const hasContactRelationship = !!record['Contact Relationship']?.trim();
+        const hasContactName = !!record["Contact Name"]?.trim();
+        const hasContactPhone = !!record["Contact Phone"]?.trim();
+        const hasContactRelationship = !!record["Contact Relationship"]?.trim();
 
-        if ((hasContactName || hasContactPhone || hasContactRelationship) && 
-            !(hasContactName && hasContactPhone && hasContactRelationship)) {
-          this.addWarning(rowNumber, 'Emergency Contact', '', 'Incomplete emergency contact information');
+        if (
+          (hasContactName || hasContactPhone || hasContactRelationship) &&
+          !(hasContactName && hasContactPhone && hasContactRelationship)
+        ) {
+          this.addWarning(
+            rowNumber,
+            "Emergency Contact",
+            "",
+            "Incomplete emergency contact information"
+          );
         }
 
         // Validate experience points
-        if (record['Experience Points']?.trim()) {
-          const points = parseInt(record['Experience Points']);
+        if (record["Experience Points"]?.trim()) {
+          const points = parseInt(record["Experience Points"]);
           if (isNaN(points) || points < 0) {
-            this.addWarning(rowNumber, 'Experience Points', record['Experience Points'], 'Invalid experience points value');
+            this.addWarning(
+              rowNumber,
+              "Experience Points",
+              record["Experience Points"],
+              "Invalid experience points value"
+            );
           }
         }
 
@@ -169,16 +214,20 @@ class CSVValidator {
         .map(([email]) => email);
 
       return this.result;
-
     } catch (error) {
-      throw new Error(`CSV parsing failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `CSV parsing failed: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     }
   }
 
   private trackEmptyFields(record: LegacyUser): void {
     Object.entries(record).forEach(([field, value]) => {
       if (!value?.trim()) {
-        this.result.summary.emptyFields[field] = (this.result.summary.emptyFields[field] || 0) + 1;
+        this.result.summary.emptyFields[field] =
+          (this.result.summary.emptyFields[field] || 0) + 1;
       }
     });
   }
@@ -194,23 +243,28 @@ class CSVValidator {
       const match = dateString.trim().match(format);
       if (match) {
         let year: number, month: number, day: number;
-        
-        if (format === formats[1]) { // YYYY-MM-DD
+
+        if (format === formats[1]) {
+          // YYYY-MM-DD
           year = parseInt(match[1]);
           month = parseInt(match[2]);
           day = parseInt(match[3]);
-        } else { // MM/DD/YYYY format
+        } else {
+          // MM/DD/YYYY format
           month = parseInt(match[1]);
           day = parseInt(match[2]);
           year = parseInt(match[3]);
         }
 
         const date = new Date(year, month - 1, day);
-        
-        if (date.getFullYear() === year && 
-            date.getMonth() === month - 1 && 
-            date.getDate() === day &&
-            year >= 1900 && year <= new Date().getFullYear()) {
+
+        if (
+          date.getFullYear() === year &&
+          date.getMonth() === month - 1 &&
+          date.getDate() === day &&
+          year >= 1900 &&
+          year <= new Date().getFullYear()
+        ) {
           return true;
         }
       }
@@ -220,15 +274,25 @@ class CSVValidator {
   }
 
   private isValidPhone(phone: string): boolean {
-    const digits = phone.replace(/\D/g, '');
+    const digits = phone.replace(/\D/g, "");
     return digits.length >= 10 && digits.length <= 11;
   }
 
-  private addError(row: number, field: string, value: string, error: string): void {
+  private addError(
+    row: number,
+    field: string,
+    value: string,
+    error: string
+  ): void {
     this.result.errors.push({ row, field, value, error });
   }
 
-  private addWarning(row: number, field: string, value: string, warning: string): void {
+  private addWarning(
+    row: number,
+    field: string,
+    value: string,
+    warning: string
+  ): void {
     this.result.warnings.push({ row, field, value, warning });
   }
 }
@@ -237,7 +301,7 @@ export async function POST(request: NextRequest) {
   try {
     // Check authentication and admin role
     const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as { role?: string }).role !== "ADMIN") {
+    if (session?.user?.role !== "ADMIN") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
@@ -248,17 +312,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    if (!file.name.endsWith('.csv')) {
-      return NextResponse.json({ error: "File must be a CSV" }, { status: 400 });
+    if (!file.name.endsWith(".csv")) {
+      return NextResponse.json(
+        { error: "File must be a CSV" },
+        { status: 400 }
+      );
     }
 
     const csvContent = await file.text();
-    
+
     const validator = new CSVValidator();
     const result = validator.validate(csvContent);
 
     return NextResponse.json(result);
-
   } catch (error) {
     console.error("CSV validation error:", error);
     return NextResponse.json(

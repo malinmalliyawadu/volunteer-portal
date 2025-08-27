@@ -7,7 +7,7 @@ export async function GET() {
   try {
     // Check authentication and admin role
     const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as { role?: string }).role !== "ADMIN") {
+    if (session?.user?.role !== "ADMIN") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
@@ -17,43 +17,43 @@ export async function GET() {
       pendingInvitations,
       completedRegistrations,
       failedInvitations,
-      recentUsers
+      recentUsers,
     ] = await Promise.all([
       // Total migrated users
       prisma.user.count({
         where: {
           isMigrated: true,
-          role: "VOLUNTEER"
-        }
+          role: "VOLUNTEER",
+        },
       }),
-      
+
       // Pending invitations (migrated but not completed profile)
       prisma.user.count({
         where: {
           isMigrated: true,
           role: "VOLUNTEER",
           profileCompleted: false,
-          migrationInvitationSent: true
-        }
+          migrationInvitationSent: true,
+        },
       }),
-      
+
       // Completed registrations (migrated and completed profile)
       prisma.user.count({
         where: {
           isMigrated: true,
           role: "VOLUNTEER",
-          profileCompleted: true
-        }
+          profileCompleted: true,
+        },
       }),
-      
+
       // Failed invitations (no current way to track this, so return 0)
       Promise.resolve(0),
-      
+
       // Recent migrated users for activity feed
       prisma.user.findMany({
         where: {
           isMigrated: true,
-          role: "VOLUNTEER"
+          role: "VOLUNTEER",
         },
         select: {
           id: true,
@@ -64,45 +64,47 @@ export async function GET() {
           migrationInvitationSentAt: true,
         },
         orderBy: {
-          createdAt: 'desc'
+          createdAt: "desc",
         },
-        take: 10
-      })
+        take: 10,
+      }),
     ]);
 
     // Get the last migration date
     const lastMigration = await prisma.user.findFirst({
       where: {
         isMigrated: true,
-        role: "VOLUNTEER"
+        role: "VOLUNTEER",
       },
       orderBy: {
-        createdAt: 'desc'
+        createdAt: "desc",
       },
       select: {
-        createdAt: true
-      }
+        createdAt: true,
+      },
     });
 
     // Transform recent users into activity items
-    const recentActivity = recentUsers.map(user => {
-      let type: 'migration' | 'invitation' | 'registration' = 'migration';
-      let status: 'success' | 'failed' | 'pending' = 'success';
-      
+    const recentActivity = recentUsers.map((user) => {
+      let type: "migration" | "invitation" | "registration" = "migration";
+      let status: "success" | "failed" | "pending" = "success";
+
       if (user.profileCompleted) {
-        type = 'registration';
-        status = 'success';
+        type = "registration";
+        status = "success";
       } else if (user.migrationInvitationSent) {
-        type = 'invitation';
-        status = 'pending';
+        type = "invitation";
+        status = "pending";
       }
-      
+
       return {
         id: user.id,
         type,
         email: user.email,
         status,
-        timestamp: (user.migrationInvitationSentAt || user.createdAt).toISOString()
+        timestamp: (
+          user.migrationInvitationSentAt || user.createdAt
+        ).toISOString(),
       };
     });
 
@@ -112,9 +114,8 @@ export async function GET() {
       completedRegistrations,
       failedInvitations,
       lastMigrationDate: lastMigration?.createdAt.toISOString(),
-      recentActivity
+      recentActivity,
     });
-
   } catch (error) {
     console.error("Failed to fetch migration stats:", error);
     return NextResponse.json(

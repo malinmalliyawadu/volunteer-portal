@@ -19,6 +19,9 @@ import {
   Shield,
   Filter,
   ChevronLeft,
+  Star,
+  PauseCircle,
+  CheckCircle,
 } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { cn } from "@/lib/utils";
@@ -88,6 +91,24 @@ export default async function AdminVolunteerPage({
       healthSafetyPolicyAccepted: true,
       role: true,
       createdAt: true,
+      regularVolunteer: {
+        include: {
+          shiftType: true,
+          autoSignups: {
+            take: 5,
+            orderBy: {
+              createdAt: "desc"
+            },
+            include: {
+              signup: {
+                include: {
+                  shift: true
+                }
+              }
+            }
+          }
+        }
+      },
       signups: {
         include: {
           shift: {
@@ -261,6 +282,23 @@ export default async function AdminVolunteerPage({
                   <User className="h-3 w-3 mr-1" />
                   {volunteer.role === "ADMIN" ? "Administrator" : "Volunteer"}
                 </Badge>
+                {volunteer.regularVolunteer && (
+                  <Badge
+                    variant="outline"
+                    className={volunteer.regularVolunteer.isActive && !volunteer.regularVolunteer.isPausedByUser 
+                      ? "border-yellow-500/20 text-yellow-700 bg-yellow-50" 
+                      : "border-gray-500/20 text-gray-700 bg-gray-50"
+                    }
+                  >
+                    <Star className="h-3 w-3 mr-1" />
+                    {volunteer.regularVolunteer.isActive && !volunteer.regularVolunteer.isPausedByUser 
+                      ? "Active Regular" 
+                      : volunteer.regularVolunteer.isPausedByUser 
+                      ? "Regular (Paused)" 
+                      : "Regular (Inactive)"
+                    }
+                  </Badge>
+                )}
                 <Badge
                   variant="outline"
                   className="border-green-500/20 text-green-700 bg-green-50"
@@ -393,6 +431,113 @@ export default async function AdminVolunteerPage({
 
         {/* Right Column - Detailed Info */}
         <div className="lg:col-span-2 space-y-6">
+          {/* Regular Volunteer Configuration */}
+          {volunteer.regularVolunteer && (
+            <Card data-testid="regular-volunteer-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Star className="h-5 w-5 text-yellow-600" />
+                  Regular Volunteer Configuration
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-3 bg-muted/50 rounded-lg space-y-1">
+                    <label className="text-sm font-medium">Shift Type</label>
+                    <p className="text-sm text-muted-foreground">
+                      {volunteer.regularVolunteer.shiftType.name}
+                    </p>
+                  </div>
+                  <div className="p-3 bg-muted/50 rounded-lg space-y-1">
+                    <label className="text-sm font-medium">Location</label>
+                    <p className="text-sm text-muted-foreground">
+                      {volunteer.regularVolunteer.location}
+                    </p>
+                  </div>
+                  <div className="p-3 bg-muted/50 rounded-lg space-y-1">
+                    <label className="text-sm font-medium">Frequency</label>
+                    <p className="text-sm text-muted-foreground">
+                      {volunteer.regularVolunteer.frequency === "WEEKLY" ? "Weekly" : 
+                       volunteer.regularVolunteer.frequency === "FORTNIGHTLY" ? "Fortnightly" : 
+                       volunteer.regularVolunteer.frequency === "MONTHLY" ? "Monthly" : 
+                       volunteer.regularVolunteer.frequency}
+                    </p>
+                  </div>
+                  <div className="p-3 bg-muted/50 rounded-lg space-y-1">
+                    <label className="text-sm font-medium">Status</label>
+                    <div className="flex items-center gap-2">
+                      {volunteer.regularVolunteer.isActive ? (
+                        volunteer.regularVolunteer.isPausedByUser ? (
+                          <>
+                            <PauseCircle className="h-4 w-4 text-yellow-600" />
+                            <span className="text-sm text-yellow-600">Paused</span>
+                            {volunteer.regularVolunteer.pausedUntil && (
+                              <span className="text-xs text-muted-foreground">
+                                until {format(volunteer.regularVolunteer.pausedUntil, "dd MMM yyyy")}
+                              </span>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle className="h-4 w-4 text-green-600" />
+                            <span className="text-sm text-green-600">Active</span>
+                          </>
+                        )
+                      ) : (
+                        <>
+                          <PauseCircle className="h-4 w-4 text-gray-600" />
+                          <span className="text-sm text-gray-600">Inactive</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Available Days</label>
+                  <div className="flex flex-wrap gap-2">
+                    {volunteer.regularVolunteer.availableDays.map((day: string) => (
+                      <Badge
+                        key={day}
+                        variant="outline"
+                        className="border-yellow-500/20 text-yellow-700 bg-yellow-50"
+                      >
+                        {day}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                
+                {volunteer.regularVolunteer.notes && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Admin Notes</label>
+                    <p className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
+                      {volunteer.regularVolunteer.notes}
+                    </p>
+                  </div>
+                )}
+                
+                {volunteer.regularVolunteer.autoSignups.length > 0 && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Recent Auto-Signups</label>
+                    <div className="space-y-2">
+                      {volunteer.regularVolunteer.autoSignups.map((autoSignup) => (
+                        <div key={autoSignup.id} className="text-sm p-2 bg-muted/30 rounded flex items-center justify-between">
+                          <span>
+                            {format(autoSignup.signup.shift.start, "EEE dd MMM yyyy, h:mma")}
+                          </span>
+                          <Badge variant="outline" className="text-xs">
+                            {autoSignup.signup.status === "REGULAR_PENDING" ? "Auto-Applied" : autoSignup.signup.status}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
           {/* Availability & Preferences */}
           <Card data-testid="availability-preferences-card">
             <CardHeader>

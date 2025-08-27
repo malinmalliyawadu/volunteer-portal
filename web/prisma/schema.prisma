@@ -65,15 +65,19 @@ model User {
   
   // Restaurant Manager
   restaurantManager            RestaurantManager?
+  
+  // Regular volunteer relation
+  regularVolunteer             RegularVolunteer?
 }
 
 model ShiftType {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  shifts      Shift[]
+  id               String             @id @default(cuid())
+  name             String             @unique
+  description      String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  shifts           Shift[]
+  regularVolunteers RegularVolunteer[]
 }
 
 model Shift {
@@ -92,22 +96,23 @@ model Shift {
 }
 
 model Signup {
-  id             String        @id @default(cuid())
+  id             String         @id @default(cuid())
   userId         String
   shiftId        String
-  status         SignupStatus  @default(CONFIRMED)
+  status         SignupStatus   @default(CONFIRMED)
   groupBookingId String?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
   
   // Cancellation tracking - only tracks cancellations from CONFIRMED status
-  canceledAt     DateTime?     // When a CONFIRMED signup was canceled
-  previousStatus String?       // Status before cancellation (only set when canceling from CONFIRMED)
-  cancellationReason String?    // Optional reason for cancellation
+  canceledAt     DateTime?      // When a CONFIRMED signup was canceled
+  previousStatus String?        // Status before cancellation (only set when canceling from CONFIRMED)
+  cancellationReason String?     // Optional reason for cancellation
   
-  shift          Shift         @relation(fields: [shiftId], references: [id])
-  user           User          @relation(fields: [userId], references: [id])
-  groupBooking   GroupBooking? @relation(fields: [groupBookingId], references: [id])
+  shift          Shift          @relation(fields: [shiftId], references: [id])
+  user           User           @relation(fields: [userId], references: [id])
+  groupBooking   GroupBooking?  @relation(fields: [groupBookingId], references: [id])
+  regularSignup  RegularSignup? // One-to-one relation with RegularSignup
 
   @@unique([userId, shiftId])
   @@index([status, canceledAt])
@@ -188,6 +193,7 @@ enum Role {
 
 enum SignupStatus {
   PENDING
+  REGULAR_PENDING  // Auto-generated signup for regular volunteers
   CONFIRMED
   WAITLISTED
   CANCELED
@@ -321,4 +327,48 @@ model RestaurantManager {
   
   // Relations
   user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model RegularVolunteer {
+  id              String          @id @default(cuid())
+  userId          String          @unique
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shiftTypeId     String
+  shiftType       ShiftType       @relation(fields: [shiftTypeId], references: [id])
+  location        String          // Wellington, Glenn Innes, Onehunga
+  frequency       Frequency       @default(WEEKLY)
+  availableDays   String[]        // Array of day names: ["Monday", "Wednesday", "Friday"]
+  isActive        Boolean         @default(true)
+  isPausedByUser  Boolean         @default(false) // User-controlled pause
+  pausedUntil     DateTime?       // Optional pause end date
+  notes           String?         // Admin notes about this regular assignment
+  volunteerNotes  String?         // Volunteer's own notes/preferences
+  createdAt       DateTime        @default(now())
+  createdBy       String          // Admin who created this
+  updatedAt       DateTime        @updatedAt
+  lastModifiedBy  String?         // Track who last modified (admin or volunteer)
+  
+  // Track auto-generated signups
+  autoSignups     RegularSignup[]
+  
+  @@index([userId, isActive])
+  @@index([shiftTypeId, location, isActive])
+}
+
+model RegularSignup {
+  id                 String           @id @default(cuid())
+  regularVolunteerId String
+  regularVolunteer   RegularVolunteer @relation(fields: [regularVolunteerId], references: [id], onDelete: Cascade)
+  signupId           String           @unique
+  signup             Signup           @relation(fields: [signupId], references: [id], onDelete: Cascade)
+  skipReason         String?          // If admin skips this auto-signup
+  createdAt          DateTime         @default(now())
+  
+  @@index([regularVolunteerId])
+}
+
+enum Frequency {
+  WEEKLY
+  FORTNIGHTLY
+  MONTHLY
 }

@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Plus, Star as StarIcon, User as UserIcon } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PageContainer } from "@/components/page-container";
@@ -510,6 +511,40 @@ export default async function AdminDashboardPage({
         </Card>
       </div>
 
+      {/* Quick Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Quick Actions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Button asChild className="h-auto p-4 flex-col gap-2">
+              <Link href="/admin/shifts/new">
+                <Plus className="h-5 w-5" />
+                <span className="font-medium">Create Shift</span>
+                <span className="text-xs opacity-75">Schedule new volunteer shifts</span>
+              </Link>
+            </Button>
+            
+            <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
+              <Link href="/admin/regulars">
+                <StarIcon className="h-5 w-5" />
+                <span className="font-medium">Regular Volunteers</span>
+                <span className="text-xs opacity-75">Manage recurring assignments</span>
+              </Link>
+            </Button>
+            
+            <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
+              <Link href="/admin/users">
+                <UserIcon className="h-5 w-5" />
+                <span className="font-medium">User Management</span>
+                <span className="text-xs opacity-75">View and manage volunteers</span>
+              </Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Recent Activity */}
       <Card>
         <CardHeader>
@@ -520,7 +555,7 @@ export default async function AdminDashboardPage({
         <CardContent>
           {recentSignups.length > 0 ? (
             <div className="space-y-3">
-              {recentSignups.map((signup: SignupWithUserAndShift) => (
+              {recentSignups.map((signup) => (
                 <div
                   key={signup.id}
                   className="flex items-center justify-between py-2 border-b border-border last:border-0"

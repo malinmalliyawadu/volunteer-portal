@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     return new Response("Unauthorized", { status: 401 });
   }
 
-  const userId = (session.user as { id?: string })?.id;
+  const userId = session.user?.id;
   if (!userId) {
     return new Response("Unauthorized", { status: 401 });
   }

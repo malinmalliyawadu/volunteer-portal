@@ -203,10 +203,7 @@ export function SiteHeader({
                 {/* User Menu */}
                 <UserMenu
                   userName={displayName}
-                  userEmail={
-                    (session.user as { email?: string | null })?.email ??
-                    undefined
-                  }
+                  userEmail={session.user?.email ?? undefined}
                   profilePhotoUrl={userProfile?.profilePhotoUrl}
                 />
               </>

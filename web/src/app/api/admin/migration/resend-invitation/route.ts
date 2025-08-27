@@ -12,36 +12,38 @@ interface InvitationWebhookData {
   registrationLink: string;
 }
 
-async function sendInvitationWebhook(data: InvitationWebhookData): Promise<boolean> {
+async function sendInvitationWebhook(
+  data: InvitationWebhookData
+): Promise<boolean> {
   try {
     const emailService = getEmailService();
     await emailService.sendMigrationInvite({
       to: data.email,
       firstName: data.firstName,
-      migrationLink: data.registrationLink
+      migrationLink: data.registrationLink,
     });
     console.log(`📧 Resent migration invitation email to: ${data.email}`);
     return true;
   } catch (error) {
-    console.error('Error resending migration invitation email:', error);
+    console.error("Error resending migration invitation email:", error);
     // Fallback to webhook if Campaign Monitor fails
     const webhookUrl = process.env.EMAIL_WEBHOOK_URL;
     if (webhookUrl) {
       try {
         const response = await fetch(webhookUrl, {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.EMAIL_WEBHOOK_TOKEN || ''}`,
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${process.env.EMAIL_WEBHOOK_TOKEN || ""}`,
           },
           body: JSON.stringify({
-            type: 'migration_invitation_resend',
+            type: "migration_invitation_resend",
             data,
           }),
         });
         return response.ok;
       } catch (webhookError) {
-        console.error('Webhook fallback error:', webhookError);
+        console.error("Webhook fallback error:", webhookError);
       }
     }
     return false;
@@ -52,14 +54,17 @@ export async function POST(request: NextRequest) {
   try {
     // Check authentication and admin role
     const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as { role?: string }).role !== "ADMIN") {
+    if (session?.user?.role !== "ADMIN") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
     const { userId } = await request.json();
 
     if (!userId) {
-      return NextResponse.json({ error: "User ID is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "User ID is required" },
+        { status: 400 }
+      );
     }
 
     // Get user
@@ -67,7 +72,7 @@ export async function POST(request: NextRequest) {
       where: {
         id: userId,
         profileCompleted: false,
-        role: "VOLUNTEER"
+        role: "VOLUNTEER",
       },
       select: {
         id: true,
@@ -76,18 +81,21 @@ export async function POST(request: NextRequest) {
         lastName: true,
         migrationInvitationSent: true,
         migrationInvitationSentAt: true,
-        migrationInvitationToken: true
-      }
+        migrationInvitationToken: true,
+      },
     });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found or not eligible for invitation" }, { status: 400 });
+      return NextResponse.json(
+        { error: "User not found or not eligible for invitation" },
+        { status: 400 }
+      );
     }
 
     // Generate new invitation token (or reuse existing one)
     let invitationToken = user.migrationInvitationToken;
     if (!invitationToken) {
-      invitationToken = randomBytes(32).toString('base64url');
+      invitationToken = randomBytes(32).toString("base64url");
     }
 
     const expiresAt = new Date();
@@ -102,7 +110,7 @@ export async function POST(request: NextRequest) {
       email: user.email,
       firstName: user.firstName || "",
       lastName: user.lastName || "",
-      registrationLink
+      registrationLink,
     };
 
     // Send via webhook
@@ -114,24 +122,27 @@ export async function POST(request: NextRequest) {
         where: { id: user.id },
         data: {
           migrationInvitationSent: true,
-          migrationInvitationSentAt: user.migrationInvitationSentAt || new Date(), // Keep first invitation date
+          migrationInvitationSentAt:
+            user.migrationInvitationSentAt || new Date(), // Keep first invitation date
           migrationLastSentAt: new Date(),
           migrationInvitationCount: { increment: 1 },
           migrationInvitationToken: invitationToken,
-          migrationTokenExpiresAt: expiresAt
-        }
+          migrationTokenExpiresAt: expiresAt,
+        },
       });
 
       return NextResponse.json({
         success: true,
-        message: "Invitation resent successfully"
+        message: "Invitation resent successfully",
       });
     } else {
-      return NextResponse.json({
-        error: "Failed to send invitation email"
-      }, { status: 500 });
+      return NextResponse.json(
+        {
+          error: "Failed to send invitation email",
+        },
+        { status: 500 }
+      );
     }
-
   } catch (error) {
     console.error("Resend invitation error:", error);
     return NextResponse.json(
