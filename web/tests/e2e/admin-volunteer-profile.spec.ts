@@ -348,11 +348,11 @@ test.describe("Admin Volunteer Profile View", () => {
         await waitForPageLoad(page);
 
         // Check shift history card
-        const shiftHistoryCard = page.getByText("Shift History").locator("..");
+        const shiftHistoryCard = page.getByTestId("shift-history-card");
         await expect(shiftHistoryCard).toBeVisible();
 
-        // Check location filter buttons
-        const allFilterButton = page.getByRole("link", { name: "All" });
+        // Check location filter buttons within the shift history card to avoid conflict with sidebar
+        const allFilterButton = shiftHistoryCard.getByRole("link", { name: "All" });
         await expect(allFilterButton).toBeVisible();
 
         // Check specific location filter buttons
@@ -428,8 +428,9 @@ test.describe("Admin Volunteer Profile View", () => {
           await expect(filterBadge).toBeVisible();
         }
 
-        // Click "All" filter to clear
-        const allFilter = page.getByRole("link", { name: "All" });
+        // Click "All" filter to clear - scope to shift history card to avoid sidebar conflict
+        const shiftHistoryCard = page.getByTestId("shift-history-card");
+        const allFilter = shiftHistoryCard.getByRole("link", { name: "All" });
         await allFilter.click();
         await waitForPageLoad(page);
 
