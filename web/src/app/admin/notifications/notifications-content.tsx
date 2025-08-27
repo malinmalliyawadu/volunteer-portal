@@ -492,7 +492,7 @@ export function NotificationsContent() {
                   </SelectTrigger>
                   <SelectContent>
                     {notificationGroups.length === 0 ? (
-                      <SelectItem value="" disabled>
+                      <SelectItem value="no-groups" disabled>
                         No saved groups available
                       </SelectItem>
                     ) : (
