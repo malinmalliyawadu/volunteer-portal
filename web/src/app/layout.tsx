@@ -5,8 +5,9 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
 import { SiteHeaderWrapper } from "@/components/site-header-wrapper";
-import { SiteFooter } from "@/components/site-footer";
+import { SiteFooterWrapper } from "@/components/site-footer-wrapper";
 import { Providers } from "@/components/providers";
+import { MainContentWrapper } from "@/components/main-content-wrapper";
 import { Toaster } from "sonner";
 
 const libreFranklin = Libre_Franklin({
@@ -58,11 +59,11 @@ export default async function RootLayout({
         <Providers>
           <SiteHeaderWrapper initialUserProfile={userProfile} />
           <main className="min-h-screen">
-            <div className="max-w-6xl mx-auto px-4 py-6">
+            <MainContentWrapper>
               {children}
-            </div>
+            </MainContentWrapper>
           </main>
-          <SiteFooter session={session} />
+          <SiteFooterWrapper session={session} />
           <Toaster />
         </Providers>
       </body>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
+import { usePathname } from "next/navigation";
 import { SiteHeader } from "./site-header";
 import { useEffect, useState } from "react";
 
@@ -17,6 +18,7 @@ interface SiteHeaderWrapperProps {
 export function SiteHeaderWrapper({ initialUserProfile }: SiteHeaderWrapperProps) {
   const { data: session, status } = useSession();
   const [userProfile, setUserProfile] = useState(initialUserProfile);
+  const pathname = usePathname();
 
   // Fetch updated user profile when session changes
   useEffect(() => {
@@ -49,6 +51,11 @@ export function SiteHeaderWrapper({ initialUserProfile }: SiteHeaderWrapperProps
     (session?.user as { name?: string | null })?.name ||
     (session?.user as { email?: string | null })?.email ||
     "Account";
+
+  // Hide header on admin pages (they have their own sidebar layout)
+  if (pathname.startsWith("/admin")) {
+    return null;
+  }
 
   return (
     <SiteHeader

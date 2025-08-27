@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Plus, Star as StarIcon, User as UserIcon } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PageContainer } from "@/components/page-container";
 
 const LOCATIONS = ["Wellington", "Glenn Innes", "Onehunga"] as const;
 type LocationOption = (typeof LOCATIONS)[number];
@@ -213,7 +212,7 @@ export default async function AdminDashboardPage({
   );
 
   return (
-    <PageContainer testid="admin-dashboard-page">
+    <div data-testid="admin-dashboard-page" className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <PageHeader
           title="Admin Dashboard"
@@ -611,6 +610,6 @@ export default async function AdminDashboardPage({
           )}
         </CardContent>
       </Card>
-    </PageContainer>
+    </div>
   );
 }
