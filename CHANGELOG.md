@@ -1,3 +1,9 @@
+## [0.20.0] - 2025-08-27
+
+### Changes
+- feat: implement comprehensive regular volunteer system ([#72](https://github.com/malinmalliyawadu/volunteer-portal/pull/72)) by @malinmalliyawadu
+
+
 ## [0.19.1] - 2025-08-26
 
 ### Changes
