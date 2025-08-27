@@ -20,8 +20,7 @@ export default async function AdminLayout({
     redirect("/login?callbackUrl=/admin");
   }
 
-  const role = (session?.user as { role?: "ADMIN" | "VOLUNTEER" } | undefined)
-    ?.role;
+  const role = session?.user?.role;
   if (role !== "ADMIN") {
     redirect("/dashboard");
   }
@@ -67,9 +66,7 @@ export default async function AdminLayout({
           <h1 className="text-lg font-semibold">Admin Panel</h1>
         </header>
         <div className="flex-1 p-6">
-          <div className="max-w-7xl mx-auto">
-            {children}
-          </div>
+          <div className="max-w-7xl mx-auto">{children}</div>
         </div>
       </SidebarInset>
     </SidebarProvider>
