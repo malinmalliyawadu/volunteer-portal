@@ -7,11 +7,8 @@ import {
   LayoutDashboard,
   Users,
   Calendar,
-  UserCog,
-  Database,
   ChefHat,
   Star,
-  Settings,
   Plus,
   Upload,
   CheckCircle,
@@ -29,7 +26,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { UserMenu } from "@/components/user-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -183,7 +179,7 @@ export function AdminSidebar({
                     <SidebarMenuItem key={item.href}>
                       <SidebarMenuButton
                         asChild
-                        isActive={isActive(item.href, item.exact)}
+                        isActive={isActive(item.href, item.exact || false)}
                         data-testid={testId}
                       >
                         <Link href={item.href}>
@@ -208,7 +204,11 @@ export function AdminSidebar({
                   asChild
                   data-testid="view-public-shifts-button"
                 >
-                  <Link href="/shifts" target="_blank" rel="noopener noreferrer">
+                  <Link
+                    href="/shifts"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     <Calendar className="w-4 h-4" />
                     <span>View Public Shifts</span>
                     <ExternalLink className="w-3 h-3 ml-auto opacity-60" />

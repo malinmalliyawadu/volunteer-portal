@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Upload, Users, Mail, CheckCircle } from "lucide-react";
@@ -11,7 +10,6 @@ import { UserInvitations } from "./user-invitations";
 import { MigratedUsers } from "./migrated-users";
 
 export function MigrationTabs() {
-  const router = useRouter();
   const [activeTab, setActiveTab] = useState("upload");
 
   // Handle hash-based navigation
