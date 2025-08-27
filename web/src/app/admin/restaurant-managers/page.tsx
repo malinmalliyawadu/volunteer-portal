@@ -1,8 +1,8 @@
-import { Suspense } from "react";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { redirect } from "next/navigation";
-import RestaurantManagersClient from "./restaurant-managers-client";
+import { PageHeader } from "@/components/page-header";
+import { RestaurantManagersContent } from "./restaurant-managers-content";
 
 export default async function RestaurantManagersPage() {
   const session = await getServerSession(authOptions);
@@ -16,17 +16,13 @@ export default async function RestaurantManagersPage() {
   }
 
   return (
-    <div className="container mx-auto py-8 space-y-6">
-      <div className="flex flex-col space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight" data-testid="page-heading">Restaurant Manager Assignments</h1>
-        <p className="text-muted-foreground">
-          Assign admins to restaurant locations to receive shift cancellation notifications.
-        </p>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="Restaurant Manager Assignments"
+        description="Assign admins to restaurant locations to receive shift cancellation notifications."
+      />
 
-      <Suspense fallback={<div>Loading...</div>}>
-        <RestaurantManagersClient />
-      </Suspense>
+      <RestaurantManagersContent />
     </div>
   );
 }
