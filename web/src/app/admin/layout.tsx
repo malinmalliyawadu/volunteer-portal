@@ -61,7 +61,7 @@ export default async function AdminLayout({
       />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 bg-background rounded-t-xl">
-          <SidebarTrigger />
+          <SidebarTrigger data-testid="admin-sidebar-toggle" />
           <div className="h-4 w-px bg-border mx-2" />
           <h1 className="text-lg font-semibold">Admin Panel</h1>
         </header>
