@@ -140,7 +140,7 @@ export default async function MyShiftsPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const session = await getServerSession(authOptions);
-  const userId = (session?.user as { id?: string } | undefined)?.id;
+  const userId = session?.user?.id;
   if (!userId) {
     redirect("/login?callbackUrl=/shifts/mine");
   }
@@ -166,7 +166,9 @@ export default async function MyShiftsPage({
     },
   });
 
-  const userPreferredLocations = safeParseAvailability(currentUser?.availableLocations);
+  const userPreferredLocations = safeParseAvailability(
+    currentUser?.availableLocations
+  );
 
   // Get user's friend IDs
   const userFriendIds = await prisma.friendship
@@ -443,7 +445,7 @@ export default async function MyShiftsPage({
               <div>
                 <div className="text-sm font-medium mb-3">Friends Joining</div>
                 <AvatarList
-                  users={shift.shift.signups.map(signup => signup.user)}
+                  users={shift.shift.signups.map((signup) => signup.user)}
                   size="md"
                   maxDisplay={6}
                 />
@@ -615,9 +617,7 @@ export default async function MyShiftsPage({
             title: "Total Hours",
             value: Math.round(
               allShifts
-                .filter(
-                  (s) => s.shift.end < now && s.status === "CONFIRMED"
-                )
+                .filter((s) => s.shift.end < now && s.status === "CONFIRMED")
                 .reduce(
                   (total, s) =>
                     total + differenceInHours(s.shift.end, s.shift.start),
@@ -641,7 +641,10 @@ export default async function MyShiftsPage({
                 <Calendar className="h-5 w-5" />
               </div>
               <div>
-                <div className="text-xl font-bold" data-testid="mobile-calendar-title">
+                <div
+                  className="text-xl font-bold"
+                  data-testid="mobile-calendar-title"
+                >
                   {format(viewMonth, "MMMM yyyy")}
                 </div>
                 <div
@@ -890,9 +893,7 @@ export default async function MyShiftsPage({
                                 `}
                               >
                                 <div className="text-center space-y-1">
-                                  <div className="text-xl">
-                                    {theme.emoji}
-                                  </div>
+                                  <div className="text-xl">{theme.emoji}</div>
                                   <div className="font-bold text-sm">
                                     {format(shift.shift.start, "HH:mm")}
                                   </div>
@@ -968,9 +969,9 @@ export default async function MyShiftsPage({
               }
 
               return (
-                      <div
-                        key={dateKey}
-                        className={`
+                <div
+                  key={dateKey}
+                  className={`
                           p-4 rounded-xl border transition-all duration-200
                           ${
                             isPast
@@ -980,13 +981,13 @@ export default async function MyShiftsPage({
                               : "bg-white dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 hover:shadow-md"
                           }
                         `}
-                      >
-                        {/* Date Header */}
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-3">
-                            <div
-                              data-testid="calendar-day-number"
-                              className={`
+                >
+                  {/* Date Header */}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div
+                        data-testid="calendar-day-number"
+                        className={`
                                 w-10 h-10 rounded-full flex items-center justify-center font-bold
                                 ${
                                   isPast
@@ -996,34 +997,36 @@ export default async function MyShiftsPage({
                                     : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
                                 }
                               `}
-                            >
-                              {format(day, "d")}
-                            </div>
-                            <div>
-                              <div className="font-semibold text-sm">
-                                {format(day, "EEEE")}
-                                {isToday && (
-                                  <span className="ml-2 text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full">
-                                    Today
-                                  </span>
-                                )}
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                {format(day, "MMMM d, yyyy")}
-                              </div>
-                            </div>
-                          </div>
+                      >
+                        {format(day, "d")}
+                      </div>
+                      <div>
+                        <div className="font-semibold text-sm">
+                          {format(day, "EEEE")}
+                          {isToday && (
+                            <span className="ml-2 text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full">
+                              Today
+                            </span>
+                          )}
                         </div>
+                        <div className="text-xs text-muted-foreground">
+                          {format(day, "MMMM d, yyyy")}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
 
-                        {/* Shift Content */}
-                        {shift ? (
-                          <ShiftDetailsDialog shift={shift}>
-                            <div className="cursor-pointer">
-                              {(() => {
-                                const theme = getShiftTheme(shift.shift.shiftType.name);
-                                return (
-                                  <div
-                                    className={`
+                  {/* Shift Content */}
+                  {shift ? (
+                    <ShiftDetailsDialog shift={shift}>
+                      <div className="cursor-pointer">
+                        {(() => {
+                          const theme = getShiftTheme(
+                            shift.shift.shiftType.name
+                          );
+                          return (
+                            <div
+                              className={`
                                       relative p-4 rounded-lg text-white shadow-md 
                                       transition-all duration-200 ease-in-out hover:shadow-lg
                                       ${
@@ -1032,85 +1035,98 @@ export default async function MyShiftsPage({
                                           : `bg-gradient-to-br ${theme.gradient} hover:shadow-xl`
                                       }
                                     `}
-                                  >
-                                    <div className="space-y-3">
-                                      <div className="flex items-center gap-4">
-                                        <div className="text-3xl">
-                                          {theme.emoji}
-                                        </div>
-                                        <div className="flex-1">
-                                          <div className="font-bold text-lg">
-                                            {shift.shift.shiftType.name}
-                                          </div>
-                                          <div className="text-sm opacity-90 flex items-center gap-2 mt-1">
-                                            <Timer className="h-4 w-4" />
-                                            {format(shift.shift.start, "h:mm a")} - {format(shift.shift.end, "h:mm a")}
-                                          </div>
-                                          {shift.shift.location && (
-                                            <div className="text-sm opacity-75 mt-1">
-                                              📍 {shift.shift.location}
-                                            </div>
-                                          )}
-                                        </div>
+                            >
+                              <div className="space-y-3">
+                                <div className="flex items-center gap-4">
+                                  <div className="text-3xl">{theme.emoji}</div>
+                                  <div className="flex-1">
+                                    <div className="font-bold text-lg">
+                                      {shift.shift.shiftType.name}
+                                    </div>
+                                    <div className="text-sm opacity-90 flex items-center gap-2 mt-1">
+                                      <Timer className="h-4 w-4" />
+                                      {format(
+                                        shift.shift.start,
+                                        "h:mm a"
+                                      )} - {format(shift.shift.end, "h:mm a")}
+                                    </div>
+                                    {shift.shift.location && (
+                                      <div className="text-sm opacity-75 mt-1">
+                                        📍 {shift.shift.location}
                                       </div>
-                                      
-                                      <div className="flex items-center justify-between">
-                                        <div>
-                                          <StatusBadge status={shift.status} isPast={isPast} />
-                                        </div>
-                                        {shift.shift.signups.length > 0 && (
-                                          <div className="flex items-center gap-1">
-                                            <div className="flex items-center gap-1 bg-white/20 rounded-full px-2 py-1">
-                                              <UserCheck className="h-3 w-3" />
-                                              <span className="text-xs font-medium">
-                                                {shift.shift.signups.length} friend{shift.shift.signups.length !== 1 ? 's' : ''} joining
-                                              </span>
-                                            </div>
-                                          </div>
-                                        )}
+                                    )}
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <StatusBadge
+                                      status={shift.status}
+                                      isPast={isPast}
+                                    />
+                                  </div>
+                                  {shift.shift.signups.length > 0 && (
+                                    <div className="flex items-center gap-1">
+                                      <div className="flex items-center gap-1 bg-white/20 rounded-full px-2 py-1">
+                                        <UserCheck className="h-3 w-3" />
+                                        <span className="text-xs font-medium">
+                                          {shift.shift.signups.length} friend
+                                          {shift.shift.signups.length !== 1
+                                            ? "s"
+                                            : ""}{" "}
+                                          joining
+                                        </span>
                                       </div>
                                     </div>
-                                    {/* Subtle gradient overlay for better readability */}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent rounded-lg pointer-events-none" />
-                                  </div>
-                                );
-                              })()}
+                                  )}
+                                </div>
+                              </div>
+                              {/* Subtle gradient overlay for better readability */}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent rounded-lg pointer-events-none" />
                             </div>
-                          </ShiftDetailsDialog>
-                        ) : availableShifts.length > 0 ? (
-                          <div className="space-y-2">
-                            <div className="text-sm font-medium text-muted-foreground">
-                              {availableShifts.length} shift{availableShifts.length !== 1 ? 's' : ''} available
-                            </div>
-                            <Button
-                              asChild
-                              className="w-full justify-start gap-2 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
-                            >
-                              <Link href="/shifts">
-                                <CalendarPlus className="h-4 w-4" />
-                                Browse Available Shifts
-                              </Link>
-                            </Button>
-                          </div>
-                        ) : (
-                          <div className="text-center py-4 text-muted-foreground">
-                            <div className="text-2xl mb-2">📅</div>
-                            <div className="text-sm font-medium">
-                              No shifts scheduled
-                            </div>
-                          </div>
-                        )}
+                          );
+                        })()}
                       </div>
-                    );
-                  })}
-            
+                    </ShiftDetailsDialog>
+                  ) : availableShifts.length > 0 ? (
+                    <div className="space-y-2">
+                      <div className="text-sm font-medium text-muted-foreground">
+                        {availableShifts.length} shift
+                        {availableShifts.length !== 1 ? "s" : ""} available
+                      </div>
+                      <Button
+                        asChild
+                        className="w-full justify-start gap-2 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
+                      >
+                        <Link href="/shifts">
+                          <CalendarPlus className="h-4 w-4" />
+                          Browse Available Shifts
+                        </Link>
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="text-center py-4 text-muted-foreground">
+                      <div className="text-2xl mb-2">📅</div>
+                      <div className="text-sm font-medium">
+                        No shifts scheduled
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
             {/* Show message if no shifts in the month */}
             {calendarDays.every((day) => {
               const dateKey = format(day, "yyyy-MM-dd");
               const dayShifts = shiftsByDate.get(dateKey) || [];
               const availableShifts = availableShiftsByDate.get(dateKey) || [];
               const isToday = isSameDay(day, now);
-              return dayShifts.length === 0 && availableShifts.length === 0 && !isToday;
+              return (
+                dayShifts.length === 0 &&
+                availableShifts.length === 0 &&
+                !isToday
+              );
             }) && (
               <div className="text-center py-8 text-muted-foreground">
                 <div className="text-4xl mb-3">📅</div>

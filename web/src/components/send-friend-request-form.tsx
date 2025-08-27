@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { UserPlus, Mail, MessageSquare, RefreshCw } from "lucide-react";
 import { sendFriendRequest } from "@/lib/friends-actions";
+import { MotionSpinner } from "@/components/motion-spinner";
 
 interface SendFriendRequestFormProps {
   open: boolean;
@@ -79,7 +80,7 @@ export function SendFriendRequestForm({
         className="sm:max-w-md"
         data-testid="send-friend-request-dialog"
       >
-        <ResponsiveDialogHeader>
+        <ResponsiveDialogHeader className="pb-4">
           <ResponsiveDialogTitle className="flex items-center space-x-2">
             <UserPlus className="h-5 w-5" />
             <span>Send Friend Request</span>
@@ -89,7 +90,7 @@ export function SendFriendRequestForm({
         <form
           id="friend-request-form"
           action={handleSubmit}
-          className="space-y-4"
+          className="space-y-6"
         >
           <div className="space-y-2">
             <Label htmlFor="email" className="flex items-center space-x-2">
@@ -104,7 +105,7 @@ export function SendFriendRequestForm({
               required
               data-testid="friend-request-email-input"
             />
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-muted-foreground">
               Enter the email address of the person you&apos;d like to add as a
               friend.
             </p>
@@ -123,7 +124,7 @@ export function SendFriendRequestForm({
               maxLength={500}
               data-testid="friend-request-message-input"
             />
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-muted-foreground">
               Add a personal message to your friend request (max 500
               characters).
             </p>
@@ -131,10 +132,10 @@ export function SendFriendRequestForm({
 
           {error && (
             <div
-              className="bg-red-50 border border-red-200 rounded-md p-3 space-y-3"
+              className="bg-destructive/10 border border-destructive/20 rounded-md p-3 space-y-3"
               data-testid="friend-request-error"
             >
-              <p className="text-red-800 text-sm">{error}</p>
+              <p className="text-destructive text-sm">{error}</p>
               {retryCount > 0 && retryCount < 3 && (
                 <Button
                   type="button"
@@ -149,14 +150,14 @@ export function SendFriendRequestForm({
                 </Button>
               )}
               {retryCount >= 3 && (
-                <p className="text-red-700 text-xs">
+                <p className="text-destructive/80 text-xs">
                   Multiple attempts failed. Please check your connection and try again later.
                 </p>
               )}
             </div>
           )}
 
-          <div className="flex justify-end space-x-2 pt-4">
+          <div className="flex flex-col-reverse sm:flex-row gap-2 sm:justify-end pt-6">
             <Button
               type="button"
               variant="outline"
@@ -171,7 +172,14 @@ export function SendFriendRequestForm({
               disabled={isSubmitting}
               data-testid="friend-request-submit-button"
             >
-              {isSubmitting ? "Sending..." : "Send Request"}
+              {isSubmitting ? (
+                <>
+                  <MotionSpinner size="sm" className="mr-2" />
+                  Sending...
+                </>
+              ) : (
+                "Send Request"
+              )}
             </Button>
           </div>
         </form>

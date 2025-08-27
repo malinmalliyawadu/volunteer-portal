@@ -37,7 +37,6 @@ type ShiftType = {
   updatedAt: Date;
 };
 
-
 export default async function EditShiftPage({
   params,
   searchParams,
@@ -46,8 +45,7 @@ export default async function EditShiftPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const session = await getServerSession(authOptions);
-  const role = (session?.user as { role?: "ADMIN" | "VOLUNTEER" } | undefined)
-    ?.role;
+  const role = session?.user?.role;
   if (!session?.user) redirect("/login?callbackUrl=/admin/shifts");
   if (role !== "ADMIN") redirect("/shifts");
 
@@ -479,9 +477,8 @@ export default async function EditShiftPage({
                       className="bg-green-50 text-green-700 border-green-200"
                     >
                       {
-                        shift.signups.filter(
-                          (s) => s.status === "CONFIRMED"
-                        ).length
+                        shift.signups.filter((s) => s.status === "CONFIRMED")
+                          .length
                       }{" "}
                       confirmed
                     </Badge>
@@ -490,9 +487,8 @@ export default async function EditShiftPage({
                       className="bg-orange-50 text-orange-700 border-orange-200"
                     >
                       {
-                        shift.signups.filter(
-                          (s) => s.status === "PENDING"
-                        ).length
+                        shift.signups.filter((s) => s.status === "PENDING")
+                          .length
                       }{" "}
                       pending
                     </Badge>
@@ -501,9 +497,8 @@ export default async function EditShiftPage({
                       className="bg-yellow-50 text-yellow-700 border-yellow-200"
                     >
                       {
-                        shift.signups.filter(
-                          (s) => s.status === "WAITLISTED"
-                        ).length
+                        shift.signups.filter((s) => s.status === "WAITLISTED")
+                          .length
                       }{" "}
                       waitlisted
                     </Badge>

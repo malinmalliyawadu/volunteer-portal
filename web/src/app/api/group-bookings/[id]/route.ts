@@ -56,21 +56,27 @@ export async function GET(req: Request) {
     });
 
     if (!groupBooking) {
-      return NextResponse.json({ error: "Group booking not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Group booking not found" },
+        { status: 404 }
+      );
     }
 
     // Check if user has permission to view this group
     const isLeader = groupBooking.leaderId === user.id;
-    const isMember = groupBooking.signups.some(signup => signup.userId === user.id);
-    const isInvited = groupBooking.invitations.some(inv => inv.email === user.email);
-    const isAdmin = (user as { role?: string }).role === "ADMIN";
+    const isMember = groupBooking.signups.some(
+      (signup) => signup.userId === user.id
+    );
+    const isInvited = groupBooking.invitations.some(
+      (inv) => inv.email === user.email
+    );
+    const isAdmin = user.role === "ADMIN";
 
     if (!isLeader && !isMember && !isInvited && !isAdmin) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
     return NextResponse.json(groupBooking);
-
   } catch (error) {
     console.error("Error fetching group booking:", error);
     return NextResponse.json(
@@ -103,7 +109,7 @@ export async function PATCH(req: Request) {
     // Validate request body
     const body = await req.json();
     const validation = updateGroupBookingSchema.safeParse(body);
-    
+
     if (!validation.success) {
       return NextResponse.json(
         { error: "Invalid request data", details: validation.error.issues },
@@ -120,15 +126,24 @@ export async function PATCH(req: Request) {
     });
 
     if (!groupBooking) {
-      return NextResponse.json({ error: "Group booking not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Group booking not found" },
+        { status: 404 }
+      );
     }
 
     if (groupBooking.leaderId !== user.id) {
-      return NextResponse.json({ error: "Only group leader can update group booking" }, { status: 403 });
+      return NextResponse.json(
+        { error: "Only group leader can update group booking" },
+        { status: 403 }
+      );
     }
 
     // Don't allow updates to confirmed or canceled groups
-    if (groupBooking.status === "CONFIRMED" || groupBooking.status === "CANCELED") {
+    if (
+      groupBooking.status === "CONFIRMED" ||
+      groupBooking.status === "CANCELED"
+    ) {
       return NextResponse.json(
         { error: "Cannot update confirmed or canceled group bookings" },
         { status: 400 }
@@ -166,7 +181,6 @@ export async function PATCH(req: Request) {
     });
 
     return NextResponse.json(updatedGroupBooking);
-
   } catch (error) {
     console.error("Error updating group booking:", error);
     return NextResponse.json(
@@ -203,14 +217,20 @@ export async function DELETE(req: Request) {
     });
 
     if (!groupBooking) {
-      return NextResponse.json({ error: "Group booking not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Group booking not found" },
+        { status: 404 }
+      );
     }
 
     const isLeader = groupBooking.leaderId === user.id;
-    const isAdmin = (user as { role?: string }).role === "ADMIN";
+    const isAdmin = user.role === "ADMIN";
 
     if (!isLeader && !isAdmin) {
-      return NextResponse.json({ error: "Only group leader or admin can cancel group booking" }, { status: 403 });
+      return NextResponse.json(
+        { error: "Only group leader or admin can cancel group booking" },
+        { status: 403 }
+      );
     }
 
     // Check if shift is in the future (allow admin to cancel past shifts)
@@ -237,7 +257,7 @@ export async function DELETE(req: Request) {
 
       // Cancel all pending invitations
       await tx.groupInvitation.updateMany({
-        where: { 
+        where: {
           groupBookingId,
           status: "PENDING",
         },
@@ -245,8 +265,10 @@ export async function DELETE(req: Request) {
       });
     });
 
-    return NextResponse.json({ success: true, message: "Group booking canceled successfully" });
-
+    return NextResponse.json({
+      success: true,
+      message: "Group booking canceled successfully",
+    });
   } catch (error) {
     console.error("Error canceling group booking:", error);
     return NextResponse.json(

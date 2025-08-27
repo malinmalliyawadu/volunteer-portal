@@ -44,8 +44,7 @@ export function SiteHeader({
     );
   };
 
-  const isAdmin =
-    (session?.user as { role?: "ADMIN" } | undefined)?.role === "ADMIN";
+  const isAdmin = session?.user?.role === "ADMIN";
 
   return (
     <header className="border-b border-white/10 dark:border-gray-800 shadow-lg dark:shadow-xl">

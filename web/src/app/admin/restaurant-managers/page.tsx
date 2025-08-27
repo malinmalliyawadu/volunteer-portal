@@ -6,7 +6,7 @@ import { RestaurantManagersContent } from "./restaurant-managers-content";
 
 export default async function RestaurantManagersPage() {
   const session = await getServerSession(authOptions);
-  const role = (session?.user as { role?: "ADMIN" | "VOLUNTEER" } | undefined)?.role;
+  const role = session?.user?.role;
 
   if (!session?.user) {
     redirect("/login?callbackUrl=/admin/restaurant-managers");

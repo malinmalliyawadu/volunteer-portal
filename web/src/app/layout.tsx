@@ -4,7 +4,7 @@ import "./globals.css";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
-import { SiteHeaderWrapper } from "@/components/site-header-wrapper";
+import { SiteHeaderClientWrapper } from "@/components/site-header-client-wrapper";
 import { SiteFooterWrapper } from "@/components/site-footer-wrapper";
 import { Providers } from "@/components/providers";
 import { MainContentWrapper } from "@/components/main-content-wrapper";
@@ -57,7 +57,7 @@ export default async function RootLayout({
         className={`${libreFranklin.variable} ${fraunces.variable} antialiased`}
       >
         <Providers>
-          <SiteHeaderWrapper initialUserProfile={userProfile} />
+          <SiteHeaderClientWrapper session={session} userProfile={userProfile} />
           <main className="min-h-screen">
             <MainContentWrapper>
               {children}

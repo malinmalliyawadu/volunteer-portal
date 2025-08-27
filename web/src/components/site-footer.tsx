@@ -20,8 +20,7 @@ interface SiteFooterProps {
  */
 export function SiteFooter({ session }: SiteFooterProps) {
   const currentYear = new Date().getFullYear();
-  const isAdmin =
-    (session?.user as { role?: "ADMIN" } | undefined)?.role === "ADMIN";
+  const isAdmin = session?.user?.role === "ADMIN";
 
   return (
     <footer className="border-t mt-12 bg-slate-900 dark:bg-slate-950">

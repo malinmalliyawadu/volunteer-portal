@@ -28,9 +28,7 @@ const createRegularVolunteerSchema = z.object({
 export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    const role = (
-      session?.user as { id?: string; role?: "ADMIN" | "VOLUNTEER" } | undefined
-    )?.role;
+    const role = session?.user?.role;
     if (!session?.user || role !== "ADMIN") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
@@ -119,9 +117,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    const role = (
-      session?.user as { id?: string; role?: "ADMIN" | "VOLUNTEER" } | undefined
-    )?.role;
+    const role = session?.user?.role;
     if (!session?.user || role !== "ADMIN") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }

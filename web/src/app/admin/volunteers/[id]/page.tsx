@@ -41,8 +41,7 @@ export default async function AdminVolunteerPage({
   searchParams,
 }: AdminVolunteerPageProps) {
   const session = await getServerSession(authOptions);
-  const role = (session?.user as { role?: "ADMIN" | "VOLUNTEER" } | undefined)
-    ?.role;
+  const role = session?.user?.role;
 
   if (!session?.user) {
     redirect("/login?callbackUrl=/admin");
@@ -97,17 +96,17 @@ export default async function AdminVolunteerPage({
           autoSignups: {
             take: 5,
             orderBy: {
-              createdAt: "desc"
+              createdAt: "desc",
             },
             include: {
               signup: {
                 include: {
-                  shift: true
-                }
-              }
-            }
-          }
-        }
+                  shift: true,
+                },
+              },
+            },
+          },
+        },
       },
       signups: {
         include: {
@@ -125,11 +124,13 @@ export default async function AdminVolunteerPage({
           NOT: {
             AND: [
               { status: "CANCELED" },
-              { OR: [{ previousStatus: null }, { previousStatus: "PENDING" }] }
-            ]
+              { OR: [{ previousStatus: null }, { previousStatus: "PENDING" }] },
+            ],
           },
           // Apply location filter if specified
-          ...(selectedLocation ? { shift: { location: selectedLocation } } : {}),
+          ...(selectedLocation
+            ? { shift: { location: selectedLocation } }
+            : {}),
         },
       },
     },
@@ -149,7 +150,9 @@ export default async function AdminVolunteerPage({
     : "V";
 
   const availableDays = safeParseAvailability(volunteer.availableDays);
-  const availableLocations = safeParseAvailability(volunteer.availableLocations);
+  const availableLocations = safeParseAvailability(
+    volunteer.availableLocations
+  );
 
   // Calculate shift statistics (all shifts, not filtered)
   const allSignups = await prisma.signup.findMany({
@@ -173,17 +176,18 @@ export default async function AdminVolunteerPage({
     (signup: (typeof allSignups)[0]) =>
       signup.shift.start < now && signup.status === "CONFIRMED"
   ).length;
-  
+
   // Track confirmed cancellations (only matters for reporting)
   const confirmedCancellations = volunteer.signups.filter(
     (signup: (typeof volunteer.signups)[0]) =>
-      signup.status === "CANCELED" && signup.canceledAt && signup.previousStatus === "CONFIRMED"
+      signup.status === "CANCELED" &&
+      signup.canceledAt &&
+      signup.previousStatus === "CONFIRMED"
   ).length;
-  
+
   // Track no-shows (manually set by admin)
   const noShows = volunteer.signups.filter(
-    (signup: (typeof volunteer.signups)[0]) =>
-      signup.status === "NO_SHOW"
+    (signup: (typeof volunteer.signups)[0]) => signup.status === "NO_SHOW"
   ).length;
 
   const dayLabels: Record<string, string> = {
@@ -238,7 +242,10 @@ export default async function AdminVolunteerPage({
         </Button>
       </PageHeader>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6" data-testid="volunteer-profile-layout">
+      <div
+        className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+        data-testid="volunteer-profile-layout"
+      >
         {/* Left Column - Profile Info */}
         <div className="lg:col-span-1 space-y-6">
           {/* Basic Information */}
@@ -285,18 +292,20 @@ export default async function AdminVolunteerPage({
                 {volunteer.regularVolunteer && (
                   <Badge
                     variant="outline"
-                    className={volunteer.regularVolunteer.isActive && !volunteer.regularVolunteer.isPausedByUser 
-                      ? "border-yellow-500/20 text-yellow-700 bg-yellow-50" 
-                      : "border-gray-500/20 text-gray-700 bg-gray-50"
+                    className={
+                      volunteer.regularVolunteer.isActive &&
+                      !volunteer.regularVolunteer.isPausedByUser
+                        ? "border-yellow-500/20 text-yellow-700 bg-yellow-50"
+                        : "border-gray-500/20 text-gray-700 bg-gray-50"
                     }
                   >
                     <Star className="h-3 w-3 mr-1" />
-                    {volunteer.regularVolunteer.isActive && !volunteer.regularVolunteer.isPausedByUser 
-                      ? "Active Regular" 
-                      : volunteer.regularVolunteer.isPausedByUser 
-                      ? "Regular (Paused)" 
-                      : "Regular (Inactive)"
-                    }
+                    {volunteer.regularVolunteer.isActive &&
+                    !volunteer.regularVolunteer.isPausedByUser
+                      ? "Active Regular"
+                      : volunteer.regularVolunteer.isPausedByUser
+                      ? "Regular (Paused)"
+                      : "Regular (Inactive)"}
                   </Badge>
                 )}
                 <Badge
@@ -457,10 +466,13 @@ export default async function AdminVolunteerPage({
                   <div className="p-3 bg-muted/50 rounded-lg space-y-1">
                     <label className="text-sm font-medium">Frequency</label>
                     <p className="text-sm text-muted-foreground">
-                      {volunteer.regularVolunteer.frequency === "WEEKLY" ? "Weekly" : 
-                       volunteer.regularVolunteer.frequency === "FORTNIGHTLY" ? "Fortnightly" : 
-                       volunteer.regularVolunteer.frequency === "MONTHLY" ? "Monthly" : 
-                       volunteer.regularVolunteer.frequency}
+                      {volunteer.regularVolunteer.frequency === "WEEKLY"
+                        ? "Weekly"
+                        : volunteer.regularVolunteer.frequency === "FORTNIGHTLY"
+                        ? "Fortnightly"
+                        : volunteer.regularVolunteer.frequency === "MONTHLY"
+                        ? "Monthly"
+                        : volunteer.regularVolunteer.frequency}
                     </p>
                   </div>
                   <div className="p-3 bg-muted/50 rounded-lg space-y-1">
@@ -470,44 +482,56 @@ export default async function AdminVolunteerPage({
                         volunteer.regularVolunteer.isPausedByUser ? (
                           <>
                             <PauseCircle className="h-4 w-4 text-yellow-600" />
-                            <span className="text-sm text-yellow-600">Paused</span>
+                            <span className="text-sm text-yellow-600">
+                              Paused
+                            </span>
                             {volunteer.regularVolunteer.pausedUntil && (
                               <span className="text-xs text-muted-foreground">
-                                until {format(volunteer.regularVolunteer.pausedUntil, "dd MMM yyyy")}
+                                until{" "}
+                                {format(
+                                  volunteer.regularVolunteer.pausedUntil,
+                                  "dd MMM yyyy"
+                                )}
                               </span>
                             )}
                           </>
                         ) : (
                           <>
                             <CheckCircle className="h-4 w-4 text-green-600" />
-                            <span className="text-sm text-green-600">Active</span>
+                            <span className="text-sm text-green-600">
+                              Active
+                            </span>
                           </>
                         )
                       ) : (
                         <>
                           <PauseCircle className="h-4 w-4 text-gray-600" />
-                          <span className="text-sm text-gray-600">Inactive</span>
+                          <span className="text-sm text-gray-600">
+                            Inactive
+                          </span>
                         </>
                       )}
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Available Days</label>
                   <div className="flex flex-wrap gap-2">
-                    {volunteer.regularVolunteer.availableDays.map((day: string) => (
-                      <Badge
-                        key={day}
-                        variant="outline"
-                        className="border-yellow-500/20 text-yellow-700 bg-yellow-50"
-                      >
-                        {day}
-                      </Badge>
-                    ))}
+                    {volunteer.regularVolunteer.availableDays.map(
+                      (day: string) => (
+                        <Badge
+                          key={day}
+                          variant="outline"
+                          className="border-yellow-500/20 text-yellow-700 bg-yellow-50"
+                        >
+                          {day}
+                        </Badge>
+                      )
+                    )}
                   </div>
                 </div>
-                
+
                 {volunteer.regularVolunteer.notes && (
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Admin Notes</label>
@@ -516,21 +540,33 @@ export default async function AdminVolunteerPage({
                     </p>
                   </div>
                 )}
-                
+
                 {volunteer.regularVolunteer.autoSignups.length > 0 && (
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Recent Auto-Signups</label>
+                    <label className="text-sm font-medium">
+                      Recent Auto-Signups
+                    </label>
                     <div className="space-y-2">
-                      {volunteer.regularVolunteer.autoSignups.map((autoSignup) => (
-                        <div key={autoSignup.id} className="text-sm p-2 bg-muted/30 rounded flex items-center justify-between">
-                          <span>
-                            {format(autoSignup.signup.shift.start, "EEE dd MMM yyyy, h:mma")}
-                          </span>
-                          <Badge variant="outline" className="text-xs">
-                            {autoSignup.signup.status === "REGULAR_PENDING" ? "Auto-Applied" : autoSignup.signup.status}
-                          </Badge>
-                        </div>
-                      ))}
+                      {volunteer.regularVolunteer.autoSignups.map(
+                        (autoSignup) => (
+                          <div
+                            key={autoSignup.id}
+                            className="text-sm p-2 bg-muted/30 rounded flex items-center justify-between"
+                          >
+                            <span>
+                              {format(
+                                autoSignup.signup.shift.start,
+                                "EEE dd MMM yyyy, h:mma"
+                              )}
+                            </span>
+                            <Badge variant="outline" className="text-xs">
+                              {autoSignup.signup.status === "REGULAR_PENDING"
+                                ? "Auto-Applied"
+                                : autoSignup.signup.status}
+                            </Badge>
+                          </div>
+                        )
+                      )}
                     </div>
                   </div>
                 )}

@@ -8,6 +8,7 @@ test.describe("Profile Page", () => {
     // Navigate to profile and wait for it to load
     await page.goto("/profile");
     await page.waitForLoadState("load");
+    await page.waitForTimeout(1000);
 
     // Skip tests if login failed (we're still on login page)
     const currentUrl = page.url();
@@ -44,7 +45,9 @@ test.describe("Profile Page", () => {
 
   test("should display user information correctly", async ({ page }) => {
     // Check main profile avatar is visible (not the header avatar)
-    const mainProfileAvatar = page.getByTestId("profile-page").getByRole("img", { name: /profile/i });
+    const mainProfileAvatar = page
+      .getByTestId("profile-page")
+      .getByRole("img", { name: /profile/i });
     if ((await mainProfileAvatar.count()) > 0) {
       await expect(mainProfileAvatar).toBeVisible();
     }
@@ -84,7 +87,9 @@ test.describe("Profile Page", () => {
     const emailLabel = page.getByTestId("personal-info-email-label");
     await expect(emailLabel).toBeVisible();
 
-    const accountTypeLabel = page.getByTestId("personal-info-account-type-label");
+    const accountTypeLabel = page.getByTestId(
+      "personal-info-account-type-label"
+    );
     await expect(accountTypeLabel).toBeVisible();
   });
 
@@ -187,12 +192,14 @@ test.describe("Profile Page", () => {
     page,
   }) => {
     // Check that the link exists and is clickable
-    const browseShiftsLink = page.locator('a[href="/shifts"]').filter({ hasText: "Browse Available Shifts" });
+    const browseShiftsLink = page
+      .locator('a[href="/shifts"]')
+      .filter({ hasText: "Browse Available Shifts" });
     await expect(browseShiftsLink).toBeVisible();
-    
+
     await browseShiftsLink.click();
     await page.waitForLoadState("load");
-    
+
     await expect(page).toHaveURL("/shifts");
   });
 
@@ -200,12 +207,14 @@ test.describe("Profile Page", () => {
     page,
   }) => {
     // Check that the link exists and is clickable
-    const viewScheduleLink = page.locator('a[href="/shifts/mine"]').filter({ hasText: "View My Schedule" });
+    const viewScheduleLink = page
+      .locator('a[href="/shifts/mine"]')
+      .filter({ hasText: "View My Schedule" });
     await expect(viewScheduleLink).toBeVisible();
-    
+
     await viewScheduleLink.click();
     await page.waitForLoadState("load");
-    
+
     await expect(page).toHaveURL("/shifts/mine");
   });
 
@@ -357,7 +366,9 @@ test.describe("Profile Page", () => {
     await expect(emailLabel).toContainText("Email");
 
     // Check account type - should be Volunteer or Administrator
-    const accountTypeLabel = page.getByTestId("personal-info-account-type-label");
+    const accountTypeLabel = page.getByTestId(
+      "personal-info-account-type-label"
+    );
     await expect(accountTypeLabel).toBeVisible();
     await expect(accountTypeLabel).toContainText("Account Type");
   });

@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default async function MigrationPage() {
   // Check authentication and admin role
   const session = await getServerSession(authOptions);
-  const role = (session?.user as { role?: "ADMIN" | "VOLUNTEER" } | undefined)?.role;
+  const role = session?.user?.role;
 
   if (!session?.user) {
     redirect("/login?callbackUrl=/admin/migration");
@@ -21,7 +21,7 @@ export default async function MigrationPage() {
   if (role !== "ADMIN") {
     redirect("/dashboard");
   }
-  
+
   return (
     <div className="space-y-6">
       <PageHeader

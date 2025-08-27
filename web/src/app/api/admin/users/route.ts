@@ -6,7 +6,7 @@ import { authOptions } from "@/lib/auth-options";
 // GET /api/admin/users - List all users (for admin use)
 export async function GET() {
   const session = await getServerSession(authOptions);
-  const role = (session?.user as { role?: "ADMIN" | "VOLUNTEER" } | undefined)?.role;
+  const role = session?.user?.role;
   if (role !== "ADMIN") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
@@ -25,8 +25,8 @@ export async function GET() {
         updatedAt: true,
       },
       orderBy: [
-        { role: 'asc' }, // Admins first
-        { email: 'asc' },
+        { role: "asc" }, // Admins first
+        { email: "asc" },
       ],
     });
 

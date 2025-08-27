@@ -51,8 +51,7 @@ export default async function AdminShiftsPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const session = await getServerSession(authOptions);
-  const role = (session?.user as { role?: "ADMIN" | "VOLUNTEER" } | undefined)
-    ?.role;
+  const role = session?.user?.role;
   if (!session?.user) {
     redirect("/login?callbackUrl=/admin/shifts");
   }
@@ -199,11 +198,11 @@ export default async function AdminShiftsPage({
         orderBy: { start: "asc" },
         include: {
           shiftType: true,
-          signups: { 
-            include: { 
+          signups: {
+            include: {
               user: true,
-              regularSignup: true
-            } 
+              regularSignup: true,
+            },
           },
           groupBookings: {
             include: {
@@ -221,11 +220,11 @@ export default async function AdminShiftsPage({
         orderBy: { start: "desc" },
         include: {
           shiftType: true,
-          signups: { 
-            include: { 
+          signups: {
+            include: {
               user: true,
-              regularSignup: true
-            } 
+              regularSignup: true,
+            },
           },
           groupBookings: {
             include: {
@@ -269,7 +268,8 @@ export default async function AdminShiftsPage({
     let waitlisted = 0;
     for (const su of s.signups) {
       if (su.status === "CONFIRMED") confirmed += 1;
-      if (su.status === "PENDING" || su.status === "REGULAR_PENDING") pending += 1;
+      if (su.status === "PENDING" || su.status === "REGULAR_PENDING")
+        pending += 1;
       if (su.status === "WAITLISTED") waitlisted += 1;
       // Note: CANCELED signups are excluded from all counts
     }
@@ -293,7 +293,13 @@ export default async function AdminShiftsPage({
     name: string | null;
     email: string;
     phone: string | null;
-    status: "PENDING" | "CONFIRMED" | "WAITLISTED" | "CANCELED" | "NO_SHOW" | "REGULAR_PENDING";
+    status:
+      | "PENDING"
+      | "CONFIRMED"
+      | "WAITLISTED"
+      | "CANCELED"
+      | "NO_SHOW"
+      | "REGULAR_PENDING";
     userId: string;
     signupId: string;
     isAutoSignup?: boolean;
