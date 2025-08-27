@@ -102,7 +102,7 @@ export function FriendsList({ friends, searchTerm }: FriendsListProps) {
                       <h3 className="font-semibold text-lg text-foreground truncate">
                         {displayName}
                       </h3>
-                      <div className="flex items-center-safe gap-2 mt-1">
+                      <div className="flex items-center gap-2 mt-1">
                         <Heart className="h-3 w-3 text-muted-foreground" />
                         <p className="text-sm text-muted-foreground">
                           {daysSinceFriendship === 0

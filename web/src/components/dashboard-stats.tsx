@@ -4,7 +4,7 @@ import { AnimatedStatsGrid } from "@/components/animated-stats-grid";
 
 interface DashboardStatsProps {
   userId: string;
-  userName: string | undefined;
+  userName: string | null | undefined;
 }
 
 export async function DashboardStats({ userId, userName }: DashboardStatsProps) {

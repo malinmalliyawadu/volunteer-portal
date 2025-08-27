@@ -1,5 +1,4 @@
 import { PageContainer } from "@/components/page-container";
-import { PageHeader } from "@/components/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
@@ -8,11 +7,10 @@ export default function ProfileLoading() {
     <PageContainer>
       {/* Header skeleton */}
       <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 mb-8">
-        <PageHeader
-          title={<Skeleton className="h-8 w-40" />}
-          description={<Skeleton className="h-4 w-72 mt-2" />}
-          className="flex-1"
-        />
+        <div className="flex-1">
+          <Skeleton className="h-12 w-40 mb-2" />
+          <Skeleton className="h-4 w-72" />
+        </div>
         <div className="flex flex-col sm:flex-row gap-3">
           <Skeleton className="h-10 w-32" />
           <Skeleton className="h-10 w-36" />

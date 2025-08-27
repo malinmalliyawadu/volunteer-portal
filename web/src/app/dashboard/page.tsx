@@ -14,8 +14,8 @@ import { DashboardContentSkeleton } from "@/components/dashboard-content-skeleto
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
-  const userId = (session?.user as { id?: string } | undefined)?.id;
-  const userName = (session?.user as { name?: string } | undefined)?.name;
+  const userId = session?.user?.id;
+  const userName = session?.user?.name;
 
   if (!userId) {
     redirect("/login?callbackUrl=/dashboard");
