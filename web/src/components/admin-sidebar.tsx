@@ -179,7 +179,7 @@ export function AdminSidebar({
                     <SidebarMenuItem key={item.href}>
                       <SidebarMenuButton
                         asChild
-                        isActive={isActive(item.href, item.exact || false)}
+                        isActive={isActive(item.href, true)}
                         data-testid={testId}
                       >
                         <Link href={item.href}>
