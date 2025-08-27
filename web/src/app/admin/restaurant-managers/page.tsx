@@ -20,6 +20,7 @@ export default async function RestaurantManagersPage() {
       <PageHeader
         title="Restaurant Manager Assignments"
         description="Assign admins to restaurant locations to receive shift cancellation notifications."
+        data-testid="page-header"
       />
 
       <RestaurantManagersContent />

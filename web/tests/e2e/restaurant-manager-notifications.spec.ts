@@ -12,7 +12,7 @@ test.describe("Restaurant Manager Shift Cancellation Notifications", () => {
     await page.waitForLoadState("load");
 
     // Check page loads correctly
-    await expect(page.getByTestId("page-heading")).toBeVisible();
+    await expect(page.getByTestId("page-header")).toBeVisible();
     await expect(page.getByText("Assign admins to restaurant locations")).toBeVisible();
 
     // Wait for form to be fully loaded
@@ -153,7 +153,7 @@ test.describe("Restaurant Manager Shift Cancellation Notifications", () => {
     // Click the link and verify navigation
     await page.getByTestId("restaurant-managers-button").click();
     await expect(page).toHaveURL("/admin/restaurant-managers");
-    await expect(page.getByTestId("page-heading")).toBeVisible();
+    await expect(page.getByTestId("page-header")).toBeVisible();
   });
 });
 
