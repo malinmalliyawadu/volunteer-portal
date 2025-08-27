@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import RestaurantManagersTable from "./restaurant-managers-table";
-import RestaurantManagerForm from "./restaurant-manager-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import RestaurantManagerForm from "./restaurant-manager-form";
+import RestaurantManagersTable from "./restaurant-managers-table";
 
-export default function RestaurantManagersClient() {
+export function RestaurantManagersContent() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const handleManagerUpdate = () => {
