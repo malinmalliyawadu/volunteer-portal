@@ -535,7 +535,7 @@ test.describe("My Shifts Calendar Page", () => {
       await page.setViewportSize({ width: 375, height: 667 });
       await page.reload();
       await page.waitForLoadState("load");
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(500);
 
       // Check that main elements are still visible and accessible
       const myShiftsPage = page.getByTestId("my-shifts-page");
