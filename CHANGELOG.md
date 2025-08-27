@@ -1,3 +1,9 @@
+## [0.21.0] - 2025-08-27
+
+### Changes
+- Improve loading states and animations with motion.dev integration ([#75](https://github.com/malinmalliyawadu/volunteer-portal/pull/75)) by @malinmalliyawadu
+
+
 ## [0.20.1] - 2025-08-27
 
 ### Changes
