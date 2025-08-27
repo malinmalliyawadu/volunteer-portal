@@ -8,7 +8,6 @@ test.describe("Profile Page", () => {
     // Navigate to profile and wait for it to load
     await page.goto("/profile");
     await page.waitForLoadState("load");
-    await page.waitForTimeout(1000);
 
     // Skip tests if login failed (we're still on login page)
     const currentUrl = page.url();
@@ -35,7 +34,7 @@ test.describe("Profile Page", () => {
 
     // Check profile header card is visible by finding the "Active Member" badge
     const activeMemberBadge = page.getByText("Active Member");
-    await expect(activeMemberBadge).toBeVisible();
+    await expect(activeMemberBadge.first()).toBeVisible();
 
     // Check edit profile button
     const editButton = page.getByRole("link", { name: /edit profile/i });
@@ -68,7 +67,7 @@ test.describe("Profile Page", () => {
 
     // Check active member badge
     const activeBadge = page.getByText("Active Member");
-    await expect(activeBadge).toBeVisible();
+    await expect(activeBadge.first()).toBeVisible();
   });
 
   test("should display personal information section", async ({ page }) => {
@@ -278,7 +277,7 @@ test.describe("Profile Page", () => {
 
     // Check active member badge
     const activeBadge = page.getByText("Active Member");
-    await expect(activeBadge).toBeVisible();
+    await expect(activeBadge.first()).toBeVisible();
 
     // Check for agreement signed badge if present
     const agreementBadge = page.getByText("Agreement Signed");

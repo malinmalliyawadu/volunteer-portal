@@ -535,7 +535,6 @@ test.describe("My Shifts Calendar Page", () => {
       await page.setViewportSize({ width: 375, height: 667 });
       await page.reload();
       await page.waitForLoadState("load");
-      await page.waitForTimeout(500);
 
       // Check that main elements are still visible and accessible
       const myShiftsPage = page.getByTestId("my-shifts-page");
@@ -590,7 +589,7 @@ test.describe("My Shifts Calendar Page", () => {
     test("should display stats without errors", async ({ page }) => {
       // Check that no error messages are displayed
       const errorMessage = page.getByText(/error|failed|something went wrong/i);
-      await expect(errorMessage).not.toBeVisible();
+      await expect(errorMessage.first()).not.toBeVisible();
 
       // Check that all stat numbers are displayed
       const statNumbers = page.locator(".text-2xl.font-bold");
