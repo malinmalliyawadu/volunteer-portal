@@ -33,9 +33,7 @@ export async function GET(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    const role = (
-      session?.user as { id?: string; role?: "ADMIN" | "VOLUNTEER" } | undefined
-    )?.role;
+    const role = session?.user?.role;
     if (!session?.user || role !== "ADMIN") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
@@ -95,9 +93,7 @@ export async function PUT(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    const role = (
-      session?.user as { id?: string; role?: "ADMIN" | "VOLUNTEER" } | undefined
-    )?.role;
+    const role = session?.user?.role;
     if (!session?.user || role !== "ADMIN") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
@@ -186,9 +182,7 @@ export async function DELETE(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    const role = (
-      session?.user as { id?: string; role?: "ADMIN" | "VOLUNTEER" } | undefined
-    )?.role;
+    const role = session?.user?.role;
     if (!session?.user || role !== "ADMIN") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }

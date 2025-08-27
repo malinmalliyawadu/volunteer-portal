@@ -145,16 +145,10 @@ export const authOptions: NextAuthOptions = {
     },
     async jwt({ token, user, trigger, session }) {
       if (user) {
-        const u = user as {
-          role?: AppRole;
-          phone?: string | null;
-          firstName?: string | null;
-          lastName?: string | null;
-        };
-        token.role = u.role;
-        token.phone = u.phone;
-        token.firstName = u.firstName;
-        token.lastName = u.lastName;
+        token.role = user.role;
+        token.phone = user.phone;
+        token.firstName = user.firstName;
+        token.lastName = user.lastName;
       }
 
       // Handle session updates (like profile changes)

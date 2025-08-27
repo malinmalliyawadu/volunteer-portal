@@ -20,8 +20,7 @@ export default async function AdminDashboardPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const session = await getServerSession(authOptions);
-  const role = (session?.user as { role?: "ADMIN" | "VOLUNTEER" } | undefined)
-    ?.role;
+  const role = session?.user?.role;
 
   if (!session?.user) {
     redirect("/login?callbackUrl=/admin");
@@ -521,23 +520,37 @@ export default async function AdminDashboardPage({
               <Link href="/admin/shifts/new">
                 <Plus className="h-5 w-5" />
                 <span className="font-medium">Create Shift</span>
-                <span className="text-xs opacity-75">Schedule new volunteer shifts</span>
+                <span className="text-xs opacity-75">
+                  Schedule new volunteer shifts
+                </span>
               </Link>
             </Button>
-            
-            <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
+
+            <Button
+              asChild
+              variant="outline"
+              className="h-auto p-4 flex-col gap-2"
+            >
               <Link href="/admin/regulars">
                 <StarIcon className="h-5 w-5" />
                 <span className="font-medium">Regular Volunteers</span>
-                <span className="text-xs opacity-75">Manage recurring assignments</span>
+                <span className="text-xs opacity-75">
+                  Manage recurring assignments
+                </span>
               </Link>
             </Button>
-            
-            <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
+
+            <Button
+              asChild
+              variant="outline"
+              className="h-auto p-4 flex-col gap-2"
+            >
               <Link href="/admin/users">
                 <UserIcon className="h-5 w-5" />
                 <span className="font-medium">User Management</span>
-                <span className="text-xs opacity-75">View and manage volunteers</span>
+                <span className="text-xs opacity-75">
+                  View and manage volunteers
+                </span>
               </Link>
             </Button>
           </div>

@@ -12,9 +12,8 @@ import { RegularVolunteerForm } from "./regular-volunteer-form";
 
 export default async function RegularVolunteersPage() {
   const session = await getServerSession(authOptions);
-  const role = (session?.user as { role?: "ADMIN" | "VOLUNTEER" } | undefined)
-    ?.role;
-  
+  const role = session?.user?.role;
+
   if (!session?.user) redirect("/login?callbackUrl=/admin/regulars");
   if (role !== "ADMIN") redirect("/dashboard");
 
@@ -29,38 +28,38 @@ export default async function RegularVolunteersPage() {
           lastName: true,
           email: true,
           phone: true,
-        }
+        },
       },
       shiftType: true,
       autoSignups: {
         take: 5,
         orderBy: {
-          createdAt: "desc"
+          createdAt: "desc",
         },
         include: {
           signup: {
             include: {
-              shift: true
-            }
-          }
-        }
+              shift: true,
+            },
+          },
+        },
       },
       _count: {
         select: {
-          autoSignups: true
-        }
-      }
+          autoSignups: true,
+        },
+      },
     },
     orderBy: {
-      createdAt: "desc"
-    }
+      createdAt: "desc",
+    },
   });
 
   // Get all volunteers for the form
   const volunteers = await prisma.user.findMany({
     where: {
       role: "VOLUNTEER",
-      regularVolunteer: null // Only show volunteers who aren't already regulars
+      regularVolunteer: null, // Only show volunteers who aren't already regulars
     },
     select: {
       id: true,
@@ -69,23 +68,20 @@ export default async function RegularVolunteersPage() {
       lastName: true,
       email: true,
     },
-    orderBy: [
-      { firstName: "asc" },
-      { lastName: "asc" }
-    ]
+    orderBy: [{ firstName: "asc" }, { lastName: "asc" }],
   });
 
   // Get shift types for the form
   const shiftTypes = await prisma.shiftType.findMany({
-    orderBy: { name: "asc" }
+    orderBy: { name: "asc" },
   });
 
   // Calculate stats
   const stats = {
     total: regulars.length,
-    active: regulars.filter(r => r.isActive && !r.isPausedByUser).length,
-    paused: regulars.filter(r => r.isPausedByUser).length,
-    inactive: regulars.filter(r => !r.isActive).length,
+    active: regulars.filter((r) => r.isActive && !r.isPausedByUser).length,
+    paused: regulars.filter((r) => r.isPausedByUser).length,
+    inactive: regulars.filter((r) => !r.isActive).length,
   };
 
   return (
@@ -117,7 +113,7 @@ export default async function RegularVolunteersPage() {
             <StarIcon className="h-8 w-8 text-yellow-500" />
           </div>
         </div>
-        
+
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border">
           <div className="flex items-center justify-between">
             <div>
@@ -161,13 +157,9 @@ export default async function RegularVolunteersPage() {
         </div>
       </div>
 
-
       {/* Add Regular Form */}
       <div className="mb-8">
-        <RegularVolunteerForm 
-          volunteers={volunteers}
-          shiftTypes={shiftTypes}
-        />
+        <RegularVolunteerForm volunteers={volunteers} shiftTypes={shiftTypes} />
       </div>
 
       {/* Regulars Table */}

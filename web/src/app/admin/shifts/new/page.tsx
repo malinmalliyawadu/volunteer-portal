@@ -85,8 +85,7 @@ type RecentShift = {
 
 export default async function NewShiftPage() {
   const session = await getServerSession(authOptions);
-  const role = (session?.user as { role?: "ADMIN" | "VOLUNTEER" } | undefined)
-    ?.role;
+  const role = session?.user?.role;
   if (!session?.user) redirect("/login?callbackUrl=/admin/shifts/new");
   if (role !== "ADMIN") redirect("/shifts");
 
@@ -158,25 +157,32 @@ export default async function NewShiftPage() {
           isActive: true,
           isPausedByUser: false,
           availableDays: {
-            has: dayOfWeek
-          }
-        }
+            has: dayOfWeek,
+          },
+        },
       });
 
       // Filter by frequency
-      const matchingRegulars = regularVolunteers.filter(regular => {
+      const matchingRegulars = regularVolunteers.filter((regular) => {
         if (regular.frequency === "WEEKLY") {
           return true;
         } else if (regular.frequency === "FORTNIGHTLY") {
           const weeksSinceCreation = Math.floor(
-            (start.getTime() - regular.createdAt.getTime()) / (7 * 24 * 60 * 60 * 1000)
+            (start.getTime() - regular.createdAt.getTime()) /
+              (7 * 24 * 60 * 60 * 1000)
           );
           return weeksSinceCreation % 2 === 0;
         } else if (regular.frequency === "MONTHLY") {
           // Check if this is the first occurrence of this day in the month
-          const firstOccurrenceInMonth = new Date(start.getFullYear(), start.getMonth(), 1);
+          const firstOccurrenceInMonth = new Date(
+            start.getFullYear(),
+            start.getMonth(),
+            1
+          );
           while (firstOccurrenceInMonth.getDay() !== start.getDay()) {
-            firstOccurrenceInMonth.setDate(firstOccurrenceInMonth.getDate() + 1);
+            firstOccurrenceInMonth.setDate(
+              firstOccurrenceInMonth.getDate() + 1
+            );
           }
           return start.getDate() === firstOccurrenceInMonth.getDate();
         }
@@ -201,13 +207,13 @@ export default async function NewShiftPage() {
               shift: {
                 start: {
                   gte: shiftDay,
-                  lt: nextDay
-                }
+                  lt: nextDay,
+                },
               },
               status: {
-                in: ["CONFIRMED", "REGULAR_PENDING", "PENDING"]
-              }
-            }
+                in: ["CONFIRMED", "REGULAR_PENDING", "PENDING"],
+              },
+            },
           });
 
           if (!existingSignup) {
@@ -218,11 +224,11 @@ export default async function NewShiftPage() {
               shiftId: shift.id,
               status: "REGULAR_PENDING" as const,
               createdAt: new Date(),
-              updatedAt: new Date()
+              updatedAt: new Date(),
             });
             regularSignups.push({
               regularVolunteerId: regular.id,
-              signupId: signupId
+              signupId: signupId,
             });
           }
         }
@@ -355,14 +361,16 @@ export default async function NewShiftPage() {
           location,
           start: {
             gte: shifts[0].start,
-            lte: shifts[shifts.length - 1].start
-          }
-        }
+            lte: shifts[shifts.length - 1].start,
+          },
+        },
       });
 
       // Process regular volunteers for each shift
       for (const shift of createdShifts) {
-        const dayOfWeek = shift.start.toLocaleDateString("en-US", { weekday: "long" });
+        const dayOfWeek = shift.start.toLocaleDateString("en-US", {
+          weekday: "long",
+        });
         const regularVolunteers = await prisma.regularVolunteer.findMany({
           where: {
             shiftTypeId: shift.shiftTypeId,
@@ -370,24 +378,31 @@ export default async function NewShiftPage() {
             isActive: true,
             isPausedByUser: false,
             availableDays: {
-              has: dayOfWeek
-            }
-          }
+              has: dayOfWeek,
+            },
+          },
         });
 
         // Filter by frequency
-        const matchingRegulars = regularVolunteers.filter(regular => {
+        const matchingRegulars = regularVolunteers.filter((regular) => {
           if (regular.frequency === "WEEKLY") {
             return true;
           } else if (regular.frequency === "FORTNIGHTLY") {
             const weeksSinceCreation = Math.floor(
-              (shift.start.getTime() - regular.createdAt.getTime()) / (7 * 24 * 60 * 60 * 1000)
+              (shift.start.getTime() - regular.createdAt.getTime()) /
+                (7 * 24 * 60 * 60 * 1000)
             );
             return weeksSinceCreation % 2 === 0;
           } else if (regular.frequency === "MONTHLY") {
-            const firstOccurrenceInMonth = new Date(shift.start.getFullYear(), shift.start.getMonth(), 1);
+            const firstOccurrenceInMonth = new Date(
+              shift.start.getFullYear(),
+              shift.start.getMonth(),
+              1
+            );
             while (firstOccurrenceInMonth.getDay() !== shift.start.getDay()) {
-              firstOccurrenceInMonth.setDate(firstOccurrenceInMonth.getDate() + 1);
+              firstOccurrenceInMonth.setDate(
+                firstOccurrenceInMonth.getDate() + 1
+              );
             }
             return shift.start.getDate() === firstOccurrenceInMonth.getDate();
           }
@@ -410,13 +425,13 @@ export default async function NewShiftPage() {
               shift: {
                 start: {
                   gte: shiftDay,
-                  lt: nextDay
-                }
+                  lt: nextDay,
+                },
               },
               status: {
-                in: ["CONFIRMED", "REGULAR_PENDING", "PENDING"]
-              }
-            }
+                in: ["CONFIRMED", "REGULAR_PENDING", "PENDING"],
+              },
+            },
           });
 
           if (!existingSignup) {
@@ -427,11 +442,11 @@ export default async function NewShiftPage() {
               shiftId: shift.id,
               status: "REGULAR_PENDING" as const,
               createdAt: new Date(),
-              updatedAt: new Date()
+              updatedAt: new Date(),
             });
             regularSignups.push({
               regularVolunteerId: regular.id,
-              signupId: signupId
+              signupId: signupId,
             });
           }
         }

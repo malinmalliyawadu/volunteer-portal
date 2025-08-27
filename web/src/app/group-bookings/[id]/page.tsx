@@ -30,7 +30,7 @@ export default async function GroupBookingDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const session = await getServerSession(authOptions);
-  const userId = (session?.user as { id?: string } | undefined)?.id;
+  const userId = session?.user?.id;
   if (!userId) {
     redirect("/login?callbackUrl=/shifts/mine");
   }

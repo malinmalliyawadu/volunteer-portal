@@ -15,7 +15,10 @@ interface SiteHeaderClientWrapperProps {
   } | null;
 }
 
-export function SiteHeaderClientWrapper({ session, userProfile }: SiteHeaderClientWrapperProps) {
+export function SiteHeaderClientWrapper({
+  session,
+  userProfile,
+}: SiteHeaderClientWrapperProps) {
   const pathname = usePathname();
 
   // Hide header on admin pages (they have their own sidebar layout)
@@ -26,8 +29,8 @@ export function SiteHeaderClientWrapper({ session, userProfile }: SiteHeaderClie
   // Use profile name if available, otherwise fall back to session name/email
   const displayName =
     userProfile?.name ||
-    (session?.user as { name?: string | null })?.name ||
-    (session?.user as { email?: string | null })?.email ||
+    session?.user?.name ||
+    session?.user?.email ||
     "Account";
 
   return (

@@ -6,7 +6,7 @@ import { authOptions } from "@/lib/auth-options";
 // GET /api/admin/restaurant-managers/[id] - Get specific restaurant manager
 export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
-  const role = (session?.user as { role?: "ADMIN" | "VOLUNTEER" } | undefined)?.role;
+  const role = session?.user?.role;
   if (role !== "ADMIN") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
@@ -33,7 +33,10 @@ export async function GET(req: Request) {
     });
 
     if (!manager) {
-      return NextResponse.json({ error: "Restaurant manager not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Restaurant manager not found" },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json(manager);
@@ -49,7 +52,7 @@ export async function GET(req: Request) {
 // PUT /api/admin/restaurant-managers/[id] - Update restaurant manager
 export async function PUT(req: Request) {
   const session = await getServerSession(authOptions);
-  const role = (session?.user as { role?: "ADMIN" | "VOLUNTEER" } | undefined)?.role;
+  const role = session?.user?.role;
   if (role !== "ADMIN") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
@@ -69,7 +72,9 @@ export async function PUT(req: Request) {
     }
 
     // Filter out empty locations and duplicates
-    const validLocations = [...new Set(locations.filter((loc: string) => loc.trim()))];
+    const validLocations = [
+      ...new Set(locations.filter((loc: string) => loc.trim())),
+    ];
 
     const manager = await prisma.restaurantManager.update({
       where: { id },
@@ -105,7 +110,7 @@ export async function PUT(req: Request) {
 // DELETE /api/admin/restaurant-managers/[id] - Remove restaurant manager assignment
 export async function DELETE(req: Request) {
   const session = await getServerSession(authOptions);
-  const role = (session?.user as { role?: "ADMIN" | "VOLUNTEER" } | undefined)?.role;
+  const role = session?.user?.role;
   if (role !== "ADMIN") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }

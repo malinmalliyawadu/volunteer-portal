@@ -48,8 +48,7 @@ export default async function AdminUsersPage({
   searchParams,
 }: AdminUsersPageProps) {
   const session = await getServerSession(authOptions);
-  const role = (session?.user as { role?: "ADMIN" | "VOLUNTEER" } | undefined)
-    ?.role;
+  const role = session?.user?.role;
 
   if (!session?.user) {
     redirect("/login?callbackUrl=/admin/users");

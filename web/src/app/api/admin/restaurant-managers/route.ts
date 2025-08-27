@@ -6,7 +6,7 @@ import { authOptions } from "@/lib/auth-options";
 // GET /api/admin/restaurant-managers - List all restaurant managers
 export async function GET() {
   const session = await getServerSession(authOptions);
-  const role = (session?.user as { role?: "ADMIN" | "VOLUNTEER" } | undefined)?.role;
+  const role = session?.user?.role;
   if (role !== "ADMIN") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
@@ -27,7 +27,7 @@ export async function GET() {
       },
       orderBy: {
         user: {
-          email: 'asc',
+          email: "asc",
         },
       },
     });
@@ -45,7 +45,7 @@ export async function GET() {
 // POST /api/admin/restaurant-managers - Create or update restaurant manager assignment
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
-  const role = (session?.user as { role?: "ADMIN" | "VOLUNTEER" } | undefined)?.role;
+  const role = session?.user?.role;
   if (role !== "ADMIN") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
@@ -77,7 +77,9 @@ export async function POST(req: Request) {
     }
 
     // Filter out empty locations and duplicates
-    const validLocations = [...new Set(locations.filter((loc: string) => loc.trim()))];
+    const validLocations = [
+      ...new Set(locations.filter((loc: string) => loc.trim())),
+    ];
 
     // Upsert restaurant manager record
     const manager = await prisma.restaurantManager.upsert({
