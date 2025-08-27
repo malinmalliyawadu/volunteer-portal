@@ -16,6 +16,7 @@ import {
   Upload,
   CheckCircle,
   Mail,
+  ExternalLink,
 } from "lucide-react";
 import {
   Sidebar,
@@ -207,9 +208,10 @@ export function AdminSidebar({
                   asChild
                   data-testid="view-public-shifts-button"
                 >
-                  <Link href="/shifts">
+                  <Link href="/shifts" target="_blank" rel="noopener noreferrer">
                     <Calendar className="w-4 h-4" />
                     <span>View Public Shifts</span>
+                    <ExternalLink className="w-3 h-3 ml-auto opacity-60" />
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
