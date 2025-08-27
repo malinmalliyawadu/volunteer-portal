@@ -362,7 +362,7 @@ export default async function AdminDashboardPage({
               asChild
               variant="outline"
               className="w-full"
-              data-testid="manage-shifts-button"
+              data-testid="dashboard-manage-shifts-button"
             >
               <Link href="/admin/shifts">Manage All Shifts</Link>
             </Button>
@@ -370,7 +370,7 @@ export default async function AdminDashboardPage({
               asChild
               variant="outline"
               className="w-full"
-              data-testid="manage-users-button"
+              data-testid="dashboard-manage-users-button"
             >
               <Link href="/admin/users">Manage Users</Link>
             </Button>
@@ -394,7 +394,7 @@ export default async function AdminDashboardPage({
               asChild
               variant="outline"
               className="w-full"
-              data-testid="view-public-shifts-button"
+              data-testid="dashboard-view-public-shifts-button"
             >
               <Link href="/shifts">View Public Shifts</Link>
             </Button>

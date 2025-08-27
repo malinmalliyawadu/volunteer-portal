@@ -242,17 +242,17 @@ test.describe("Admin Dashboard Page", () => {
       await expect(createShiftButton).toHaveAttribute("href", "/admin/shifts/new");
 
       // Check Manage All Shifts button
-      const manageShiftsButton = page.getByTestId("manage-shifts-button");
+      const manageShiftsButton = page.getByTestId("dashboard-manage-shifts-button");
       await expect(manageShiftsButton).toBeVisible();
       await expect(manageShiftsButton).toHaveAttribute("href", "/admin/shifts");
 
       // Check Manage Users button
-      const manageUsersButton = page.getByTestId("manage-users-button");
+      const manageUsersButton = page.getByTestId("dashboard-manage-users-button");
       await expect(manageUsersButton).toBeVisible();
       await expect(manageUsersButton).toHaveAttribute("href", "/admin/users");
 
       // Check View Public Shifts button
-      const viewPublicShiftsButton = page.getByTestId("view-public-shifts-button");
+      const viewPublicShiftsButton = page.getByTestId("dashboard-view-public-shifts-button");
       await expect(viewPublicShiftsButton).toBeVisible();
       await expect(viewPublicShiftsButton).toHaveAttribute("href", "/shifts");
     });
@@ -265,21 +265,21 @@ test.describe("Admin Dashboard Page", () => {
     });
 
     test("should navigate to manage shifts page", async ({ page }) => {
-      const manageShiftsButton = page.getByTestId("manage-shifts-button");
+      const manageShiftsButton = page.getByTestId("dashboard-manage-shifts-button");
       await manageShiftsButton.click();
 
       await expect(page).toHaveURL("/admin/shifts");
     });
 
     test("should navigate to manage users page", async ({ page }) => {
-      const manageUsersButton = page.getByTestId("manage-users-button");
+      const manageUsersButton = page.getByTestId("dashboard-manage-users-button");
       await manageUsersButton.click();
 
       await expect(page).toHaveURL("/admin/users");
     });
 
     test("should navigate to public shifts page", async ({ page }) => {
-      const viewPublicShiftsButton = page.getByTestId("view-public-shifts-button");
+      const viewPublicShiftsButton = page.getByTestId("dashboard-view-public-shifts-button");
       await viewPublicShiftsButton.click();
 
       await expect(page).toHaveURL("/shifts");
@@ -598,7 +598,7 @@ test.describe("Admin Dashboard Page", () => {
       await expect(wellingtonTab).toBeVisible();
 
       // Test a navigation action
-      const manageUsersButton = page.getByTestId("manage-users-button");
+      const manageUsersButton = page.getByTestId("dashboard-manage-users-button");
       await manageUsersButton.click();
       await expect(page).toHaveURL("/admin/users");
     });
