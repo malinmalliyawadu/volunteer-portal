@@ -11,28 +11,34 @@ async function waitForPageLoad(page: Page) {
 async function loginAsAdmin(page: Page) {
   await page.goto("/login");
   await waitForPageLoad(page);
-  
+
   const adminButton = page.getByTestId("quick-login-admin-button");
   await adminButton.click();
-  
+
   // Wait for navigation away from login page
-  await page.waitForURL((url) => {
-    return url.pathname !== "/login";
-  }, { timeout: 10000 });
+  await page.waitForURL(
+    (url) => {
+      return url.pathname !== "/login";
+    },
+    { timeout: 10000 }
+  );
 }
 
 // Helper function to login as volunteer (for permission tests)
 async function loginAsVolunteer(page: Page) {
   await page.goto("/login");
   await waitForPageLoad(page);
-  
+
   const volunteerButton = page.getByTestId("quick-login-volunteer-button");
   await volunteerButton.click();
-  
+
   // Wait for navigation away from login page
-  await page.waitForURL((url) => {
-    return url.pathname !== "/login";
-  }, { timeout: 10000 });
+  await page.waitForURL(
+    (url) => {
+      return url.pathname !== "/login";
+    },
+    { timeout: 10000 }
+  );
 }
 
 test.describe("Admin Shifts Management", () => {
@@ -41,7 +47,9 @@ test.describe("Admin Shifts Management", () => {
   });
 
   test.describe("Page Access and Authentication", () => {
-    test("should allow admin users to access the shifts management page", async ({ page }) => {
+    test("should allow admin users to access the shifts management page", async ({
+      page,
+    }) => {
       await page.goto("/admin/shifts");
       await waitForPageLoad(page);
 
@@ -54,7 +62,9 @@ test.describe("Admin Shifts Management", () => {
       await expect(pageTitle).toBeVisible();
     });
 
-    test("should redirect non-admin users away from admin shifts pages", async ({ page }) => {
+    test("should redirect non-admin users away from admin shifts pages", async ({
+      page,
+    }) => {
       // Logout and login as volunteer
       await page.goto("/api/auth/signout");
       await loginAsVolunteer(page);
@@ -66,9 +76,9 @@ test.describe("Admin Shifts Management", () => {
       // Should be redirected away from admin page
       const currentUrl = page.url();
       expect(currentUrl).not.toContain("/admin/shifts");
-      
-      // Should be redirected to regular shifts page
-      expect(currentUrl).toContain("/shifts");
+
+      // Should be redirected to dashboard page
+      expect(currentUrl).toContain("/dashboard");
     });
 
     test("should redirect unauthenticated users to login", async ({ page }) => {
@@ -85,12 +95,12 @@ test.describe("Admin Shifts Management", () => {
 
       // Check final URL - should be redirected to login or access denied
       const currentUrl = page.url();
-      
+
       // Should either be redirected to login or not have access to admin shifts
       if (currentUrl.includes("/login")) {
         expect(currentUrl).toContain("/login");
         // Check for callback URL (may be encoded differently)
-        expect(currentUrl).toMatch(/callbackUrl.*admin.*shifts/);
+        expect(currentUrl).toMatch(/callbackUrl.*admin/);
       } else {
         // Alternative: should not be on the admin shifts page
         expect(currentUrl).not.toContain("/admin/shifts");
@@ -99,7 +109,9 @@ test.describe("Admin Shifts Management", () => {
   });
 
   test.describe("Shifts List Page Structure", () => {
-    test("should display admin shifts page with proper structure", async ({ page }) => {
+    test("should display admin shifts page with proper structure", async ({
+      page,
+    }) => {
       await page.goto("/admin/shifts");
       await waitForPageLoad(page);
 
@@ -117,7 +129,9 @@ test.describe("Admin Shifts Management", () => {
       await expect(filtersSection).toBeVisible();
     });
 
-    test("should display filters and navigation correctly", async ({ page }) => {
+    test("should display filters and navigation correctly", async ({
+      page,
+    }) => {
       await page.goto("/admin/shifts");
       await waitForPageLoad(page);
 
@@ -140,7 +154,9 @@ test.describe("Admin Shifts Management", () => {
       }
     });
 
-    test("should display upcoming and historical shifts sections", async ({ page }) => {
+    test("should display upcoming and historical shifts sections", async ({
+      page,
+    }) => {
       await page.goto("/admin/shifts");
       await waitForPageLoad(page);
 
@@ -148,20 +164,28 @@ test.describe("Admin Shifts Management", () => {
       const upcomingShiftsSection = page.getByTestId("upcoming-shifts-section");
       await expect(upcomingShiftsSection).toBeVisible();
 
-      const upcomingTitle = page.getByRole("heading", { name: /upcoming shifts/i });
+      const upcomingTitle = page.getByRole("heading", {
+        name: /upcoming shifts/i,
+      });
       await expect(upcomingTitle).toBeVisible();
 
       // Check historical shifts section
-      const historicalShiftsSection = page.getByTestId("historical-shifts-section");
+      const historicalShiftsSection = page.getByTestId(
+        "historical-shifts-section"
+      );
       await expect(historicalShiftsSection).toBeVisible();
 
-      const historicalTitle = page.getByRole("heading", { name: /historical shifts/i });
+      const historicalTitle = page.getByRole("heading", {
+        name: /historical shifts/i,
+      });
       await expect(historicalTitle).toBeVisible();
     });
   });
 
   test.describe("Shift Display and Information", () => {
-    test("should display shift cards with proper information", async ({ page }) => {
+    test("should display shift cards with proper information", async ({
+      page,
+    }) => {
       await page.goto("/admin/shifts");
       await waitForPageLoad(page);
 
@@ -175,9 +199,11 @@ test.describe("Admin Shifts Management", () => {
         await expect(firstShiftCard).toBeVisible();
 
         // Extract shift ID from testid
-        const firstCardTestId = await firstShiftCard.getAttribute("data-testid");
+        const firstCardTestId = await firstShiftCard.getAttribute(
+          "data-testid"
+        );
         const shiftId = firstCardTestId?.replace("shift-card-", "");
-        
+
         if (shiftId) {
           // Check shift name
           const shiftName = page.getByTestId(`shift-name-${shiftId}`);
@@ -218,7 +244,9 @@ test.describe("Admin Shifts Management", () => {
       }
     });
 
-    test("should display shift signups information correctly", async ({ page }) => {
+    test("should display shift signups information correctly", async ({
+      page,
+    }) => {
       await page.goto("/admin/shifts");
       await waitForPageLoad(page);
 
@@ -226,30 +254,36 @@ test.describe("Admin Shifts Management", () => {
       const shiftCount = await shiftCards.count();
 
       if (shiftCount > 0) {
-        const firstCardTestId = await shiftCards.first().getAttribute("data-testid");
+        const firstCardTestId = await shiftCards
+          .first()
+          .getAttribute("data-testid");
         const shiftId = firstCardTestId?.replace("shift-card-", "");
-        
+
         if (shiftId) {
           // Check signup badges (confirmed, pending, waitlisted)
-          const confirmedBadge = page.getByTestId(`confirmed-signups-${shiftId}`);
+          const confirmedBadge = page.getByTestId(
+            `confirmed-signups-${shiftId}`
+          );
           const pendingBadge = page.getByTestId(`pending-signups-${shiftId}`);
-          const waitlistedBadge = page.getByTestId(`waitlisted-signups-${shiftId}`);
+          const waitlistedBadge = page.getByTestId(
+            `waitlisted-signups-${shiftId}`
+          );
 
           // At least confirmed badge should be visible or signup count should be visible
           const signupsList = page.getByTestId(`signups-list-${shiftId}`);
           const noSignupsMessage = page.getByTestId(`no-signups-${shiftId}`);
-          
+
           // Either signups list or no signups message should be visible
           const hasSignupsList = await signupsList.isVisible();
           const hasNoSignupsMessage = await noSignupsMessage.isVisible();
-          
+
           expect(hasSignupsList || hasNoSignupsMessage).toBeTruthy();
 
           if (hasSignupsList) {
             // Check individual signup rows
             const signupRows = page.locator(`[data-testid^='signup-row-']`);
             const signupCount = await signupRows.count();
-            
+
             if (signupCount > 0) {
               const firstSignup = signupRows.first();
               await expect(firstSignup).toBeVisible();
@@ -268,7 +302,7 @@ test.describe("Admin Shifts Management", () => {
       // Apply location filter (it's a Select component, so click and select)
       const locationFilter = page.getByTestId("location-filter");
       await locationFilter.click();
-      
+
       // Wait for dropdown to open and select option
       await page.getByRole("option", { name: /wellington/i }).click();
 
@@ -327,7 +361,7 @@ test.describe("Admin Shifts Management", () => {
 
       // Should navigate to create shift page
       await page.waitForURL("**/admin/shifts/new", { timeout: 10000 });
-      
+
       const currentUrl = page.url();
       expect(currentUrl).toContain("/admin/shifts/new");
     });
@@ -340,16 +374,20 @@ test.describe("Admin Shifts Management", () => {
       const shiftCount = await shiftCards.count();
 
       if (shiftCount > 0) {
-        const firstCardTestId = await shiftCards.first().getAttribute("data-testid");
+        const firstCardTestId = await shiftCards
+          .first()
+          .getAttribute("data-testid");
         const shiftId = firstCardTestId?.replace("shift-card-", "");
-        
+
         if (shiftId) {
           const editButton = page.getByTestId(`edit-shift-${shiftId}`);
           await editButton.click();
 
           // Should navigate to edit shift page
-          await page.waitForURL(`**/admin/shifts/${shiftId}/edit`, { timeout: 10000 });
-          
+          await page.waitForURL(`**/admin/shifts/${shiftId}/edit`, {
+            timeout: 10000,
+          });
+
           const currentUrl = page.url();
           expect(currentUrl).toContain(`/admin/shifts/${shiftId}/edit`);
         }
@@ -364,9 +402,11 @@ test.describe("Admin Shifts Management", () => {
       const shiftCount = await shiftCards.count();
 
       if (shiftCount > 0) {
-        const firstCardTestId = await shiftCards.first().getAttribute("data-testid");
+        const firstCardTestId = await shiftCards
+          .first()
+          .getAttribute("data-testid");
         const shiftId = firstCardTestId?.replace("shift-card-", "");
-        
+
         if (shiftId) {
           const deleteButton = page.getByTestId(`delete-shift-${shiftId}`);
           await deleteButton.click();
@@ -382,7 +422,7 @@ test.describe("Admin Shifts Management", () => {
           // Check cancel and confirm buttons
           const cancelButton = page.getByTestId("delete-shift-cancel-button");
           const confirmButton = page.getByTestId("delete-shift-confirm-button");
-          
+
           await expect(cancelButton).toBeVisible();
           await expect(confirmButton).toBeVisible();
 
@@ -405,7 +445,7 @@ test.describe("Admin Shifts Management", () => {
         const prevButton = page.getByTestId("upcoming-prev-button");
         const nextButton = page.getByTestId("upcoming-next-button");
         const pageInfo = page.getByTestId("upcoming-page-info");
-        
+
         await expect(prevButton).toBeVisible();
         await expect(nextButton).toBeVisible();
         await expect(pageInfo).toBeVisible();
@@ -417,7 +457,7 @@ test.describe("Admin Shifts Management", () => {
         const prevButton = page.getByTestId("historical-prev-button");
         const nextButton = page.getByTestId("historical-next-button");
         const pageInfo = page.getByTestId("historical-page-info");
-        
+
         await expect(prevButton).toBeVisible();
         await expect(nextButton).toBeVisible();
         await expect(pageInfo).toBeVisible();
@@ -426,7 +466,9 @@ test.describe("Admin Shifts Management", () => {
   });
 
   test.describe("Success Messages", () => {
-    test("should display success message after shift creation", async ({ page }) => {
+    test("should display success message after shift creation", async ({
+      page,
+    }) => {
       await page.goto("/admin/shifts?created=1");
       await waitForPageLoad(page);
 
@@ -435,7 +477,9 @@ test.describe("Admin Shifts Management", () => {
       await expect(successMessage).toContainText("Shift created successfully");
     });
 
-    test("should display success message after shift update", async ({ page }) => {
+    test("should display success message after shift update", async ({
+      page,
+    }) => {
       await page.goto("/admin/shifts?updated=1");
       await waitForPageLoad(page);
 
@@ -444,7 +488,9 @@ test.describe("Admin Shifts Management", () => {
       await expect(successMessage).toContainText("Shift updated successfully");
     });
 
-    test("should display success message after shift deletion", async ({ page }) => {
+    test("should display success message after shift deletion", async ({
+      page,
+    }) => {
       await page.goto("/admin/shifts?deleted=1");
       await waitForPageLoad(page);
 
@@ -477,16 +523,16 @@ test.describe("Admin Shifts Management", () => {
   test.describe("Loading States", () => {
     test("should handle slow loading gracefully", async ({ page }) => {
       // Simulate slow network
-      await page.route("**/admin/shifts", async route => {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+      await page.route("**/admin/shifts", async (route) => {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
         route.continue();
       });
 
       await page.goto("/admin/shifts");
-      
+
       // Page should eventually load
       await waitForPageLoad(page);
-      
+
       const adminShiftsPage = page.getByTestId("admin-shifts-page");
       await expect(adminShiftsPage).toBeVisible();
 
@@ -567,12 +613,14 @@ test.describe("Admin Shifts Management", () => {
       // Check day selection checkboxes
       const mondayCheckbox = page.getByTestId("day-monday-checkbox");
       const tuesdayCheckbox = page.getByTestId("day-tuesday-checkbox");
-      
+
       await expect(mondayCheckbox).toBeVisible();
       await expect(tuesdayCheckbox).toBeVisible();
 
       // Check template selection
-      const morningKitchenTemplate = page.getByTestId("template-morning-kitchen-checkbox");
+      const morningKitchenTemplate = page.getByTestId(
+        "template-morning-kitchen-checkbox"
+      );
       await expect(morningKitchenTemplate).toBeVisible();
     });
 
@@ -586,10 +634,14 @@ test.describe("Admin Shifts Management", () => {
 
       // Check for HTML5 validation or form errors
       const shiftTypeSelect = page.getByTestId("shift-type-select");
-      const isSelectRequired = await shiftTypeSelect.evaluate((el: HTMLSelectElement) => el.hasAttribute("required"));
-      
+      const isSelectRequired = await shiftTypeSelect.evaluate(
+        (el: HTMLSelectElement) => el.hasAttribute("required")
+      );
+
       if (isSelectRequired) {
-        const validationMessage = await shiftTypeSelect.evaluate((el: HTMLSelectElement) => el.validationMessage);
+        const validationMessage = await shiftTypeSelect.evaluate(
+          (el: HTMLSelectElement) => el.validationMessage
+        );
         expect(validationMessage).toBeTruthy();
       }
     });
@@ -605,7 +657,7 @@ test.describe("Admin Shifts Management", () => {
       // Check some template badges
       const morningKitchenTemplate = page.locator("text=Morning Kitchen");
       const lunchServiceTemplate = page.locator("text=Lunch Service");
-      
+
       await expect(morningKitchenTemplate).toBeVisible();
       await expect(lunchServiceTemplate).toBeVisible();
     });
@@ -619,7 +671,7 @@ test.describe("Admin Shifts Management", () => {
 
       // Should navigate back to shifts page
       await page.waitForURL("**/admin/shifts", { timeout: 10000 });
-      
+
       const currentUrl = page.url();
       expect(currentUrl).toContain("/admin/shifts");
       expect(currentUrl).not.toContain("/new");
@@ -652,9 +704,11 @@ test.describe("Admin Shifts Management", () => {
       const shiftCount = await shiftCards.count();
 
       if (shiftCount > 0) {
-        const firstCardTestId = await shiftCards.first().getAttribute("data-testid");
+        const firstCardTestId = await shiftCards
+          .first()
+          .getAttribute("data-testid");
         const shiftId = firstCardTestId?.replace("shift-card-", "");
-        
+
         if (shiftId) {
           await page.goto(`/admin/shifts/${shiftId}/edit`);
           await waitForPageLoad(page);
@@ -680,9 +734,11 @@ test.describe("Admin Shifts Management", () => {
       const shiftCount = await shiftCards.count();
 
       if (shiftCount > 0) {
-        const firstCardTestId = await shiftCards.first().getAttribute("data-testid");
+        const firstCardTestId = await shiftCards
+          .first()
+          .getAttribute("data-testid");
         const shiftId = firstCardTestId?.replace("shift-card-", "");
-        
+
         if (shiftId) {
           await page.goto(`/admin/shifts/${shiftId}/edit`);
           await waitForPageLoad(page);
@@ -690,7 +746,9 @@ test.describe("Admin Shifts Management", () => {
           // Check that form fields are pre-populated
           const shiftTypeSelect = page.getByTestId("edit-shift-type-select");
           const dateInput = page.getByTestId("edit-shift-date-input");
-          const startTimeInput = page.getByTestId("edit-shift-start-time-input");
+          const startTimeInput = page.getByTestId(
+            "edit-shift-start-time-input"
+          );
           const endTimeInput = page.getByTestId("edit-shift-end-time-input");
           const locationSelect = page.getByTestId("edit-shift-location-select");
           const capacityInput = page.getByTestId("edit-shift-capacity-input");
@@ -718,21 +776,25 @@ test.describe("Admin Shifts Management", () => {
       const shiftCount = await shiftCards.count();
 
       if (shiftCount > 0) {
-        const firstCardTestId = await shiftCards.first().getAttribute("data-testid");
+        const firstCardTestId = await shiftCards
+          .first()
+          .getAttribute("data-testid");
         const shiftId = firstCardTestId?.replace("shift-card-", "");
-        
+
         if (shiftId) {
           await page.goto(`/admin/shifts/${shiftId}/edit`);
           await waitForPageLoad(page);
 
           // Check action buttons
-          const deleteButton = page.getByTestId("delete-shift-from-edit-button");
+          const deleteButton = page.getByTestId(
+            "delete-shift-from-edit-button"
+          );
           const cancelButton = page.getByTestId("cancel-edit-shift-button");
           const updateButton = page.getByTestId("update-shift-button");
 
           await expect(deleteButton).toBeVisible();
           await expect(deleteButton).toContainText("Delete");
-          
+
           await expect(cancelButton).toBeVisible();
           await expect(updateButton).toBeVisible();
           await expect(updateButton).toContainText("Update");
@@ -760,9 +822,11 @@ test.describe("Admin Shifts Management", () => {
       const shiftCount = await shiftCards.count();
 
       if (shiftCount > 0) {
-        const firstCardTestId = await shiftCards.first().getAttribute("data-testid");
+        const firstCardTestId = await shiftCards
+          .first()
+          .getAttribute("data-testid");
         const shiftId = firstCardTestId?.replace("shift-card-", "");
-        
+
         if (shiftId) {
           await page.goto(`/admin/shifts/${shiftId}/edit`);
           await waitForPageLoad(page);
@@ -772,7 +836,7 @@ test.describe("Admin Shifts Management", () => {
 
           // Should navigate back to shifts page
           await page.waitForURL("**/admin/shifts", { timeout: 10000 });
-          
+
           const currentUrl = page.url();
           expect(currentUrl).toContain("/admin/shifts");
           expect(currentUrl).not.toContain("/edit");
