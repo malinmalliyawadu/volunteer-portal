@@ -6,12 +6,13 @@ import { Badge } from "@/components/ui/badge";
 
 interface SignupActionsWrapperProps {
   signupId: string;
-  initialStatus: "PENDING" | "CONFIRMED" | "WAITLISTED" | "CANCELED" | "NO_SHOW";
-  volunteerName: string;
+  initialStatus: "PENDING" | "CONFIRMED" | "WAITLISTED" | "CANCELED" | "NO_SHOW" | "REGULAR_PENDING";
+  volunteerName?: string;
+  isAutoSignup?: boolean;
 }
 
-export function SignupActionsWrapper({ signupId, initialStatus, volunteerName }: SignupActionsWrapperProps) {
-  const [status, setStatus] = useState<"PENDING" | "CONFIRMED" | "WAITLISTED" | "CANCELED" | "NO_SHOW">(initialStatus);
+export function SignupActionsWrapper({ signupId, initialStatus, volunteerName, isAutoSignup }: SignupActionsWrapperProps) {
+  const [status, setStatus] = useState<"PENDING" | "CONFIRMED" | "WAITLISTED" | "CANCELED" | "NO_SHOW" | "REGULAR_PENDING">(initialStatus);
 
   const handleStatusChange = (newStatus: "CONFIRMED" | "WAITLISTED" | "CANCELED") => {
     setStatus(newStatus);
@@ -43,6 +44,12 @@ export function SignupActionsWrapper({ signupId, initialStatus, volunteerName }:
             No Show
           </Badge>
         );
+      case "REGULAR_PENDING":
+        return (
+          <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100">
+            Auto-Applied
+          </Badge>
+        );
       default:
         return (
           <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100">
@@ -55,7 +62,11 @@ export function SignupActionsWrapper({ signupId, initialStatus, volunteerName }:
   return (
     <div className="flex items-center justify-between gap-4">
       <div className="flex items-center gap-2">
-        <span className="text-sm font-medium truncate">{volunteerName}</span>
+        {isAutoSignup && (
+          <Badge variant="outline" className="text-xs border-yellow-500/20 text-yellow-700 bg-yellow-50">
+            Regular
+          </Badge>
+        )}
         {getStatusBadge()}
       </div>
       <div className="flex justify-start sm:justify-end md:justify-start">

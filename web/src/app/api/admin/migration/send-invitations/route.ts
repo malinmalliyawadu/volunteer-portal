@@ -12,36 +12,38 @@ interface InvitationWebhookData {
   registrationLink: string;
 }
 
-async function sendInvitationWebhook(data: InvitationWebhookData): Promise<boolean> {
+async function sendInvitationWebhook(
+  data: InvitationWebhookData
+): Promise<boolean> {
   try {
     const emailService = getEmailService();
     await emailService.sendMigrationInvite({
       to: data.email,
       firstName: data.firstName,
-      migrationLink: data.registrationLink
+      migrationLink: data.registrationLink,
     });
     console.log(`📧 Sent migration invitation email to: ${data.email}`);
     return true;
   } catch (error) {
-    console.error('Error sending migration invitation email:', error);
+    console.error("Error sending migration invitation email:", error);
     // Fallback to webhook if Campaign Monitor fails
     const webhookUrl = process.env.EMAIL_WEBHOOK_URL;
     if (webhookUrl) {
       try {
         const response = await fetch(webhookUrl, {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.EMAIL_WEBHOOK_TOKEN || ''}`,
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${process.env.EMAIL_WEBHOOK_TOKEN || ""}`,
           },
           body: JSON.stringify({
-            type: 'migration_invitation',
+            type: "migration_invitation",
             data,
           }),
         });
         return response.ok;
       } catch (webhookError) {
-        console.error('Webhook fallback error:', webhookError);
+        console.error("Webhook fallback error:", webhookError);
       }
     }
     return false;
@@ -52,7 +54,7 @@ export async function POST(request: NextRequest) {
   try {
     // Check authentication and admin role
     const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as { role?: string }).role !== "ADMIN") {
+    if (session?.user?.role !== "ADMIN") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
@@ -67,7 +69,7 @@ export async function POST(request: NextRequest) {
       where: {
         id: { in: userIds },
         profileCompleted: false,
-        role: "VOLUNTEER"
+        role: "VOLUNTEER",
       },
       select: {
         id: true,
@@ -75,12 +77,15 @@ export async function POST(request: NextRequest) {
         firstName: true,
         lastName: true,
         migrationInvitationSent: true,
-        migrationInvitationSentAt: true
-      }
+        migrationInvitationSentAt: true,
+      },
     });
 
     if (users.length === 0) {
-      return NextResponse.json({ error: "No valid users found" }, { status: 400 });
+      return NextResponse.json(
+        { error: "No valid users found" },
+        { status: 400 }
+      );
     }
 
     let sentCount = 0;
@@ -97,7 +102,7 @@ export async function POST(request: NextRequest) {
     for (const user of users) {
       try {
         // Generate invitation token (URL-safe)
-        const invitationToken = randomBytes(32).toString('base64url');
+        const invitationToken = randomBytes(32).toString("base64url");
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + 7); // 7 days expiry
 
@@ -110,7 +115,7 @@ export async function POST(request: NextRequest) {
           email: user.email,
           firstName: user.firstName || "",
           lastName: user.lastName || "",
-          registrationLink
+          registrationLink,
         };
 
         // Send via webhook
@@ -122,48 +127,53 @@ export async function POST(request: NextRequest) {
             where: { id: user.id },
             data: {
               migrationInvitationSent: true,
-              migrationInvitationSentAt: user.migrationInvitationSentAt || new Date(), // Keep first invitation date
+              migrationInvitationSentAt:
+                user.migrationInvitationSentAt || new Date(), // Keep first invitation date
               migrationLastSentAt: new Date(),
               migrationInvitationCount: { increment: 1 },
               migrationInvitationToken: invitationToken,
-              migrationTokenExpiresAt: expiresAt
-            }
+              migrationTokenExpiresAt: expiresAt,
+            },
           });
 
           sentCount++;
-          
+
           // Add to invitations array for response
           invitations.push({
             email: user.email,
             firstName: user.firstName || "",
             lastName: user.lastName || "",
             registrationUrl: registrationLink,
-            success: true
+            success: true,
           });
         } else {
           failedCount++;
           errors.push(`Failed to send email to ${user.email}`);
-          
+
           // Add failed invitation to array
           invitations.push({
             email: user.email,
             firstName: user.firstName || "",
             lastName: user.lastName || "",
             registrationUrl: registrationLink,
-            success: false
+            success: false,
           });
         }
       } catch (error) {
         failedCount++;
-        errors.push(`Error processing ${user.email}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        
+        errors.push(
+          `Error processing ${user.email}: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`
+        );
+
         // Add failed invitation to array
         invitations.push({
           email: user.email,
           firstName: user.firstName || "",
           lastName: user.lastName || "",
           registrationUrl: "",
-          success: false
+          success: false,
         });
       }
     }
@@ -173,9 +183,10 @@ export async function POST(request: NextRequest) {
       failed: failedCount,
       errors: errors.length > 0 ? errors : undefined,
       invitations,
-      message: `Successfully sent ${sentCount} invitation${sentCount !== 1 ? 's' : ''}${failedCount > 0 ? `, ${failedCount} failed` : ''}`
+      message: `Successfully sent ${sentCount} invitation${
+        sentCount !== 1 ? "s" : ""
+      }${failedCount > 0 ? `, ${failedCount} failed` : ""}`,
     });
-
   } catch (error) {
     console.error("Send invitations error:", error);
     return NextResponse.json(

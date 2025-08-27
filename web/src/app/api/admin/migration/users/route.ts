@@ -7,7 +7,7 @@ export async function GET() {
   try {
     // Check authentication and admin role
     const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as { role?: string }).role !== "ADMIN") {
+    if (session?.user?.role !== "ADMIN") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
@@ -15,7 +15,7 @@ export async function GET() {
     const users = await prisma.user.findMany({
       where: {
         isMigrated: true,
-        role: "VOLUNTEER"
+        role: "VOLUNTEER",
       },
       select: {
         id: true,
@@ -32,12 +32,12 @@ export async function GET() {
         migrationTokenExpiresAt: true,
       },
       orderBy: {
-        createdAt: 'desc'
-      }
+        createdAt: "desc",
+      },
     });
 
     // Transform users to include invitation status
-    const usersWithInvitationStatus = users.map(user => ({
+    const usersWithInvitationStatus = users.map((user) => ({
       id: user.id,
       email: user.email,
       firstName: user.firstName,
@@ -53,9 +53,8 @@ export async function GET() {
 
     return NextResponse.json({
       users: usersWithInvitationStatus,
-      total: users.length
+      total: users.length,
     });
-
   } catch (error) {
     console.error("Failed to fetch migrated users:", error);
     return NextResponse.json(

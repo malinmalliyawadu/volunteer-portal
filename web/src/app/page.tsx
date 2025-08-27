@@ -5,16 +5,19 @@ import { authOptions } from "@/lib/auth-options";
 import { redirect } from "next/navigation";
 import Image from "next/image";
 import { PageHeader } from "@/components/page-header";
-import { HomePageWrapper, HeroContent, FeatureCard, FeatureGrid } from "@/components/home-animated";
+import {
+  HomePageWrapper,
+  HeroContent,
+  FeatureCard,
+  FeatureGrid,
+} from "@/components/home-animated";
 
 export default async function Home() {
   const session = await getServerSession(authOptions);
 
   // Redirect logged-in users to their appropriate dashboard
   if (session?.user) {
-    const userRole = (
-      session.user as { role?: "ADMIN" | "VOLUNTEER" } | undefined
-    )?.role;
+    const userRole = session.user.role;
 
     if (userRole === "ADMIN") {
       redirect("/admin");
@@ -28,17 +31,31 @@ export default async function Home() {
       <section className="section-hero py-14" data-testid="hero-section">
         <div className="grid gap-8 md:grid-cols-2 md:items-center">
           <HeroContent>
-            <h1 className="text-5xl md:text-6xl font-bold leading-tight mb-6 text-foreground" data-testid="hero-title">
+            <h1
+              className="text-5xl md:text-6xl font-bold leading-tight mb-6 text-foreground"
+              data-testid="hero-title"
+            >
               Making a difference one plate at a time
             </h1>
-            <p className="text-lg text-muted-foreground mb-8 leading-relaxed" data-testid="hero-description">
+            <p
+              className="text-lg text-muted-foreground mb-8 leading-relaxed"
+              data-testid="hero-description"
+            >
               Everybody Eats is an innovative, charitable restaurant,
               transforming rescued food into quality 3-course meals on a
               pay-what-you-can basis. Join us and be part of reducing food
               waste, food insecurity and social isolation in Aotearoa.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4" data-testid="hero-actions">
-              <Button asChild size="lg" className="btn-primary group" data-testid="hero-browse-shifts-button">
+            <div
+              className="flex flex-col sm:flex-row gap-4"
+              data-testid="hero-actions"
+            >
+              <Button
+                asChild
+                size="lg"
+                className="btn-primary group"
+                data-testid="hero-browse-shifts-button"
+              >
                 <Link href="/shifts" className="flex items-center gap-2">
                   <span>Browse volunteer shifts</span>
                   <svg
@@ -184,29 +201,55 @@ export default async function Home() {
             description="Join our community of volunteers and help make a difference by signing up for volunteer shifts."
           />
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center" data-testid="cta-buttons">
+          <div
+            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+            data-testid="cta-buttons"
+          >
             {session?.user ? (
               <>
-                <Button asChild size="lg" className="btn-primary" data-testid="cta-browse-shifts-authenticated">
+                <Button
+                  asChild
+                  size="lg"
+                  className="btn-primary"
+                  data-testid="cta-browse-shifts-authenticated"
+                >
                   <Link href="/shifts">Browse Available Shifts</Link>
                 </Button>
-                <Button asChild variant="outline" size="lg" data-testid="cta-dashboard-button">
+                <Button
+                  asChild
+                  variant="outline"
+                  size="lg"
+                  data-testid="cta-dashboard-button"
+                >
                   <Link href="/dashboard">View My Dashboard</Link>
                 </Button>
               </>
             ) : (
               <>
-                <Button asChild size="lg" className="btn-primary" data-testid="cta-browse-shifts-unauthenticated">
+                <Button
+                  asChild
+                  size="lg"
+                  className="btn-primary"
+                  data-testid="cta-browse-shifts-unauthenticated"
+                >
                   <Link href="/shifts">Browse Available Shifts</Link>
                 </Button>
-                <Button asChild variant="outline" size="lg" data-testid="cta-join-volunteer-button">
+                <Button
+                  asChild
+                  variant="outline"
+                  size="lg"
+                  data-testid="cta-join-volunteer-button"
+                >
                   <Link href="/register">Join as Volunteer</Link>
                 </Button>
               </>
             )}
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 mt-16" data-testid="opportunities-grid">
+          <div
+            className="grid md:grid-cols-3 gap-8 mt-16"
+            data-testid="opportunities-grid"
+          >
             <div className="card p-6" data-testid="opportunity-community-meals">
               <h3 className="text-xl font-semibold mb-4">🍽️ Community Meals</h3>
               <p className="text-muted-foreground">
@@ -214,7 +257,10 @@ export default async function Home() {
               </p>
             </div>
 
-            <div className="card p-6" data-testid="opportunity-food-distribution">
+            <div
+              className="card p-6"
+              data-testid="opportunity-food-distribution"
+            >
               <h3 className="text-xl font-semibold mb-4">
                 📦 Food Distribution
               </h3>
@@ -233,8 +279,14 @@ export default async function Home() {
             </div>
           </div>
 
-          <div className="mt-16 p-8 bg-primary-light rounded-xl" data-testid="final-cta-section">
-            <h2 className="text-2xl font-semibold mb-4" data-testid="final-cta-title">
+          <div
+            className="mt-16 p-8 bg-primary-light rounded-xl"
+            data-testid="final-cta-section"
+          >
+            <h2
+              className="text-2xl font-semibold mb-4"
+              data-testid="final-cta-title"
+            >
               Ready to Make a Difference?
             </h2>
             <p className="text-muted-foreground mb-6">
@@ -242,11 +294,24 @@ export default async function Home() {
               communities. Join us in our mission to ensure everybody eats.
             </p>
             {!session?.user && (
-              <div className="flex flex-col sm:flex-row gap-4 justify-center" data-testid="final-cta-buttons">
-                <Button asChild size="lg" className="btn-primary" data-testid="final-get-started-button">
+              <div
+                className="flex flex-col sm:flex-row gap-4 justify-center"
+                data-testid="final-cta-buttons"
+              >
+                <Button
+                  asChild
+                  size="lg"
+                  className="btn-primary"
+                  data-testid="final-get-started-button"
+                >
                   <Link href="/register">Get Started</Link>
                 </Button>
-                <Button asChild variant="outline" size="lg" data-testid="final-sign-in-button">
+                <Button
+                  asChild
+                  variant="outline"
+                  size="lg"
+                  data-testid="final-sign-in-button"
+                >
                   <Link href="/login">Sign In</Link>
                 </Button>
               </div>

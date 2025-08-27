@@ -199,7 +199,12 @@ export default async function AdminShiftsPage({
         orderBy: { start: "asc" },
         include: {
           shiftType: true,
-          signups: { include: { user: true } },
+          signups: { 
+            include: { 
+              user: true,
+              regularSignup: true
+            } 
+          },
           groupBookings: {
             include: {
               leader: { select: { id: true, name: true, email: true } },
@@ -216,7 +221,12 @@ export default async function AdminShiftsPage({
         orderBy: { start: "desc" },
         include: {
           shiftType: true,
-          signups: { include: { user: true } },
+          signups: { 
+            include: { 
+              user: true,
+              regularSignup: true
+            } 
+          },
           groupBookings: {
             include: {
               leader: { select: { id: true, name: true, email: true } },
@@ -259,7 +269,7 @@ export default async function AdminShiftsPage({
     let waitlisted = 0;
     for (const su of s.signups) {
       if (su.status === "CONFIRMED") confirmed += 1;
-      if (su.status === "PENDING") pending += 1;
+      if (su.status === "PENDING" || su.status === "REGULAR_PENDING") pending += 1;
       if (su.status === "WAITLISTED") waitlisted += 1;
       // Note: CANCELED signups are excluded from all counts
     }
@@ -278,13 +288,15 @@ export default async function AdminShiftsPage({
     status,
     userId,
     signupId,
+    isAutoSignup,
   }: {
     name: string | null;
     email: string;
     phone: string | null;
-    status: "PENDING" | "CONFIRMED" | "WAITLISTED" | "CANCELED" | "NO_SHOW";
+    status: "PENDING" | "CONFIRMED" | "WAITLISTED" | "CANCELED" | "NO_SHOW" | "REGULAR_PENDING";
     userId: string;
     signupId: string;
+    isAutoSignup?: boolean;
   }) {
     return (
       <div
@@ -315,6 +327,7 @@ export default async function AdminShiftsPage({
             signupId={signupId}
             initialStatus={status}
             volunteerName={name ?? "(No name)"}
+            isAutoSignup={isAutoSignup}
           />
         </div>
       </div>
@@ -547,6 +560,7 @@ export default async function AdminShiftsPage({
                         type Status = ShiftWithAll["signups"][number]["status"];
                         const order: Record<Status, number> = {
                           PENDING: 0,
+                          REGULAR_PENDING: 0,
                           CONFIRMED: 1,
                           WAITLISTED: 2,
                           CANCELED: 3,
@@ -569,6 +583,7 @@ export default async function AdminShiftsPage({
                         status={su.status}
                         userId={su.user.id}
                         signupId={su.id}
+                        isAutoSignup={!!su.regularSignup}
                       />
                     ))}
                 </div>
