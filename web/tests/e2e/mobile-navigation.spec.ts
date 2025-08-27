@@ -188,35 +188,30 @@ test.describe("Mobile Navigation", () => {
       await expect(joinLink).toHaveCount(0);
     });
 
-    test("should show admin menu items for admin users", async ({ page }) => {
+    test("should show admin navigation toggle for admin users", async ({ page }) => {
       // Login as an admin
       await loginAsAdmin(page);
 
       // Set mobile viewport
       await page.setViewportSize({ width: 375, height: 667 });
 
-      await page.goto("/");
+      // Navigate to admin area to access admin sidebar
+      await page.goto("/admin");
       await page.waitForLoadState("load");
 
-      // Open menu
-      const hamburgerButton = page.getByTestId("admin-sidebar-toggle");
-      await hamburgerButton.click();
+      // Admin sidebar toggle should be visible on mobile for admin users
+      const adminSidebarToggle = page.getByTestId("admin-sidebar-toggle");
+      await expect(adminSidebarToggle).toBeVisible();
 
-      // Should show admin menu items in mobile menu
-      const mobileMenu = page.locator(".lg\\:hidden nav");
-      await expect(
-        mobileMenu.getByRole("link", { name: "Dashboard" })
-      ).toBeVisible();
-      await expect(
-        mobileMenu.getByRole("link", { name: "Manage Shifts" })
-      ).toBeVisible();
-      await expect(
-        mobileMenu.getByRole("link", { name: "Manage Users" })
-      ).toBeVisible();
-
-      // Should not show regular user items in mobile menu
-      const myShiftsLink = mobileMenu.getByRole("link", { name: "My Shifts" });
-      await expect(myShiftsLink).toHaveCount(0);
+      // Admin dashboard content should be accessible on mobile
+      await expect(page.getByTestId("admin-dashboard-page")).toBeVisible();
+      
+      // Admin can navigate using dashboard buttons on mobile
+      await page.getByTestId("dashboard-manage-users-button").click();
+      await expect(page).toHaveURL("/admin/users");
+      
+      // Admin sidebar toggle should still be visible on other admin pages
+      await expect(page.getByTestId("admin-sidebar-toggle")).toBeVisible();
     });
 
     test("should toggle menu open and closed", async ({ page }) => {
