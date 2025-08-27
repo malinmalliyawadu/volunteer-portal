@@ -2,10 +2,14 @@ import { test, expect } from "./base";
 import type { Page } from "@playwright/test";
 
 // Helper function to get responsive element by viewport
-async function getResponsiveElement(page: Page, mobileTestId: string, desktopTestId: string) {
+async function getResponsiveElement(
+  page: Page,
+  mobileTestId: string,
+  desktopTestId: string
+) {
   const viewport = page.viewportSize();
   const isMobile = viewport && viewport.width < 768;
-  
+
   if (isMobile) {
     return page.getByTestId(mobileTestId);
   } else {
@@ -19,10 +23,13 @@ async function getCalendarTitle(page: Page) {
 }
 
 // Helper function to get navigation buttons
-async function getNavigationButton(page: Page, buttonType: "prev" | "next" | "today") {
+async function getNavigationButton(
+  page: Page,
+  buttonType: "prev" | "next" | "today"
+) {
   const viewport = page.viewportSize();
   const isMobile = viewport && viewport.width < 768;
-  
+
   if (buttonType === "today") {
     const prefix = isMobile ? "mobile-" : "";
     return page.getByTestId(`${prefix}today-button`);
@@ -74,7 +81,9 @@ test.describe("My Shifts Calendar Page", () => {
   });
 
   test.describe("Page Structure and Layout", () => {
-    test("should display my shifts page with main elements", async ({ page }) => {
+    test("should display my shifts page with main elements", async ({
+      page,
+    }) => {
       // Check page loads successfully
       await expect(page).toHaveURL("/shifts/mine");
 
@@ -86,7 +95,9 @@ test.describe("My Shifts Calendar Page", () => {
       const pageTitle = page.getByRole("heading", { name: /my shifts/i });
       await expect(pageTitle).toBeVisible();
 
-      const pageDescription = page.getByText("Your volunteer schedule and shift history");
+      const pageDescription = page.getByText(
+        "Your volunteer schedule and shift history"
+      );
       await expect(pageDescription).toBeVisible();
     });
 
@@ -109,10 +120,18 @@ test.describe("My Shifts Calendar Page", () => {
       await expect(totalHoursCard).toBeVisible();
 
       // Check that each card has a numeric value
-      const completedCount = await page.getByTestId("completed-shifts-card-count").textContent();
-      const upcomingCount = await page.getByTestId("upcoming-shifts-card-count").textContent();
-      const thisMonthCount = await page.getByTestId("this-month-shifts-card-count").textContent();
-      const totalHoursCount = await page.getByTestId("total-hours-card-count").textContent();
+      const completedCount = await page
+        .getByTestId("completed-shifts-card-count")
+        .textContent();
+      const upcomingCount = await page
+        .getByTestId("upcoming-shifts-card-count")
+        .textContent();
+      const thisMonthCount = await page
+        .getByTestId("this-month-shifts-card-count")
+        .textContent();
+      const totalHoursCount = await page
+        .getByTestId("total-hours-card-count")
+        .textContent();
 
       expect(completedCount).toMatch(/^\d+$/);
       expect(upcomingCount).toMatch(/^\d+$/);
@@ -128,14 +147,16 @@ test.describe("My Shifts Calendar Page", () => {
       // Check calendar title shows current month/year
       const calendarTitle = await getCalendarTitle(page);
       await expect(calendarTitle).toBeVisible();
-      
+
       const titleText = await calendarTitle.textContent();
       expect(titleText).toMatch(/^\w+ \d{4}$/); // Format: "Month Year"
 
       // Check calendar description
       const calendarDescription = page.getByTestId("calendar-description");
       await expect(calendarDescription).toBeVisible();
-      await expect(calendarDescription).toContainText("Your volunteer schedule");
+      await expect(calendarDescription).toContainText(
+        "Your volunteer schedule"
+      );
 
       // Check navigation section
       const navigation = page.getByTestId("calendar-navigation");
@@ -164,7 +185,7 @@ test.describe("My Shifts Calendar Page", () => {
       // Check that calendar has day cells or mobile list items
       const viewport = page.viewportSize();
       const isMobile = viewport && viewport.width < 768;
-      
+
       if (isMobile) {
         // On mobile, look for mobile list view
         const mobileListView = page.getByTestId("mobile-list-view");
@@ -183,7 +204,7 @@ test.describe("My Shifts Calendar Page", () => {
       // Get current month from title
       const calendarTitle = await getCalendarTitle(page);
       const initialTitle = await calendarTitle.textContent();
-      
+
       // Click previous month button
       const prevButton = await getNavigationButton(page, "prev");
       await prevButton.click();
@@ -203,7 +224,7 @@ test.describe("My Shifts Calendar Page", () => {
       // Get current month from title
       const calendarTitle = await getCalendarTitle(page);
       const initialTitle = await calendarTitle.textContent();
-      
+
       // Click next month button
       const nextButton = await getNavigationButton(page, "next");
       await nextButton.click();
@@ -219,7 +240,9 @@ test.describe("My Shifts Calendar Page", () => {
       expect(newTitle).not.toBe(initialTitle);
     });
 
-    test("should show 'Today' button when not viewing current month", async ({ page }) => {
+    test("should show 'Today' button when not viewing current month", async ({
+      page,
+    }) => {
       // Navigate to next month
       const nextButton = await getNavigationButton(page, "next");
       await nextButton.click();
@@ -241,7 +264,7 @@ test.describe("My Shifts Calendar Page", () => {
   test.describe("Calendar Days and Shifts", () => {
     test("should highlight today's date", async ({ page }) => {
       const today = new Date().getDate();
-      
+
       // Look for today's date with special styling
       const todayCell = page.locator(".bg-blue-500").first();
       if (await todayCell.isVisible()) {
@@ -254,12 +277,12 @@ test.describe("My Shifts Calendar Page", () => {
       // Look for day cells within the calendar grid
       const calendarGrid = page.getByTestId("calendar-grid");
       await expect(calendarGrid).toBeVisible();
-      
+
       // Look for day number elements using specific test ID
       const dayElements = page.getByTestId("calendar-day-number");
       const count = await dayElements.count();
       expect(count).toBeGreaterThan(0);
-      
+
       // Check first few day numbers
       for (let i = 0; i < Math.min(count, 3); i++) {
         const dayText = await dayElements.nth(i).textContent();
@@ -271,33 +294,37 @@ test.describe("My Shifts Calendar Page", () => {
       // Look for shift elements on calendar
       const shiftElements = page.locator(".bg-gradient-to-br");
       const shiftCount = await shiftElements.count();
-      
+
       if (shiftCount > 0) {
         // Check first shift element
         const firstShift = shiftElements.first();
         await expect(firstShift).toBeVisible();
-        
+
         // Shift should have time and emoji
-        const shiftTime = firstShift.locator(".font-bold.text-xs, .font-bold.text-sm");
-        if (await shiftTime.count() > 0) {
+        const shiftTime = firstShift.locator(
+          ".font-bold.text-xs, .font-bold.text-sm"
+        );
+        if ((await shiftTime.count()) > 0) {
           const timeText = await shiftTime.textContent();
           expect(timeText).toMatch(/^\d{2}:\d{2}$/); // Time format HH:MM
         }
       }
     });
 
-    test("should show available shifts button on days with openings", async ({ page }) => {
+    test("should show available shifts button on days with openings", async ({
+      page,
+    }) => {
       // Look for "available" buttons
       const availableButtons = page.getByText(/available/);
       const buttonCount = await availableButtons.count();
-      
+
       if (buttonCount > 0) {
         const firstButton = availableButtons.first();
         await expect(firstButton).toBeVisible();
-        
+
         // Button should link to shifts page
         const parentLink = firstButton.locator("..").locator("a");
-        if (await parentLink.count() > 0) {
+        if ((await parentLink.count()) > 0) {
           const href = await parentLink.getAttribute("href");
           expect(href).toBe("/shifts");
         }
@@ -306,23 +333,27 @@ test.describe("My Shifts Calendar Page", () => {
   });
 
   test.describe("Shift Details Dialog", () => {
-    test("should open shift details when clicking on a shift", async ({ page }) => {
+    test("should open shift details when clicking on a shift", async ({
+      page,
+    }) => {
       // Look for clickable shifts
-      const shiftElements = page.locator(".bg-gradient-to-br").filter({ hasText: /\d{2}:\d{2}/ });
+      const shiftElements = page
+        .locator(".bg-gradient-to-br")
+        .filter({ hasText: /\d{2}:\d{2}/ });
       const shiftCount = await shiftElements.count();
-      
+
       if (shiftCount > 0) {
         // Click on first shift
         await shiftElements.first().click();
-        
+
         // Dialog should open
         const dialog = page.locator("[role='dialog']");
         await expect(dialog).toBeVisible();
-        
+
         // Dialog should have title
         const dialogTitle = dialog.locator("h2, .font-semibold").first();
         await expect(dialogTitle).toBeVisible();
-        
+
         // Close dialog by clicking outside or escape
         await page.keyboard.press("Escape");
         await expect(dialog).not.toBeVisible();
@@ -330,51 +361,58 @@ test.describe("My Shifts Calendar Page", () => {
     });
 
     test("should display shift information in dialog", async ({ page }) => {
-      const shiftElements = page.locator(".bg-gradient-to-br").filter({ hasText: /\d{2}:\d{2}/ });
+      const shiftElements = page
+        .locator(".bg-gradient-to-br")
+        .filter({ hasText: /\d{2}:\d{2}/ });
       const shiftCount = await shiftElements.count();
-      
+
       if (shiftCount > 0) {
         await shiftElements.first().click();
-        
+
         const dialog = page.locator("[role='dialog']");
         await expect(dialog).toBeVisible();
-        
+
         // Should show status
         const statusText = dialog.getByText(/pending|confirmed|waitlisted/i);
-        if (await statusText.count() > 0) {
+        if ((await statusText.count()) > 0) {
           await expect(statusText.first()).toBeVisible();
         }
-        
+
         // Should show time information
         const timeInfo = dialog.locator("text=/\\d{1,2}:\\d{2}\\s*(am|pm)/i");
-        if (await timeInfo.count() > 0) {
+        if ((await timeInfo.count()) > 0) {
           await expect(timeInfo.first()).toBeVisible();
         }
-        
+
         await page.keyboard.press("Escape");
       }
     });
 
-    test("should show calendar export options for upcoming shifts", async ({ page }) => {
-      const shiftElements = page.locator(".bg-gradient-to-br").filter({ hasText: /\d{2}:\d{2}/ });
+    test("should show calendar export options for upcoming shifts", async ({
+      page,
+    }) => {
+      const shiftElements = page
+        .locator(".bg-gradient-to-br")
+        .filter({ hasText: /\d{2}:\d{2}/ });
       const shiftCount = await shiftElements.count();
-      
+
       if (shiftCount > 0) {
         await shiftElements.first().click();
-        
+
         const dialog = page.locator("[role='dialog']");
         await expect(dialog).toBeVisible();
-        
+
         // Look for calendar export buttons
         const googleButton = dialog.getByText("Google");
         const outlookButton = dialog.getByText("Outlook");
         const icsButton = dialog.getByText(".ics File");
-        
+
         // At least one export option should be visible for upcoming shifts
-        const hasExportOptions = await googleButton.isVisible() || 
-                                 await outlookButton.isVisible() || 
-                                 await icsButton.isVisible();
-        
+        const hasExportOptions =
+          (await googleButton.isVisible()) ||
+          (await outlookButton.isVisible()) ||
+          (await icsButton.isVisible());
+
         if (hasExportOptions) {
           // Check that export buttons are links/have proper attributes
           if (await googleButton.isVisible()) {
@@ -382,30 +420,32 @@ test.describe("My Shifts Calendar Page", () => {
             await expect(googleLink).toHaveAttribute("href");
           }
         }
-        
+
         await page.keyboard.press("Escape");
       }
     });
 
     test("should show cancel button for upcoming shifts", async ({ page }) => {
-      const shiftElements = page.locator(".bg-gradient-to-br").filter({ hasText: /\d{2}:\d{2}/ });
+      const shiftElements = page
+        .locator(".bg-gradient-to-br")
+        .filter({ hasText: /\d{2}:\d{2}/ });
       const shiftCount = await shiftElements.count();
-      
+
       if (shiftCount > 0) {
         await shiftElements.first().click();
-        
+
         const dialog = page.locator("[role='dialog']");
         await expect(dialog).toBeVisible();
-        
+
         // Look for cancel button
         const cancelButton = dialog.getByText(/cancel/i);
-        if (await cancelButton.count() > 0) {
+        if ((await cancelButton.count()) > 0) {
           await expect(cancelButton.first()).toBeVisible();
-          
+
           // Cancel button should be clickable
           await expect(cancelButton.first()).toBeEnabled();
         }
-        
+
         await page.keyboard.press("Escape");
       }
     });
@@ -413,18 +453,20 @@ test.describe("My Shifts Calendar Page", () => {
 
   test.describe("Friends Integration", () => {
     test("should show friends joining shifts", async ({ page }) => {
-      const shiftElements = page.locator(".bg-gradient-to-br").filter({ hasText: /\d{2}:\d{2}/ });
+      const shiftElements = page
+        .locator(".bg-gradient-to-br")
+        .filter({ hasText: /\d{2}:\d{2}/ });
       const shiftCount = await shiftElements.count();
-      
+
       if (shiftCount > 0) {
         // Look for friend indicators on calendar
         const friendIndicators = page.locator(".bg-white\\/20");
         const friendCount = await friendIndicators.count();
-        
+
         if (friendCount > 0) {
           const firstIndicator = friendIndicators.first();
           await expect(firstIndicator).toBeVisible();
-          
+
           // Should show friend count (may be empty if no friends)
           const countText = await firstIndicator.textContent();
           if (countText && countText.trim()) {
@@ -435,34 +477,40 @@ test.describe("My Shifts Calendar Page", () => {
     });
 
     test("should display friend details in shift dialog", async ({ page }) => {
-      const shiftElements = page.locator(".bg-gradient-to-br").filter({ hasText: /\d{2}:\d{2}/ });
+      const shiftElements = page
+        .locator(".bg-gradient-to-br")
+        .filter({ hasText: /\d{2}:\d{2}/ });
       const shiftCount = await shiftElements.count();
-      
+
       if (shiftCount > 0) {
         await shiftElements.first().click();
-        
+
         const dialog = page.locator("[role='dialog']");
         await expect(dialog).toBeVisible();
-        
+
         // Look for friends section
         const friendsSection = dialog.getByText("Friends Joining");
         if (await friendsSection.isVisible()) {
           await expect(friendsSection).toBeVisible();
-          
+
           // Should show friend avatars/names
-          const friendElements = dialog.locator("[data-testid*='friend'], .flex.items-center.gap-3");
-          if (await friendElements.count() > 0) {
+          const friendElements = dialog.locator(
+            "[data-testid*='friend'], .flex.items-center.gap-3"
+          );
+          if ((await friendElements.count()) > 0) {
             await expect(friendElements.first()).toBeVisible();
           }
         }
-        
+
         await page.keyboard.press("Escape");
       }
     });
   });
 
   test.describe("Authentication and Access Control", () => {
-    test("should require authentication to access my shifts page", async ({ context }) => {
+    test("should require authentication to access my shifts page", async ({
+      context,
+    }) => {
       // Create a new context (fresh browser session)
       const newContext = await context.browser()?.newContext();
       if (!newContext) throw new Error("Could not create new context");
@@ -487,6 +535,7 @@ test.describe("My Shifts Calendar Page", () => {
       await page.setViewportSize({ width: 375, height: 667 });
       await page.reload();
       await page.waitForLoadState("load");
+      await page.waitForTimeout(1000);
 
       // Check that main elements are still visible and accessible
       const myShiftsPage = page.getByTestId("my-shifts-page");
@@ -499,7 +548,7 @@ test.describe("My Shifts Calendar Page", () => {
       // On mobile, calendar grid should be hidden and mobile view should be visible
       const calendarGrid = page.getByTestId("calendar-grid");
       await expect(calendarGrid).toBeHidden();
-      
+
       const mobileListView = page.getByTestId("mobile-list-view");
       await expect(mobileListView).toBeVisible();
 
@@ -516,7 +565,7 @@ test.describe("My Shifts Calendar Page", () => {
       // Mobile should show list view instead of calendar grid
       const mobileListView = page.getByTestId("mobile-list-view");
       await expect(mobileListView).toBeVisible();
-      
+
       // Calendar grid should be hidden on mobile
       const calendarGrid = page.getByTestId("calendar-grid");
       await expect(calendarGrid).toBeHidden();
@@ -526,14 +575,14 @@ test.describe("My Shifts Calendar Page", () => {
   test.describe("Performance and Loading", () => {
     test("should load within reasonable time", async ({ page }) => {
       const startTime = Date.now();
-      
+
       await page.goto("/shifts/mine");
       await page.waitForLoadState("load");
-      
+
       // Wait for main content to be visible
       const myShiftsPage = page.getByTestId("my-shifts-page");
       await expect(myShiftsPage).toBeVisible();
-      
+
       const loadTime = Date.now() - startTime;
       expect(loadTime).toBeLessThan(10000); // Should load within 10 seconds
     });
@@ -549,10 +598,18 @@ test.describe("My Shifts Calendar Page", () => {
       expect(count).toBe(4); // Should have 4 stat cards
 
       // Check each stat card's number display
-      const completedCount = await page.getByTestId("completed-shifts-card-count").textContent();
-      const upcomingCount = await page.getByTestId("upcoming-shifts-card-count").textContent();
-      const thisMonthCount = await page.getByTestId("this-month-shifts-card-count").textContent();
-      const totalHoursCount = await page.getByTestId("total-hours-card-count").textContent();
+      const completedCount = await page
+        .getByTestId("completed-shifts-card-count")
+        .textContent();
+      const upcomingCount = await page
+        .getByTestId("upcoming-shifts-card-count")
+        .textContent();
+      const thisMonthCount = await page
+        .getByTestId("this-month-shifts-card-count")
+        .textContent();
+      const totalHoursCount = await page
+        .getByTestId("total-hours-card-count")
+        .textContent();
 
       expect(completedCount).toMatch(/^\d+$/);
       expect(upcomingCount).toMatch(/^\d+$/);
@@ -586,7 +643,7 @@ test.describe("My Shifts Calendar Page", () => {
       // Navigate to see if today button appears
       await nextButton.click();
       await page.waitForLoadState("load");
-      
+
       const todayButton = await getNavigationButton(page, "today");
       if (await todayButton.isVisible()) {
         await expect(todayButton).toHaveAttribute("href");
@@ -595,18 +652,20 @@ test.describe("My Shifts Calendar Page", () => {
 
     test("should have accessible shift interactions", async ({ page }) => {
       // Shift elements should be clickable
-      const shiftElements = page.locator(".bg-gradient-to-br").filter({ hasText: /\d{2}:\d{2}/ });
+      const shiftElements = page
+        .locator(".bg-gradient-to-br")
+        .filter({ hasText: /\d{2}:\d{2}/ });
       const shiftCount = await shiftElements.count();
-      
+
       if (shiftCount > 0) {
         const firstShift = shiftElements.first();
-        
+
         // Should be clickable (has cursor pointer or is button/link)
         await expect(firstShift).toBeVisible();
-        
+
         // Should be able to interact with it
         await firstShift.click();
-        
+
         // Dialog should be accessible
         const dialog = page.locator("[role='dialog']");
         if (await dialog.isVisible()) {
