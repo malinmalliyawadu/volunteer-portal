@@ -211,25 +211,25 @@ test.describe("Dashboard Page", () => {
     // Check all quick action buttons
     const findShiftsButton = page.getByRole("link", { name: /find shifts/i });
     await expect(findShiftsButton.first()).toBeVisible();
-    await expect(findShiftsButton.first()).toHaveAttribute("href", "/shifts");
+    await expect(findShiftsButton).toHaveAttribute("href", "/shifts");
 
     const myScheduleButton = page.getByRole("link", { name: /my schedule/i });
     await expect(myScheduleButton.first()).toBeVisible();
-    await expect(myScheduleButton.first()).toHaveAttribute("href", "/shifts/mine");
+    await expect(myScheduleButton).toHaveAttribute("href", "/shifts/mine");
 
     const myProfileButton = page
       .getByRole("main")
       .getByRole("link", { name: "My Profile" });
     await expect(myProfileButton.first()).toBeVisible();
-    await expect(myProfileButton.first()).toHaveAttribute("href", "/profile");
+    await expect(myProfileButton).toHaveAttribute("href", "/profile");
 
     const mainSiteLink = page.getByRole("link", { name: /visit main site/i });
     await expect(mainSiteLink.first()).toBeVisible();
-    await expect(mainSiteLink.first()).toHaveAttribute(
+    await expect(mainSiteLink).toHaveAttribute(
       "href",
       "https://everybodyeats.nz"
     );
-    await expect(mainSiteLink.first()).toHaveAttribute("target", "_blank");
+    await expect(mainSiteLink).toHaveAttribute("target", "_blank");
   });
 
   test("should navigate to shifts page from quick actions", async ({
@@ -237,7 +237,7 @@ test.describe("Dashboard Page", () => {
   }) => {
     const findShiftsButton = page.getByRole("link", { name: /find shifts/i });
     await expect(findShiftsButton.first()).toBeVisible();
-    await findShiftsButton.first().click();
+    await findShiftsButton.click();
 
     await expect(page).toHaveURL("/shifts");
   });
@@ -247,7 +247,7 @@ test.describe("Dashboard Page", () => {
   }) => {
     const myScheduleButton = page.getByRole("link", { name: /my schedule/i });
     await expect(myScheduleButton.first()).toBeVisible();
-    await myScheduleButton.first().click();
+    await myScheduleButton.click();
 
     await expect(page).toHaveURL("/shifts/mine");
   });
@@ -257,7 +257,7 @@ test.describe("Dashboard Page", () => {
       .getByRole("main")
       .getByRole("link", { name: "My Profile" });
     await expect(myProfileButton.first()).toBeVisible();
-    await myProfileButton.first().click();
+    await myProfileButton.click();
 
     await expect(page).toHaveURL("/profile");
   });
