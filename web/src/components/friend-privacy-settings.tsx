@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Settings, Eye, Users, Lock, UserCheck } from "lucide-react";
+import { MotionSpinner } from "@/components/motion-spinner";
 
 interface PrivacySettings {
   friendVisibility: "PUBLIC" | "FRIENDS_ONLY" | "PRIVATE";
@@ -107,7 +108,7 @@ export function FriendPrivacySettings({
   return (
     <ResponsiveDialog open={open} onOpenChange={handleClose}>
       <ResponsiveDialogContent className="sm:max-w-lg">
-        <ResponsiveDialogHeader>
+        <ResponsiveDialogHeader className="pb-4">
           <ResponsiveDialogTitle className="flex items-center space-x-2">
             <Settings className="h-5 w-5" />
             <span>Friend Privacy Settings</span>
@@ -140,7 +141,7 @@ export function FriendPrivacySettings({
                       <Users className="h-4 w-4" />
                       <span className="font-medium">Public</span>
                     </Label>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-muted-foreground">
                       Anyone can see which shifts you&apos;ve signed up for
                     </p>
                   </div>
@@ -160,7 +161,7 @@ export function FriendPrivacySettings({
                       <UserCheck className="h-4 w-4" />
                       <span className="font-medium">Friends Only</span>
                     </Label>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-muted-foreground">
                       Only your friends can see which shifts you&apos;ve signed
                       up for
                     </p>
@@ -181,7 +182,7 @@ export function FriendPrivacySettings({
                       <Lock className="h-4 w-4" />
                       <span className="font-medium">Private</span>
                     </Label>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-muted-foreground">
                       Nobody can see which shifts you&apos;ve signed up for
                     </p>
                   </div>
@@ -205,7 +206,7 @@ export function FriendPrivacySettings({
                   >
                     Allow friend requests
                   </Label>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">
                     Other volunteers can send you friend requests
                   </p>
                 </div>
@@ -214,12 +215,12 @@ export function FriendPrivacySettings({
           </div>
 
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-md p-3">
-              <p className="text-red-800 text-sm">{error}</p>
+            <div className="bg-destructive/10 border border-destructive/20 rounded-md p-3">
+              <p className="text-destructive text-sm">{error}</p>
             </div>
           )}
 
-          <div className="flex justify-end space-x-2 pt-4">
+          <div className="flex flex-col-reverse sm:flex-row gap-2 sm:justify-end pt-4">
             <Button
               type="button"
               variant="outline"
@@ -229,7 +230,14 @@ export function FriendPrivacySettings({
               Cancel
             </Button>
             <Button onClick={handleSave} disabled={loading || !hasChanges}>
-              {loading ? "Saving..." : "Save Settings"}
+              {loading ? (
+                <>
+                  <MotionSpinner size="sm" className="mr-2" />
+                  Saving...
+                </>
+              ) : (
+                "Save Settings"
+              )}
             </Button>
           </div>
         </div>

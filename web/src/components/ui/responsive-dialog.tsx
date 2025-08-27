@@ -5,14 +5,14 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+  MotionDialog as Dialog,
+  MotionDialogClose as DialogClose,
+  MotionDialogContent as DialogContent,
+  MotionDialogDescription as DialogDescription,
+  MotionDialogHeader as DialogHeader,
+  MotionDialogTitle as DialogTitle,
+  MotionDialogTrigger as DialogTrigger,
+} from "@/components/motion-dialog";
 import {
   Drawer,
   DrawerClose,

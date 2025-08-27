@@ -102,7 +102,7 @@ export function FriendsManagerServer({
             {hasNewRequests && (
               <Badge
                 variant="destructive"
-                className="ml-2 text-xs animate-pulse"
+                className="ml-2 text-xs"
               >
                 {pendingRequests.length}
               </Badge>
