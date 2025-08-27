@@ -69,11 +69,11 @@ export function MigratedUsers() {
     } finally {
       setIsLoading(false);
     }
-  }, [toast]);
+  }, []); // Remove toast from dependencies
 
   useEffect(() => {
     fetchUsers();
-  }, [fetchUsers]);
+  }, []); // Remove fetchUsers from dependencies, only run once on mount
 
   useEffect(() => {
     let filtered = users;
