@@ -110,6 +110,9 @@ export default function EditProfilePage() {
     availableLocations: [],
     emailNewsletterSubscription: true,
     notificationPreference: "EMAIL",
+    receiveShortageNotifications: true,
+    shortageNotificationTypes: [],
+    maxNotificationsPerWeek: 3,
     volunteerAgreementAccepted: false,
     healthSafetyPolicyAccepted: false,
   });
@@ -146,6 +149,12 @@ export default function EditProfilePage() {
               profileData.emailNewsletterSubscription !== false,
             notificationPreference:
               profileData.notificationPreference || "EMAIL",
+            receiveShortageNotifications:
+              profileData.receiveShortageNotifications !== false,
+            shortageNotificationTypes:
+              profileData.shortageNotificationTypes || [],
+            maxNotificationsPerWeek:
+              profileData.maxNotificationsPerWeek || 3,
             volunteerAgreementAccepted:
               profileData.volunteerAgreementAccepted || false,
             healthSafetyPolicyAccepted:
@@ -258,7 +267,7 @@ export default function EditProfilePage() {
   );
 
   const handleInputChange = useCallback(
-    (field: string, value: string | boolean) => {
+    (field: string, value: string | boolean | string[] | number) => {
       setFormData((prev) => ({ ...prev, [field]: value }));
     },
     []

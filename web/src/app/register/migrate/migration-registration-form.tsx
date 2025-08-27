@@ -117,6 +117,9 @@ export function MigrationRegistrationForm({
     // Communication & agreements
     emailNewsletterSubscription: true,
     notificationPreference: "EMAIL",
+    receiveShortageNotifications: true,
+    shortageNotificationTypes: [],
+    maxNotificationsPerWeek: 3,
     volunteerAgreementAccepted: false,
     healthSafetyPolicyAccepted: false,
     
@@ -212,7 +215,7 @@ export function MigrationRegistrationForm({
     },
   ];
 
-  const handleInputChange = (field: string, value: string | boolean) => {
+  const handleInputChange = (field: string, value: string | boolean | string[] | number) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 

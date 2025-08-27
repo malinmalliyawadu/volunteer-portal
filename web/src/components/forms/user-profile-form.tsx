@@ -17,7 +17,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { PolicyContent } from "@/components/markdown-content";
 import { ProfileImageUpload } from "@/components/ui/profile-image-upload";
-import { UserPlus, Shield, FileText, ExternalLink } from "lucide-react";
+import { UserPlus, Shield, FileText, ExternalLink, Bell } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Shared constants
 export const daysOfWeek = [
@@ -87,13 +88,16 @@ export interface UserProfileFormData {
   // Communication & agreements
   emailNewsletterSubscription: boolean;
   notificationPreference: "EMAIL" | "SMS" | "BOTH" | "NONE";
+  receiveShortageNotifications: boolean;
+  shortageNotificationTypes: string[];
+  maxNotificationsPerWeek: number;
   volunteerAgreementAccepted: boolean;
   healthSafetyPolicyAccepted: boolean;
 }
 
 export interface UserProfileFormProps {
   formData: UserProfileFormData;
-  onInputChange: (field: string, value: string | boolean) => void;
+  onInputChange: (field: string, value: string | boolean | string[] | number) => void;
   onDayToggle: (day: string) => void;
   onLocationToggle: (location: string) => void;
   loading: boolean;
@@ -612,7 +616,7 @@ export function CommunicationStep({
   setHealthSafetyPolicyOpen,
 }: {
   formData: UserProfileFormData;
-  onInputChange: (field: string, value: string | boolean) => void;
+  onInputChange: (field: string, value: string | boolean | string[] | number) => void;
   loading: boolean;
   volunteerAgreementContent: string;
   healthSafetyPolicyContent: string;
@@ -660,6 +664,86 @@ export function CommunicationStep({
           Choose how you&apos;d like to receive notifications about shift
           updates and reminders.
         </p>
+      </div>
+
+      <div className="space-y-4 pt-6 border-t border-border">
+        <h3 className="text-sm font-medium flex items-center gap-2">
+          <Bell className="h-4 w-4" />
+          Shortage Notifications
+        </h3>
+        
+        <div className="p-4 rounded-lg border border-border bg-muted/20">
+          <Label className="flex items-start space-x-3 text-sm font-medium cursor-pointer">
+            <Checkbox
+              checked={formData.receiveShortageNotifications}
+              onCheckedChange={(checked) =>
+                onInputChange("receiveShortageNotifications", checked)
+              }
+              disabled={loading}
+              className="mt-1"
+            />
+            <div>
+              <span>Receive shift shortage notifications</span>
+              <p className="text-xs text-muted-foreground mt-1 font-normal">
+                Get notified when shifts need more volunteers. You can customize which types of shifts you&apos;d like to hear about.
+              </p>
+            </div>
+          </Label>
+        </div>
+
+        {formData.receiveShortageNotifications && (
+          <>
+            <div className="space-y-2 ml-6">
+              <Label className="text-sm font-medium">
+                Shift types you&apos;d like notifications for
+              </Label>
+              <div className="space-y-2">
+                {['Kitchen Prep', 'Serving', 'Cleanup', 'Setup'].map((type) => (
+                  <Label key={type} className="flex items-center space-x-2 text-sm cursor-pointer">
+                    <Checkbox
+                      checked={formData.shortageNotificationTypes.includes(type)}
+                      onCheckedChange={(checked) => {
+                        const current = formData.shortageNotificationTypes;
+                        if (checked) {
+                          onInputChange("shortageNotificationTypes", [...current, type]);
+                        } else {
+                          onInputChange("shortageNotificationTypes", current.filter(t => t !== type));
+                        }
+                      }}
+                      disabled={loading}
+                    />
+                    <span>{type}</span>
+                  </Label>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2 ml-6">
+              <Label htmlFor="maxNotifications" className="text-sm font-medium">
+                Maximum notifications per week
+              </Label>
+              <Select 
+                value={formData.maxNotificationsPerWeek.toString()}
+                onValueChange={(value) => onInputChange("maxNotificationsPerWeek", parseInt(value))}
+                disabled={loading}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">1 notification</SelectItem>
+                  <SelectItem value="2">2 notifications</SelectItem>
+                  <SelectItem value="3">3 notifications</SelectItem>
+                  <SelectItem value="5">5 notifications</SelectItem>
+                  <SelectItem value="10">No limit</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Limit how many shortage notifications you receive to avoid overwhelming your inbox.
+              </p>
+            </div>
+          </>
+        )}
       </div>
 
       <div className="space-y-4 pt-6 border-t border-border">

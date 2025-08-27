@@ -34,6 +34,11 @@ model User {
   healthSafetyPolicyAccepted   Boolean                @default(false)
   profileCompleted             Boolean                @default(false)
   
+  // Shift shortage notification preferences
+  receiveShortageNotifications Boolean                @default(true)
+  shortageNotificationTypes    String[]               // Array of shift type IDs they want notifications for
+  maxNotificationsPerWeek      Int                    @default(3)
+  
   // Migration invitation tracking
   isMigrated                   Boolean                @default(false)
   migrationInvitationSent      Boolean                @default(false)
@@ -68,6 +73,10 @@ model User {
   
   // Regular volunteer relation
   regularVolunteer             RegularVolunteer?
+  
+  // Email notifications
+  emailNotifications           EmailNotification[]
+  notificationGroupMembers     NotificationGroupMember[]
 }
 
 model ShiftType {
@@ -93,6 +102,7 @@ model Shift {
   shiftType     ShiftType      @relation(fields: [shiftTypeId], references: [id])
   signups       Signup[]
   groupBookings GroupBooking[]
+  emailNotifications EmailNotification[]
 }
 
 model Signup {
@@ -371,4 +381,126 @@ enum Frequency {
   WEEKLY
   FORTNIGHTLY
   MONTHLY
+}
+
+// Email notification tracking
+model EmailNotification {
+  id               String                @id @default(cuid())
+  type             EmailNotificationType
+  subject          String
+  htmlContent      String                @db.Text
+  textContent      String?               @db.Text
+  recipientCount   Int
+  sentAt           DateTime              @default(now())
+  sentBy           String                // Admin user ID who sent it
+  shiftId          String?               // Related shift if applicable
+  groupId          String?               // Related notification group if used
+  status           EmailStatus           @default(SENT)
+  campaignId       String?               // Campaign Monitor campaign ID
+  metadata         Json?                 // Additional tracking data
+  createdAt        DateTime              @default(now())
+  
+  // Relations
+  sentByUser       User                  @relation(fields: [sentBy], references: [id])
+  shift            Shift?                @relation(fields: [shiftId], references: [id])
+  group            NotificationGroup?    @relation(fields: [groupId], references: [id])
+  recipients       EmailRecipient[]
+  
+  @@index([type, sentAt])
+  @@index([shiftId])
+}
+
+model EmailRecipient {
+  id                 String            @id @default(cuid())
+  notificationId     String
+  recipientEmail     String
+  recipientName      String?
+  status             RecipientStatus   @default(SENT)
+  openedAt           DateTime?
+  clickedAt          DateTime?
+  unsubscribedAt     DateTime?
+  bouncedAt          DateTime?
+  createdAt          DateTime          @default(now())
+  
+  notification       EmailNotification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  
+  @@index([notificationId, status])
+  @@index([recipientEmail])
+}
+
+// Saved filter groups for notifications
+model NotificationGroup {
+  id                String                    @id @default(cuid())
+  name              String                    @unique
+  description       String?
+  filters           Json                      // Stored filter criteria
+  isActive          Boolean                   @default(true)
+  createdBy         String
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
+  
+  members           NotificationGroupMember[]
+  emailNotifications EmailNotification[]
+}
+
+model NotificationGroupMember {
+  id          String            @id @default(cuid())
+  groupId     String
+  userId      String
+  addedAt     DateTime          @default(now())
+  
+  group       NotificationGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([groupId, userId])
+  @@index([groupId])
+  @@index([userId])
+}
+
+// Email templates
+model EmailTemplate {
+  id          String              @id @default(cuid())
+  name        String              @unique
+  type        EmailTemplateType
+  subject     String
+  htmlContent String              @db.Text
+  textContent String?             @db.Text
+  variables   String[]            // List of variable names used in template
+  isActive    Boolean             @default(true)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  createdBy   String
+}
+
+enum EmailNotificationType {
+  SHIFT_SHORTAGE        // Main type for shortage notifications
+  SHIFT_REMINDER       // General shift reminder
+  SHIFT_CANCELED       // Shift cancellation notice
+  VOLUNTEER_WELCOME    // Welcome email for new volunteers
+  CUSTOM               // Custom admin-sent notification
+}
+
+enum EmailStatus {
+  DRAFT
+  QUEUED
+  SENT
+  FAILED
+  PARTIALLY_SENT
+}
+
+enum RecipientStatus {
+  SENT
+  OPENED
+  CLICKED
+  BOUNCED
+  UNSUBSCRIBED
+  FAILED
+}
+
+enum EmailTemplateType {
+  SHIFT_SHORTAGE
+  SHIFT_REMINDER
+  SHIFT_CANCELED
+  WELCOME
+  CUSTOM
 }
