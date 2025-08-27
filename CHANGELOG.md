@@ -1,3 +1,9 @@
+## [0.20.1] - 2025-08-27
+
+### Changes
+- feat: implement shadcn sidebar navigation for admin pages ([#73](https://github.com/malinmalliyawadu/volunteer-portal/pull/73)) by @malinmalliyawadu
+
+
 ## [0.20.0] - 2025-08-27
 
 ### Changes
