@@ -222,7 +222,7 @@ export function AdminSidebar({
 
       <SidebarFooter className="border-t border-sidebar-border">
         <div className="flex items-center pt-2">
-          <div className="[&_button]:text-sidebar-foreground [&_button]:hover:bg-sidebar-accent [&_button]:hover:text-sidebar-accent-foreground [&_[data-state=open]]:bg-sidebar-accent">
+          <div className="[&_button]:text-sidebar-foreground [&_button]:hover:bg-sidebar-accent/50 [&_button]:hover:text-sidebar-foreground [&_[data-state=open]]:bg-sidebar-accent/50 [&_[data-state=open]]:text-sidebar-foreground">
             <UserMenu
               userName={displayName}
               userEmail={session?.user?.email ?? undefined}

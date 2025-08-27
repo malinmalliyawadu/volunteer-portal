@@ -187,11 +187,11 @@ export function UserMenu({
         <DropdownMenuItem
           data-testid="sign-out-button"
           onClick={() => signOut({ callbackUrl: "/" })}
-          className="cursor-pointer flex items-center gap-3 p-3 rounded-lg hover:bg-red-50 focus:bg-red-50 text-red-600 focus:text-red-600 transition-colors"
+          className="cursor-pointer flex items-center gap-3 p-3 rounded-lg hover:bg-red-500/10 focus:bg-red-500/10 text-red-600 dark:text-red-400 focus:text-red-600 dark:focus:text-red-400 transition-colors"
         >
-          <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-red-500/20 rounded-lg flex items-center justify-center">
             <svg
-              className="w-4 h-4 text-red-600"
+              className="w-4 h-4 text-red-600 dark:text-red-400"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
