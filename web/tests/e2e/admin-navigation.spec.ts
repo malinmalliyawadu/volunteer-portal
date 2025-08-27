@@ -52,7 +52,7 @@ test.describe('Admin Navigation', () => {
       await expect(sidebar.getByTestId('view-public-shifts-button')).toContainText('View Public Shifts');
     });
 
-    test('admin pages work on mobile viewport', async ({ page }) => {
+    test('admin pages are accessible on mobile viewport', async ({ page }) => {
       // Set mobile viewport
       await page.setViewportSize({ width: 375, height: 812 });
       
@@ -65,15 +65,15 @@ test.describe('Admin Navigation', () => {
       // Admin dashboard should be accessible on mobile
       await expect(page.getByTestId('admin-dashboard-page')).toBeVisible();
       
-      // Navigation can work via dashboard buttons on mobile
+      // Sidebar toggle button should be visible on mobile
+      await expect(page.getByTestId('admin-sidebar-toggle')).toBeVisible();
+      
+      // Admin functionality should work on mobile via dashboard buttons
       await page.getByTestId('dashboard-manage-users-button').click();
       await expect(page).toHaveURL('/admin/users');
       
-      // Admin pages should be responsive and functional
-      const pageHeader = page.getByTestId('admin-users-page');
-      if (await pageHeader.count() > 0) {
-        await expect(pageHeader).toBeVisible();
-      }
+      // Sidebar toggle should still be available on other admin pages
+      await expect(page.getByTestId('admin-sidebar-toggle')).toBeVisible();
     });
 
     test('regular users do not see admin sidebar', async ({ page }) => {
