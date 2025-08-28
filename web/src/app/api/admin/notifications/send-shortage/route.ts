@@ -4,7 +4,6 @@ import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
 import { getEmailService } from "@/lib/email-service";
 import { format } from "date-fns";
-import { EmailNotificationType, EmailStatus, RecipientStatus } from "@prisma/client";
 
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
@@ -15,7 +14,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { shiftId, volunteerIds, customSubject, customMessage, groupId } = body;
+    const { shiftId, volunteerIds } = body;
 
     // Fetch shift details
     const shift = await prisma.shift.findUnique({
@@ -73,21 +72,6 @@ export async function POST(request: Request) {
     const shiftDate = format(new Date(shift.start), "EEEE, MMMM d, yyyy");
     const shiftTime = `${format(new Date(shift.start), "h:mm a")} - ${format(new Date(shift.end), "h:mm a")}`;
 
-    // Create email notification record
-    const notification = await prisma.emailNotification.create({
-      data: {
-        type: EmailNotificationType.SHIFT_SHORTAGE,
-        subject: customSubject || `Volunteers needed for ${shift.shiftType.name} on ${format(new Date(shift.start), "MMM d")}`,
-        htmlContent: customMessage || `We need ${neededVolunteers} more volunteers for the ${shift.shiftType.name} shift.`,
-        textContent: customMessage || `We need ${neededVolunteers} more volunteers for the ${shift.shiftType.name} shift.`,
-        recipientCount: volunteers.length,
-        sentBy: session.user.id,
-        shiftId: shift.id,
-        groupId: groupId,
-        status: EmailStatus.QUEUED,
-      },
-    });
-
     // Send emails via Campaign Monitor
     const emailService = getEmailService();
     const emailPromises = volunteers.map(async (volunteer) => {
@@ -109,31 +93,10 @@ export async function POST(request: Request) {
           shiftId: shift.id,
         });
 
-        // Create recipient record
-        await prisma.emailRecipient.create({
-          data: {
-            notificationId: notification.id,
-            recipientEmail: volunteer.email,
-            recipientName: volunteerName,
-            status: RecipientStatus.SENT,
-          },
-        });
-
         return { success: true, email: volunteer.email };
       } catch (error) {
         console.error(`Failed to send email to ${volunteer.email}:`, error);
-        
-        // Create failed recipient record
-        await prisma.emailRecipient.create({
-          data: {
-            notificationId: notification.id,
-            recipientEmail: volunteer.email,
-            recipientName: volunteerName,
-            status: RecipientStatus.FAILED,
-          },
-        });
-
-        return { success: false, email: volunteer.email, error };
+        return { success: false, email: volunteer.email, error: (error as Error).message };
       }
     });
 
@@ -142,21 +105,8 @@ export async function POST(request: Request) {
       r => r.status === "fulfilled" && r.value.success
     ).length;
 
-    // Update notification status
-    await prisma.emailNotification.update({
-      where: { id: notification.id },
-      data: {
-        status: successCount === volunteers.length 
-          ? EmailStatus.SENT 
-          : successCount > 0 
-            ? EmailStatus.PARTIALLY_SENT 
-            : EmailStatus.FAILED,
-      },
-    });
-
     return NextResponse.json({
       success: true,
-      notificationId: notification.id,
       sentCount: successCount,
       totalCount: volunteers.length,
       results: results.map(r => r.status === "fulfilled" ? r.value : { success: false }),
