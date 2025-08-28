@@ -279,13 +279,10 @@ export default async function RegularSchedulePage() {
           </Card>
 
           {/* Schedule Management */}
-          <RegularScheduleManager
-            regularVolunteer={regularVolunteer}
-            shiftTypes={shiftTypes}
-          />
+          <RegularScheduleManager regularVolunteer={regularVolunteer} />
 
           {/* Upcoming Regular Shifts */}
-          <UpcomingRegularShifts regularVolunteer={regularVolunteer} />
+          <UpcomingRegularShifts />
         </div>
       )}
     </PageContainer>

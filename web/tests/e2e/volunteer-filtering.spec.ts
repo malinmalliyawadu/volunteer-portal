@@ -71,7 +71,7 @@ test.describe('Volunteer Filtering Logic', () => {
     volunteerEmails.push(`filter-vol5-${baseTime}@test.com`);
     await createTestUser(volunteerEmails[4], 'VOLUNTEER', {
       availableLocations: JSON.stringify(['Wellington', 'Glenn Innes', 'Onehunga']),
-      availableDays: null, // No specific availability
+      availableDays: undefined, // No specific availability
       receiveShortageNotifications: true,
       excludedShortageNotificationTypes: []
     });
@@ -402,8 +402,8 @@ test.describe('Volunteer Filtering Logic', () => {
     // This would need to be inserted directly into DB with invalid JSON
     // For this test, we'll just verify the API handles missing/null fields gracefully
     await createTestUser(corruptVolunteerEmail, 'VOLUNTEER', {
-      availableLocations: null, // Missing location data
-      availableDays: null, // Missing availability data
+      availableLocations: undefined, // Missing location data
+      availableDays: undefined, // Missing availability data
       receiveShortageNotifications: true,
       excludedShortageNotificationTypes: []
     });

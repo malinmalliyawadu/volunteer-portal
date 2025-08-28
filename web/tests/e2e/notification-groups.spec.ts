@@ -339,7 +339,7 @@ test.describe('Notification Groups Functionality', () => {
 
   test('should maintain group order and pagination', async ({ request }) => {
     // Create multiple groups with predictable names
-    const groupNames = [];
+    const groupNames: string[] = [];
     for (let i = 1; i <= 5; i++) {
       const name = `Ordered Group ${i} ${Date.now()}`;
       groupNames.push(name);

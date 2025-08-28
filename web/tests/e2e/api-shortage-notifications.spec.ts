@@ -306,14 +306,12 @@ test.describe('Shortage Notifications API', () => {
     expect(deletedGroup).toBeUndefined();
   });
 
-  test('should require admin role for all endpoints', async ({ request }) => {
+  test('should require admin role for all endpoints', async ({ request, browser }) => {
     // Create regular volunteer cookies
     const volunteerEmail = `volunteer-unauth-${Date.now()}@test.com`;
     await createTestUser(volunteerEmail, 'VOLUNTEER');
     
-    const context = await test.info().config.use?.browser?.newContext?.();
-    if (!context) return;
-    
+    const context = await browser.newContext();
     const page = await context.newPage();
     await login(page, volunteerEmail, 'Test123456');
     const volunteerCookies = await context.cookies();
