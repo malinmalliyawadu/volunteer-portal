@@ -91,9 +91,10 @@ export async function POST(request: Request) {
     // Send emails via Campaign Monitor
     const emailService = getEmailService();
     const emailPromises = volunteers.map(async (volunteer) => {
-      const volunteerName = volunteer.name || 
-        `${volunteer.firstName} ${volunteer.lastName}`.trim() || 
-        volunteer.email;
+      // Build volunteer name for email - this will be used to extract firstName in the email service
+      const volunteerName = volunteer.firstName && volunteer.lastName
+        ? `${volunteer.firstName} ${volunteer.lastName}`
+        : volunteer.name || volunteer.email;
 
       try {
         await emailService.sendShiftShortageNotification({

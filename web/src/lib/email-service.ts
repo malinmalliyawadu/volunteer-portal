@@ -40,14 +40,11 @@ interface SendShiftCancellationParams {
 }
 
 interface ShiftShortageEmailData {
-  volunteerName: string;
-  shiftName: string;
+  firstName: string;
+  shiftType: string;
   shiftDate: string;
-  shiftTime: string;
-  location: string;
-  currentVolunteers: string;
-  neededVolunteers: string;
-  signupLink: string;
+  restarauntLocation: string;
+  linkToEvent: string;
 }
 
 interface SendShiftShortageParams {
@@ -222,23 +219,30 @@ class EmailService {
     // In development, skip email sending if configuration is missing
     if (isDevelopment && this.shiftShortageSmartEmailID === 'dummy-shortage-id') {
       console.log(`[EMAIL SERVICE] Would send shortage email to ${params.to} (skipped in dev - no config)`);
+      console.log(`[EMAIL SERVICE] Email data:`, {
+        firstName: params.volunteerName.split(' ')[0],
+        shiftType: params.shiftName,
+        shiftDate: `${params.shiftDate} at ${params.shiftTime}`,
+        restarauntLocation: params.location,
+        linkToEvent: `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/shifts/${params.shiftId}`
+      });
       return Promise.resolve();
     }
 
     const signupLink = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/shifts/${params.shiftId}`;
+    
+    // Extract first name from volunteer name
+    const firstName = params.volunteerName.split(' ')[0] || params.volunteerName;
 
     const details = {
       smartEmailID: this.shiftShortageSmartEmailID,
       to: `${params.volunteerName} <${params.to}>`,
       data: {
-        volunteerName: params.volunteerName,
-        shiftName: params.shiftName,
-        shiftDate: params.shiftDate,
-        shiftTime: params.shiftTime,
-        location: params.location,
-        currentVolunteers: params.currentVolunteers.toString(),
-        neededVolunteers: params.neededVolunteers.toString(),
-        signupLink: signupLink,
+        firstName: firstName,
+        shiftType: params.shiftName,
+        shiftDate: `${params.shiftDate} at ${params.shiftTime}`,
+        restarauntLocation: params.location,
+        linkToEvent: signupLink,
       } as ShiftShortageEmailData,
     };
 
@@ -254,6 +258,7 @@ class EmailService {
           }
         } else {
           console.log("Shift shortage email sent successfully to:", params.to);
+          console.log("Email data sent:", details.data);
           resolve();
         }
       });
