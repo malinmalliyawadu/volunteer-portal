@@ -307,6 +307,7 @@ test.describe("Admin Shifts Management", () => {
       await page.getByRole("option", { name: /wellington/i }).click();
 
       // Wait for page to update
+      await page.waitForURL("/admin/shifts?*");
       await waitForPageLoad(page);
 
       // Check URL contains filter parameter
