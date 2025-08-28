@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
+import { safeParseAvailability } from "@/lib/parse-availability";
 
 export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
@@ -46,7 +47,14 @@ export async function GET(request: Request) {
       },
     });
 
-    return NextResponse.json(volunteers);
+    // Parse JSON fields safely (handles both JSON arrays and plain text from migration)
+    const volunteersWithParsedFields = volunteers.map(volunteer => ({
+      ...volunteer,
+      availableDays: safeParseAvailability(volunteer.availableDays),
+      availableLocations: safeParseAvailability(volunteer.availableLocations),
+    }));
+
+    return NextResponse.json(volunteersWithParsedFields);
   } catch (error) {
     console.error("Error fetching volunteers:", error);
     return NextResponse.json(

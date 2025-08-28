@@ -614,6 +614,7 @@ export function CommunicationStep({
   setVolunteerAgreementOpen,
   healthSafetyPolicyOpen,
   setHealthSafetyPolicyOpen,
+  shiftTypes = [],
 }: {
   formData: UserProfileFormData;
   onInputChange: (field: string, value: string | boolean | string[] | number) => void;
@@ -624,6 +625,7 @@ export function CommunicationStep({
   setVolunteerAgreementOpen: (open: boolean) => void;
   healthSafetyPolicyOpen: boolean;
   setHealthSafetyPolicyOpen: (open: boolean) => void;
+  shiftTypes?: Array<{ id: string; name: string }>;
 }) {
   return (
     <div className="space-y-6">
@@ -698,23 +700,27 @@ export function CommunicationStep({
                 Shift types you&apos;d like notifications for
               </Label>
               <div className="space-y-2">
-                {['Kitchen Prep', 'Serving', 'Cleanup', 'Setup'].map((type) => (
-                  <Label key={type} className="flex items-center space-x-2 text-sm cursor-pointer">
-                    <Checkbox
-                      checked={formData.shortageNotificationTypes.includes(type)}
-                      onCheckedChange={(checked) => {
-                        const current = formData.shortageNotificationTypes;
-                        if (checked) {
-                          onInputChange("shortageNotificationTypes", [...current, type]);
-                        } else {
-                          onInputChange("shortageNotificationTypes", current.filter(t => t !== type));
-                        }
-                      }}
-                      disabled={loading}
-                    />
-                    <span>{type}</span>
-                  </Label>
-                ))}
+                {shiftTypes.length > 0 ? (
+                  shiftTypes.map((shiftType) => (
+                    <Label key={shiftType.id} className="flex items-center space-x-2 text-sm cursor-pointer">
+                      <Checkbox
+                        checked={formData.shortageNotificationTypes.includes(shiftType.id)}
+                        onCheckedChange={(checked) => {
+                          const current = formData.shortageNotificationTypes;
+                          if (checked) {
+                            onInputChange("shortageNotificationTypes", [...current, shiftType.id]);
+                          } else {
+                            onInputChange("shortageNotificationTypes", current.filter(t => t !== shiftType.id));
+                          }
+                        }}
+                        disabled={loading}
+                      />
+                      <span>{shiftType.name}</span>
+                    </Label>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground">Loading shift types...</p>
+                )}
               </div>
             </div>
 

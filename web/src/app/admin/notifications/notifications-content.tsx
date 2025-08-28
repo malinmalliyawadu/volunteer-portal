@@ -37,8 +37,8 @@ interface Volunteer {
   name: string | null;
   firstName: string | null;
   lastName: string | null;
-  availableLocations: string | null;
-  availableDays: string | null;
+  availableLocations: string[];
+  availableDays: string[];
   receiveShortageNotifications: boolean;
   shortageNotificationTypes: string[];
   _count?: {
@@ -54,7 +54,16 @@ interface NotificationGroup {
   memberCount?: number;
 }
 
-export function NotificationsContent() {
+interface ShiftType {
+  id: string;
+  name: string;
+}
+
+interface NotificationsContentProps {
+  shiftTypes: ShiftType[];
+}
+
+export function NotificationsContent({ shiftTypes }: NotificationsContentProps) {
   const [selectedShift, setSelectedShift] = useState<string>("");
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
@@ -136,25 +145,26 @@ export function NotificationsContent() {
     }
   };
 
+
   const applyFilters = () => {
     let filtered = [...volunteers];
 
     // Filter by notification preferences
     if (filterNotificationsEnabled) {
-      filtered = filtered.filter(v => v.receiveShortageNotifications);
+      filtered = filtered.filter(v => v.receiveShortageNotifications === true);
     }
 
     // Filter by location
     if (filterLocation !== "all") {
       filtered = filtered.filter(v => 
-        v.availableLocations?.includes(filterLocation)
+        Array.isArray(v.availableLocations) && v.availableLocations.includes(filterLocation)
       );
     }
 
     // Filter by shift type preference
     if (filterShiftType !== "all") {
       filtered = filtered.filter(v => 
-        v.shortageNotificationTypes?.includes(filterShiftType)
+        Array.isArray(v.shortageNotificationTypes) && v.shortageNotificationTypes.includes(filterShiftType)
       );
     }
 
@@ -164,7 +174,7 @@ export function NotificationsContent() {
       if (shift) {
         const shiftDay = format(new Date(shift.start), "EEEE");
         filtered = filtered.filter(v => 
-          v.availableDays?.includes(shiftDay)
+          Array.isArray(v.availableDays) && v.availableDays.includes(shiftDay)
         );
       }
     }
@@ -432,9 +442,11 @@ export function NotificationsContent() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Types</SelectItem>
-                    <SelectItem value="morning">Morning Shift</SelectItem>
-                    <SelectItem value="afternoon">Afternoon Shift</SelectItem>
-                    <SelectItem value="evening">Evening Shift</SelectItem>
+                    {shiftTypes.map((shiftType) => (
+                      <SelectItem key={shiftType.id} value={shiftType.id}>
+                        {shiftType.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
