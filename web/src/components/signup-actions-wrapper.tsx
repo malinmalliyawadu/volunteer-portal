@@ -6,15 +6,33 @@ import { Badge } from "@/components/ui/badge";
 
 interface SignupActionsWrapperProps {
   signupId: string;
-  initialStatus: "PENDING" | "CONFIRMED" | "WAITLISTED" | "CANCELED" | "NO_SHOW" | "REGULAR_PENDING";
-  volunteerName?: string;
+  initialStatus:
+    | "PENDING"
+    | "CONFIRMED"
+    | "WAITLISTED"
+    | "CANCELED"
+    | "NO_SHOW"
+    | "REGULAR_PENDING";
   isAutoSignup?: boolean;
 }
 
-export function SignupActionsWrapper({ signupId, initialStatus, volunteerName, isAutoSignup }: SignupActionsWrapperProps) {
-  const [status, setStatus] = useState<"PENDING" | "CONFIRMED" | "WAITLISTED" | "CANCELED" | "NO_SHOW" | "REGULAR_PENDING">(initialStatus);
+export function SignupActionsWrapper({
+  signupId,
+  initialStatus,
+  isAutoSignup,
+}: SignupActionsWrapperProps) {
+  const [status, setStatus] = useState<
+    | "PENDING"
+    | "CONFIRMED"
+    | "WAITLISTED"
+    | "CANCELED"
+    | "NO_SHOW"
+    | "REGULAR_PENDING"
+  >(initialStatus);
 
-  const handleStatusChange = (newStatus: "CONFIRMED" | "WAITLISTED" | "CANCELED") => {
+  const handleStatusChange = (
+    newStatus: "CONFIRMED" | "WAITLISTED" | "CANCELED"
+  ) => {
     setStatus(newStatus);
   };
 
@@ -63,16 +81,19 @@ export function SignupActionsWrapper({ signupId, initialStatus, volunteerName, i
     <div className="flex items-center justify-between gap-4">
       <div className="flex items-center gap-2">
         {isAutoSignup && (
-          <Badge variant="outline" className="text-xs border-yellow-500/20 text-yellow-700 bg-yellow-50">
+          <Badge
+            variant="outline"
+            className="text-xs border-yellow-500/20 text-yellow-700 bg-yellow-50"
+          >
             Regular
           </Badge>
         )}
         {getStatusBadge()}
       </div>
       <div className="flex justify-start sm:justify-end md:justify-start">
-        <SignupActions 
-          signupId={signupId} 
-          status={status} 
+        <SignupActions
+          signupId={signupId}
+          status={status}
           onStatusChange={handleStatusChange}
         />
       </div>

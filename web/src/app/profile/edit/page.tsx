@@ -131,8 +131,7 @@ export default function EditProfilePage() {
     emailNewsletterSubscription: true,
     notificationPreference: "EMAIL",
     receiveShortageNotifications: true,
-    shortageNotificationTypes: [],
-    maxNotificationsPerWeek: 3,
+    excludedShortageNotificationTypes: [],
     volunteerAgreementAccepted: false,
     healthSafetyPolicyAccepted: false,
   });
@@ -171,10 +170,8 @@ export default function EditProfilePage() {
               profileData.notificationPreference || "EMAIL",
             receiveShortageNotifications:
               profileData.receiveShortageNotifications !== false,
-            shortageNotificationTypes:
-              profileData.shortageNotificationTypes || [],
-            maxNotificationsPerWeek:
-              profileData.maxNotificationsPerWeek || 3,
+            excludedShortageNotificationTypes:
+              profileData.excludedShortageNotificationTypes || [],
             volunteerAgreementAccepted:
               profileData.volunteerAgreementAccepted || false,
             healthSafetyPolicyAccepted:

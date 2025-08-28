@@ -28,11 +28,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { 
-  MoreHorizontalIcon, 
-  EditIcon, 
-  TrashIcon, 
-  PauseIcon, 
+import {
+  MoreHorizontalIcon,
+  EditIcon,
+  TrashIcon,
+  PauseIcon,
   PlayIcon,
   UserIcon,
   CalendarIcon,
@@ -90,9 +90,12 @@ export function RegularsTable({ regulars }: { regulars: RegularVolunteer[] }) {
         throw new Error("Failed to toggle status");
       }
 
-      toast.success(`Regular volunteer ${!currentStatus ? "activated" : "deactivated"}`);
+      toast.success(
+        `Regular volunteer ${!currentStatus ? "activated" : "deactivated"}`
+      );
       router.refresh();
     } catch (error) {
+      console.error(error);
       toast.error("Failed to toggle status");
     } finally {
       setToggleId(null);
@@ -112,6 +115,7 @@ export function RegularsTable({ regulars }: { regulars: RegularVolunteer[] }) {
       toast.success("Regular volunteer status removed");
       router.refresh();
     } catch (error) {
+      console.error(error);
       toast.error("Failed to remove regular status");
     } finally {
       setDeleteId(null);
@@ -142,12 +146,20 @@ export function RegularsTable({ regulars }: { regulars: RegularVolunteer[] }) {
   };
 
   const formatDays = (days: string[]) => {
-    const shortDays = days.map(day => day.substring(0, 3));
+    const shortDays = days.map((day) => day.substring(0, 3));
     if (shortDays.length === 7) return "Every day";
-    if (shortDays.length === 5 && !days.includes("Saturday") && !days.includes("Sunday")) {
+    if (
+      shortDays.length === 5 &&
+      !days.includes("Saturday") &&
+      !days.includes("Sunday")
+    ) {
       return "Weekdays";
     }
-    if (shortDays.length === 2 && days.includes("Saturday") && days.includes("Sunday")) {
+    if (
+      shortDays.length === 2 &&
+      days.includes("Saturday") &&
+      days.includes("Sunday")
+    ) {
       return "Weekends";
     }
     return shortDays.join(", ");
@@ -202,29 +214,31 @@ export function RegularsTable({ regulars }: { regulars: RegularVolunteer[] }) {
                         </div>
                       </div>
                     </TableCell>
-                    
+
                     <TableCell>
                       <Badge variant="outline">{regular.shiftType.name}</Badge>
                     </TableCell>
-                    
+
                     <TableCell>
                       <div className="flex items-center gap-1">
                         <MapPinIcon className="h-4 w-4 text-muted-foreground" />
                         {regular.location}
                       </div>
                     </TableCell>
-                    
+
                     <TableCell>
                       {getFrequencyLabel(regular.frequency)}
                     </TableCell>
-                    
+
                     <TableCell>
                       <div className="flex items-center gap-1">
                         <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm">{formatDays(regular.availableDays)}</span>
+                        <span className="text-sm">
+                          {formatDays(regular.availableDays)}
+                        </span>
                       </div>
                     </TableCell>
-                    
+
                     <TableCell>
                       {getStatusBadge(regular)}
                       {regular.pausedUntil && (
@@ -233,13 +247,13 @@ export function RegularsTable({ regulars }: { regulars: RegularVolunteer[] }) {
                         </div>
                       )}
                     </TableCell>
-                    
+
                     <TableCell>
                       <Badge variant="secondary">
                         {regular._count.autoSignups}
                       </Badge>
                     </TableCell>
-                    
+
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -249,12 +263,14 @@ export function RegularsTable({ regulars }: { regulars: RegularVolunteer[] }) {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem
-                            onClick={() => router.push(`/admin/regulars/${regular.id}/edit`)}
+                            onClick={() =>
+                              router.push(`/admin/regulars/${regular.id}/edit`)
+                            }
                           >
                             <EditIcon className="h-4 w-4 mr-2" />
                             Edit
                           </DropdownMenuItem>
-                          
+
                           <DropdownMenuItem
                             onClick={() => setToggleId(regular.id)}
                           >
@@ -270,9 +286,9 @@ export function RegularsTable({ regulars }: { regulars: RegularVolunteer[] }) {
                               </>
                             )}
                           </DropdownMenuItem>
-                          
+
                           <DropdownMenuSeparator />
-                          
+
                           <DropdownMenuItem
                             onClick={() => setDeleteId(regular.id)}
                             className="text-destructive"
@@ -296,12 +312,12 @@ export function RegularsTable({ regulars }: { regulars: RegularVolunteer[] }) {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {regulars.find(r => r.id === toggleId)?.isActive 
-                ? "Deactivate Regular Volunteer?" 
+              {regulars.find((r) => r.id === toggleId)?.isActive
+                ? "Deactivate Regular Volunteer?"
                 : "Activate Regular Volunteer?"}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {regulars.find(r => r.id === toggleId)?.isActive 
+              {regulars.find((r) => r.id === toggleId)?.isActive
                 ? "This will stop auto-creating signups for this volunteer. Any existing REGULAR_PENDING signups will be canceled."
                 : "This will resume auto-creating signups for this volunteer when matching shifts are created."}
             </AlertDialogDescription>
@@ -310,13 +326,15 @@ export function RegularsTable({ regulars }: { regulars: RegularVolunteer[] }) {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
-                const regular = regulars.find(r => r.id === toggleId);
+                const regular = regulars.find((r) => r.id === toggleId);
                 if (regular) {
                   handleToggle(regular.id, regular.isActive);
                 }
               }}
             >
-              {regulars.find(r => r.id === toggleId)?.isActive ? "Deactivate" : "Activate"}
+              {regulars.find((r) => r.id === toggleId)?.isActive
+                ? "Deactivate"
+                : "Activate"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -326,12 +344,15 @@ export function RegularsTable({ regulars }: { regulars: RegularVolunteer[] }) {
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Remove Regular Volunteer Status?</AlertDialogTitle>
+            <AlertDialogTitle>
+              Remove Regular Volunteer Status?
+            </AlertDialogTitle>
             <AlertDialogDescription>
               This will permanently remove the regular volunteer status for{" "}
-              {regulars.find(r => r.id === deleteId)?.user.firstName}{" "}
-              {regulars.find(r => r.id === deleteId)?.user.lastName}.
-              Any pending auto-generated signups will be canceled. This action cannot be undone.
+              {regulars.find((r) => r.id === deleteId)?.user.firstName}{" "}
+              {regulars.find((r) => r.id === deleteId)?.user.lastName}. Any
+              pending auto-generated signups will be canceled. This action
+              cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

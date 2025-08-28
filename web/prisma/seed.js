@@ -127,9 +127,9 @@ const REALISTIC_VOLUNTEERS = [
     availableLocations: JSON.stringify(["Wellington", "Glenn Innes"]),
     emailNewsletterSubscription: true,
     notificationPreference: "BOTH",
+ // Empty array means all types
     receiveShortageNotifications: true,
-    shortageNotificationTypes: [], // Empty array means all types
-    maxNotificationsPerWeek: 3,
+    excludedShortageNotificationTypes: [], // Empty array means all types
     volunteerAgreementAccepted: true,
     healthSafetyPolicyAccepted: true,
   },
@@ -150,9 +150,9 @@ const REALISTIC_VOLUNTEERS = [
     availableLocations: JSON.stringify(["Wellington"]),
     emailNewsletterSubscription: true,
     notificationPreference: "EMAIL",
+ // Empty array means all types
     receiveShortageNotifications: true,
-    shortageNotificationTypes: [], // Empty array means all types
-    maxNotificationsPerWeek: 3,
+    excludedShortageNotificationTypes: [], // Empty array means all types
     volunteerAgreementAccepted: true,
     healthSafetyPolicyAccepted: true,
   },
@@ -173,9 +173,8 @@ const REALISTIC_VOLUNTEERS = [
     availableLocations: JSON.stringify(["Glenn Innes", "Onehunga"]),
     emailNewsletterSubscription: false,
     notificationPreference: "SMS",
-    receiveShortageNotifications: false, // Opted out for SMS preference
-    shortageNotificationTypes: [],
-    maxNotificationsPerWeek: 1,
+    receiveShortageNotifications: true,
+    excludedShortageNotificationTypes: [],
     volunteerAgreementAccepted: true,
     healthSafetyPolicyAccepted: true,
   },
@@ -196,9 +195,9 @@ const REALISTIC_VOLUNTEERS = [
     availableLocations: JSON.stringify(["Wellington", "Onehunga"]),
     emailNewsletterSubscription: true,
     notificationPreference: "EMAIL",
+ // Empty array means all types
     receiveShortageNotifications: true,
-    shortageNotificationTypes: [], // Empty array means all types
-    maxNotificationsPerWeek: 5,
+    excludedShortageNotificationTypes: [], // Empty array means all types
     volunteerAgreementAccepted: true,
     healthSafetyPolicyAccepted: true,
   },
@@ -219,9 +218,9 @@ const REALISTIC_VOLUNTEERS = [
     availableLocations: JSON.stringify(["Glenn Innes"]),
     emailNewsletterSubscription: true,
     notificationPreference: "BOTH",
+ // Empty array means all types
     receiveShortageNotifications: true,
-    shortageNotificationTypes: [], // Empty array means all types
-    maxNotificationsPerWeek: 2,
+    excludedShortageNotificationTypes: [], // Empty array means all types
     volunteerAgreementAccepted: true,
     healthSafetyPolicyAccepted: true,
   },
@@ -242,9 +241,9 @@ const REALISTIC_VOLUNTEERS = [
     availableLocations: JSON.stringify(["Onehunga"]),
     emailNewsletterSubscription: true,
     notificationPreference: "EMAIL",
+ // Empty array means all types
     receiveShortageNotifications: true,
-    shortageNotificationTypes: [], // Empty array means all types
-    maxNotificationsPerWeek: 3,
+    excludedShortageNotificationTypes: [], // Empty array means all types
     volunteerAgreementAccepted: true,
     healthSafetyPolicyAccepted: true,
   },
@@ -269,9 +268,9 @@ const REALISTIC_VOLUNTEERS = [
     ]),
     emailNewsletterSubscription: true,
     notificationPreference: "EMAIL",
+ // Empty array means all types
     receiveShortageNotifications: true,
-    shortageNotificationTypes: [], // Empty array means all types
-    maxNotificationsPerWeek: 3,
+    excludedShortageNotificationTypes: [], // Empty array means all types
     volunteerAgreementAccepted: true,
     healthSafetyPolicyAccepted: true,
   },
@@ -292,9 +291,8 @@ const REALISTIC_VOLUNTEERS = [
     availableLocations: JSON.stringify(["Wellington"]),
     emailNewsletterSubscription: false,
     notificationPreference: "SMS",
-    receiveShortageNotifications: false, // Opted out due to SMS preference
-    shortageNotificationTypes: [],
-    maxNotificationsPerWeek: 1,
+    receiveShortageNotifications: true,
+    excludedShortageNotificationTypes: [],
     volunteerAgreementAccepted: true,
     healthSafetyPolicyAccepted: true,
   },
@@ -372,9 +370,9 @@ async function main() {
       availableLocations: JSON.stringify(["Wellington", "Glenn Innes"]),
       emailNewsletterSubscription: true,
       notificationPreference: "EMAIL",
+ // Empty array means all types
       receiveShortageNotifications: true,
-      shortageNotificationTypes: [], // Empty array means all types
-      maxNotificationsPerWeek: 3,
+    excludedShortageNotificationTypes: [], // Empty array means all types
       volunteerAgreementAccepted: true,
       healthSafetyPolicyAccepted: true,
       hashedPassword: volunteerHash,
@@ -476,9 +474,9 @@ async function main() {
         ),
         emailNewsletterSubscription: i % 2 === 0,
         notificationPreference: ["EMAIL", "SMS", "BOTH", "NONE"][i % 4],
-        receiveShortageNotifications: i % 5 !== 0, // 80% opt-in rate
-        shortageNotificationTypes: [], // Empty array means all types
-        maxNotificationsPerWeek: [1, 2, 3, 5][i % 4],
+ // Empty array means all types
+        receiveShortageNotifications: true,
+        excludedShortageNotificationTypes: [], // Empty array means all types
         volunteerAgreementAccepted: true,
         healthSafetyPolicyAccepted: true,
         hashedPassword: volunteerHash,

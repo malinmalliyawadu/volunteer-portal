@@ -332,7 +332,6 @@ export default async function AdminShiftsPage({
           <SignupActionsWrapper
             signupId={signupId}
             initialStatus={status}
-            volunteerName={name ?? "(No name)"}
             isAutoSignup={isAutoSignup}
           />
         </div>

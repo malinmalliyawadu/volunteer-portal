@@ -12,8 +12,7 @@ export async function createTestUser(
     availableLocations?: string;
     availableDays?: string;
     receiveShortageNotifications?: boolean;
-    shortageNotificationTypes?: string[];
-    maxNotificationsPerWeek?: number;
+    excludedShortageNotificationTypes?: string[];
   }
 ): Promise<void> {
   const hashedPassword = await hash("Test123456", 12);

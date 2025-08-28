@@ -8,15 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
-import { 
-  StarIcon, 
-  CalendarIcon, 
-  MapPinIcon, 
+import {
+  StarIcon,
+  CalendarIcon,
+  MapPinIcon,
   ClockIcon,
-  PauseIcon,
-  PlayIcon,
   SettingsIcon,
-  ArrowLeftIcon
+  ArrowLeftIcon,
 } from "lucide-react";
 import { RegularScheduleManager } from "./regular-schedule-manager";
 import { UpcomingRegularShifts } from "./upcoming-regular-shifts";
@@ -24,7 +22,7 @@ import { format } from "date-fns";
 
 export default async function RegularSchedulePage() {
   const session = await getServerSession(authOptions);
-  
+
   if (!session?.user) {
     redirect("/login?callbackUrl=/profile/regular-schedule");
   }
@@ -40,17 +38,17 @@ export default async function RegularSchedulePage() {
         include: {
           signup: {
             include: {
-              shift: true
-            }
-          }
-        }
-      }
-    }
+              shift: true,
+            },
+          },
+        },
+      },
+    },
   });
 
   // Get shift types for editing
   const shiftTypes = await prisma.shiftType.findMany({
-    orderBy: { name: "asc" }
+    orderBy: { name: "asc" },
   });
 
   const getStatusInfo = (regular: typeof regularVolunteer) => {
@@ -60,12 +58,12 @@ export default async function RegularSchedulePage() {
         label: "Inactive",
         description: "Regular volunteer status is currently inactive",
         color: "text-gray-500",
-        bgColor: "bg-gray-100"
+        bgColor: "bg-gray-100",
       };
     }
-    
+
     if (regular.isPausedByUser) {
-      const until = regular.pausedUntil 
+      const until = regular.pausedUntil
         ? ` until ${format(regular.pausedUntil, "MMM d, yyyy")}`
         : "";
       return {
@@ -73,28 +71,36 @@ export default async function RegularSchedulePage() {
         label: "Paused",
         description: `Regular schedule is paused${until}`,
         color: "text-yellow-600",
-        bgColor: "bg-yellow-50"
+        bgColor: "bg-yellow-50",
       };
     }
-    
+
     return {
       status: "active",
       label: "Active",
       description: "Auto-applying to matching shifts",
       color: "text-green-600",
-      bgColor: "bg-green-50"
+      bgColor: "bg-green-50",
     };
   };
 
   const statusInfo = regularVolunteer ? getStatusInfo(regularVolunteer) : null;
 
   const formatDays = (days: string[]) => {
-    const shortDays = days.map(day => day.substring(0, 3));
+    const shortDays = days.map((day) => day.substring(0, 3));
     if (shortDays.length === 7) return "Every day";
-    if (shortDays.length === 5 && !days.includes("Saturday") && !days.includes("Sunday")) {
+    if (
+      shortDays.length === 5 &&
+      !days.includes("Saturday") &&
+      !days.includes("Sunday")
+    ) {
       return "Weekdays";
     }
-    if (shortDays.length === 2 && days.includes("Saturday") && days.includes("Sunday")) {
+    if (
+      shortDays.length === 2 &&
+      days.includes("Saturday") &&
+      days.includes("Sunday")
+    ) {
       return "Weekends";
     }
     return shortDays.join(", ");
@@ -138,9 +144,9 @@ export default async function RegularSchedulePage() {
                 Not a Regular Volunteer Yet
               </h2>
               <p className="text-muted-foreground mb-6">
-                You haven&apos;t been assigned as a regular volunteer. Regular volunteers 
-                automatically appear as signed up for their assigned shifts, making 
-                scheduling easier for both you and the admins.
+                You haven&apos;t been assigned as a regular volunteer. Regular
+                volunteers automatically appear as signed up for their assigned
+                shifts, making scheduling easier for both you and the admins.
               </p>
               <div className="space-y-2 text-sm text-muted-foreground">
                 <p>• Auto-apply to matching shifts</p>
@@ -148,7 +154,8 @@ export default async function RegularSchedulePage() {
                 <p>• Pause anytime for vacations or breaks</p>
               </div>
               <p className="text-sm text-muted-foreground mt-6">
-                Contact an administrator if you&apos;d like to become a regular volunteer.
+                Contact an administrator if you&apos;d like to become a regular
+                volunteer.
               </p>
             </div>
           </CardContent>
@@ -166,9 +173,14 @@ export default async function RegularSchedulePage() {
                   <div>
                     <CardTitle className="flex items-center gap-2">
                       Regular Volunteer Status
-                      <Badge 
-                        variant={statusInfo?.status === "active" ? "success" : 
-                               statusInfo?.status === "paused" ? "warning" : "secondary"}
+                      <Badge
+                        variant={
+                          statusInfo?.status === "active"
+                            ? "success"
+                            : statusInfo?.status === "paused"
+                            ? "warning"
+                            : "secondary"
+                        }
                       >
                         {statusInfo?.label}
                       </Badge>
@@ -267,15 +279,13 @@ export default async function RegularSchedulePage() {
           </Card>
 
           {/* Schedule Management */}
-          <RegularScheduleManager 
+          <RegularScheduleManager
             regularVolunteer={regularVolunteer}
             shiftTypes={shiftTypes}
           />
 
           {/* Upcoming Regular Shifts */}
-          <UpcomingRegularShifts 
-            regularVolunteer={regularVolunteer}
-          />
+          <UpcomingRegularShifts regularVolunteer={regularVolunteer} />
         </div>
       )}
     </PageContainer>

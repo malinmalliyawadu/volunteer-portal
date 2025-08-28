@@ -36,8 +36,7 @@ model User {
   
   // Shift shortage notification preferences
   receiveShortageNotifications Boolean                @default(true)
-  shortageNotificationTypes    String[]               @default([]) // Array of shift type IDs they want notifications for, empty means all types
-  maxNotificationsPerWeek      Int                    @default(3)
+  excludedShortageNotificationTypes String[]          @default([]) // Array of shift type IDs they DON'T want notifications for (opt-out list), empty means get all types
   
   // Migration invitation tracking
   isMigrated                   Boolean                @default(false)

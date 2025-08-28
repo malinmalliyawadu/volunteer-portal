@@ -172,8 +172,7 @@ export default function RegisterPage() {
     emailNewsletterSubscription: true,
     notificationPreference: "EMAIL",
     receiveShortageNotifications: true,
-    shortageNotificationTypes: [],
-    maxNotificationsPerWeek: 3,
+    excludedShortageNotificationTypes: [],
     volunteerAgreementAccepted: false,
     healthSafetyPolicyAccepted: false,
   });

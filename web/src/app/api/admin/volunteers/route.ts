@@ -18,7 +18,11 @@ export async function GET(request: Request) {
     const volunteers = await prisma.user.findMany({
       where: {
         role: "VOLUNTEER",
-        profileCompleted: true,
+        signups: {
+          some: {
+            status: "CONFIRMED",
+          },
+        },
       },
       select: {
         id: true,
@@ -29,7 +33,7 @@ export async function GET(request: Request) {
         availableLocations: true,
         availableDays: true,
         receiveShortageNotifications: true,
-        shortageNotificationTypes: true,
+        excludedShortageNotificationTypes: true,
         ...(includeStats && {
           _count: {
             select: {

@@ -7,14 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, MapPin, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 
-type RegularVolunteer = {
-  id: string;
-  shiftType: {
-    id: string;
-    name: string;
-  };
-};
-
 type PreviewShift = {
   id: string;
   start: string;
@@ -29,11 +21,7 @@ type PreviewShift = {
   isRegularShift: boolean;
 };
 
-export function UpcomingRegularShifts({
-  regularVolunteer
-}: {
-  regularVolunteer: RegularVolunteer;
-}) {
+export function UpcomingRegularShifts() {
   const [shifts, setShifts] = useState<PreviewShift[]>([]);
   const [loading, setLoading] = useState(true);
   const [previewWeeks, setPreviewWeeks] = useState(4);
@@ -41,7 +29,9 @@ export function UpcomingRegularShifts({
   const fetchPreview = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/profile/regular-schedule/preview?weeks=${previewWeeks}`);
+      const response = await fetch(
+        `/api/profile/regular-schedule/preview?weeks=${previewWeeks}`
+      );
       if (response.ok) {
         const data = await response.json();
         setShifts(data.shifts || []);
@@ -97,7 +87,9 @@ export function UpcomingRegularShifts({
               onClick={fetchPreview}
               disabled={loading}
             >
-              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCw
+                className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
+              />
             </Button>
           </div>
         </div>
@@ -114,7 +106,8 @@ export function UpcomingRegularShifts({
               No matching shifts found for the next {previewWeeks} weeks
             </p>
             <p className="text-sm text-muted-foreground mt-2">
-              New shifts matching your regular schedule will automatically appear here
+              New shifts matching your regular schedule will automatically
+              appear here
             </p>
           </div>
         ) : (
@@ -130,25 +123,26 @@ export function UpcomingRegularShifts({
                       <h3 className="font-medium">{shift.shiftType.name}</h3>
                       {getStatusBadge(shift.regularStatus)}
                     </div>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <Calendar className="h-4 w-4" />
                         {format(new Date(shift.start), "EEE, MMM d, yyyy")}
                       </div>
-                      
+
                       <div className="flex items-center gap-1">
                         <Clock className="h-4 w-4" />
-                        {format(new Date(shift.start), "h:mm a")} - {format(new Date(shift.end), "h:mm a")}
+                        {format(new Date(shift.start), "h:mm a")} -{" "}
+                        {format(new Date(shift.end), "h:mm a")}
                       </div>
-                      
+
                       <div className="flex items-center gap-1">
                         <MapPin className="h-4 w-4" />
                         {shift.location}
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="text-right">
                     <div className="text-sm text-muted-foreground">
                       {shift.capacity} volunteers needed
@@ -157,10 +151,12 @@ export function UpcomingRegularShifts({
                 </div>
               </div>
             ))}
-            
+
             <div className="text-center pt-4 border-t">
               <p className="text-xs text-muted-foreground">
-                Showing {shifts.length} upcoming shift{shifts.length !== 1 ? 's' : ''} for the next {previewWeeks} weeks
+                Showing {shifts.length} upcoming shift
+                {shifts.length !== 1 ? "s" : ""} for the next {previewWeeks}{" "}
+                weeks
               </p>
             </div>
           </div>

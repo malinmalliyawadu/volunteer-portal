@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -67,7 +66,7 @@ export function RegularVolunteerForm({
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     userId: "",
     shiftTypeId: "",
@@ -79,7 +78,7 @@ export function RegularVolunteerForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (formData.availableDays.length === 0) {
       toast.error("Please select at least one available day");
       return;
@@ -115,13 +114,17 @@ export function RegularVolunteerForm({
       if (!response.ok) {
         const error = await response.json();
         console.error("API Error:", error);
-        const errorMessage = error.error || `Failed to create regular volunteer (${response.status})`;
-        const errorDetails = error.details ? `\nDetails: ${JSON.stringify(error.details, null, 2)}` : "";
+        const errorMessage =
+          error.error ||
+          `Failed to create regular volunteer (${response.status})`;
+        const errorDetails = error.details
+          ? `\nDetails: ${JSON.stringify(error.details, null, 2)}`
+          : "";
         throw new Error(errorMessage + errorDetails);
       }
 
       toast.success("Regular volunteer created successfully");
-      
+
       // Reset form
       setFormData({
         userId: "",
@@ -131,21 +134,25 @@ export function RegularVolunteerForm({
         availableDays: [],
         notes: "",
       });
-      
+
       setIsOpen(false);
       router.refresh();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to create regular volunteer");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to create regular volunteer"
+      );
     } finally {
       setLoading(false);
     }
   };
 
   const toggleDay = (day: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       availableDays: prev.availableDays.includes(day)
-        ? prev.availableDays.filter(d => d !== day)
+        ? prev.availableDays.filter((d) => d !== day)
         : [...prev.availableDays, day],
     }));
   };
@@ -159,7 +166,8 @@ export function RegularVolunteerForm({
               <div>
                 <CardTitle>Add Regular Volunteer</CardTitle>
                 <CardDescription>
-                  Assign a volunteer to automatically sign up for recurring shifts
+                  Assign a volunteer to automatically sign up for recurring
+                  shifts
                 </CardDescription>
               </div>
               <Button variant="ghost" size="sm">
@@ -175,7 +183,7 @@ export function RegularVolunteerForm({
             </div>
           </CardHeader>
         </CollapsibleTrigger>
-        
+
         <CollapsibleContent>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -186,19 +194,20 @@ export function RegularVolunteerForm({
                   <Select
                     value={formData.userId}
                     onValueChange={(value) => {
-                      setFormData(prev => ({ ...prev, userId: value }));
+                      setFormData((prev) => ({ ...prev, userId: value }));
                     }}
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select a volunteer..." />
                     </SelectTrigger>
                     <SelectContent>
-                      {volunteers.map(v => {
-                        const displayName = v.firstName && v.lastName 
-                          ? `${v.firstName} ${v.lastName}`
-                          : v.name 
-                          ? v.name
-                          : v.email;
+                      {volunteers.map((v) => {
+                        const displayName =
+                          v.firstName && v.lastName
+                            ? `${v.firstName} ${v.lastName}`
+                            : v.name
+                            ? v.name
+                            : v.email;
                         return (
                           <SelectItem key={v.id} value={v.id}>
                             {displayName} ({v.email})
@@ -215,14 +224,14 @@ export function RegularVolunteerForm({
                   <Select
                     value={formData.shiftTypeId}
                     onValueChange={(value) => {
-                      setFormData(prev => ({ ...prev, shiftTypeId: value }));
+                      setFormData((prev) => ({ ...prev, shiftTypeId: value }));
                     }}
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select shift type..." />
                     </SelectTrigger>
                     <SelectContent>
-                      {shiftTypes.map(t => (
+                      {shiftTypes.map((t) => (
                         <SelectItem key={t.id} value={t.id}>
                           {t.name}
                         </SelectItem>
@@ -238,14 +247,14 @@ export function RegularVolunteerForm({
                     value={formData.location}
                     onValueChange={(value) => {
                       console.log("Selected location:", value);
-                      setFormData(prev => ({ ...prev, location: value }));
+                      setFormData((prev) => ({ ...prev, location: value }));
                     }}
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select location..." />
                     </SelectTrigger>
                     <SelectContent>
-                      {LOCATIONS.map(loc => (
+                      {LOCATIONS.map((loc) => (
                         <SelectItem key={loc} value={loc}>
                           {loc}
                         </SelectItem>
@@ -261,14 +270,14 @@ export function RegularVolunteerForm({
                     value={formData.frequency}
                     onValueChange={(value) => {
                       console.log("Selected frequency:", value);
-                      setFormData(prev => ({ ...prev, frequency: value }));
+                      setFormData((prev) => ({ ...prev, frequency: value }));
                     }}
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select frequency..." />
                     </SelectTrigger>
                     <SelectContent>
-                      {FREQUENCIES.map(freq => (
+                      {FREQUENCIES.map((freq) => (
                         <SelectItem key={freq.value} value={freq.value}>
                           {freq.label}
                         </SelectItem>
@@ -276,18 +285,21 @@ export function RegularVolunteerForm({
                     </SelectContent>
                   </Select>
                 </div>
-
               </div>
 
               {/* Available Days */}
               <div className="space-y-2">
                 <Label>Available Days *</Label>
                 <div className="grid grid-cols-3 md:grid-cols-7 gap-2">
-                  {DAYS.map(day => (
+                  {DAYS.map((day) => (
                     <Button
                       key={day}
                       type="button"
-                      variant={formData.availableDays.includes(day) ? "default" : "outline"}
+                      variant={
+                        formData.availableDays.includes(day)
+                          ? "default"
+                          : "outline"
+                      }
                       size="sm"
                       onClick={() => toggleDay(day)}
                       className="w-full"
@@ -306,7 +318,9 @@ export function RegularVolunteerForm({
                   rows={3}
                   placeholder="Any special notes about this regular assignment..."
                   value={formData.notes}
-                  onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, notes: e.target.value }))
+                  }
                 />
               </div>
 

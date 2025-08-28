@@ -189,18 +189,6 @@ export default async function AdminDashboardPage({
     signups: Array<{ status: string }>;
   };
 
-  type SignupWithUserAndShift = {
-    id: string;
-    status: "PENDING" | "CONFIRMED" | "WAITLISTED" | "CANCELED" | "NO_SHOW";
-    createdAt: Date;
-    user: { id: string; name: string | null; email: string };
-    shift: {
-      start: Date;
-      location: string | null;
-      shiftType: { name: string };
-    };
-  };
-
   // Filter shifts that need attention (less than 50% capacity filled)
   const lowSignupShifts = shiftsNeedingAttention.filter(
     (shift: ShiftWithSignups) => {

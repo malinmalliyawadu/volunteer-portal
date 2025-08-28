@@ -1,19 +1,34 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  VolunteersDataTable,
+  type Volunteer,
+} from "@/components/volunteers-data-table";
 import { format } from "date-fns";
-import { Send, Save, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Send, Save } from "lucide-react";
 import { toast } from "sonner";
 
 interface Shift {
@@ -27,21 +42,6 @@ interface Shift {
   location: string;
   capacity: number;
   _count: {
-    signups: number;
-  };
-}
-
-interface Volunteer {
-  id: string;
-  email: string;
-  name: string | null;
-  firstName: string | null;
-  lastName: string | null;
-  availableLocations: string[];
-  availableDays: string[];
-  receiveShortageNotifications: boolean;
-  shortageNotificationTypes: string[];
-  _count?: {
     signups: number;
   };
 }
@@ -63,13 +63,19 @@ interface NotificationsContentProps {
   shiftTypes: ShiftType[];
 }
 
-export function NotificationsContent({ shiftTypes }: NotificationsContentProps) {
+export function NotificationsContent({
+  shiftTypes,
+}: NotificationsContentProps) {
   const [selectedShift, setSelectedShift] = useState<string>("");
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
   const [filteredVolunteers, setFilteredVolunteers] = useState<Volunteer[]>([]);
-  const [selectedVolunteers, setSelectedVolunteers] = useState<Set<string>>(new Set());
-  const [notificationGroups, setNotificationGroups] = useState<NotificationGroup[]>([]);
+  const [selectedVolunteers, setSelectedVolunteers] = useState<Set<string>>(
+    new Set()
+  );
+  const [notificationGroups, setNotificationGroups] = useState<
+    NotificationGroup[]
+  >([]);
   const [selectedGroup, setSelectedGroup] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
@@ -79,7 +85,8 @@ export function NotificationsContent({ shiftTypes }: NotificationsContentProps) 
   const [filterShiftType, setFilterShiftType] = useState<string>("all");
   const [filterAvailability, setFilterAvailability] = useState<boolean>(false);
   const [filterMinShifts, setFilterMinShifts] = useState<number>(0);
-  const [filterNotificationsEnabled, setFilterNotificationsEnabled] = useState<boolean>(true);
+  const [filterNotificationsEnabled, setFilterNotificationsEnabled] =
+    useState<boolean>(true);
 
   // Email customization
   const [emailSubject, setEmailSubject] = useState<string>("");
@@ -107,7 +114,7 @@ export function NotificationsContent({ shiftTypes }: NotificationsContentProps) 
     filterAvailability,
     filterMinShifts,
     filterNotificationsEnabled,
-    selectedShift
+    selectedShift,
   ]);
 
   const fetchShifts = async () => {
@@ -145,44 +152,53 @@ export function NotificationsContent({ shiftTypes }: NotificationsContentProps) 
     }
   };
 
-
   const applyFilters = () => {
     let filtered = [...volunteers];
 
     // Filter by notification preferences
     if (filterNotificationsEnabled) {
-      filtered = filtered.filter(v => v.receiveShortageNotifications === true);
+      filtered = filtered.filter(
+        (v) => v.receiveShortageNotifications === true
+      );
     }
 
     // Filter by location
     if (filterLocation !== "all") {
-      filtered = filtered.filter(v => 
-        Array.isArray(v.availableLocations) && v.availableLocations.includes(filterLocation)
+      filtered = filtered.filter(
+        (v) =>
+          Array.isArray(v.availableLocations) &&
+          v.availableLocations.includes(filterLocation)
       );
     }
 
     // Filter by shift type preference
+    // excludedShortageNotificationTypes now stores EXCLUDED types (what they DON'T want)
+    // Empty array means they want notifications for ALL shift types
+    // Non-empty array contains the types they DON'T want notifications for
     if (filterShiftType !== "all") {
-      filtered = filtered.filter(v => 
-        Array.isArray(v.shortageNotificationTypes) && v.shortageNotificationTypes.includes(filterShiftType)
+      filtered = filtered.filter(
+        (v) =>
+          Array.isArray(v.excludedShortageNotificationTypes) &&
+          !v.excludedShortageNotificationTypes.includes(filterShiftType) // They want it if it's NOT in the excluded list
       );
     }
 
     // Filter by availability for selected shift
     if (filterAvailability && selectedShift) {
-      const shift = shifts.find(s => s.id === selectedShift);
+      const shift = shifts.find((s) => s.id === selectedShift);
       if (shift) {
         const shiftDay = format(new Date(shift.start), "EEEE");
-        filtered = filtered.filter(v => 
-          Array.isArray(v.availableDays) && v.availableDays.includes(shiftDay)
+        filtered = filtered.filter(
+          (v) =>
+            Array.isArray(v.availableDays) && v.availableDays.includes(shiftDay)
         );
       }
     }
 
     // Filter by minimum shifts completed
     if (filterMinShifts > 0) {
-      filtered = filtered.filter(v => 
-        (v._count?.signups || 0) >= filterMinShifts
+      filtered = filtered.filter(
+        (v) => (v._count?.signups || 0) >= filterMinShifts
       );
     }
 
@@ -193,7 +209,7 @@ export function NotificationsContent({ shiftTypes }: NotificationsContentProps) 
     if (selectedVolunteers.size === filteredVolunteers.length) {
       setSelectedVolunteers(new Set());
     } else {
-      setSelectedVolunteers(new Set(filteredVolunteers.map(v => v.id)));
+      setSelectedVolunteers(new Set(filteredVolunteers.map((v) => v.id)));
     }
   };
 
@@ -212,21 +228,25 @@ export function NotificationsContent({ shiftTypes }: NotificationsContentProps) 
 
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/admin/notification-groups/${selectedGroup}/members`);
+      const response = await fetch(
+        `/api/admin/notification-groups/${selectedGroup}/members`
+      );
       if (!response.ok) throw new Error("Failed to load group");
-      
+
       const data = await response.json();
       const memberIds = data.members.map((m: { userId: string }) => m.userId);
       setSelectedVolunteers(new Set(memberIds));
-      
+
       // Apply group filters if they exist
-      const group = notificationGroups.find(g => g.id === selectedGroup);
+      const group = notificationGroups.find((g) => g.id === selectedGroup);
       if (group?.filters) {
         const filters = group.filters as Record<string, unknown>;
         if (filters.location) setFilterLocation(String(filters.location));
         if (filters.shiftType) setFilterShiftType(String(filters.shiftType));
-        if (filters.minShifts !== undefined) setFilterMinShifts(Number(filters.minShifts));
-        if (filters.availability !== undefined) setFilterAvailability(Boolean(filters.availability));
+        if (filters.minShifts !== undefined)
+          setFilterMinShifts(Number(filters.minShifts));
+        if (filters.availability !== undefined)
+          setFilterAvailability(Boolean(filters.availability));
       }
 
       toast.success(`Loaded ${memberIds.length} volunteers from group`);
@@ -264,7 +284,7 @@ export function NotificationsContent({ shiftTypes }: NotificationsContentProps) 
       });
 
       if (!response.ok) throw new Error("Failed to save group");
-      
+
       const newGroup = await response.json();
       setNotificationGroups([...notificationGroups, newGroup]);
       setGroupName("");
@@ -289,7 +309,7 @@ export function NotificationsContent({ shiftTypes }: NotificationsContentProps) 
       return;
     }
 
-    const shift = shifts.find(s => s.id === selectedShift);
+    const shift = shifts.find((s) => s.id === selectedShift);
     if (!shift) return;
 
     setIsSending(true);
@@ -307,10 +327,10 @@ export function NotificationsContent({ shiftTypes }: NotificationsContentProps) 
       });
 
       if (!response.ok) throw new Error("Failed to send notifications");
-      
+
       const result = await response.json();
       toast.success(`Successfully sent ${result.sentCount} notifications`);
-      
+
       // Reset selection
       setSelectedVolunteers(new Set());
     } catch (error) {
@@ -339,7 +359,9 @@ export function NotificationsContent({ shiftTypes }: NotificationsContentProps) 
         {notificationGroups.length === 0 && (
           <Alert>
             <AlertDescription>
-              💡 <strong>Tip:</strong> After selecting volunteers and applying filters, you can save them as a group in the &quot;Manage Groups&quot; tab for easy reuse later.
+              💡 <strong>Tip:</strong> After selecting volunteers and applying
+              filters, you can save them as a group in the &quot;Manage
+              Groups&quot; tab for easy reuse later.
             </AlertDescription>
           </Alert>
         )}
@@ -359,15 +381,18 @@ export function NotificationsContent({ shiftTypes }: NotificationsContentProps) 
               </SelectTrigger>
               <SelectContent>
                 {shifts.map((shift) => {
-                  const { shortage, percentFilled } = getShiftShortageInfo(shift);
+                  const { shortage } = getShiftShortageInfo(shift);
                   return (
                     <SelectItem key={shift.id} value={shift.id}>
                       <div className="flex items-center justify-between w-full">
                         <span>
-                          {shift.shiftType.name} - {format(new Date(shift.start), "MMM d, h:mm a")}
+                          {shift.shiftType.name} -{" "}
+                          {format(new Date(shift.start), "MMM d, h:mm a")}
                         </span>
                         <div className="flex items-center gap-2 ml-4">
-                          <Badge variant={shortage > 5 ? "destructive" : "secondary"}>
+                          <Badge
+                            variant={shortage > 5 ? "destructive" : "secondary"}
+                          >
                             {shortage} needed
                           </Badge>
                           <span className="text-sm text-muted-foreground">
@@ -384,22 +409,36 @@ export function NotificationsContent({ shiftTypes }: NotificationsContentProps) 
             {selectedShift && (
               <div className="mt-4 p-4 bg-muted rounded-lg">
                 {(() => {
-                  const shift = shifts.find(s => s.id === selectedShift);
+                  const shift = shifts.find((s) => s.id === selectedShift);
                   if (!shift) return null;
-                  const { shortage, percentFilled } = getShiftShortageInfo(shift);
+                  const { shortage, percentFilled } =
+                    getShiftShortageInfo(shift);
                   return (
                     <>
                       <div className="flex justify-between items-center mb-2">
-                        <span className="font-medium">{shift.shiftType.name}</span>
-                        <Badge variant={shortage > 5 ? "destructive" : "secondary"}>
+                        <span className="font-medium">
+                          {shift.shiftType.name}
+                        </span>
+                        <Badge
+                          variant={shortage > 5 ? "destructive" : "secondary"}
+                        >
                           {shortage} volunteers needed
                         </Badge>
                       </div>
                       <div className="text-sm text-muted-foreground space-y-1">
-                        <p>Date: {format(new Date(shift.start), "EEEE, MMMM d, yyyy")}</p>
-                        <p>Time: {format(new Date(shift.start), "h:mm a")} - {format(new Date(shift.end), "h:mm a")}</p>
+                        <p>
+                          Date:{" "}
+                          {format(new Date(shift.start), "EEEE, MMMM d, yyyy")}
+                        </p>
+                        <p>
+                          Time: {format(new Date(shift.start), "h:mm a")} -{" "}
+                          {format(new Date(shift.end), "h:mm a")}
+                        </p>
                         <p>Location: {shift.location}</p>
-                        <p>Current: {shift._count.signups} / {shift.capacity} ({percentFilled.toFixed(0)}% filled)</p>
+                        <p>
+                          Current: {shift._count.signups} / {shift.capacity} (
+                          {percentFilled.toFixed(0)}% filled)
+                        </p>
                       </div>
                     </>
                   );
@@ -421,7 +460,10 @@ export function NotificationsContent({ shiftTypes }: NotificationsContentProps) 
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <div>
                 <Label htmlFor="location">Location</Label>
-                <Select value={filterLocation} onValueChange={setFilterLocation}>
+                <Select
+                  value={filterLocation}
+                  onValueChange={setFilterLocation}
+                >
                   <SelectTrigger id="location">
                     <SelectValue />
                   </SelectTrigger>
@@ -436,7 +478,10 @@ export function NotificationsContent({ shiftTypes }: NotificationsContentProps) 
 
               <div>
                 <Label htmlFor="shiftType">Shift Type Preference</Label>
-                <Select value={filterShiftType} onValueChange={setFilterShiftType}>
+                <Select
+                  value={filterShiftType}
+                  onValueChange={setFilterShiftType}
+                >
                   <SelectTrigger id="shiftType">
                     <SelectValue />
                   </SelectTrigger>
@@ -458,7 +503,9 @@ export function NotificationsContent({ shiftTypes }: NotificationsContentProps) 
                   type="number"
                   min="0"
                   value={filterMinShifts}
-                  onChange={(e) => setFilterMinShifts(parseInt(e.target.value) || 0)}
+                  onChange={(e) =>
+                    setFilterMinShifts(parseInt(e.target.value) || 0)
+                  }
                 />
               </div>
             </div>
@@ -468,7 +515,9 @@ export function NotificationsContent({ shiftTypes }: NotificationsContentProps) 
                 <Checkbox
                   id="availability"
                   checked={filterAvailability}
-                  onCheckedChange={(checked) => setFilterAvailability(checked as boolean)}
+                  onCheckedChange={(checked) =>
+                    setFilterAvailability(checked as boolean)
+                  }
                   disabled={!selectedShift}
                 />
                 <Label htmlFor="availability" className="cursor-pointer">
@@ -480,7 +529,9 @@ export function NotificationsContent({ shiftTypes }: NotificationsContentProps) 
                 <Checkbox
                   id="notifications"
                   checked={filterNotificationsEnabled}
-                  onCheckedChange={(checked) => setFilterNotificationsEnabled(checked as boolean)}
+                  onCheckedChange={(checked) =>
+                    setFilterNotificationsEnabled(checked as boolean)
+                  }
                 />
                 <Label htmlFor="notifications" className="cursor-pointer">
                   Notifications enabled only
@@ -492,15 +543,17 @@ export function NotificationsContent({ shiftTypes }: NotificationsContentProps) 
               <div className="text-sm text-muted-foreground">
                 {filteredVolunteers.length} volunteers match filters
               </div>
-              
+
               <div className="flex gap-2">
                 <Select value={selectedGroup} onValueChange={setSelectedGroup}>
                   <SelectTrigger className="w-[200px]">
-                    <SelectValue placeholder={
-                      notificationGroups.length === 0 
-                        ? "No saved groups" 
-                        : "Load saved group"
-                    } />
+                    <SelectValue
+                      placeholder={
+                        notificationGroups.length === 0
+                          ? "No saved groups"
+                          : "Load saved group"
+                      }
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     {notificationGroups.length === 0 ? (
@@ -519,7 +572,11 @@ export function NotificationsContent({ shiftTypes }: NotificationsContentProps) 
                 <Button
                   variant="outline"
                   onClick={handleLoadGroup}
-                  disabled={!selectedGroup || isLoading || notificationGroups.length === 0}
+                  disabled={
+                    !selectedGroup ||
+                    isLoading ||
+                    notificationGroups.length === 0
+                  }
                 >
                   Load Group
                 </Button>
@@ -537,52 +594,12 @@ export function NotificationsContent({ shiftTypes }: NotificationsContentProps) 
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="mb-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleSelectAll}
-              >
-                {selectedVolunteers.size === filteredVolunteers.length ? "Deselect All" : "Select All"}
-              </Button>
-            </div>
-            
-            <ScrollArea className="h-[300px] rounded-md border p-4">
-              <div className="space-y-2">
-                {filteredVolunteers.map((volunteer) => (
-                  <div
-                    key={volunteer.id}
-                    className="flex items-center justify-between p-2 hover:bg-muted rounded-lg cursor-pointer"
-                    onClick={() => handleVolunteerToggle(volunteer.id)}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <Checkbox
-                        checked={selectedVolunteers.has(volunteer.id)}
-                        onCheckedChange={() => handleVolunteerToggle(volunteer.id)}
-                      />
-                      <div>
-                        <p className="font-medium">
-                          {volunteer.name || `${volunteer.firstName} ${volunteer.lastName}`.trim() || volunteer.email}
-                        </p>
-                        <p className="text-sm text-muted-foreground">{volunteer.email}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {volunteer._count?.signups && (
-                        <Badge variant="outline">
-                          {volunteer._count.signups} shifts
-                        </Badge>
-                      )}
-                      {volunteer.receiveShortageNotifications ? (
-                        <CheckCircle2 className="h-4 w-4 text-green-500" />
-                      ) : (
-                        <AlertCircle className="h-4 w-4 text-muted-foreground" />
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
+            <VolunteersDataTable
+              volunteers={filteredVolunteers}
+              selectedVolunteers={selectedVolunteers}
+              onVolunteerToggle={handleVolunteerToggle}
+              onSelectAll={handleSelectAll}
+            />
           </CardContent>
         </Card>
 
@@ -599,7 +616,9 @@ export function NotificationsContent({ shiftTypes }: NotificationsContentProps) 
               <Checkbox
                 id="useTemplate"
                 checked={useTemplate}
-                onCheckedChange={(checked) => setUseTemplate(checked as boolean)}
+                onCheckedChange={(checked) =>
+                  setUseTemplate(checked as boolean)
+                }
               />
               <Label htmlFor="useTemplate">Use default template</Label>
             </div>
@@ -639,7 +658,13 @@ export function NotificationsContent({ shiftTypes }: NotificationsContentProps) 
             </p>
             {selectedShift && (
               <p className="text-xs text-muted-foreground">
-                For shift on {format(new Date(shifts.find(s => s.id === selectedShift)?.start || ""), "MMM d, h:mm a")}
+                For shift on{" "}
+                {format(
+                  new Date(
+                    shifts.find((s) => s.id === selectedShift)?.start || ""
+                  ),
+                  "MMM d, h:mm a"
+                )}
               </p>
             )}
           </div>
@@ -647,7 +672,9 @@ export function NotificationsContent({ shiftTypes }: NotificationsContentProps) 
           <Button
             size="lg"
             onClick={handleSendNotifications}
-            disabled={!selectedShift || selectedVolunteers.size === 0 || isSending}
+            disabled={
+              !selectedShift || selectedVolunteers.size === 0 || isSending
+            }
           >
             {isSending ? (
               <>Sending...</>
@@ -692,7 +719,8 @@ export function NotificationsContent({ shiftTypes }: NotificationsContentProps) 
 
             <Alert>
               <AlertDescription>
-                Current selection: {selectedVolunteers.size} volunteers with filters:
+                Current selection: {selectedVolunteers.size} volunteers with
+                filters:
                 <ul className="mt-2 text-sm list-disc list-inside">
                   <li>Location: {filterLocation}</li>
                   <li>Shift Type: {filterShiftType}</li>
@@ -704,7 +732,9 @@ export function NotificationsContent({ shiftTypes }: NotificationsContentProps) 
 
             <Button
               onClick={handleSaveGroup}
-              disabled={!groupName || selectedVolunteers.size === 0 || isLoading}
+              disabled={
+                !groupName || selectedVolunteers.size === 0 || isLoading
+              }
             >
               <Save className="mr-2 h-4 w-4" />
               Save Group
@@ -715,9 +745,7 @@ export function NotificationsContent({ shiftTypes }: NotificationsContentProps) 
         <Card>
           <CardHeader>
             <CardTitle>Saved Groups</CardTitle>
-            <CardDescription>
-              Manage your notification groups
-            </CardDescription>
+            <CardDescription>Manage your notification groups</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">

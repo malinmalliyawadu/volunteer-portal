@@ -121,8 +121,7 @@ export function MigrationRegistrationForm({
     emailNewsletterSubscription: true,
     notificationPreference: "EMAIL",
     receiveShortageNotifications: true,
-    shortageNotificationTypes: [],
-    maxNotificationsPerWeek: 3,
+    excludedShortageNotificationTypes: [],
     volunteerAgreementAccepted: false,
     healthSafetyPolicyAccepted: false,
     

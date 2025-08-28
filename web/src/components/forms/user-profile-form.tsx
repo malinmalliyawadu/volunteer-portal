@@ -18,7 +18,6 @@ import { Button } from "@/components/ui/button";
 import { PolicyContent } from "@/components/markdown-content";
 import { ProfileImageUpload } from "@/components/ui/profile-image-upload";
 import { UserPlus, Shield, FileText, ExternalLink, Bell } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Shared constants
 export const daysOfWeek = [
@@ -89,15 +88,17 @@ export interface UserProfileFormData {
   emailNewsletterSubscription: boolean;
   notificationPreference: "EMAIL" | "SMS" | "BOTH" | "NONE";
   receiveShortageNotifications: boolean;
-  shortageNotificationTypes: string[];
-  maxNotificationsPerWeek: number;
+  excludedShortageNotificationTypes: string[];
   volunteerAgreementAccepted: boolean;
   healthSafetyPolicyAccepted: boolean;
 }
 
 export interface UserProfileFormProps {
   formData: UserProfileFormData;
-  onInputChange: (field: string, value: string | boolean | string[] | number) => void;
+  onInputChange: (
+    field: string,
+    value: string | boolean | string[] | number
+  ) => void;
   onDayToggle: (day: string) => void;
   onLocationToggle: (location: string) => void;
   loading: boolean;
@@ -617,7 +618,10 @@ export function CommunicationStep({
   shiftTypes = [],
 }: {
   formData: UserProfileFormData;
-  onInputChange: (field: string, value: string | boolean | string[] | number) => void;
+  onInputChange: (
+    field: string,
+    value: string | boolean | string[] | number
+  ) => void;
   loading: boolean;
   volunteerAgreementContent: string;
   healthSafetyPolicyContent: string;
@@ -673,7 +677,7 @@ export function CommunicationStep({
           <Bell className="h-4 w-4" />
           Shortage Notifications
         </h3>
-        
+
         <div className="p-4 rounded-lg border border-border bg-muted/20">
           <Label className="flex items-start space-x-3 text-sm font-medium cursor-pointer">
             <Checkbox
@@ -687,7 +691,8 @@ export function CommunicationStep({
             <div>
               <span>Receive shift shortage notifications</span>
               <p className="text-xs text-muted-foreground mt-1 font-normal">
-                Get notified when shifts need more volunteers. You can customize which types of shifts you&apos;d like to hear about.
+                Get notified when shifts need more volunteers. You can customize
+                which types of shifts you&apos;d like to hear about.
               </p>
             </div>
           </Label>
@@ -702,15 +707,38 @@ export function CommunicationStep({
               <div className="space-y-2">
                 {shiftTypes.length > 0 ? (
                   shiftTypes.map((shiftType) => (
-                    <Label key={shiftType.id} className="flex items-center space-x-2 text-sm cursor-pointer">
+                    <Label
+                      key={shiftType.id}
+                      className="flex items-center space-x-2 text-sm cursor-pointer"
+                    >
                       <Checkbox
-                        checked={formData.shortageNotificationTypes.includes(shiftType.id)}
+                        checked={
+                          // UI shows what they WANT notifications for
+                          // If empty array (no excluded types), they want ALL types - so check all
+                          // If has excluded types, they want all EXCEPT those - so check if this type is NOT excluded
+                          formData.excludedShortageNotificationTypes.length ===
+                            0 ||
+                          !formData.excludedShortageNotificationTypes.includes(
+                            shiftType.id
+                          )
+                        }
                         onCheckedChange={(checked) => {
-                          const current = formData.shortageNotificationTypes;
+                          const currentExcluded =
+                            formData.excludedShortageNotificationTypes;
                           if (checked) {
-                            onInputChange("shortageNotificationTypes", [...current, shiftType.id]);
+                            // User wants this type, so REMOVE it from excluded list
+                            onInputChange(
+                              "excludedShortageNotificationTypes",
+                              currentExcluded.filter((t) => t !== shiftType.id)
+                            );
                           } else {
-                            onInputChange("shortageNotificationTypes", current.filter(t => t !== shiftType.id));
+                            // User doesn't want this type, so ADD it to excluded list
+                            if (!currentExcluded.includes(shiftType.id)) {
+                              onInputChange(
+                                "excludedShortageNotificationTypes",
+                                [...currentExcluded, shiftType.id]
+                              );
+                            }
                           }
                         }}
                         disabled={loading}
@@ -719,34 +747,11 @@ export function CommunicationStep({
                     </Label>
                   ))
                 ) : (
-                  <p className="text-sm text-muted-foreground">Loading shift types...</p>
+                  <p className="text-sm text-muted-foreground">
+                    Loading shift types...
+                  </p>
                 )}
               </div>
-            </div>
-
-            <div className="space-y-2 ml-6">
-              <Label htmlFor="maxNotifications" className="text-sm font-medium">
-                Maximum notifications per week
-              </Label>
-              <Select 
-                value={formData.maxNotificationsPerWeek.toString()}
-                onValueChange={(value) => onInputChange("maxNotificationsPerWeek", parseInt(value))}
-                disabled={loading}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1">1 notification</SelectItem>
-                  <SelectItem value="2">2 notifications</SelectItem>
-                  <SelectItem value="3">3 notifications</SelectItem>
-                  <SelectItem value="5">5 notifications</SelectItem>
-                  <SelectItem value="10">No limit</SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground">
-                Limit how many shortage notifications you receive to avoid overwhelming your inbox.
-              </p>
             </div>
           </>
         )}
@@ -789,7 +794,9 @@ export function CommunicationStep({
                     </ResponsiveDialogTrigger>
                     <ResponsiveDialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                       <ResponsiveDialogHeader>
-                        <ResponsiveDialogTitle>Volunteer Agreement</ResponsiveDialogTitle>
+                        <ResponsiveDialogTitle>
+                          Volunteer Agreement
+                        </ResponsiveDialogTitle>
                         <ResponsiveDialogDescription>
                           Please read the complete volunteer agreement below.
                         </ResponsiveDialogDescription>
@@ -837,7 +844,9 @@ export function CommunicationStep({
                     </ResponsiveDialogTrigger>
                     <ResponsiveDialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                       <ResponsiveDialogHeader>
-                        <ResponsiveDialogTitle>Health and Safety Policy</ResponsiveDialogTitle>
+                        <ResponsiveDialogTitle>
+                          Health and Safety Policy
+                        </ResponsiveDialogTitle>
                         <ResponsiveDialogDescription>
                           Please read the complete health and safety policy
                           below.

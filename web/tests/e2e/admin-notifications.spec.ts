@@ -27,8 +27,7 @@ test.describe('Admin Shift Shortage Notifications', () => {
       availableLocations: JSON.stringify(['Wellington']),
       availableDays: JSON.stringify(['Monday', 'Wednesday']),
       receiveShortageNotifications: true,
-      shortageNotificationTypes: JSON.stringify([]),
-      maxNotificationsPerWeek: 3
+      excludedShortageNotificationTypes: JSON.stringify([]),
     });
 
     // Volunteer 2: Glenn Innes, Tuesday/Thursday, opted in
@@ -37,8 +36,7 @@ test.describe('Admin Shift Shortage Notifications', () => {
       availableLocations: JSON.stringify(['Glenn Innes']),
       availableDays: JSON.stringify(['Tuesday', 'Thursday']),
       receiveShortageNotifications: true,
-      shortageNotificationTypes: JSON.stringify([]),
-      maxNotificationsPerWeek: 5
+      excludedShortageNotificationTypes: JSON.stringify([]),
     });
 
     // Volunteer 3: Wellington, Monday, opted out
@@ -47,8 +45,7 @@ test.describe('Admin Shift Shortage Notifications', () => {
       availableLocations: JSON.stringify(['Wellington']),
       availableDays: JSON.stringify(['Monday']),
       receiveShortageNotifications: false,
-      shortageNotificationTypes: JSON.stringify([]),
-      maxNotificationsPerWeek: 3
+      excludedShortageNotificationTypes: JSON.stringify([]),
     });
 
     // Create a test shift

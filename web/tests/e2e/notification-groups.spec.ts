@@ -54,7 +54,6 @@ test.describe('Notification Groups Functionality', () => {
           availabilityDays: ['Monday', 'Wednesday'],
           shiftTypes: [],
           receiveNotifications: true,
-          maxNotificationsPerWeek: 5
         }
       }
     });
@@ -316,7 +315,6 @@ test.describe('Notification Groups Functionality', () => {
       availabilityDays: ['Monday', 'Wednesday', 'Friday'],
       shiftTypes: [], // Empty array means all types
       receiveNotifications: true,
-      maxNotificationsPerWeek: 7
     };
 
     const response = await request.post('/api/admin/notification-groups', {
@@ -337,7 +335,6 @@ test.describe('Notification Groups Functionality', () => {
     expect(data.group.filters.availabilityDays).toEqual(complexFilters.availabilityDays);
     expect(data.group.filters.shiftTypes).toEqual(complexFilters.shiftTypes);
     expect(data.group.filters.receiveNotifications).toBe(complexFilters.receiveNotifications);
-    expect(data.group.filters.maxNotificationsPerWeek).toBe(complexFilters.maxNotificationsPerWeek);
   });
 
   test('should maintain group order and pagination', async ({ request }) => {
@@ -432,7 +429,6 @@ test.describe('Notification Groups Functionality', () => {
           locations: 'Wellington', // Should be array, not string
           availabilityDays: ['Monday'],
           receiveNotifications: 'true', // Should be boolean, not string
-          maxNotificationsPerWeek: '5' // Should be number, not string
         }
       }
     });
@@ -443,7 +439,6 @@ test.describe('Notification Groups Functionality', () => {
       // If accepted, verify data is properly converted
       expect(Array.isArray(data.group.filters.locations)).toBe(true);
       expect(typeof data.group.filters.receiveNotifications).toBe('boolean');
-      expect(typeof data.group.filters.maxNotificationsPerWeek).toBe('number');
     } else {
       expect(response.status()).toBe(400);
       const errorData = await response.json();

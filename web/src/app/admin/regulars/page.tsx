@@ -6,7 +6,7 @@ import { PageContainer } from "@/components/page-container";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { PlusIcon, StarIcon, PauseIcon, CalendarIcon } from "lucide-react";
+import { StarIcon, PauseIcon, CalendarIcon } from "lucide-react";
 import { RegularsTable } from "./regulars-table";
 import { RegularVolunteerForm } from "./regular-volunteer-form";
 

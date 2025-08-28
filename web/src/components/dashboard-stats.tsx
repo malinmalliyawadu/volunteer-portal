@@ -4,70 +4,56 @@ import { AnimatedStatsGrid } from "@/components/animated-stats-grid";
 
 interface DashboardStatsProps {
   userId: string;
-  userName: string | null | undefined;
 }
 
-export async function DashboardStats({ userId, userName }: DashboardStatsProps) {
+export async function DashboardStats({ userId }: DashboardStatsProps) {
   const now = new Date();
 
   // Get comprehensive user statistics
-  const [
-    totalShifts,
-    completedShifts,
-    upcomingShifts,
-    pendingShifts,
-    monthlyShifts,
-  ] = await Promise.all([
-    // Total shifts ever signed up for (including pending)
-    prisma.signup.count({
-      where: {
-        userId: userId,
-        status: { in: ["PENDING", "CONFIRMED", "WAITLISTED"] },
-      },
-    }),
+  const [completedShifts, upcomingShifts, pendingShifts, monthlyShifts] =
+    await Promise.all([
+      // Completed shifts (past shifts with CONFIRMED status)
+      prisma.signup.findMany({
+        where: {
+          userId: userId,
+          shift: { end: { lt: now } },
+          status: "CONFIRMED",
+        },
+        include: { shift: { include: { shiftType: true } } },
+      }),
 
-    // Completed shifts (past shifts with CONFIRMED status)
-    prisma.signup.findMany({
-      where: {
-        userId: userId,
-        shift: { end: { lt: now } },
-        status: "CONFIRMED",
-      },
-      include: { shift: { include: { shiftType: true } } },
-    }),
+      // Upcoming confirmed shifts count
+      prisma.signup.count({
+        where: {
+          userId: userId,
+          shift: { start: { gte: now } },
+          status: "CONFIRMED",
+        },
+      }),
 
-    // Upcoming confirmed shifts count
-    prisma.signup.count({
-      where: {
-        userId: userId,
-        shift: { start: { gte: now } },
-        status: "CONFIRMED",
-      },
-    }),
+      // Pending approval shifts count
+      prisma.signup.count({
+        where: {
+          userId: userId,
+          shift: { start: { gte: now } },
+          status: "PENDING",
+        },
+      }),
 
-    // Pending approval shifts count
-    prisma.signup.count({
-      where: {
-        userId: userId,
-        shift: { start: { gte: now } },
-        status: "PENDING",
-      },
-    }),
-
-    // This month's shifts for the user
-    prisma.signup.count({
-      where: {
-        userId: userId,
-        status: "CONFIRMED",
-        shift: {
-          start: {
-            gte: new Date(now.getFullYear(), now.getMonth(), 1),
-            lt: new Date(now.getFullYear(), now.getMonth() + 1, 1),
+      // This month's shifts for the user
+      prisma.signup.count({
+        where: {
+          userId: userId,
+          status: "CONFIRMED",
+          shift: {
+            start: {
+              gte: new Date(now.getFullYear(), now.getMonth(), 1),
+              lt: new Date(now.getFullYear(), now.getMonth() + 1, 1),
+            },
           },
         },
-      },
-    }),
-  ]);
+      }),
+    ]);
 
   // Calculate total hours volunteered
   const totalHours = completedShifts.reduce((total, signup) => {

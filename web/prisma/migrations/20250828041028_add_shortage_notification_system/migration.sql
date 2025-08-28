@@ -11,9 +11,8 @@ CREATE TYPE "public"."RecipientStatus" AS ENUM ('SENT', 'OPENED', 'CLICKED', 'BO
 CREATE TYPE "public"."EmailTemplateType" AS ENUM ('SHIFT_SHORTAGE', 'SHIFT_REMINDER', 'SHIFT_CANCELED', 'WELCOME', 'CUSTOM');
 
 -- AlterTable
-ALTER TABLE "public"."User" ADD COLUMN     "maxNotificationsPerWeek" INTEGER NOT NULL DEFAULT 3,
-ADD COLUMN     "receiveShortageNotifications" BOOLEAN NOT NULL DEFAULT true,
-ADD COLUMN     "shortageNotificationTypes" TEXT[];
+ALTER TABLE "public"."User" ADD COLUMN     "excludedShortageNotificationTypes" TEXT[] DEFAULT ARRAY[]::TEXT[],
+ADD COLUMN     "receiveShortageNotifications" BOOLEAN NOT NULL DEFAULT true;
 
 -- CreateTable
 CREATE TABLE "public"."EmailNotification" (

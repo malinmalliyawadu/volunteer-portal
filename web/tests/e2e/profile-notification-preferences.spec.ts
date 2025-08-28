@@ -16,8 +16,7 @@ test.describe('User Notification Preferences', () => {
       availableLocations: JSON.stringify(['Wellington']),
       availableDays: JSON.stringify(['Monday', 'Wednesday']),
       receiveShortageNotifications: true,
-      shortageNotificationTypes: [],
-      maxNotificationsPerWeek: 3
+      excludedShortageNotificationTypes: []
     });
   });
 
@@ -41,10 +40,8 @@ test.describe('User Notification Preferences', () => {
     await expect(notificationToggle).toBeVisible();
     await expect(notificationToggle).toBeChecked();
     
-    // Check max notifications per week
-    const maxNotificationsInput = page.getByTestId('max-notifications-input');
-    await expect(maxNotificationsInput).toBeVisible();
-    await expect(maxNotificationsInput).toHaveValue('3');
+    // Check that shift type preferences are available
+    await expect(page.getByText('Shift types you\'d like notifications for')).toBeVisible();
   });
 
   test('should edit notification preferences', async ({ page }) => {
@@ -60,9 +57,11 @@ test.describe('User Notification Preferences', () => {
     // Toggle off notifications
     await page.getByTestId('receive-notifications-toggle').click();
     
-    // Change max notifications
-    await page.getByTestId('max-notifications-input').clear();
-    await page.getByTestId('max-notifications-input').fill('5');
+    // Toggle some shift type preferences
+    const kitchenCheckbox = page.getByLabel('Kitchen');
+    if (await kitchenCheckbox.isVisible()) {
+      await kitchenCheckbox.click();
+    }
     
     // Save changes
     await page.getByTestId('save-notification-preferences').click();
@@ -74,7 +73,37 @@ test.describe('User Notification Preferences', () => {
     await page.reload();
     const notificationToggle = page.getByTestId('receive-notifications-toggle');
     await expect(notificationToggle).not.toBeChecked();
-    await expect(page.getByTestId('max-notifications-input')).toHaveValue('5');
+  });
+
+  test('should load and display shift types', async ({ page }) => {
+    await login(page, volunteerEmail, 'Test123456');
+    await page.goto('/profile/edit');
+    
+    // Navigate to communication step
+    await page.getByText('Communication & Agreements').click();
+    
+    // Enable shortage notifications
+    const notificationToggle = page.getByTestId('receive-notifications-toggle');
+    if (!(await notificationToggle.isChecked())) {
+      await notificationToggle.click();
+    }
+    
+    // Wait for shift types to load
+    await page.waitForTimeout(2000);
+    
+    // Check that shift types are loaded and not showing "Loading..."
+    const shiftTypesSection = page.locator('[data-testid="shift-type-preferences"]').or(
+      page.locator('text="Shift types you\'d like notifications for"').locator('..')
+    );
+    
+    // Should not show loading text
+    await expect(page.getByText('Loading shift types...')).not.toBeVisible({ timeout: 5000 });
+    
+    // Should have actual shift type checkboxes
+    const shiftTypeCheckboxes = page.locator('input[type="checkbox"]').and(
+      page.locator('text=/Kitchen|Service|Cleanup/').locator('..')
+    );
+    await expect(shiftTypeCheckboxes.first()).toBeVisible();
   });
 
   test('should manage shift type preferences', async ({ page }) => {
@@ -146,34 +175,6 @@ test.describe('User Notification Preferences', () => {
     await expect(page.getByLabel('All shift types')).toBeChecked();
   });
 
-  test('should validate max notifications input', async ({ page }) => {
-    await login(page, volunteerEmail, 'Test123456');
-    await page.goto('/profile');
-    
-    // Click edit button
-    await page.getByTestId('edit-notification-preferences').click();
-    
-    // Try invalid values
-    const maxNotificationsInput = page.getByTestId('max-notifications-input');
-    
-    // Test negative number
-    await maxNotificationsInput.clear();
-    await maxNotificationsInput.fill('-1');
-    await page.getByTestId('save-notification-preferences').click();
-    await expect(page.getByTestId('error-message')).toContainText('Must be at least 0');
-    
-    // Test too large number
-    await maxNotificationsInput.clear();
-    await maxNotificationsInput.fill('100');
-    await page.getByTestId('save-notification-preferences').click();
-    await expect(page.getByTestId('error-message')).toContainText('Cannot exceed 50');
-    
-    // Test valid number
-    await maxNotificationsInput.clear();
-    await maxNotificationsInput.fill('10');
-    await page.getByTestId('save-notification-preferences').click();
-    await expect(page.getByTestId('success-message')).toContainText('Notification preferences updated');
-  });
 
   test('should disable all fields when notifications are turned off', async ({ page }) => {
     await login(page, volunteerEmail, 'Test123456');
@@ -185,8 +186,7 @@ test.describe('User Notification Preferences', () => {
     // Toggle off notifications
     await page.getByTestId('receive-notifications-toggle').click();
     
-    // Check that other fields are disabled
-    await expect(page.getByTestId('max-notifications-input')).toBeDisabled();
+    // Check that shift type preferences are disabled
     await expect(page.getByTestId('shift-type-preferences-button')).toBeDisabled();
     
     // Save changes
@@ -197,7 +197,6 @@ test.describe('User Notification Preferences', () => {
     await page.getByTestId('edit-notification-preferences').click();
     
     await expect(page.getByTestId('receive-notifications-toggle')).not.toBeChecked();
-    await expect(page.getByTestId('max-notifications-input')).toBeDisabled();
     await expect(page.getByTestId('shift-type-preferences-button')).toBeDisabled();
   });
 
@@ -222,25 +221,6 @@ test.describe('User Notification Preferences', () => {
     await expect(page.getByTestId('opt-out-warning')).not.toBeVisible();
   });
 
-  test('should show notification frequency description', async ({ page }) => {
-    await login(page, volunteerEmail, 'Test123456');
-    await page.goto('/profile');
-    
-    // Check that frequency description is shown
-    await expect(page.getByTestId('notification-frequency-description')).toBeVisible();
-    
-    const description = page.getByTestId('notification-frequency-description');
-    await expect(description).toContainText('You will receive up to 3 shortage notifications per week');
-    
-    // Edit and change the value
-    await page.getByTestId('edit-notification-preferences').click();
-    await page.getByTestId('max-notifications-input').clear();
-    await page.getByTestId('max-notifications-input').fill('0');
-    await page.getByTestId('save-notification-preferences').click();
-    
-    // Check description updates
-    await expect(description).toContainText('You have opted out of shortage notifications');
-  });
 
   test('should handle concurrent edits gracefully', async ({ page, context }) => {
     await login(page, volunteerEmail, 'Test123456');
@@ -255,11 +235,9 @@ test.describe('User Notification Preferences', () => {
     await page2.getByTestId('edit-notification-preferences').click();
     
     // Make different changes in each tab
-    await page.getByTestId('max-notifications-input').clear();
-    await page.getByTestId('max-notifications-input').fill('5');
+    await page.getByTestId('receive-notifications-toggle').click(); // Turn off in first tab
     
-    await page2.getByTestId('max-notifications-input').clear();
-    await page2.getByTestId('max-notifications-input').fill('10');
+    await page2.getByLabel('Kitchen').click(); // Toggle kitchen notifications in second tab
     
     // Save first tab
     await page.getByTestId('save-notification-preferences').click();

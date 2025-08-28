@@ -37,8 +37,7 @@ test.describe('Volunteer Filtering Logic', () => {
       availableLocations: JSON.stringify(['Wellington']),
       availableDays: JSON.stringify(['Monday', 'Wednesday']),
       receiveShortageNotifications: true,
-      shortageNotificationTypes: [], // Empty = all types
-      maxNotificationsPerWeek: 3
+      excludedShortageNotificationTypes: [] // Empty = all types
     });
 
     // Volunteer 2: Glenn Innes, Tue/Thu, Service only, opted in, 5/week
@@ -47,8 +46,7 @@ test.describe('Volunteer Filtering Logic', () => {
       availableLocations: JSON.stringify(['Glenn Innes']),
       availableDays: JSON.stringify(['Tuesday', 'Thursday']),
       receiveShortageNotifications: true,
-      shortageNotificationTypes: [], // Will be updated with specific types
-      maxNotificationsPerWeek: 5
+      excludedShortageNotificationTypes: [] // Will be updated with specific types
     });
 
     // Volunteer 3: Wellington + Glenn Innes, all days, opted out
@@ -57,8 +55,7 @@ test.describe('Volunteer Filtering Logic', () => {
       availableLocations: JSON.stringify(['Wellington', 'Glenn Innes']),
       availableDays: JSON.stringify(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']),
       receiveShortageNotifications: false,
-      shortageNotificationTypes: [],
-      maxNotificationsPerWeek: 10
+      excludedShortageNotificationTypes: []
     });
 
     // Volunteer 4: Onehunga only, weekends, opted in, 1/week (low frequency)
@@ -67,8 +64,7 @@ test.describe('Volunteer Filtering Logic', () => {
       availableLocations: JSON.stringify(['Onehunga']),
       availableDays: JSON.stringify(['Saturday', 'Sunday']),
       receiveShortageNotifications: true,
-      shortageNotificationTypes: [],
-      maxNotificationsPerWeek: 1
+      excludedShortageNotificationTypes: []
     });
 
     // Volunteer 5: All locations, no specific days (null), opted in
@@ -77,8 +73,7 @@ test.describe('Volunteer Filtering Logic', () => {
       availableLocations: JSON.stringify(['Wellington', 'Glenn Innes', 'Onehunga']),
       availableDays: null, // No specific availability
       receiveShortageNotifications: true,
-      shortageNotificationTypes: [],
-      maxNotificationsPerWeek: 7
+      excludedShortageNotificationTypes: []
     });
   });
 
@@ -227,33 +222,6 @@ test.describe('Volunteer Filtering Logic', () => {
     expect(availableDays).toContain('Sunday');
   });
 
-  test('should filter by notification frequency', async ({ request }) => {
-    const response = await request.get('/api/admin/volunteers', {
-      headers: {
-        Cookie: adminCookies.map((c: any) => `${c.name}=${c.value}`).join('; ')
-      },
-      params: {
-        maxNotificationsPerWeek: '5', // Only volunteers who accept 5+ per week
-        receiveNotifications: 'true'
-      }
-    });
-
-    expect(response.ok()).toBeTruthy();
-    const data = await response.json();
-    
-    const testVolunteers = data.volunteers.filter((v: any) => 
-      volunteerEmails.includes(v.email)
-    );
-    
-    // Should match volunteers 2 and 5 (5+ per week), not 1 (3/week) or 4 (1/week)
-    expect(testVolunteers).toHaveLength(2);
-    
-    const emails = testVolunteers.map((v: any) => v.email);
-    expect(emails).toContain(volunteerEmails[1]); // 5/week
-    expect(emails).toContain(volunteerEmails[4]); // 7/week
-    expect(emails).not.toContain(volunteerEmails[0]); // 3/week
-    expect(emails).not.toContain(volunteerEmails[3]); // 1/week
-  });
 
   test('should combine location and availability filters', async ({ request }) => {
     const response = await request.get('/api/admin/volunteers', {
@@ -290,7 +258,6 @@ test.describe('Volunteer Filtering Logic', () => {
       params: {
         locations: 'Wellington,Glenn Innes',
         availabilityDays: 'Monday,Tuesday,Wednesday',
-        maxNotificationsPerWeek: '8',
         receiveNotifications: 'true' // Only opted-in volunteers
       }
     });
@@ -314,7 +281,6 @@ test.describe('Volunteer Filtering Logic', () => {
       params: {
         locations: 'Wellington,Glenn Innes',
         availabilityDays: 'Monday,Tuesday,Wednesday',
-        maxNotificationsPerWeek: '8',
         receiveNotifications: 'false' // Show all volunteers
       }
     });
@@ -439,8 +405,7 @@ test.describe('Volunteer Filtering Logic', () => {
       availableLocations: null, // Missing location data
       availableDays: null, // Missing availability data
       receiveShortageNotifications: true,
-      shortageNotificationTypes: [],
-      maxNotificationsPerWeek: 3
+      excludedShortageNotificationTypes: []
     });
 
     const response = await request.get('/api/admin/volunteers', {

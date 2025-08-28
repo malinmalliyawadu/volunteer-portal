@@ -39,8 +39,7 @@ test.describe('Shortage Notifications API', () => {
       availableLocations: JSON.stringify(['Wellington']),
       availableDays: JSON.stringify(['Monday', 'Wednesday']),
       receiveShortageNotifications: true,
-      shortageNotificationTypes: [],
-      maxNotificationsPerWeek: 3
+      excludedShortageNotificationTypes: [],
     });
 
     // Volunteer 2: Glenn Innes, Tuesday/Thursday, opted in
@@ -49,8 +48,7 @@ test.describe('Shortage Notifications API', () => {
       availableLocations: JSON.stringify(['Glenn Innes']),
       availableDays: JSON.stringify(['Tuesday', 'Thursday']),
       receiveShortageNotifications: true,
-      shortageNotificationTypes: [],
-      maxNotificationsPerWeek: 5
+      excludedShortageNotificationTypes: [],
     });
 
     // Create test shift
@@ -148,7 +146,6 @@ test.describe('Shortage Notifications API', () => {
           availabilityDays: [],
           shiftTypes: [],
           receiveNotifications: true,
-          maxNotificationsPerWeek: 10
         },
         isTest: true
       }

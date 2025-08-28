@@ -25,8 +25,7 @@ const updateProfileSchema = z.object({
   emailNewsletterSubscription: z.boolean().optional(),
   notificationPreference: z.enum(["EMAIL", "SMS", "BOTH", "NONE"]).optional(),
   receiveShortageNotifications: z.boolean().optional(),
-  shortageNotificationTypes: z.array(z.string()).optional(),
-  maxNotificationsPerWeek: z.number().min(1).max(10).optional(),
+  excludedShortageNotificationTypes: z.array(z.string()).optional(),
   volunteerAgreementAccepted: z.boolean().optional(),
   healthSafetyPolicyAccepted: z.boolean().optional(),
 });
@@ -62,8 +61,7 @@ export async function GET() {
       emailNewsletterSubscription: true,
       notificationPreference: true,
       receiveShortageNotifications: true,
-      shortageNotificationTypes: true,
-      maxNotificationsPerWeek: true,
+      excludedShortageNotificationTypes: true,
       volunteerAgreementAccepted: true,
       healthSafetyPolicyAccepted: true,
       createdAt: true,
@@ -147,6 +145,12 @@ export async function PUT(req: Request) {
     if (validatedData.healthSafetyPolicyAccepted !== undefined)
       updateData.healthSafetyPolicyAccepted =
         validatedData.healthSafetyPolicyAccepted;
+    if (validatedData.receiveShortageNotifications !== undefined)
+      updateData.receiveShortageNotifications =
+        validatedData.receiveShortageNotifications;
+    if (validatedData.excludedShortageNotificationTypes !== undefined)
+      updateData.excludedShortageNotificationTypes =
+        validatedData.excludedShortageNotificationTypes;
 
     // Handle date field
     if (validatedData.dateOfBirth !== undefined) {
@@ -203,6 +207,8 @@ export async function PUT(req: Request) {
         availableLocations: true,
         emailNewsletterSubscription: true,
         notificationPreference: true,
+        receiveShortageNotifications: true,
+        excludedShortageNotificationTypes: true,
         volunteerAgreementAccepted: true,
         healthSafetyPolicyAccepted: true,
       },
