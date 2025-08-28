@@ -66,6 +66,9 @@ export default function RegisterPage() {
   const [locationOptions, setLocationOptions] = useState<
     Array<{ value: string; label: string }>
   >([]);
+  const [shiftTypes, setShiftTypes] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
   const router = useRouter();
   const { toast } = useToast();
 
@@ -115,9 +118,26 @@ export default function RegisterPage() {
       }
     };
 
+    const loadShiftTypes = async () => {
+      try {
+        const response = await fetch("/api/shift-types");
+        if (response.ok) {
+          const types = await response.json();
+          setShiftTypes(types);
+        } else {
+          console.error("Failed to load shift types");
+          setShiftTypes([]);
+        }
+      } catch (error) {
+        console.error("Failed to load shift types:", error);
+        setShiftTypes([]);
+      }
+    };
+
     loadProviders();
     loadPolicyContent();
     loadLocationOptions();
+    loadShiftTypes();
   }, []);
 
   // Registration form data
@@ -550,6 +570,7 @@ export default function RegisterPage() {
             setVolunteerAgreementOpen={setVolunteerAgreementOpen}
             healthSafetyPolicyOpen={healthSafetyPolicyOpen}
             setHealthSafetyPolicyOpen={setHealthSafetyPolicyOpen}
+            shiftTypes={shiftTypes}
           />
         );
       default:
