@@ -88,10 +88,6 @@ export function NotificationsContent({
   const [filterNotificationsEnabled, setFilterNotificationsEnabled] =
     useState<boolean>(true);
 
-  // Email customization
-  const [emailSubject, setEmailSubject] = useState<string>("");
-  const [emailMessage, setEmailMessage] = useState<string>("");
-  const [useTemplate, setUseTemplate] = useState<boolean>(true);
 
   // Group saving
   const [groupName, setGroupName] = useState<string>("");
@@ -320,8 +316,6 @@ export function NotificationsContent({
         body: JSON.stringify({
           shiftId: selectedShift,
           volunteerIds: Array.from(selectedVolunteers),
-          customSubject: !useTemplate ? emailSubject : undefined,
-          customMessage: !useTemplate ? emailMessage : undefined,
           groupId: selectedGroup || undefined,
         }),
       });
@@ -367,7 +361,7 @@ export function NotificationsContent({
         )}
 
         {/* Shift Selection */}
-        <Card>
+        <Card data-testid="shift-filter-section">
           <CardHeader>
             <CardTitle>Select Shift with Shortage</CardTitle>
             <CardDescription>
@@ -376,7 +370,7 @@ export function NotificationsContent({
           </CardHeader>
           <CardContent>
             <Select value={selectedShift} onValueChange={setSelectedShift}>
-              <SelectTrigger>
+              <SelectTrigger data-testid="shift-select">
                 <SelectValue placeholder="Select a shift" />
               </SelectTrigger>
               <SelectContent>
@@ -449,7 +443,7 @@ export function NotificationsContent({
         </Card>
 
         {/* Filters */}
-        <Card>
+        <Card data-testid="volunteer-filter-section">
           <CardHeader>
             <CardTitle>Filter Volunteers</CardTitle>
             <CardDescription>
@@ -464,7 +458,7 @@ export function NotificationsContent({
                   value={filterLocation}
                   onValueChange={setFilterLocation}
                 >
-                  <SelectTrigger id="location">
+                  <SelectTrigger id="location" data-testid="location-filter">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -482,7 +476,7 @@ export function NotificationsContent({
                   value={filterShiftType}
                   onValueChange={setFilterShiftType}
                 >
-                  <SelectTrigger id="shiftType">
+                  <SelectTrigger id="shiftType" data-testid="shift-type-filter">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -519,6 +513,7 @@ export function NotificationsContent({
                     setFilterAvailability(checked as boolean)
                   }
                   disabled={!selectedShift}
+                  data-testid="availability-filter"
                 />
                 <Label htmlFor="availability" className="cursor-pointer">
                   Available on shift day
@@ -532,6 +527,7 @@ export function NotificationsContent({
                   onCheckedChange={(checked) =>
                     setFilterNotificationsEnabled(checked as boolean)
                   }
+                  data-testid="notification-filter-toggle"
                 />
                 <Label htmlFor="notifications" className="cursor-pointer">
                   Notifications enabled only
@@ -540,7 +536,7 @@ export function NotificationsContent({
             </div>
 
             <div className="flex items-center justify-between">
-              <div className="text-sm text-muted-foreground">
+              <div className="text-sm text-muted-foreground" data-testid="volunteer-count">
                 {filteredVolunteers.length} volunteers match filters
               </div>
 
@@ -603,52 +599,6 @@ export function NotificationsContent({
           </CardContent>
         </Card>
 
-        {/* Email Customization */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Email Content</CardTitle>
-            <CardDescription>
-              Customize the email message or use the default template
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="useTemplate"
-                checked={useTemplate}
-                onCheckedChange={(checked) =>
-                  setUseTemplate(checked as boolean)
-                }
-              />
-              <Label htmlFor="useTemplate">Use default template</Label>
-            </div>
-
-            {!useTemplate && (
-              <>
-                <div>
-                  <Label htmlFor="subject">Subject</Label>
-                  <Input
-                    id="subject"
-                    value={emailSubject}
-                    onChange={(e) => setEmailSubject(e.target.value)}
-                    placeholder="We need your help for an upcoming shift"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="message">Message</Label>
-                  <Textarea
-                    id="message"
-                    value={emailMessage}
-                    onChange={(e) => setEmailMessage(e.target.value)}
-                    placeholder="Enter your custom message..."
-                    className="min-h-[150px]"
-                  />
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
 
         {/* Send Button */}
         <div className="flex justify-between items-center">
