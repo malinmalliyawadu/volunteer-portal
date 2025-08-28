@@ -203,16 +203,15 @@ test.describe("My Shifts Calendar Page", () => {
     test("should navigate to previous month", async ({ page }) => {
       // Get current month from title
       const calendarTitle = await getCalendarTitle(page);
+      await calendarTitle.waitFor({ state: "visible", timeout: 5000 });
       const initialTitle = await calendarTitle.textContent();
 
       // Click previous month button
       const prevButton = await getNavigationButton(page, "prev");
+      await page.waitForTimeout(500);
       await prevButton.click();
+      await page.waitForURL("/shifts/mine?*");
       await page.waitForLoadState("load");
-
-      // Check that navigation worked (URL may or may not have month param)
-      // The important thing is that the month title changed
-      await page.waitForTimeout(500); // Give time for any URL updates
 
       // Check month title has changed
       const newCalendarTitle = await getCalendarTitle(page);
@@ -227,12 +226,10 @@ test.describe("My Shifts Calendar Page", () => {
 
       // Click next month button
       const nextButton = await getNavigationButton(page, "next");
+      await page.waitForTimeout(500);
       await nextButton.click();
+      await page.waitForURL("/shifts/mine?*");
       await page.waitForLoadState("load");
-
-      // Check that navigation worked (URL may or may not have month param)
-      // The important thing is that the month title changed
-      await page.waitForTimeout(500); // Give time for any URL updates
 
       // Check month title has changed
       const newCalendarTitle = await getCalendarTitle(page);
@@ -244,15 +241,17 @@ test.describe("My Shifts Calendar Page", () => {
       page,
     }) => {
       // Navigate to next month
+      await page.waitForTimeout(500);
       const nextButton = await getNavigationButton(page, "next");
       await nextButton.click();
-      await page.waitForLoadState("load");
+      await page.waitForURL("/shifts/mine?*");
 
       // Today button should now be visible
       const todayButton = await getNavigationButton(page, "today");
       await expect(todayButton).toBeVisible();
 
       // Click today button to return to current month
+      await page.waitForTimeout(500);
       await todayButton.click();
       await page.waitForLoadState("load");
 
