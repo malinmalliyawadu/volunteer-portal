@@ -29,7 +29,9 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: "NEXT_PUBLIC_DISABLE_ANIMATIONS=true npm run dev",
+    command: process.env.CI
+      ? "NEXT_PUBLIC_DISABLE_ANIMATIONS=true npm run build && npm run start"
+      : "NEXT_PUBLIC_DISABLE_ANIMATIONS=true npm run dev",
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
