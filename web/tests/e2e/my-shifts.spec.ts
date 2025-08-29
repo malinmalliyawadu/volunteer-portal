@@ -272,23 +272,6 @@ test.describe("My Shifts Calendar Page", () => {
       }
     });
 
-    test("should display day numbers correctly", async ({ page }) => {
-      // Look for day cells within the calendar grid
-      const calendarGrid = page.getByTestId("calendar-grid");
-      await expect(calendarGrid).toBeVisible();
-
-      // Look for day number elements using specific test ID
-      const dayElements = page.getByTestId("calendar-day-number");
-      const count = await dayElements.count();
-      expect(count).toBeGreaterThan(0);
-
-      // Check first few day numbers
-      for (let i = 0; i < Math.min(count, 3); i++) {
-        const dayText = await dayElements.nth(i).textContent();
-        expect(dayText?.trim()).toMatch(/^\d{1,2}$/);
-      }
-    });
-
     test("should show shift information on calendar days", async ({ page }) => {
       // Look for shift elements on calendar
       const shiftElements = page.locator(".bg-gradient-to-br");

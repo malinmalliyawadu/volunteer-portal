@@ -7,13 +7,7 @@ test.describe("Profile Page", () => {
 
     // Navigate to profile and wait for it to load
     await page.goto("/profile");
-    await page.waitForLoadState("load");
-
-    // Skip tests if login failed (we're still on login page)
-    const currentUrl = page.url();
-    if (currentUrl.includes("/login")) {
-      test.skip(true, "Login failed - skipping profile tests");
-    }
+    await page.waitForLoadState("domcontentloaded");
   });
 
   test("should display profile page with all main elements", async ({
