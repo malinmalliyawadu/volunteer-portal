@@ -24,6 +24,8 @@ const updateProfileSchema = z.object({
   availableLocations: z.array(z.string()).optional(),
   emailNewsletterSubscription: z.boolean().optional(),
   notificationPreference: z.enum(["EMAIL", "SMS", "BOTH", "NONE"]).optional(),
+  receiveShortageNotifications: z.boolean().optional(),
+  excludedShortageNotificationTypes: z.array(z.string()).optional(),
   volunteerAgreementAccepted: z.boolean().optional(),
   healthSafetyPolicyAccepted: z.boolean().optional(),
 });
@@ -58,6 +60,8 @@ export async function GET() {
       availableLocations: true,
       emailNewsletterSubscription: true,
       notificationPreference: true,
+      receiveShortageNotifications: true,
+      excludedShortageNotificationTypes: true,
       volunteerAgreementAccepted: true,
       healthSafetyPolicyAccepted: true,
       createdAt: true,
@@ -95,6 +99,7 @@ export async function PUT(req: Request) {
 
   try {
     const body = await req.json();
+    console.log("Received profile update:", body);
     const validatedData = updateProfileSchema.parse(body);
 
     // Prepare update data
@@ -141,6 +146,12 @@ export async function PUT(req: Request) {
     if (validatedData.healthSafetyPolicyAccepted !== undefined)
       updateData.healthSafetyPolicyAccepted =
         validatedData.healthSafetyPolicyAccepted;
+    if (validatedData.receiveShortageNotifications !== undefined)
+      updateData.receiveShortageNotifications =
+        validatedData.receiveShortageNotifications;
+    if (validatedData.excludedShortageNotificationTypes !== undefined)
+      updateData.excludedShortageNotificationTypes =
+        validatedData.excludedShortageNotificationTypes;
 
     // Handle date field
     if (validatedData.dateOfBirth !== undefined) {
@@ -197,6 +208,8 @@ export async function PUT(req: Request) {
         availableLocations: true,
         emailNewsletterSubscription: true,
         notificationPreference: true,
+        receiveShortageNotifications: true,
+        excludedShortageNotificationTypes: true,
         volunteerAgreementAccepted: true,
         healthSafetyPolicyAccepted: true,
       },
@@ -212,6 +225,7 @@ export async function PUT(req: Request) {
     return NextResponse.json(responseUser);
   } catch (error) {
     if (error instanceof z.ZodError) {
+      console.error("Validation error:", error.issues);
       return NextResponse.json(
         { error: "Validation failed", details: error.issues },
         { status: 400 }

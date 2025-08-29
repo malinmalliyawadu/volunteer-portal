@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { GradientButton } from "@/components/ui/gradient-button";
@@ -45,7 +45,11 @@ export default function EditProfilePage() {
   const [locationOptions, setLocationOptions] = useState<
     Array<{ value: string; label: string }>
   >([]);
+  const [shiftTypes, setShiftTypes] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
 
   // Load policy content and location options
@@ -87,8 +91,25 @@ export default function EditProfilePage() {
       }
     };
 
+    const loadShiftTypes = async () => {
+      try {
+        const response = await fetch("/api/shift-types");
+        if (response.ok) {
+          const types = await response.json();
+          setShiftTypes(types);
+        } else {
+          console.error("Failed to load shift types");
+          setShiftTypes([]);
+        }
+      } catch (error) {
+        console.error("Failed to load shift types:", error);
+        setShiftTypes([]);
+      }
+    };
+
     loadPolicyContent();
     loadLocationOptions();
+    loadShiftTypes();
   }, []);
 
   // Profile form data - same interface as registration but without account fields
@@ -110,6 +131,8 @@ export default function EditProfilePage() {
     availableLocations: [],
     emailNewsletterSubscription: true,
     notificationPreference: "EMAIL",
+    receiveShortageNotifications: true,
+    excludedShortageNotificationTypes: [],
     volunteerAgreementAccepted: false,
     healthSafetyPolicyAccepted: false,
   });
@@ -146,6 +169,10 @@ export default function EditProfilePage() {
               profileData.emailNewsletterSubscription !== false,
             notificationPreference:
               profileData.notificationPreference || "EMAIL",
+            receiveShortageNotifications:
+              profileData.receiveShortageNotifications !== false,
+            excludedShortageNotificationTypes:
+              profileData.excludedShortageNotificationTypes || [],
             volunteerAgreementAccepted:
               profileData.volunteerAgreementAccepted || false,
             healthSafetyPolicyAccepted:
@@ -206,6 +233,17 @@ export default function EditProfilePage() {
     },
   ];
 
+  // Handle deep linking to specific sections
+  useEffect(() => {
+    const step = searchParams.get('step');
+    if (step) {
+      const sectionIndex = sections.findIndex(section => section.id === step);
+      if (sectionIndex !== -1) {
+        setCurrentSection(sectionIndex);
+      }
+    }
+  }, [searchParams, sections]);
+
   const handleSubmit = useCallback(
     async (e?: React.FormEvent) => {
       if (e) {
@@ -215,15 +253,36 @@ export default function EditProfilePage() {
 
       try {
         // Process form data to handle special placeholder values
-        const processedData = {
-          ...formData,
-          pronouns: formData.pronouns === "none" ? null : formData.pronouns,
-          howDidYouHearAboutUs:
-            formData.howDidYouHearAboutUs === "not_specified"
-              ? null
-              : formData.howDidYouHearAboutUs,
-        };
+        // Remove fields that aren't part of profile updates
+        const { ...profileData } = formData;
+        
+        // Process the data for sending
+        const processedData: Record<string, string | boolean | string[] | Date | null> = {};
+        
+        // Handle each field appropriately
+        Object.entries(profileData).forEach(([key, value]) => {
+          // Special handling for specific fields
+          if (key === "pronouns") {
+            if (value !== "none" && value !== "") {
+              processedData[key] = value;
+            }
+          } else if (key === "howDidYouHearAboutUs") {
+            if (value !== "not_specified" && value !== "") {
+              processedData[key] = value;
+            }
+          } else if (typeof value === "string") {
+            // For string fields, only include non-empty values
+            if (value !== "") {
+              processedData[key] = value;
+            }
+          } else {
+            // For arrays, booleans, etc., include as-is
+            processedData[key] = value;
+          }
+        });
 
+        console.log("Sending profile data:", processedData);
+        
         const response = await fetch("/api/profile", {
           method: "PUT",
           headers: {
@@ -234,6 +293,10 @@ export default function EditProfilePage() {
 
         if (!response.ok) {
           const error = await response.json();
+          console.error("Profile update failed:", error);
+          if (error.details) {
+            console.error("Validation details:", JSON.stringify(error.details, null, 2));
+          }
           throw new Error(error.error || "Failed to update profile");
         }
 
@@ -258,7 +321,7 @@ export default function EditProfilePage() {
   );
 
   const handleInputChange = useCallback(
-    (field: string, value: string | boolean) => {
+    (field: string, value: string | boolean | string[] | number) => {
       setFormData((prev) => ({ ...prev, [field]: value }));
     },
     []
@@ -344,6 +407,7 @@ export default function EditProfilePage() {
             setVolunteerAgreementOpen={setVolunteerAgreementOpen}
             healthSafetyPolicyOpen={healthSafetyPolicyOpen}
             setHealthSafetyPolicyOpen={setHealthSafetyPolicyOpen}
+            shiftTypes={shiftTypes}
           />
         );
       default:
@@ -381,7 +445,7 @@ export default function EditProfilePage() {
         >
           <div className="flex justify-start mt-6">
             <Button asChild variant="outline" size="sm" className="gap-2">
-              <Link href="/profile">
+              <Link href="/profile" data-testid="back-to-profile-link">
                 <ArrowLeft className="h-4 w-4" />
                 Back to Profile
               </Link>
@@ -407,10 +471,10 @@ export default function EditProfilePage() {
             {/* Progress Indicator */}
             <div className="bg-card dark:bg-card rounded-xl shadow-sm border border-border p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold">
+                <h2 className="text-lg font-semibold" data-testid="profile-setup-progress-heading">
                   Profile Setup Progress
                 </h2>
-                <Badge variant="outline" className="text-xs">
+                <Badge variant="outline" className="text-xs" data-testid="step-indicator">
                   Step {currentSection + 1} of {sections.length}
                 </Badge>
               </div>
@@ -470,6 +534,8 @@ export default function EditProfilePage() {
                         ? "bg-primary text-white dark:text-white shadow-sm"
                         : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
                     }`}
+                    role="button"
+                    data-testid={`${section.id}-tab-button`}
                   >
                     {section.title}
                   </button>
@@ -481,7 +547,7 @@ export default function EditProfilePage() {
             <Card className="shadow-lg border-0 bg-card/80 dark:bg-card/90 backdrop-blur-sm">
               <CardHeader className="pb-6">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-3 text-xl">
+                  <CardTitle className="flex items-center gap-3 text-xl" data-testid="current-section-title">
                     {React.createElement(sections[currentSection].icon, {
                       className: "h-6 w-6",
                     })}
@@ -493,6 +559,7 @@ export default function EditProfilePage() {
                     disabled={loading}
                     size="sm"
                     className="flex items-center gap-2"
+                    data-testid="header-save-button"
                   >
                     <Save className="h-4 w-4" />
                     {loading ? "Saving..." : "Save"}
@@ -511,6 +578,7 @@ export default function EditProfilePage() {
                       onClick={prevSection}
                       disabled={currentSection === 0 || loading}
                       className="flex items-center gap-2"
+                      data-testid="previous-section-button"
                     >
                       <ArrowLeft className="h-4 w-4" />
                       Previous
@@ -523,6 +591,7 @@ export default function EditProfilePage() {
                           onClick={nextSection}
                           disabled={loading}
                           className="flex items-center gap-2"
+                          data-testid="next-section-button"
                         >
                           Next
                           <ArrowLeft className="h-4 w-4 rotate-180" />
@@ -532,6 +601,7 @@ export default function EditProfilePage() {
                           type="submit"
                           disabled={loading}
                           className="flex items-center gap-2"
+                          data-testid="save-notification-preferences"
                         >
                           <Save className="h-4 w-4" />
                           {loading ? "Saving..." : "Save Profile"}

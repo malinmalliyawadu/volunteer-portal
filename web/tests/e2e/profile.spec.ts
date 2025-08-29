@@ -7,14 +7,7 @@ test.describe("Profile Page", () => {
 
     // Navigate to profile and wait for it to load
     await page.goto("/profile");
-    await page.waitForLoadState("load");
-    await page.waitForTimeout(1000);
-
-    // Skip tests if login failed (we're still on login page)
-    const currentUrl = page.url();
-    if (currentUrl.includes("/login")) {
-      test.skip(true, "Login failed - skipping profile tests");
-    }
+    await page.waitForLoadState("domcontentloaded");
   });
 
   test("should display profile page with all main elements", async ({
@@ -31,11 +24,11 @@ test.describe("Profile Page", () => {
     const description = page.getByText(
       /manage your volunteer account and track your impact/i
     );
-    await expect(description).toBeVisible();
+    await expect(description.first()).toBeVisible();
 
     // Check profile header card is visible by finding the "Active Member" badge
     const activeMemberBadge = page.getByText("Active Member");
-    await expect(activeMemberBadge).toBeVisible();
+    await expect(activeMemberBadge.first()).toBeVisible();
 
     // Check edit profile button
     const editButton = page.getByRole("link", { name: /edit profile/i });
@@ -68,7 +61,7 @@ test.describe("Profile Page", () => {
 
     // Check active member badge
     const activeBadge = page.getByText("Active Member");
-    await expect(activeBadge).toBeVisible();
+    await expect(activeBadge.first()).toBeVisible();
   });
 
   test("should display personal information section", async ({ page }) => {
@@ -78,7 +71,7 @@ test.describe("Profile Page", () => {
 
     // Check account details subheading
     const accountDetails = page.getByText("Your account details");
-    await expect(accountDetails).toBeVisible();
+    await expect(accountDetails.first()).toBeVisible();
 
     // Check common fields that should always be present
     const nameLabel = page.getByTestId("personal-info-name-label");
@@ -102,7 +95,7 @@ test.describe("Profile Page", () => {
     const emergencyDescription = page.getByText(
       "Emergency contact information"
     );
-    await expect(emergencyDescription).toBeVisible();
+    await expect(emergencyDescription.first()).toBeVisible();
 
     // Check either emergency contact info or empty state message
     const hasEmergencyContact =
@@ -119,7 +112,7 @@ test.describe("Profile Page", () => {
       const noContactMessage = page.getByText(
         "No emergency contact information provided"
       );
-      await expect(noContactMessage).toBeVisible();
+      await expect(noContactMessage.first()).toBeVisible();
     }
   });
 
@@ -132,7 +125,7 @@ test.describe("Profile Page", () => {
     const availabilityDescription = page.getByText(
       "When and where you can volunteer"
     );
-    await expect(availabilityDescription).toBeVisible();
+    await expect(availabilityDescription.first()).toBeVisible();
 
     // Check either availability info or empty state
     const hasAvailability =
@@ -152,7 +145,7 @@ test.describe("Profile Page", () => {
       const noAvailabilityMessage = page.getByText(
         "No availability preferences set"
       );
-      await expect(noAvailabilityMessage).toBeVisible();
+      await expect(noAvailabilityMessage.first()).toBeVisible();
     }
   });
 
@@ -165,7 +158,7 @@ test.describe("Profile Page", () => {
     const quickActionsDescription = page.getByText(
       "Manage your volunteer experience"
     );
-    await expect(quickActionsDescription).toBeVisible();
+    await expect(quickActionsDescription.first()).toBeVisible();
 
     // Check action buttons exist
     const browseShiftsButton = page.getByTestId("browse-shifts-button");
@@ -178,7 +171,7 @@ test.describe("Profile Page", () => {
 
     // Check complete profile reminder
     const completeProfileMessage = page.getByText("Complete your profile!");
-    await expect(completeProfileMessage).toBeVisible();
+    await expect(completeProfileMessage.first()).toBeVisible();
   });
 
   test("should navigate to edit profile page", async ({ page }) => {
@@ -195,7 +188,7 @@ test.describe("Profile Page", () => {
     const browseShiftsLink = page
       .locator('a[href="/shifts"]')
       .filter({ hasText: "Browse Available Shifts" });
-    await expect(browseShiftsLink).toBeVisible();
+    await expect(browseShiftsLink.first()).toBeVisible();
 
     await browseShiftsLink.click();
     await page.waitForLoadState("load");
@@ -210,7 +203,7 @@ test.describe("Profile Page", () => {
     const viewScheduleLink = page
       .locator('a[href="/shifts/mine"]')
       .filter({ hasText: "View My Schedule" });
-    await expect(viewScheduleLink).toBeVisible();
+    await expect(viewScheduleLink.first()).toBeVisible();
 
     await viewScheduleLink.click();
     await page.waitForLoadState("load");
@@ -278,12 +271,12 @@ test.describe("Profile Page", () => {
 
     // Check active member badge
     const activeBadge = page.getByText("Active Member");
-    await expect(activeBadge).toBeVisible();
+    await expect(activeBadge.first()).toBeVisible();
 
     // Check for agreement signed badge if present
     const agreementBadge = page.getByText("Agreement Signed");
     if ((await agreementBadge.count()) > 0) {
-      await expect(agreementBadge).toBeVisible();
+      await expect(agreementBadge.first()).toBeVisible();
     }
   });
 
@@ -376,11 +369,11 @@ test.describe("Profile Page", () => {
   test("should show complete profile reminder", async ({ page }) => {
     // Check for profile completion reminder
     const completeProfileMessage = page.getByText("Complete your profile!");
-    await expect(completeProfileMessage).toBeVisible();
+    await expect(completeProfileMessage.first()).toBeVisible();
 
     const reminderText = page.getByText(
       /add your emergency contact, availability, and preferences/i
     );
-    await expect(reminderText).toBeVisible();
+    await expect(reminderText.first()).toBeVisible();
   });
 });

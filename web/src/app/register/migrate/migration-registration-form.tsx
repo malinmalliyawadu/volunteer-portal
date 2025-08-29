@@ -75,6 +75,9 @@ export function MigrationRegistrationForm({
   const [locationOptions, setLocationOptions] = useState<
     Array<{ value: string; label: string }>
   >([]);
+  const [shiftTypes, setShiftTypes] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
   const [volunteerAgreementContent, setVolunteerAgreementContent] = useState("");
   const [healthSafetyPolicyContent, setHealthSafetyPolicyContent] = useState("");
   const [volunteerAgreementOpen, setVolunteerAgreementOpen] = useState(false);
@@ -117,6 +120,8 @@ export function MigrationRegistrationForm({
     // Communication & agreements
     emailNewsletterSubscription: true,
     notificationPreference: "EMAIL",
+    receiveShortageNotifications: true,
+    excludedShortageNotificationTypes: [],
     volunteerAgreementAccepted: false,
     healthSafetyPolicyAccepted: false,
     
@@ -162,8 +167,25 @@ export function MigrationRegistrationForm({
       }
     };
 
+    const loadShiftTypes = async () => {
+      try {
+        const response = await fetch("/api/shift-types");
+        if (response.ok) {
+          const types = await response.json();
+          setShiftTypes(types);
+        } else {
+          console.error("Failed to load shift types");
+          setShiftTypes([]);
+        }
+      } catch (error) {
+        console.error("Failed to load shift types:", error);
+        setShiftTypes([]);
+      }
+    };
+
     loadPolicyContent();
     loadLocationOptions();
+    loadShiftTypes();
   }, []);
 
   // Define steps with migration-specific configuration
@@ -212,7 +234,7 @@ export function MigrationRegistrationForm({
     },
   ];
 
-  const handleInputChange = (field: string, value: string | boolean) => {
+  const handleInputChange = (field: string, value: string | boolean | string[] | number) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -502,6 +524,7 @@ export function MigrationRegistrationForm({
             setVolunteerAgreementOpen={setVolunteerAgreementOpen}
             healthSafetyPolicyOpen={healthSafetyPolicyOpen}
             setHealthSafetyPolicyOpen={setHealthSafetyPolicyOpen}
+            shiftTypes={shiftTypes}
           />
         );
       default:

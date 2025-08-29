@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
-import { addWeeks, addDays, startOfDay, endOfDay, format } from "date-fns";
+import { addWeeks, startOfDay, endOfDay, format } from "date-fns";
 
 // GET /api/profile/regular-schedule/preview - Preview upcoming regular shifts
 export async function GET(req: NextRequest) {

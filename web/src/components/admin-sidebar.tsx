@@ -14,6 +14,7 @@ import {
   CheckCircle,
   Mail,
   ExternalLink,
+  Bell,
 } from "lucide-react";
 import {
   Sidebar,
@@ -88,6 +89,11 @@ const adminNavCategories = [
         title: "Manage Shifts",
         href: "/admin/shifts",
         icon: Calendar,
+      },
+      {
+        title: "Shortage Notifications",
+        href: "/admin/notifications",
+        icon: Bell,
       },
     ],
   },

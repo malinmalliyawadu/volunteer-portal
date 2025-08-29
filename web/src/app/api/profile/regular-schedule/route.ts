@@ -24,7 +24,7 @@ const updateRegularScheduleSchema = z.object({
 });
 
 // GET /api/profile/regular-schedule - Get current user's regular schedule
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     if (!session || !session.user) {

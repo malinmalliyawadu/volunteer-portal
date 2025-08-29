@@ -39,6 +39,26 @@ interface SendShiftCancellationParams {
   shiftCapacity: number;
 }
 
+interface ShiftShortageEmailData {
+  firstName: string;
+  shiftType: string;
+  shiftDate: string;
+  restarauntLocation: string;
+  linkToEvent: string;
+}
+
+interface SendShiftShortageParams {
+  to: string;
+  volunteerName: string;
+  shiftName: string;
+  shiftDate: string;
+  shiftTime: string;
+  location: string;
+  currentVolunteers: number;
+  neededVolunteers: number;
+  shiftId: string;
+}
+
 interface CampaignMonitorAPI {
   transactional: {
     sendSmartEmail: (
@@ -52,6 +72,7 @@ class EmailService {
   private api: CampaignMonitorAPI;
   private migrationSmartEmailID: string;
   private shiftCancellationSmartEmailID: string;
+  private shiftShortageSmartEmailID: string;
 
   constructor() {
     const apiKey = process.env.CAMPAIGN_MONITOR_API_KEY;
@@ -92,6 +113,19 @@ class EmailService {
       }
     } else {
       this.shiftCancellationSmartEmailID = cancellationEmailId;
+    }
+
+    // Smart email ID for shift shortage notifications
+    const shortageEmailId = process.env.CAMPAIGN_MONITOR_SHIFT_SHORTAGE_EMAIL_ID;
+    if (!shortageEmailId) {
+      if (isDevelopment) {
+        console.warn("[EMAIL SERVICE] CAMPAIGN_MONITOR_SHIFT_SHORTAGE_EMAIL_ID is not configured - shortage emails will not be sent");
+        this.shiftShortageSmartEmailID = 'dummy-shortage-id';
+      } else {
+        throw new Error("CAMPAIGN_MONITOR_SHIFT_SHORTAGE_EMAIL_ID is not configured");
+      }
+    } else {
+      this.shiftShortageSmartEmailID = shortageEmailId;
     }
   }
 
@@ -178,6 +212,70 @@ class EmailService {
       });
     });
   }
+
+  async sendShiftShortageNotification(params: SendShiftShortageParams): Promise<void> {
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    
+    // In development, skip email sending if configuration is missing
+    if (isDevelopment && this.shiftShortageSmartEmailID === 'dummy-shortage-id') {
+      console.log(`[EMAIL SERVICE] Would send shortage email to ${params.to} (skipped in dev - no config)`);
+      console.log(`[EMAIL SERVICE] Email data:`, {
+        firstName: params.volunteerName.split(' ')[0],
+        shiftType: params.shiftName,
+        shiftDate: `${params.shiftDate} at ${params.shiftTime}`,
+        restarauntLocation: params.location,
+        linkToEvent: `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/shifts/${params.shiftId}`
+      });
+      return Promise.resolve();
+    }
+
+    const signupLink = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/shifts/${params.shiftId}`;
+    
+    // Extract first name from volunteer name
+    const firstName = params.volunteerName.split(' ')[0] || params.volunteerName;
+
+    const details = {
+      smartEmailID: this.shiftShortageSmartEmailID,
+      to: `${params.volunteerName} <${params.to}>`,
+      data: {
+        firstName: firstName,
+        shiftType: params.shiftName,
+        shiftDate: `${params.shiftDate} at ${params.shiftTime}`,
+        restarauntLocation: params.location,
+        linkToEvent: signupLink,
+      } as ShiftShortageEmailData,
+    };
+
+    return new Promise<void>((resolve, reject) => {
+      this.api.transactional.sendSmartEmail(details, (err: Error | null) => {
+        if (err) {
+          if (isDevelopment) {
+            console.warn("[EMAIL SERVICE] Error sending shift shortage email (development):", err.message);
+            resolve(); // Don't fail in development
+          } else {
+            console.error("Error sending shift shortage email:", err);
+            reject(err);
+          }
+        } else {
+          console.log("Shift shortage email sent successfully to:", params.to);
+          console.log("Email data sent:", details.data);
+          resolve();
+        }
+      });
+    });
+  }
+
+  async sendBulkShortageNotifications(shiftParams: Omit<SendShiftShortageParams, 'to' | 'volunteerName'>, recipients: Array<{ email: string; name: string }>): Promise<void> {
+    const promises = recipients.map(recipient => 
+      this.sendShiftShortageNotification({
+        ...shiftParams,
+        to: recipient.email,
+        volunteerName: recipient.name,
+      })
+    );
+    
+    await Promise.allSettled(promises);
+  }
 }
 
 // Export singleton instance
@@ -190,4 +288,10 @@ export function getEmailService(): EmailService {
   return emailServiceInstance;
 }
 
-export type { SendEmailParams, SendShiftCancellationParams, ShiftCancellationEmailData };
+export type { 
+  SendEmailParams, 
+  SendShiftCancellationParams, 
+  ShiftCancellationEmailData,
+  SendShiftShortageParams,
+  ShiftShortageEmailData 
+};

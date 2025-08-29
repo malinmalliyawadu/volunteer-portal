@@ -68,15 +68,11 @@ export function PageHeader({
   className = "",
   "data-testid": dataTestId,
 }: PageHeaderProps) {
-  // Check if we're in test mode (animations disabled)
-  const isTestMode = typeof window !== 'undefined' && 
-    document.body.classList.contains('e2e-testing');
-  
   return (
-    <motion.div 
+    <motion.div
       className={`${className}`}
-      initial={isTestMode ? false : "hidden"}
-      animate={isTestMode ? false : "visible"}
+      initial={"hidden"}
+      animate={"visible"}
     >
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div className="flex-1 min-w-0">
@@ -102,7 +98,7 @@ export function PageHeader({
           )}
         </div>
         {actions && (
-          <motion.div 
+          <motion.div
             className="flex-shrink-0 sm:mt-1"
             variants={actionsVariants}
           >

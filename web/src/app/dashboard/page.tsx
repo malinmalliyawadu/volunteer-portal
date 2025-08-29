@@ -33,7 +33,7 @@ export default async function DashboardPage() {
 
       {/* Stats Overview - streams in when ready */}
       <Suspense fallback={<DashboardStatsSkeleton />}>
-        <DashboardStats userId={userId} userName={userName} />
+        <DashboardStats userId={userId} />
       </Suspense>
 
       <ContentGrid>

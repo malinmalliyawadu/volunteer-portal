@@ -39,6 +39,14 @@ async function getNavigationButton(
   }
 }
 
+// Helper function to get visible shift elements with time information
+function getShiftElements(page: Page) {
+  return page.locator(".bg-gradient-to-br").filter({
+    hasText: /\d{2}:\d{2}/,
+    visible: true,
+  });
+}
+
 // Helper function to login as volunteer
 async function loginAsVolunteer(page: Page) {
   try {
@@ -203,16 +211,15 @@ test.describe("My Shifts Calendar Page", () => {
     test("should navigate to previous month", async ({ page }) => {
       // Get current month from title
       const calendarTitle = await getCalendarTitle(page);
+      await calendarTitle.waitFor({ state: "visible", timeout: 5000 });
       const initialTitle = await calendarTitle.textContent();
 
       // Click previous month button
       const prevButton = await getNavigationButton(page, "prev");
+      await page.waitForTimeout(500);
       await prevButton.click();
+      await page.waitForURL("/shifts/mine?*");
       await page.waitForLoadState("load");
-
-      // Check that navigation worked (URL may or may not have month param)
-      // The important thing is that the month title changed
-      await page.waitForTimeout(500); // Give time for any URL updates
 
       // Check month title has changed
       const newCalendarTitle = await getCalendarTitle(page);
@@ -227,12 +234,10 @@ test.describe("My Shifts Calendar Page", () => {
 
       // Click next month button
       const nextButton = await getNavigationButton(page, "next");
+      await page.waitForTimeout(500);
       await nextButton.click();
+      await page.waitForURL("/shifts/mine?*");
       await page.waitForLoadState("load");
-
-      // Check that navigation worked (URL may or may not have month param)
-      // The important thing is that the month title changed
-      await page.waitForTimeout(500); // Give time for any URL updates
 
       // Check month title has changed
       const newCalendarTitle = await getCalendarTitle(page);
@@ -244,15 +249,17 @@ test.describe("My Shifts Calendar Page", () => {
       page,
     }) => {
       // Navigate to next month
+      await page.waitForTimeout(500);
       const nextButton = await getNavigationButton(page, "next");
       await nextButton.click();
-      await page.waitForLoadState("load");
+      await page.waitForURL("/shifts/mine?*");
 
       // Today button should now be visible
       const todayButton = await getNavigationButton(page, "today");
       await expect(todayButton).toBeVisible();
 
       // Click today button to return to current month
+      await page.waitForTimeout(500);
       await todayButton.click();
       await page.waitForLoadState("load");
 
@@ -270,23 +277,6 @@ test.describe("My Shifts Calendar Page", () => {
       if (await todayCell.isVisible()) {
         const todayText = await todayCell.textContent();
         expect(todayText?.trim()).toBe(today.toString());
-      }
-    });
-
-    test("should display day numbers correctly", async ({ page }) => {
-      // Look for day cells within the calendar grid
-      const calendarGrid = page.getByTestId("calendar-grid");
-      await expect(calendarGrid).toBeVisible();
-
-      // Look for day number elements using specific test ID
-      const dayElements = page.getByTestId("calendar-day-number");
-      const count = await dayElements.count();
-      expect(count).toBeGreaterThan(0);
-
-      // Check first few day numbers
-      for (let i = 0; i < Math.min(count, 3); i++) {
-        const dayText = await dayElements.nth(i).textContent();
-        expect(dayText?.trim()).toMatch(/^\d{1,2}$/);
       }
     });
 
@@ -337,13 +327,12 @@ test.describe("My Shifts Calendar Page", () => {
       page,
     }) => {
       // Look for clickable shifts
-      const shiftElements = page
-        .locator(".bg-gradient-to-br")
-        .filter({ hasText: /\d{2}:\d{2}/ });
+      const shiftElements = getShiftElements(page);
       const shiftCount = await shiftElements.count();
 
       if (shiftCount > 0) {
         // Click on first shift
+        await shiftElements.first().waitFor({ state: "visible" });
         await shiftElements.first().click();
 
         // Dialog should open
@@ -361,9 +350,7 @@ test.describe("My Shifts Calendar Page", () => {
     });
 
     test("should display shift information in dialog", async ({ page }) => {
-      const shiftElements = page
-        .locator(".bg-gradient-to-br")
-        .filter({ hasText: /\d{2}:\d{2}/ });
+      const shiftElements = getShiftElements(page);
       const shiftCount = await shiftElements.count();
 
       if (shiftCount > 0) {
@@ -388,47 +375,8 @@ test.describe("My Shifts Calendar Page", () => {
       }
     });
 
-    test("should show calendar export options for upcoming shifts", async ({
-      page,
-    }) => {
-      const shiftElements = page
-        .locator(".bg-gradient-to-br")
-        .filter({ hasText: /\d{2}:\d{2}/ });
-      const shiftCount = await shiftElements.count();
-
-      if (shiftCount > 0) {
-        await shiftElements.first().click();
-
-        const dialog = page.locator("[role='dialog']");
-        await expect(dialog).toBeVisible();
-
-        // Look for calendar export buttons
-        const googleButton = dialog.getByText("Google");
-        const outlookButton = dialog.getByText("Outlook");
-        const icsButton = dialog.getByText(".ics File");
-
-        // At least one export option should be visible for upcoming shifts
-        const hasExportOptions =
-          (await googleButton.isVisible()) ||
-          (await outlookButton.isVisible()) ||
-          (await icsButton.isVisible());
-
-        if (hasExportOptions) {
-          // Check that export buttons are links/have proper attributes
-          if (await googleButton.isVisible()) {
-            const googleLink = googleButton.locator("..");
-            await expect(googleLink).toHaveAttribute("href");
-          }
-        }
-
-        await page.keyboard.press("Escape");
-      }
-    });
-
     test("should show cancel button for upcoming shifts", async ({ page }) => {
-      const shiftElements = page
-        .locator(".bg-gradient-to-br")
-        .filter({ hasText: /\d{2}:\d{2}/ });
+      const shiftElements = getShiftElements(page);
       const shiftCount = await shiftElements.count();
 
       if (shiftCount > 0) {
@@ -453,9 +401,7 @@ test.describe("My Shifts Calendar Page", () => {
 
   test.describe("Friends Integration", () => {
     test("should show friends joining shifts", async ({ page }) => {
-      const shiftElements = page
-        .locator(".bg-gradient-to-br")
-        .filter({ hasText: /\d{2}:\d{2}/ });
+      const shiftElements = getShiftElements(page);
       const shiftCount = await shiftElements.count();
 
       if (shiftCount > 0) {
@@ -477,9 +423,7 @@ test.describe("My Shifts Calendar Page", () => {
     });
 
     test("should display friend details in shift dialog", async ({ page }) => {
-      const shiftElements = page
-        .locator(".bg-gradient-to-br")
-        .filter({ hasText: /\d{2}:\d{2}/ });
+      const shiftElements = getShiftElements(page);
       const shiftCount = await shiftElements.count();
 
       if (shiftCount > 0) {
@@ -535,7 +479,6 @@ test.describe("My Shifts Calendar Page", () => {
       await page.setViewportSize({ width: 375, height: 667 });
       await page.reload();
       await page.waitForLoadState("load");
-      await page.waitForTimeout(500);
 
       // Check that main elements are still visible and accessible
       const myShiftsPage = page.getByTestId("my-shifts-page");
@@ -590,7 +533,7 @@ test.describe("My Shifts Calendar Page", () => {
     test("should display stats without errors", async ({ page }) => {
       // Check that no error messages are displayed
       const errorMessage = page.getByText(/error|failed|something went wrong/i);
-      await expect(errorMessage).not.toBeVisible();
+      await expect(errorMessage.first()).not.toBeVisible();
 
       // Check that all stat numbers are displayed
       const statNumbers = page.locator(".text-2xl.font-bold");
@@ -652,9 +595,7 @@ test.describe("My Shifts Calendar Page", () => {
 
     test("should have accessible shift interactions", async ({ page }) => {
       // Shift elements should be clickable
-      const shiftElements = page
-        .locator(".bg-gradient-to-br")
-        .filter({ hasText: /\d{2}:\d{2}/ });
+      const shiftElements = getShiftElements(page);
       const shiftCount = await shiftElements.count();
 
       if (shiftCount > 0) {

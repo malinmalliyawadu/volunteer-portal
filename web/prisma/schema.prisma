@@ -34,6 +34,10 @@ model User {
   healthSafetyPolicyAccepted   Boolean                @default(false)
   profileCompleted             Boolean                @default(false)
   
+  // Shift shortage notification preferences
+  receiveShortageNotifications Boolean                @default(true)
+  excludedShortageNotificationTypes String[]          @default([]) // Array of shift type IDs they DON'T want notifications for (opt-out list), empty means get all types
+  
   // Migration invitation tracking
   isMigrated                   Boolean                @default(false)
   migrationInvitationSent      Boolean                @default(false)
@@ -68,6 +72,8 @@ model User {
   
   // Regular volunteer relation
   regularVolunteer             RegularVolunteer?
+  
+  notificationGroupMembers     NotificationGroupMember[]
 }
 
 model ShiftType {
@@ -372,3 +378,32 @@ enum Frequency {
   FORTNIGHTLY
   MONTHLY
 }
+
+// Saved filter groups for notifications
+model NotificationGroup {
+  id                String                    @id @default(cuid())
+  name              String                    @unique
+  description       String?
+  filters           Json                      // Stored filter criteria
+  isActive          Boolean                   @default(true)
+  createdBy         String
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
+  
+  members           NotificationGroupMember[]
+}
+
+model NotificationGroupMember {
+  id          String            @id @default(cuid())
+  groupId     String
+  userId      String
+  addedAt     DateTime          @default(now())
+  
+  group       NotificationGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([groupId, userId])
+  @@index([groupId])
+  @@index([userId])
+}
+

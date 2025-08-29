@@ -184,47 +184,47 @@ test.describe("Dashboard Page", () => {
   test("should display impact and community stats", async ({ page }) => {
     // Wait for impact section to load (it's in a Suspense boundary)
     const impactHeading = page.getByText("Your Impact & Community");
-    await expect(impactHeading).toBeVisible({ timeout: 10000 });
+    await expect(impactHeading.first()).toBeVisible({ timeout: 10000 });
 
     // Check for estimated meals stat
     const estimatedMealsText = page.getByText(
       /estimated meals helped prepare/i
     );
-    await expect(estimatedMealsText).toBeVisible({ timeout: 10000 });
+    await expect(estimatedMealsText.first()).toBeVisible({ timeout: 10000 });
 
     // Check for active volunteers stat
     const activeVolunteersText = page.getByText(
       /active volunteers in our community/i
     );
-    await expect(activeVolunteersText).toBeVisible({ timeout: 10000 });
+    await expect(activeVolunteersText.first()).toBeVisible({ timeout: 10000 });
 
     // Check for food waste prevented stat
     const foodWasteText = page.getByText(/estimated food waste prevented/i);
-    await expect(foodWasteText).toBeVisible({ timeout: 10000 });
+    await expect(foodWasteText.first()).toBeVisible({ timeout: 10000 });
   });
 
   test("should display quick actions section", async ({ page }) => {
     // Check for quick actions heading - it's in a CardTitle, not a heading
     const quickActionsHeading = page.getByText("Quick Actions");
-    await expect(quickActionsHeading).toBeVisible();
+    await expect(quickActionsHeading.first()).toBeVisible();
 
     // Check all quick action buttons
     const findShiftsButton = page.getByRole("link", { name: /find shifts/i });
-    await expect(findShiftsButton).toBeVisible();
+    await expect(findShiftsButton.first()).toBeVisible();
     await expect(findShiftsButton).toHaveAttribute("href", "/shifts");
 
     const myScheduleButton = page.getByRole("link", { name: /my schedule/i });
-    await expect(myScheduleButton).toBeVisible();
+    await expect(myScheduleButton.first()).toBeVisible();
     await expect(myScheduleButton).toHaveAttribute("href", "/shifts/mine");
 
     const myProfileButton = page
       .getByRole("main")
       .getByRole("link", { name: "My Profile" });
-    await expect(myProfileButton).toBeVisible();
+    await expect(myProfileButton.first()).toBeVisible();
     await expect(myProfileButton).toHaveAttribute("href", "/profile");
 
     const mainSiteLink = page.getByRole("link", { name: /visit main site/i });
-    await expect(mainSiteLink).toBeVisible();
+    await expect(mainSiteLink.first()).toBeVisible();
     await expect(mainSiteLink).toHaveAttribute(
       "href",
       "https://everybodyeats.nz"
@@ -236,7 +236,7 @@ test.describe("Dashboard Page", () => {
     page,
   }) => {
     const findShiftsButton = page.getByRole("link", { name: /find shifts/i });
-    await expect(findShiftsButton).toBeVisible();
+    await expect(findShiftsButton.first()).toBeVisible();
     await findShiftsButton.click();
 
     await expect(page).toHaveURL("/shifts");
@@ -246,7 +246,7 @@ test.describe("Dashboard Page", () => {
     page,
   }) => {
     const myScheduleButton = page.getByRole("link", { name: /my schedule/i });
-    await expect(myScheduleButton).toBeVisible();
+    await expect(myScheduleButton.first()).toBeVisible();
     await myScheduleButton.click();
 
     await expect(page).toHaveURL("/shifts/mine");
@@ -256,7 +256,7 @@ test.describe("Dashboard Page", () => {
     const myProfileButton = page
       .getByRole("main")
       .getByRole("link", { name: "My Profile" });
-    await expect(myProfileButton).toBeVisible();
+    await expect(myProfileButton.first()).toBeVisible();
     await myProfileButton.click();
 
     await expect(page).toHaveURL("/profile");
@@ -345,7 +345,7 @@ test.describe("Dashboard Page", () => {
 
     // Check quick actions are visible - use text instead of heading role
     const quickActionsHeading = page.getByText("Quick Actions");
-    await expect(quickActionsHeading).toBeVisible({ timeout: 10000 });
+    await expect(quickActionsHeading.first()).toBeVisible({ timeout: 10000 });
   });
 
   test("should handle loading state gracefully", async ({ page }) => {

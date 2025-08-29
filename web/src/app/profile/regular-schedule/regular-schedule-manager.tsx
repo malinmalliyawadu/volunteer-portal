@@ -49,11 +49,6 @@ type RegularVolunteer = {
   };
 };
 
-type ShiftType = {
-  id: string;
-  name: string;
-};
-
 const FREQUENCIES = [
   { value: "WEEKLY", label: "Weekly" },
   { value: "FORTNIGHTLY", label: "Fortnightly" },
@@ -72,10 +67,8 @@ const DAYS = [
 
 export function RegularScheduleManager({
   regularVolunteer,
-  shiftTypes,
 }: {
   regularVolunteer: RegularVolunteer;
-  shiftTypes: ShiftType[];
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);

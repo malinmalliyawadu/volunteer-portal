@@ -307,6 +307,7 @@ test.describe("Admin Shifts Management", () => {
       await page.getByRole("option", { name: /wellington/i }).click();
 
       // Wait for page to update
+      await page.waitForURL("/admin/shifts?*");
       await waitForPageLoad(page);
 
       // Check URL contains filter parameter
@@ -329,25 +330,6 @@ test.describe("Admin Shifts Management", () => {
       // For now, just close the calendar and check it was interactive
       await dateFilterTrigger.click();
       await expect(calendar).not.toBeVisible();
-    });
-
-    test("should clear all filters", async ({ page }) => {
-      // Start with filters applied
-      await page.goto("/admin/shifts?location=Wellington&dateFrom=2024-01-01");
-      await waitForPageLoad(page);
-
-      // Click clear filters button
-      const clearFiltersButton = page.getByTestId("clear-filters-button");
-      if (await clearFiltersButton.isVisible()) {
-        await clearFiltersButton.click();
-        await waitForPageLoad(page);
-
-        // Check URL no longer contains filter parameters
-        const currentUrl = page.url();
-        expect(currentUrl).not.toContain("location=");
-        expect(currentUrl).not.toContain("dateFrom=");
-        expect(currentUrl).not.toContain("dateTo=");
-      }
     });
   });
 

@@ -17,7 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { PolicyContent } from "@/components/markdown-content";
 import { ProfileImageUpload } from "@/components/ui/profile-image-upload";
-import { UserPlus, Shield, FileText, ExternalLink } from "lucide-react";
+import { UserPlus, Shield, FileText, ExternalLink, Bell } from "lucide-react";
 
 // Shared constants
 export const daysOfWeek = [
@@ -87,13 +87,18 @@ export interface UserProfileFormData {
   // Communication & agreements
   emailNewsletterSubscription: boolean;
   notificationPreference: "EMAIL" | "SMS" | "BOTH" | "NONE";
+  receiveShortageNotifications: boolean;
+  excludedShortageNotificationTypes: string[];
   volunteerAgreementAccepted: boolean;
   healthSafetyPolicyAccepted: boolean;
 }
 
 export interface UserProfileFormProps {
   formData: UserProfileFormData;
-  onInputChange: (field: string, value: string | boolean) => void;
+  onInputChange: (
+    field: string,
+    value: string | boolean | string[] | number
+  ) => void;
   onDayToggle: (day: string) => void;
   onLocationToggle: (location: string) => void;
   loading: boolean;
@@ -610,9 +615,13 @@ export function CommunicationStep({
   setVolunteerAgreementOpen,
   healthSafetyPolicyOpen,
   setHealthSafetyPolicyOpen,
+  shiftTypes = [],
 }: {
   formData: UserProfileFormData;
-  onInputChange: (field: string, value: string | boolean) => void;
+  onInputChange: (
+    field: string,
+    value: string | boolean | string[] | number
+  ) => void;
   loading: boolean;
   volunteerAgreementContent: string;
   healthSafetyPolicyContent: string;
@@ -620,9 +629,10 @@ export function CommunicationStep({
   setVolunteerAgreementOpen: (open: boolean) => void;
   healthSafetyPolicyOpen: boolean;
   setHealthSafetyPolicyOpen: (open: boolean) => void;
+  shiftTypes?: Array<{ id: string; name: string }>;
 }) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="notification-preferences-form">
       <div className="space-y-4">
         <div className="p-4 rounded-lg border border-border bg-muted/20">
           <Label className="flex items-start space-x-3 text-sm font-medium cursor-pointer">
@@ -664,6 +674,92 @@ export function CommunicationStep({
 
       <div className="space-y-4 pt-6 border-t border-border">
         <h3 className="text-sm font-medium flex items-center gap-2">
+          <Bell className="h-4 w-4" />
+          Shortage Notifications
+        </h3>
+
+        <div className="p-4 rounded-lg border border-border bg-muted/20">
+          <Label className="flex items-start space-x-3 text-sm font-medium cursor-pointer">
+            <Checkbox
+              checked={formData.receiveShortageNotifications}
+              onCheckedChange={(checked) =>
+                onInputChange("receiveShortageNotifications", checked)
+              }
+              disabled={loading}
+              className="mt-1"
+              data-testid="receive-notifications-toggle"
+            />
+            <div>
+              <span>Receive shift shortage notifications</span>
+              <p className="text-xs text-muted-foreground mt-1 font-normal">
+                Get notified when shifts need more volunteers. You can customize
+                which types of shifts you&apos;d like to hear about.
+              </p>
+            </div>
+          </Label>
+        </div>
+
+        {formData.receiveShortageNotifications && (
+          <>
+            <div className="space-y-2 ml-6">
+              <Label className="text-sm font-medium">
+                Shift types you&apos;d like notifications for
+              </Label>
+              <div className="space-y-2">
+                {shiftTypes.length > 0 ? (
+                  shiftTypes.map((shiftType) => (
+                    <Label
+                      key={shiftType.id}
+                      className="flex items-center space-x-2 text-sm cursor-pointer"
+                    >
+                      <Checkbox
+                        checked={
+                          // UI shows what they WANT notifications for
+                          // If empty array (no excluded types), they want ALL types - so check all
+                          // If has excluded types, they want all EXCEPT those - so check if this type is NOT excluded
+                          formData.excludedShortageNotificationTypes.length ===
+                            0 ||
+                          !formData.excludedShortageNotificationTypes.includes(
+                            shiftType.id
+                          )
+                        }
+                        onCheckedChange={(checked) => {
+                          const currentExcluded =
+                            formData.excludedShortageNotificationTypes;
+                          if (checked) {
+                            // User wants this type, so REMOVE it from excluded list
+                            onInputChange(
+                              "excludedShortageNotificationTypes",
+                              currentExcluded.filter((t) => t !== shiftType.id)
+                            );
+                          } else {
+                            // User doesn't want this type, so ADD it to excluded list
+                            if (!currentExcluded.includes(shiftType.id)) {
+                              onInputChange(
+                                "excludedShortageNotificationTypes",
+                                [...currentExcluded, shiftType.id]
+                              );
+                            }
+                          }
+                        }}
+                        disabled={loading}
+                      />
+                      <span>{shiftType.name}</span>
+                    </Label>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Loading shift types...
+                  </p>
+                )}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+
+      <div className="space-y-4 pt-6 border-t border-border">
+        <h3 className="text-sm font-medium flex items-center gap-2">
           <FileText className="h-4 w-4" />
           Required Agreements
         </h3>
@@ -699,7 +795,9 @@ export function CommunicationStep({
                     </ResponsiveDialogTrigger>
                     <ResponsiveDialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                       <ResponsiveDialogHeader>
-                        <ResponsiveDialogTitle>Volunteer Agreement</ResponsiveDialogTitle>
+                        <ResponsiveDialogTitle>
+                          Volunteer Agreement
+                        </ResponsiveDialogTitle>
                         <ResponsiveDialogDescription>
                           Please read the complete volunteer agreement below.
                         </ResponsiveDialogDescription>
@@ -747,7 +845,9 @@ export function CommunicationStep({
                     </ResponsiveDialogTrigger>
                     <ResponsiveDialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                       <ResponsiveDialogHeader>
-                        <ResponsiveDialogTitle>Health and Safety Policy</ResponsiveDialogTitle>
+                        <ResponsiveDialogTitle>
+                          Health and Safety Policy
+                        </ResponsiveDialogTitle>
                         <ResponsiveDialogDescription>
                           Please read the complete health and safety policy
                           below.
