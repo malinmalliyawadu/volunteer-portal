@@ -379,6 +379,203 @@ test.describe("Admin Users Management", () => {
     });
   });
 
+  test.describe("Volunteer Grade Management", () => {
+    test("should display volunteer grade badges for volunteers", async ({ page }) => {
+      await page.goto("/admin/users?role=VOLUNTEER");
+      await waitForPageLoad(page);
+
+      const usersList = page.getByTestId("users-list");
+      
+      if (await usersList.isVisible()) {
+        const userRows = page.locator("[data-testid^='user-row-']");
+        const userCount = await userRows.count();
+        
+        if (userCount > 0) {
+          const firstRowTestId = await userRows.first().getAttribute("data-testid");
+          const userId = firstRowTestId?.replace("user-row-", "");
+          
+          if (userId) {
+            // Check if volunteer grade toggle button is visible
+            const gradeToggleButton = page.getByTestId(`grade-toggle-button-${userId}`);
+            await expect(gradeToggleButton).toBeVisible();
+            
+            // Grade toggle should show one of the three grades
+            const gradeButtonText = await gradeToggleButton.textContent();
+            expect(gradeButtonText).toMatch(/(Standard|Experienced|Shift Leader)/);
+          }
+        }
+      }
+    });
+
+    test("should open grade change dialog when clicking grade toggle", async ({ page }) => {
+      await page.goto("/admin/users?role=VOLUNTEER");
+      await waitForPageLoad(page);
+
+      const usersList = page.getByTestId("users-list");
+      
+      if (await usersList.isVisible()) {
+        const userRows = page.locator("[data-testid^='user-row-']");
+        const userCount = await userRows.count();
+        
+        if (userCount > 0) {
+          const firstRowTestId = await userRows.first().getAttribute("data-testid");
+          const userId = firstRowTestId?.replace("user-row-", "");
+          
+          if (userId) {
+            const gradeToggleButton = page.getByTestId(`grade-toggle-button-${userId}`);
+            await gradeToggleButton.click();
+
+            // Grade change dialog should open
+            const gradeChangeDialog = page.getByTestId("grade-change-dialog");
+            await expect(gradeChangeDialog).toBeVisible();
+
+            const dialogTitle = page.getByTestId("grade-change-dialog-title");
+            await expect(dialogTitle).toBeVisible();
+            await expect(dialogTitle).toContainText("Change Volunteer Grade");
+
+            // Check dialog content
+            const currentGradeDisplay = page.getByTestId("current-grade-display");
+            const gradeSelect = page.getByTestId("grade-select");
+            await expect(currentGradeDisplay).toBeVisible();
+            await expect(gradeSelect).toBeVisible();
+
+            // Check dialog buttons
+            const cancelButton = page.getByTestId("grade-change-cancel-button");
+            const confirmButton = page.getByTestId("grade-change-confirm-button");
+            await expect(cancelButton).toBeVisible();
+            await expect(confirmButton).toBeVisible();
+
+            // Close dialog
+            await cancelButton.click();
+            await expect(gradeChangeDialog).not.toBeVisible();
+          }
+        }
+      }
+    });
+
+    test("should show all grade options in dropdown", async ({ page }) => {
+      await page.goto("/admin/users?role=VOLUNTEER");
+      await waitForPageLoad(page);
+
+      const usersList = page.getByTestId("users-list");
+      
+      if (await usersList.isVisible()) {
+        const userRows = page.locator("[data-testid^='user-row-']");
+        const userCount = await userRows.count();
+        
+        if (userCount > 0) {
+          const firstRowTestId = await userRows.first().getAttribute("data-testid");
+          const userId = firstRowTestId?.replace("user-row-", "");
+          
+          if (userId) {
+            const gradeToggleButton = page.getByTestId(`grade-toggle-button-${userId}`);
+            await gradeToggleButton.click();
+
+            const gradeChangeDialog = page.getByTestId("grade-change-dialog");
+            await expect(gradeChangeDialog).toBeVisible();
+
+            // Open grade selection dropdown
+            const gradeSelect = page.getByTestId("grade-select");
+            await gradeSelect.click();
+
+            // Check all grade options are available
+            const greenOption = page.getByTestId("grade-option-GREEN");
+            const yellowOption = page.getByTestId("grade-option-YELLOW");
+            const pinkOption = page.getByTestId("grade-option-PINK");
+
+            await expect(greenOption).toBeVisible();
+            await expect(yellowOption).toBeVisible();
+            await expect(pinkOption).toBeVisible();
+
+            // Verify option text includes grade descriptions
+            const greenText = await greenOption.textContent();
+            const yellowText = await yellowOption.textContent();
+            const pinkText = await pinkOption.textContent();
+
+            expect(greenText).toContain("Standard");
+            expect(yellowText).toContain("Experienced");
+            expect(pinkText).toContain("Shift Leader");
+
+            // Close dialog
+            const cancelButton = page.getByTestId("grade-change-cancel-button");
+            await cancelButton.click();
+            await expect(gradeChangeDialog).not.toBeVisible();
+          }
+        }
+      }
+    });
+
+    test("should cancel grade change dialog", async ({ page }) => {
+      await page.goto("/admin/users?role=VOLUNTEER");
+      await waitForPageLoad(page);
+
+      const usersList = page.getByTestId("users-list");
+      
+      if (await usersList.isVisible()) {
+        const userRows = page.locator("[data-testid^='user-row-']");
+        const userCount = await userRows.count();
+        
+        if (userCount > 0) {
+          const firstRowTestId = await userRows.first().getAttribute("data-testid");
+          const userId = firstRowTestId?.replace("user-row-", "");
+          
+          if (userId) {
+            const gradeToggleButton = page.getByTestId(`grade-toggle-button-${userId}`);
+            await gradeToggleButton.click();
+
+            const gradeChangeDialog = page.getByTestId("grade-change-dialog");
+            await expect(gradeChangeDialog).toBeVisible();
+
+            // Cancel the dialog
+            const cancelButton = page.getByTestId("grade-change-cancel-button");
+            await cancelButton.click();
+
+            // Dialog should close
+            await expect(gradeChangeDialog).not.toBeVisible();
+          }
+        }
+      }
+    });
+
+    test.skip("should successfully change volunteer grade", async ({ page }) => {
+      // Skip this test as it modifies data and may affect other tests
+      // In a real scenario, this would test the actual grade change functionality
+      await page.goto("/admin/users?role=VOLUNTEER");
+      await waitForPageLoad(page);
+
+      // This test would:
+      // 1. Find a volunteer to change grade for
+      // 2. Click grade toggle button
+      // 3. Select a different grade
+      // 4. Click confirm button
+      // 5. Verify grade change was successful
+      // 6. Verify UI updates reflect the change
+    });
+
+    test("should not show grade toggle for admin users", async ({ page }) => {
+      await page.goto("/admin/users?role=ADMIN");
+      await waitForPageLoad(page);
+
+      const usersList = page.getByTestId("users-list");
+      
+      if (await usersList.isVisible()) {
+        const userRows = page.locator("[data-testid^='user-row-']");
+        const userCount = await userRows.count();
+        
+        if (userCount > 0) {
+          const firstRowTestId = await userRows.first().getAttribute("data-testid");
+          const userId = firstRowTestId?.replace("user-row-", "");
+          
+          if (userId) {
+            // Grade toggle should not be visible for admin users
+            const gradeToggleButton = page.getByTestId(`grade-toggle-button-${userId}`);
+            await expect(gradeToggleButton).not.toBeVisible();
+          }
+        }
+      }
+    });
+  });
+
   test.describe("User Role Management", () => {
     test("should open role change dialog when clicking role toggle", async ({ page }) => {
       await page.goto("/admin/users");

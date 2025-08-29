@@ -27,6 +27,9 @@ import { PageHeader } from "@/components/page-header";
 import { cn } from "@/lib/utils";
 import { PageContainer } from "@/components/page-container";
 import { safeParseAvailability } from "@/lib/parse-availability";
+import { VolunteerGradeToggle } from "@/components/volunteer-grade-toggle";
+import { VolunteerGradeBadge } from "@/components/volunteer-grade-badge";
+import { type VolunteerGrade } from "@prisma/client";
 
 interface AdminVolunteerPageProps {
   params: Promise<{ id: string }>;
@@ -89,6 +92,7 @@ export default async function AdminVolunteerPage({
       volunteerAgreementAccepted: true,
       healthSafetyPolicyAccepted: true,
       role: true,
+      volunteerGrade: true,
       createdAt: true,
       regularVolunteer: {
         include: {
@@ -289,6 +293,12 @@ export default async function AdminVolunteerPage({
                   <User className="h-3 w-3 mr-1" />
                   {volunteer.role === "ADMIN" ? "Administrator" : "Volunteer"}
                 </Badge>
+                {volunteer.role === "VOLUNTEER" && volunteer.volunteerGrade && (
+                  <VolunteerGradeBadge 
+                    grade={volunteer.volunteerGrade as VolunteerGrade} 
+                    size="default" 
+                  />
+                )}
                 {volunteer.regularVolunteer && (
                   <Badge
                     variant="outline"
@@ -372,6 +382,39 @@ export default async function AdminVolunteerPage({
               </div>
             </CardContent>
           </Card>
+
+          {/* Admin Actions */}
+          {volunteer.role === "VOLUNTEER" && (
+            <Card data-testid="admin-actions-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5 text-purple-600" />
+                  Admin Actions
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Volunteer Grade</label>
+                  <div className="flex items-center gap-3">
+                    <VolunteerGradeBadge 
+                      grade={volunteer.volunteerGrade as VolunteerGrade} 
+                      size="default" 
+                    />
+                    <VolunteerGradeToggle
+                      userId={volunteer.id}
+                      currentGrade={volunteer.volunteerGrade as VolunteerGrade}
+                      userRole={volunteer.role}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {volunteer.volunteerGrade === "GREEN" && "Standard volunteer with basic access"}
+                    {volunteer.volunteerGrade === "YELLOW" && "Experienced volunteer with additional privileges"}
+                    {volunteer.volunteerGrade === "PINK" && "Shift leader with team management capabilities"}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Contact Information */}
           <Card data-testid="contact-information-card">

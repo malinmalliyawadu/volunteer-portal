@@ -28,6 +28,8 @@ import {
 import { PageHeader } from "@/components/page-header";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { PageContainer } from "@/components/page-container";
+import { VolunteerGradeBadge } from "@/components/volunteer-grade-badge";
+import { type VolunteerGrade } from "@prisma/client";
 
 const LOCATIONS = ["Wellington", "Glenn Innes", "Onehunga"] as const;
 
@@ -200,14 +202,38 @@ export default async function AdminShiftsPage({
           shiftType: true,
           signups: {
             include: {
-              user: true,
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  firstName: true,
+                  lastName: true,
+                  email: true,
+                  phone: true,
+                  volunteerGrade: true,
+                },
+              },
               regularSignup: true,
             },
           },
           groupBookings: {
             include: {
               leader: { select: { id: true, name: true, email: true } },
-              signups: { include: { user: true } },
+              signups: { 
+                include: { 
+                  user: {
+                    select: {
+                      id: true,
+                      name: true,
+                      firstName: true,
+                      lastName: true,
+                      email: true,
+                      phone: true,
+                      volunteerGrade: true,
+                    },
+                  },
+                },
+              },
               invitations: true,
             },
           },
@@ -222,14 +248,38 @@ export default async function AdminShiftsPage({
           shiftType: true,
           signups: {
             include: {
-              user: true,
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  firstName: true,
+                  lastName: true,
+                  email: true,
+                  phone: true,
+                  volunteerGrade: true,
+                },
+              },
               regularSignup: true,
             },
           },
           groupBookings: {
             include: {
               leader: { select: { id: true, name: true, email: true } },
-              signups: { include: { user: true } },
+              signups: { 
+                include: { 
+                  user: {
+                    select: {
+                      id: true,
+                      name: true,
+                      firstName: true,
+                      lastName: true,
+                      email: true,
+                      phone: true,
+                      volunteerGrade: true,
+                    },
+                  },
+                },
+              },
               invitations: true,
             },
           },
@@ -289,6 +339,7 @@ export default async function AdminShiftsPage({
     userId,
     signupId,
     isAutoSignup,
+    volunteerGrade,
   }: {
     name: string | null;
     email: string;
@@ -303,6 +354,7 @@ export default async function AdminShiftsPage({
     userId: string;
     signupId: string;
     isAutoSignup?: boolean;
+    volunteerGrade?: VolunteerGrade;
   }) {
     return (
       <div
@@ -313,12 +365,17 @@ export default async function AdminShiftsPage({
           <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-xs shadow-sm">
             {(name ?? email)?.[0]?.toUpperCase()}
           </div>
-          <Link
-            href={`/admin/volunteers/${userId}`}
-            className="font-medium text-slate-800 hover:text-blue-600 transition-colors flex items-center gap-1 min-w-0"
-          >
-            <span className="truncate">{name ?? "(No name)"}</span>
-          </Link>
+          <div className="flex flex-col gap-1 min-w-0">
+            <Link
+              href={`/admin/volunteers/${userId}`}
+              className="font-medium text-slate-800 hover:text-blue-600 transition-colors flex items-center gap-1 min-w-0"
+            >
+              <span className="truncate">{name ?? "(No name)"}</span>
+            </Link>
+            {volunteerGrade && (
+              <VolunteerGradeBadge grade={volunteerGrade} size="sm" />
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-2 text-slate-600 min-w-0">
           <span className="sm:hidden text-xs text-slate-500">Email:</span>
@@ -589,6 +646,7 @@ export default async function AdminShiftsPage({
                         userId={su.user.id}
                         signupId={su.id}
                         isAutoSignup={!!su.regularSignup}
+                        volunteerGrade={su.user.volunteerGrade as VolunteerGrade}
                       />
                     ))}
                 </div>

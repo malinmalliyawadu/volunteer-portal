@@ -20,6 +20,7 @@ model User {
   profilePhotoUrl              String?
   hashedPassword               String
   role                         Role                   @default(VOLUNTEER)
+  volunteerGrade               VolunteerGrade         @default(GREEN)
   emergencyContactName         String?
   emergencyContactRelationship String?
   emergencyContactPhone        String?
@@ -291,6 +292,12 @@ enum FriendVisibility {
   PUBLIC        // Anyone can see user's shift activity
   FRIENDS_ONLY  // Only friends can see shift activity
   PRIVATE       // No one can see shift activity
+}
+
+enum VolunteerGrade {
+  GREEN   // Standard volunteer
+  YELLOW  // Experienced volunteer
+  PINK    // Shift leader capability
 }
 
 model Notification {
