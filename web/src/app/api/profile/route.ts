@@ -99,6 +99,7 @@ export async function PUT(req: Request) {
 
   try {
     const body = await req.json();
+    console.log("Received profile update:", body);
     const validatedData = updateProfileSchema.parse(body);
 
     // Prepare update data
@@ -224,6 +225,7 @@ export async function PUT(req: Request) {
     return NextResponse.json(responseUser);
   } catch (error) {
     if (error instanceof z.ZodError) {
+      console.error("Validation error:", error.issues);
       return NextResponse.json(
         { error: "Validation failed", details: error.issues },
         { status: 400 }

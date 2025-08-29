@@ -253,15 +253,36 @@ export default function EditProfilePage() {
 
       try {
         // Process form data to handle special placeholder values
-        const processedData = {
-          ...formData,
-          pronouns: formData.pronouns === "none" ? null : formData.pronouns,
-          howDidYouHearAboutUs:
-            formData.howDidYouHearAboutUs === "not_specified"
-              ? null
-              : formData.howDidYouHearAboutUs,
-        };
+        // Remove fields that aren't part of profile updates
+        const { email, password, confirmPassword, ...profileData } = formData;
+        
+        // Process the data for sending
+        const processedData: any = {};
+        
+        // Handle each field appropriately
+        Object.entries(profileData).forEach(([key, value]) => {
+          // Special handling for specific fields
+          if (key === "pronouns") {
+            if (value !== "none" && value !== "") {
+              processedData[key] = value;
+            }
+          } else if (key === "howDidYouHearAboutUs") {
+            if (value !== "not_specified" && value !== "") {
+              processedData[key] = value;
+            }
+          } else if (typeof value === "string") {
+            // For string fields, only include non-empty values
+            if (value !== "") {
+              processedData[key] = value;
+            }
+          } else {
+            // For arrays, booleans, etc., include as-is
+            processedData[key] = value;
+          }
+        });
 
+        console.log("Sending profile data:", processedData);
+        
         const response = await fetch("/api/profile", {
           method: "PUT",
           headers: {
@@ -272,6 +293,10 @@ export default function EditProfilePage() {
 
         if (!response.ok) {
           const error = await response.json();
+          console.error("Profile update failed:", error);
+          if (error.details) {
+            console.error("Validation details:", JSON.stringify(error.details, null, 2));
+          }
           throw new Error(error.error || "Failed to update profile");
         }
 
