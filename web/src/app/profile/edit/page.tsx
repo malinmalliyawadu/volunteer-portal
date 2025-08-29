@@ -445,7 +445,7 @@ export default function EditProfilePage() {
         >
           <div className="flex justify-start mt-6">
             <Button asChild variant="outline" size="sm" className="gap-2">
-              <Link href="/profile">
+              <Link href="/profile" data-testid="back-to-profile-link">
                 <ArrowLeft className="h-4 w-4" />
                 Back to Profile
               </Link>
@@ -471,10 +471,10 @@ export default function EditProfilePage() {
             {/* Progress Indicator */}
             <div className="bg-card dark:bg-card rounded-xl shadow-sm border border-border p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold">
+                <h2 className="text-lg font-semibold" data-testid="profile-setup-progress-heading">
                   Profile Setup Progress
                 </h2>
-                <Badge variant="outline" className="text-xs">
+                <Badge variant="outline" className="text-xs" data-testid="step-indicator">
                   Step {currentSection + 1} of {sections.length}
                 </Badge>
               </div>
@@ -534,6 +534,8 @@ export default function EditProfilePage() {
                         ? "bg-primary text-white dark:text-white shadow-sm"
                         : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
                     }`}
+                    role="button"
+                    data-testid={`${section.id}-tab-button`}
                   >
                     {section.title}
                   </button>
@@ -545,7 +547,7 @@ export default function EditProfilePage() {
             <Card className="shadow-lg border-0 bg-card/80 dark:bg-card/90 backdrop-blur-sm">
               <CardHeader className="pb-6">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-3 text-xl">
+                  <CardTitle className="flex items-center gap-3 text-xl" data-testid="current-section-title">
                     {React.createElement(sections[currentSection].icon, {
                       className: "h-6 w-6",
                     })}
@@ -557,6 +559,7 @@ export default function EditProfilePage() {
                     disabled={loading}
                     size="sm"
                     className="flex items-center gap-2"
+                    data-testid="header-save-button"
                   >
                     <Save className="h-4 w-4" />
                     {loading ? "Saving..." : "Save"}
@@ -575,6 +578,7 @@ export default function EditProfilePage() {
                       onClick={prevSection}
                       disabled={currentSection === 0 || loading}
                       className="flex items-center gap-2"
+                      data-testid="previous-section-button"
                     >
                       <ArrowLeft className="h-4 w-4" />
                       Previous
@@ -587,6 +591,7 @@ export default function EditProfilePage() {
                           onClick={nextSection}
                           disabled={loading}
                           className="flex items-center gap-2"
+                          data-testid="next-section-button"
                         >
                           Next
                           <ArrowLeft className="h-4 w-4 rotate-180" />
