@@ -254,10 +254,10 @@ export default function EditProfilePage() {
       try {
         // Process form data to handle special placeholder values
         // Remove fields that aren't part of profile updates
-        const { email, password, confirmPassword, ...profileData } = formData;
+        const { ...profileData } = formData;
         
         // Process the data for sending
-        const processedData: any = {};
+        const processedData: Record<string, string | boolean | string[] | Date | null> = {};
         
         // Handle each field appropriately
         Object.entries(profileData).forEach(([key, value]) => {

@@ -332,6 +332,7 @@ test.describe("My Shifts Calendar Page", () => {
 
       if (shiftCount > 0) {
         // Click on first shift
+        await shiftElements.first().waitFor({ state: "visible" });
         await shiftElements.first().click();
 
         // Dialog should open
