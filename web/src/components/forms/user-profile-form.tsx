@@ -632,7 +632,7 @@ export function CommunicationStep({
   shiftTypes?: Array<{ id: string; name: string }>;
 }) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="notification-preferences-form">
       <div className="space-y-4">
         <div className="p-4 rounded-lg border border-border bg-muted/20">
           <Label className="flex items-start space-x-3 text-sm font-medium cursor-pointer">
@@ -687,6 +687,7 @@ export function CommunicationStep({
               }
               disabled={loading}
               className="mt-1"
+              data-testid="receive-notifications-toggle"
             />
             <div>
               <span>Receive shift shortage notifications</span>

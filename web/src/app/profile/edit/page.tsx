@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { GradientButton } from "@/components/ui/gradient-button";
@@ -49,6 +49,7 @@ export default function EditProfilePage() {
     Array<{ id: string; name: string }>
   >([]);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
 
   // Load policy content and location options
@@ -231,6 +232,17 @@ export default function EditProfilePage() {
       color: "bg-orange-500",
     },
   ];
+
+  // Handle deep linking to specific sections
+  useEffect(() => {
+    const step = searchParams.get('step');
+    if (step) {
+      const sectionIndex = sections.findIndex(section => section.id === step);
+      if (sectionIndex !== -1) {
+        setCurrentSection(sectionIndex);
+      }
+    }
+  }, [searchParams, sections]);
 
   const handleSubmit = useCallback(
     async (e?: React.FormEvent) => {
@@ -559,6 +571,7 @@ export default function EditProfilePage() {
                           type="submit"
                           disabled={loading}
                           className="flex items-center gap-2"
+                          data-testid="save-notification-preferences"
                         >
                           <Save className="h-4 w-4" />
                           {loading ? "Saving..." : "Save Profile"}

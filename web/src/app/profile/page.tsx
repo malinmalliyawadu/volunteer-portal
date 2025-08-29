@@ -14,10 +14,12 @@ import { safeParseAvailability } from "@/lib/parse-availability";
 export default async function ProfilePage() {
   const session = await getServerSession(authOptions);
 
-  // Fetch complete user profile data
+  // Fetch complete user profile data and shift types
   let userProfile = null;
+  let shiftTypes: { id: string; name: string; }[] = [];
   if (session?.user?.email) {
-    userProfile = await prisma.user.findUnique({
+    [userProfile, shiftTypes] = await Promise.all([
+      prisma.user.findUnique({
       where: { email: session.user.email },
       select: {
         id: true,
@@ -39,11 +41,23 @@ export default async function ProfilePage() {
         availableLocations: true,
         emailNewsletterSubscription: true,
         notificationPreference: true,
+        receiveShortageNotifications: true,
+        excludedShortageNotificationTypes: true,
         volunteerAgreementAccepted: true,
         healthSafetyPolicyAccepted: true,
         role: true,
       },
-    });
+      }),
+      prisma.shiftType.findMany({
+        select: {
+          id: true,
+          name: true,
+        },
+        orderBy: {
+          name: 'asc'
+        }
+      })
+    ]);
   }
 
   const userInitials =
@@ -392,6 +406,116 @@ export default async function ProfilePage() {
                         No availability preferences set
                       </p>
                     )}
+                </div>
+              </CardContent>
+            </MotionCard>
+
+            {/* Notification Preferences */}
+            <MotionCard className="h-fit">
+              <CardContent className="px-6">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/50 rounded-lg flex items-center justify-center">
+                    <svg
+                      className="w-6 h-6 text-orange-600 dark:text-orange-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-semibold">
+                      Shift Shortage Notifications
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      Control your notification preferences
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-4" data-testid="notification-preferences-section">
+                  <div className="flex justify-between items-center py-3 border-b border-border">
+                    <span className="text-sm font-medium text-muted-foreground">
+                      Receive Notifications
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={userProfile?.receiveShortageNotifications || false}
+                        readOnly
+                        data-testid="receive-notifications-toggle"
+                        className="rounded border-gray-300"
+                      />
+                      <span className="text-sm">
+                        {userProfile?.receiveShortageNotifications ? 'Enabled' : 'Disabled'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {userProfile?.receiveShortageNotifications && (
+                    <>
+                      <div>
+                        <span className="text-sm font-medium text-muted-foreground">
+                          Shift types you&apos;d like notifications for:
+                        </span>
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {shiftTypes
+                            .filter((type) => 
+                              !userProfile?.excludedShortageNotificationTypes?.includes(type.id)
+                            )
+                            .map((type) => (
+                              <Badge
+                                key={type.id}
+                                variant="outline"
+                                className="text-xs"
+                              >
+                                {type.name}
+                              </Badge>
+                            ))}
+                        </div>
+                      </div>
+                      
+                      {userProfile?.excludedShortageNotificationTypes?.length > 0 && (
+                        <div>
+                          <span className="text-sm font-medium text-muted-foreground">
+                            Excluded shift types:
+                          </span>
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {shiftTypes
+                              .filter((type) => 
+                                userProfile?.excludedShortageNotificationTypes?.includes(type.id)
+                              )
+                              .map((type) => (
+                                <Badge
+                                  key={type.id}
+                                  variant="secondary"
+                                  className="text-xs"
+                                >
+                                  {type.name}
+                                </Badge>
+                              ))}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  <div className="pt-4 border-t border-border">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      data-testid="edit-notification-preferences"
+                      asChild
+                    >
+                      <Link href="/profile/edit?step=communication">Edit Preferences</Link>
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </MotionCard>
