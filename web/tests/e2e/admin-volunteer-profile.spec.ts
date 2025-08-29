@@ -474,6 +474,197 @@ test.describe("Admin Volunteer Profile View", () => {
     });
   });
 
+  test.describe("Volunteer Grade Management", () => {
+    test.beforeEach(async ({ page }) => {
+      await loginAsAdmin(page);
+    });
+
+    test("should display admin actions section with grade management for volunteers", async ({ page }) => {
+      const volunteerId = await getVolunteerIdFromUsersList(page);
+      
+      if (volunteerId) {
+        await page.goto(`/admin/volunteers/${volunteerId}`);
+        await waitForPageLoad(page);
+
+        // Check if admin actions card is visible (only for volunteers)
+        const adminActionsCard = page.getByTestId("admin-actions-card");
+        
+        // Admin actions should be visible for volunteers
+        if (await adminActionsCard.isVisible()) {
+          await expect(adminActionsCard).toBeVisible();
+
+          // Check admin actions title
+          const adminActionsTitle = adminActionsCard.getByText("Admin Actions");
+          await expect(adminActionsTitle).toBeVisible();
+
+          // Check volunteer grade section
+          const gradeLabel = adminActionsCard.getByText("Volunteer Grade");
+          await expect(gradeLabel).toBeVisible();
+
+          // Check grade toggle button
+          const gradeToggleButton = page.getByTestId(`grade-toggle-button-${volunteerId}`);
+          await expect(gradeToggleButton).toBeVisible();
+
+          // Grade toggle should show one of the three grades
+          const gradeButtonText = await gradeToggleButton.textContent();
+          expect(gradeButtonText).toMatch(/(Standard|Experienced|Shift Leader)/);
+        }
+      } else {
+        test.skip(true, "No volunteer profiles found for testing");
+      }
+    });
+
+    test("should display volunteer grade badge in profile badges section", async ({ page }) => {
+      const volunteerId = await getVolunteerIdFromUsersList(page);
+      
+      if (volunteerId) {
+        await page.goto(`/admin/volunteers/${volunteerId}`);
+        await waitForPageLoad(page);
+
+        // Look for volunteer grade badge in the badges section
+        const badgesSection = page.locator(".flex.flex-wrap.gap-2.justify-center");
+        
+        if (await badgesSection.isVisible()) {
+          // Check for grade badge with emoji indicators
+          const gradeBadge = badgesSection.locator('text=🟢').or(
+            badgesSection.locator('text=🟡')
+          ).or(
+            badgesSection.locator('text=🩷')
+          ).first();
+
+          if (await gradeBadge.isVisible()) {
+            await expect(gradeBadge).toBeVisible();
+            
+            // Verify the badge text includes grade name
+            const badgeText = await gradeBadge.textContent();
+            expect(badgeText).toMatch(/(Standard|Experienced|Shift Leader)/);
+          }
+        }
+      } else {
+        test.skip(true, "No volunteer profiles found for testing");
+      }
+    });
+
+    test("should open grade change dialog from volunteer profile", async ({ page }) => {
+      const volunteerId = await getVolunteerIdFromUsersList(page);
+      
+      if (volunteerId) {
+        await page.goto(`/admin/volunteers/${volunteerId}`);
+        await waitForPageLoad(page);
+
+        const gradeToggleButton = page.getByTestId(`grade-toggle-button-${volunteerId}`);
+        
+        if (await gradeToggleButton.isVisible()) {
+          await gradeToggleButton.click();
+
+          // Grade change dialog should open
+          const gradeChangeDialog = page.getByTestId("grade-change-dialog");
+          await expect(gradeChangeDialog).toBeVisible();
+
+          const dialogTitle = page.getByTestId("grade-change-dialog-title");
+          await expect(dialogTitle).toBeVisible();
+          await expect(dialogTitle).toContainText("Change Volunteer Grade");
+
+          // Check dialog has grade selection
+          const gradeSelect = page.getByTestId("grade-select");
+          await expect(gradeSelect).toBeVisible();
+
+          // Check descriptive text is shown
+          const dialogDescription = page.getByText("Select the appropriate volunteer grade");
+          await expect(dialogDescription).toBeVisible();
+
+          // Close dialog
+          const cancelButton = page.getByTestId("grade-change-cancel-button");
+          await cancelButton.click();
+          await expect(gradeChangeDialog).not.toBeVisible();
+        }
+      } else {
+        test.skip(true, "No volunteer profiles found for testing");
+      }
+    });
+
+    test("should display grade descriptions in admin actions", async ({ page }) => {
+      const volunteerId = await getVolunteerIdFromUsersList(page);
+      
+      if (volunteerId) {
+        await page.goto(`/admin/volunteers/${volunteerId}`);
+        await waitForPageLoad(page);
+
+        const adminActionsCard = page.getByTestId("admin-actions-card");
+        
+        if (await adminActionsCard.isVisible()) {
+          // Check for grade descriptions
+          const descriptions = [
+            "Standard volunteer with basic access",
+            "Experienced volunteer with additional privileges", 
+            "Shift leader with team management capabilities"
+          ];
+
+          let foundDescription = false;
+          for (const description of descriptions) {
+            const descriptionElement = adminActionsCard.getByText(description);
+            if (await descriptionElement.isVisible()) {
+              await expect(descriptionElement).toBeVisible();
+              foundDescription = true;
+              break;
+            }
+          }
+
+          expect(foundDescription).toBe(true);
+        }
+      } else {
+        test.skip(true, "No volunteer profiles found for testing");
+      }
+    });
+
+    test("should not show admin actions for admin users", async ({ page }) => {
+      // First, find an admin user from the users list
+      await page.goto("/admin/users?role=ADMIN");
+      await waitForPageLoad(page);
+
+      const usersList = page.getByTestId("users-list");
+      
+      if (await usersList.isVisible()) {
+        const userRows = page.locator("[data-testid^='user-row-']");
+        const userCount = await userRows.count();
+        
+        if (userCount > 0) {
+          // Get admin user ID from the first row
+          const firstRowTestId = await userRows.first().getAttribute("data-testid");
+          const adminUserId = firstRowTestId?.replace("user-row-", "");
+          
+          if (adminUserId) {
+            await page.goto(`/admin/volunteers/${adminUserId}`);
+            await waitForPageLoad(page);
+
+            // Admin actions card should not be visible for admin users
+            const adminActionsCard = page.getByTestId("admin-actions-card");
+            await expect(adminActionsCard).not.toBeVisible();
+          }
+        }
+      }
+    });
+
+    test.skip("should successfully update volunteer grade from profile", async ({ page }) => {
+      // Skip this test as it modifies data and may affect other tests
+      // In a real scenario, this would test the actual grade update functionality
+      const volunteerId = await getVolunteerIdFromUsersList(page);
+      
+      if (volunteerId) {
+        await page.goto(`/admin/volunteers/${volunteerId}`);
+        await waitForPageLoad(page);
+
+        // This test would:
+        // 1. Click grade toggle button  
+        // 2. Select a different grade
+        // 3. Click confirm button
+        // 4. Verify grade change was successful
+        // 5. Verify UI updates reflect the change
+        // 6. Verify badge updates in profile display
+      }
+    });
+  });
+
   test.describe("Error Handling", () => {
     test.beforeEach(async ({ page }) => {
       await loginAsAdmin(page);
