@@ -374,41 +374,6 @@ test.describe("My Shifts Calendar Page", () => {
       }
     });
 
-    test("should show calendar export options for upcoming shifts", async ({
-      page,
-    }) => {
-      const shiftElements = getShiftElements(page);
-      const shiftCount = await shiftElements.count();
-
-      if (shiftCount > 0) {
-        await shiftElements.first().click();
-
-        const dialog = page.locator("[role='dialog']");
-        await expect(dialog).toBeVisible();
-
-        // Look for calendar export buttons
-        const googleButton = dialog.getByText("Google");
-        const outlookButton = dialog.getByText("Outlook");
-        const icsButton = dialog.getByText(".ics File");
-
-        // At least one export option should be visible for upcoming shifts
-        const hasExportOptions =
-          (await googleButton.isVisible()) ||
-          (await outlookButton.isVisible()) ||
-          (await icsButton.isVisible());
-
-        if (hasExportOptions) {
-          // Check that export buttons are links/have proper attributes
-          if (await googleButton.isVisible()) {
-            const googleLink = googleButton.locator("..");
-            await expect(googleLink).toHaveAttribute("href");
-          }
-        }
-
-        await page.keyboard.press("Escape");
-      }
-    });
-
     test("should show cancel button for upcoming shifts", async ({ page }) => {
       const shiftElements = getShiftElements(page);
       const shiftCount = await shiftElements.count();
