@@ -39,6 +39,14 @@ async function getNavigationButton(
   }
 }
 
+// Helper function to get visible shift elements with time information
+function getShiftElements(page: Page) {
+  return page.locator(".bg-gradient-to-br").filter({
+    hasText: /\d{2}:\d{2}/,
+    visible: true,
+  });
+}
+
 // Helper function to login as volunteer
 async function loginAsVolunteer(page: Page) {
   try {
@@ -319,9 +327,7 @@ test.describe("My Shifts Calendar Page", () => {
       page,
     }) => {
       // Look for clickable shifts
-      const shiftElements = page
-        .locator(".bg-gradient-to-br")
-        .filter({ hasText: /\d{2}:\d{2}/ });
+      const shiftElements = getShiftElements(page);
       const shiftCount = await shiftElements.count();
 
       if (shiftCount > 0) {
@@ -343,9 +349,7 @@ test.describe("My Shifts Calendar Page", () => {
     });
 
     test("should display shift information in dialog", async ({ page }) => {
-      const shiftElements = page
-        .locator(".bg-gradient-to-br")
-        .filter({ hasText: /\d{2}:\d{2}/ });
+      const shiftElements = getShiftElements(page);
       const shiftCount = await shiftElements.count();
 
       if (shiftCount > 0) {
@@ -373,9 +377,7 @@ test.describe("My Shifts Calendar Page", () => {
     test("should show calendar export options for upcoming shifts", async ({
       page,
     }) => {
-      const shiftElements = page
-        .locator(".bg-gradient-to-br")
-        .filter({ hasText: /\d{2}:\d{2}/ });
+      const shiftElements = getShiftElements(page);
       const shiftCount = await shiftElements.count();
 
       if (shiftCount > 0) {
@@ -408,9 +410,7 @@ test.describe("My Shifts Calendar Page", () => {
     });
 
     test("should show cancel button for upcoming shifts", async ({ page }) => {
-      const shiftElements = page
-        .locator(".bg-gradient-to-br")
-        .filter({ hasText: /\d{2}:\d{2}/ });
+      const shiftElements = getShiftElements(page);
       const shiftCount = await shiftElements.count();
 
       if (shiftCount > 0) {
@@ -435,9 +435,7 @@ test.describe("My Shifts Calendar Page", () => {
 
   test.describe("Friends Integration", () => {
     test("should show friends joining shifts", async ({ page }) => {
-      const shiftElements = page
-        .locator(".bg-gradient-to-br")
-        .filter({ hasText: /\d{2}:\d{2}/ });
+      const shiftElements = getShiftElements(page);
       const shiftCount = await shiftElements.count();
 
       if (shiftCount > 0) {
@@ -459,9 +457,7 @@ test.describe("My Shifts Calendar Page", () => {
     });
 
     test("should display friend details in shift dialog", async ({ page }) => {
-      const shiftElements = page
-        .locator(".bg-gradient-to-br")
-        .filter({ hasText: /\d{2}:\d{2}/ });
+      const shiftElements = getShiftElements(page);
       const shiftCount = await shiftElements.count();
 
       if (shiftCount > 0) {
@@ -633,9 +629,7 @@ test.describe("My Shifts Calendar Page", () => {
 
     test("should have accessible shift interactions", async ({ page }) => {
       // Shift elements should be clickable
-      const shiftElements = page
-        .locator(".bg-gradient-to-br")
-        .filter({ hasText: /\d{2}:\d{2}/ });
+      const shiftElements = getShiftElements(page);
       const shiftCount = await shiftElements.count();
 
       if (shiftCount > 0) {
