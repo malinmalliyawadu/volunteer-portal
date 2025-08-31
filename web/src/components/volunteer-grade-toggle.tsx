@@ -22,7 +22,10 @@ import { Award, ChevronDown, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { type VolunteerGrade } from "@prisma/client";
-import { VOLUNTEER_GRADE_OPTIONS, getVolunteerGradeInfo } from "@/lib/volunteer-grades";
+import {
+  VOLUNTEER_GRADE_OPTIONS,
+  getVolunteerGradeInfo,
+} from "@/lib/volunteer-grades";
 import { useCallback, useEffect } from "react";
 
 interface VolunteerGradeToggleProps {
@@ -32,7 +35,6 @@ interface VolunteerGradeToggleProps {
   onGradeChange?: (newGrade: VolunteerGrade) => void;
 }
 
-
 export function VolunteerGradeToggle({
   userId,
   currentGrade,
@@ -40,10 +42,12 @@ export function VolunteerGradeToggle({
   onGradeChange,
 }: VolunteerGradeToggleProps) {
   const [open, setOpen] = useState(false);
-  const [selectedGrade, setSelectedGrade] = useState<VolunteerGrade>(currentGrade);
+  const [selectedGrade, setSelectedGrade] =
+    useState<VolunteerGrade>(currentGrade);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [optimisticGrade, setOptimisticGrade] = useState<VolunteerGrade>(currentGrade);
+  const [optimisticGrade, setOptimisticGrade] =
+    useState<VolunteerGrade>(currentGrade);
   const router = useRouter();
 
   // Update local state when currentGrade prop changes
@@ -60,7 +64,7 @@ export function VolunteerGradeToggle({
 
     setIsLoading(true);
     setError(null);
-    
+
     // Optimistic update
     setOptimisticGrade(selectedGrade);
     onGradeChange?.(selectedGrade);
@@ -83,14 +87,18 @@ export function VolunteerGradeToggle({
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        const data = await response.json().catch(() => ({ error: "Unknown error" }));
+        const data = await response
+          .json()
+          .catch(() => ({ error: "Unknown error" }));
         throw new Error(data.error || `Server error: ${response.status}`);
       }
 
       await response.json(); // Response processed but data not needed
 
       toast.success(
-        `Volunteer grade updated to ${getVolunteerGradeInfo(selectedGrade).label}`
+        `Volunteer grade updated to ${
+          getVolunteerGradeInfo(selectedGrade).label
+        }`
       );
       setOpen(false);
 
@@ -100,24 +108,24 @@ export function VolunteerGradeToggle({
       }
     } catch (error) {
       console.error("Error updating volunteer grade:", error);
-      
+
       let errorMessage = "Failed to update volunteer grade";
-      
+
       if (error instanceof Error) {
-        if (error.name === 'AbortError') {
+        if (error.name === "AbortError") {
           errorMessage = "Request timeout - please try again";
         } else {
           errorMessage = error.message;
         }
       }
-      
+
       // Revert optimistic update on error
       setOptimisticGrade(currentGrade);
       onGradeChange?.(currentGrade);
-      
+
       setError(errorMessage);
       toast.error(errorMessage);
-      
+
       // Reset selection on error
       setSelectedGrade(currentGrade);
     } finally {
@@ -176,7 +184,9 @@ export function VolunteerGradeToggle({
                 variant="outline"
                 className={getVolunteerGradeInfo(currentGrade).color}
               >
-                <span className="mr-1">{getVolunteerGradeInfo(currentGrade).icon}</span>
+                <span className="mr-1">
+                  {getVolunteerGradeInfo(currentGrade).icon}
+                </span>
                 {getVolunteerGradeInfo(currentGrade).label}
               </Badge>
             </div>
@@ -187,9 +197,8 @@ export function VolunteerGradeToggle({
             <Select
               value={selectedGrade}
               onValueChange={(value: VolunteerGrade) => setSelectedGrade(value)}
-              data-testid="grade-select"
             >
-              <SelectTrigger>
+              <SelectTrigger data-testid="grade-select">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -221,14 +230,19 @@ export function VolunteerGradeToggle({
             >
               <div className="flex items-center gap-3">
                 <span className="text-sm font-medium">New Grade:</span>
-                <Badge variant="outline" className={getVolunteerGradeInfo(selectedGrade).color}>
-                  <span className="mr-1">{getVolunteerGradeInfo(selectedGrade).icon}</span>
+                <Badge
+                  variant="outline"
+                  className={getVolunteerGradeInfo(selectedGrade).color}
+                >
+                  <span className="mr-1">
+                    {getVolunteerGradeInfo(selectedGrade).icon}
+                  </span>
                   {getVolunteerGradeInfo(selectedGrade).label}
                 </Badge>
               </div>
             </div>
           )}
-          
+
           {error && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
               <p className="text-sm text-red-700">{error}</p>

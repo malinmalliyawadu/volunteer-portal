@@ -587,10 +587,10 @@ export default async function MyShiftsPage({
       </div>
 
       {/* Stats Overview */}
-      <AnimatedStatsGrid
+      <div data-testid="stats-overview">
+        <AnimatedStatsGrid
         useStatsGrid={false}
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6"
-        data-testid="stats-overview"
         stats={[
           {
             title: "Completed",
@@ -630,6 +630,7 @@ export default async function MyShiftsPage({
           },
         ]}
       />
+      </div>
 
       {/* Schedule View - Calendar on desktop, List on mobile */}
       <Card data-testid="calendar-view">
