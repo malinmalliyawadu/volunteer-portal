@@ -17,7 +17,7 @@ export function VolunteerGradeBadge({
   className,
 }: VolunteerGradeBadgeProps) {
   const info = getVolunteerGradeInfo(grade);
-  
+
   const sizeClasses = {
     sm: "text-xs px-1.5 py-0.5",
     default: "text-xs px-2 py-1",
@@ -33,6 +33,7 @@ export function VolunteerGradeBadge({
         "font-medium shadow-sm",
         className
       )}
+      data-testid="volunteer-grade-badge"
     >
       {showIcon && <span className="mr-1">{info.icon}</span>}
       {info.label}

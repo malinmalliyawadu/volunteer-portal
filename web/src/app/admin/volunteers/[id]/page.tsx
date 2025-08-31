@@ -294,9 +294,9 @@ export default async function AdminVolunteerPage({
                   {volunteer.role === "ADMIN" ? "Administrator" : "Volunteer"}
                 </Badge>
                 {volunteer.role === "VOLUNTEER" && volunteer.volunteerGrade && (
-                  <VolunteerGradeBadge 
-                    grade={volunteer.volunteerGrade as VolunteerGrade} 
-                    size="default" 
+                  <VolunteerGradeBadge
+                    grade={volunteer.volunteerGrade as VolunteerGrade}
+                    size="default"
                   />
                 )}
                 {volunteer.regularVolunteer && (
@@ -396,20 +396,23 @@ export default async function AdminVolunteerPage({
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Volunteer Grade</label>
                   <div className="flex items-center gap-3">
-                    <VolunteerGradeBadge 
-                      grade={volunteer.volunteerGrade as VolunteerGrade} 
-                      size="default" 
+                    <VolunteerGradeBadge
+                      grade={volunteer.volunteerGrade}
+                      size="default"
                     />
                     <VolunteerGradeToggle
                       userId={volunteer.id}
-                      currentGrade={volunteer.volunteerGrade as VolunteerGrade}
+                      currentGrade={volunteer.volunteerGrade}
                       userRole={volunteer.role}
                     />
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {volunteer.volunteerGrade === "GREEN" && "Standard volunteer with basic access"}
-                    {volunteer.volunteerGrade === "YELLOW" && "Experienced volunteer with additional privileges"}
-                    {volunteer.volunteerGrade === "PINK" && "Shift leader with team management capabilities"}
+                    {volunteer.volunteerGrade === "GREEN" &&
+                      "Standard volunteer with basic access"}
+                    {volunteer.volunteerGrade === "YELLOW" &&
+                      "Experienced volunteer with additional privileges"}
+                    {volunteer.volunteerGrade === "PINK" &&
+                      "Shift leader with team management capabilities"}
                   </p>
                 </div>
               </CardContent>

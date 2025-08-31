@@ -11,47 +11,53 @@ async function waitForPageLoad(page: Page) {
 async function loginAsAdmin(page: Page) {
   await page.goto("/login");
   await waitForPageLoad(page);
-  
+
   const adminButton = page.getByTestId("quick-login-admin-button");
   await adminButton.click();
-  
+
   // Wait for navigation away from login page
-  await page.waitForURL((url) => {
-    return url.pathname !== "/login";
-  }, { timeout: 10000 });
+  await page.waitForURL(
+    (url) => {
+      return url.pathname !== "/login";
+    },
+    { timeout: 10000 }
+  );
 }
 
 // Helper function to login as volunteer (for permission tests)
 async function loginAsVolunteer(page: Page) {
   await page.goto("/login");
   await waitForPageLoad(page);
-  
+
   const volunteerButton = page.getByTestId("quick-login-volunteer-button");
   await volunteerButton.click();
-  
+
   // Wait for navigation away from login page
-  await page.waitForURL((url) => {
-    return url.pathname !== "/login";
-  }, { timeout: 10000 });
+  await page.waitForURL(
+    (url) => {
+      return url.pathname !== "/login";
+    },
+    { timeout: 10000 }
+  );
 }
 
 // Helper function to get a volunteer ID from the admin users list
 async function getVolunteerIdFromUsersList(page: Page): Promise<string | null> {
   await page.goto("/admin/users");
   await waitForPageLoad(page);
-  
+
   // Look for volunteer cards with view profile links
   const viewProfileLinks = page.locator('a[href*="/admin/volunteers/"]');
   const linkCount = await viewProfileLinks.count();
-  
+
   if (linkCount > 0) {
-    const href = await viewProfileLinks.first().getAttribute('href');
+    const href = await viewProfileLinks.first().getAttribute("href");
     if (href) {
       const match = href.match(/\/admin\/volunteers\/(.+)/);
       return match ? match[1] : null;
     }
   }
-  
+
   return null;
 }
 
@@ -66,9 +72,11 @@ test.describe("Admin Volunteer Profile View", () => {
       await expect(page).toHaveURL(/\/login.*callbackUrl.*admin/);
     });
 
-    test("should redirect volunteer users to dashboard (unauthorized)", async ({ page }) => {
+    test("should redirect volunteer users to dashboard (unauthorized)", async ({
+      page,
+    }) => {
       await loginAsVolunteer(page);
-      
+
       // Try to access admin volunteer profile as a volunteer
       await page.goto("/admin/volunteers/some-id");
       await waitForPageLoad(page);
@@ -77,12 +85,14 @@ test.describe("Admin Volunteer Profile View", () => {
       await expect(page).toHaveURL("/dashboard");
     });
 
-    test("should allow admin users to access volunteer profile page", async ({ page }) => {
+    test("should allow admin users to access volunteer profile page", async ({
+      page,
+    }) => {
       await loginAsAdmin(page);
-      
+
       // Get a valid volunteer ID from users list
       const volunteerId = await getVolunteerIdFromUsersList(page);
-      
+
       if (volunteerId) {
         await page.goto(`/admin/volunteers/${volunteerId}`);
         await waitForPageLoad(page);
@@ -101,9 +111,11 @@ test.describe("Admin Volunteer Profile View", () => {
       await loginAsAdmin(page);
     });
 
-    test("should display page header with title and back navigation", async ({ page }) => {
+    test("should display page header with title and back navigation", async ({
+      page,
+    }) => {
       const volunteerId = await getVolunteerIdFromUsersList(page);
-      
+
       if (volunteerId) {
         await page.goto(`/admin/volunteers/${volunteerId}`);
         await waitForPageLoad(page);
@@ -115,7 +127,9 @@ test.describe("Admin Volunteer Profile View", () => {
         const pageTitle = page.getByText("Volunteer Profile");
         await expect(pageTitle).toBeVisible();
 
-        const pageDescription = page.getByText("Comprehensive view of volunteer information and activity");
+        const pageDescription = page.getByText(
+          "Comprehensive view of volunteer information and activity"
+        );
         await expect(pageDescription).toBeVisible();
 
         // Check back to shifts button
@@ -127,9 +141,11 @@ test.describe("Admin Volunteer Profile View", () => {
       }
     });
 
-    test("should navigate back to admin shifts when clicking back button", async ({ page }) => {
+    test("should navigate back to admin shifts when clicking back button", async ({
+      page,
+    }) => {
       const volunteerId = await getVolunteerIdFromUsersList(page);
-      
+
       if (volunteerId) {
         await page.goto(`/admin/volunteers/${volunteerId}`);
         await waitForPageLoad(page);
@@ -148,7 +164,7 @@ test.describe("Admin Volunteer Profile View", () => {
 
     test("should display three-column layout structure", async ({ page }) => {
       const volunteerId = await getVolunteerIdFromUsersList(page);
-      
+
       if (volunteerId) {
         await page.goto(`/admin/volunteers/${volunteerId}`);
         await waitForPageLoad(page);
@@ -169,13 +185,15 @@ test.describe("Admin Volunteer Profile View", () => {
 
     test("should display basic volunteer information", async ({ page }) => {
       const volunteerId = await getVolunteerIdFromUsersList(page);
-      
+
       if (volunteerId) {
         await page.goto(`/admin/volunteers/${volunteerId}`);
         await waitForPageLoad(page);
 
         // Check avatar/profile photo section (using the actual Avatar component structure)
-        const avatar = page.locator("[class*='rounded-full'][class*='overflow-hidden']").first();
+        const avatar = page
+          .locator("[class*='rounded-full'][class*='overflow-hidden']")
+          .first();
         await expect(avatar).toBeVisible();
 
         // Check volunteer name (should be visible as heading)
@@ -189,7 +207,7 @@ test.describe("Admin Volunteer Profile View", () => {
         // Check role badge
         const roleBadge = page.getByTestId("user-role");
         await expect(roleBadge).toBeVisible();
-        
+
         const roleText = await roleBadge.textContent();
         expect(roleText).toMatch(/(Administrator|Volunteer)/);
       } else {
@@ -199,7 +217,7 @@ test.describe("Admin Volunteer Profile View", () => {
 
     test("should display volunteer statistics", async ({ page }) => {
       const volunteerId = await getVolunteerIdFromUsersList(page);
-      
+
       if (volunteerId) {
         await page.goto(`/admin/volunteers/${volunteerId}`);
         await waitForPageLoad(page);
@@ -230,7 +248,7 @@ test.describe("Admin Volunteer Profile View", () => {
 
     test("should display contact information section", async ({ page }) => {
       const volunteerId = await getVolunteerIdFromUsersList(page);
-      
+
       if (volunteerId) {
         await page.goto(`/admin/volunteers/${volunteerId}`);
         await waitForPageLoad(page);
@@ -253,7 +271,7 @@ test.describe("Admin Volunteer Profile View", () => {
 
     test("should display emergency contact information", async ({ page }) => {
       const volunteerId = await getVolunteerIdFromUsersList(page);
-      
+
       if (volunteerId) {
         await page.goto(`/admin/volunteers/${volunteerId}`);
         await waitForPageLoad(page);
@@ -278,13 +296,15 @@ test.describe("Admin Volunteer Profile View", () => {
 
     test("should display availability and preferences", async ({ page }) => {
       const volunteerId = await getVolunteerIdFromUsersList(page);
-      
+
       if (volunteerId) {
         await page.goto(`/admin/volunteers/${volunteerId}`);
         await waitForPageLoad(page);
 
         // Check availability card
-        const availabilityCard = page.getByTestId("availability-preferences-card");
+        const availabilityCard = page.getByTestId(
+          "availability-preferences-card"
+        );
         await expect(availabilityCard).toBeVisible();
 
         // Check available days section
@@ -305,13 +325,15 @@ test.describe("Admin Volunteer Profile View", () => {
 
     test("should display additional information section", async ({ page }) => {
       const volunteerId = await getVolunteerIdFromUsersList(page);
-      
+
       if (volunteerId) {
         await page.goto(`/admin/volunteers/${volunteerId}`);
         await waitForPageLoad(page);
 
         // Check additional information card
-        const additionalInfoCard = page.getByTestId("additional-information-card");
+        const additionalInfoCard = page.getByTestId(
+          "additional-information-card"
+        );
         await expect(additionalInfoCard).toBeVisible();
 
         // Check medical conditions field
@@ -342,7 +364,7 @@ test.describe("Admin Volunteer Profile View", () => {
 
     test("should display shift history section", async ({ page }) => {
       const volunteerId = await getVolunteerIdFromUsersList(page);
-      
+
       if (volunteerId) {
         await page.goto(`/admin/volunteers/${volunteerId}`);
         await waitForPageLoad(page);
@@ -352,14 +374,18 @@ test.describe("Admin Volunteer Profile View", () => {
         await expect(shiftHistoryCard).toBeVisible();
 
         // Check location filter buttons within the shift history card to avoid conflict with sidebar
-        const allFilterButton = shiftHistoryCard.getByRole("link", { name: "All" });
+        const allFilterButton = shiftHistoryCard.getByRole("link", {
+          name: "All",
+        });
         await expect(allFilterButton).toBeVisible();
 
         // Check specific location filter buttons
         const wellingtonFilter = page.getByRole("link", { name: "Wellington" });
         await expect(wellingtonFilter).toBeVisible();
 
-        const glennInnesFilter = page.getByRole("link", { name: "Glenn Innes" });
+        const glennInnesFilter = page.getByRole("link", {
+          name: "Glenn Innes",
+        });
         await expect(glennInnesFilter).toBeVisible();
 
         const onehungaFilter = page.getByRole("link", { name: "Onehunga" });
@@ -369,35 +395,41 @@ test.describe("Admin Volunteer Profile View", () => {
       }
     });
 
-    test("should display shift history entries when available", async ({ page }) => {
+    test("should display shift history entries when available", async ({
+      page,
+    }) => {
       const volunteerId = await getVolunteerIdFromUsersList(page);
-      
+
       if (volunteerId) {
         await page.goto(`/admin/volunteers/${volunteerId}`);
         await waitForPageLoad(page);
 
         // Check if there are shift entries or empty state
-        const shiftEntries = page.locator("div.flex.items-center.justify-between.p-4.bg-muted\\/30.rounded-lg");
+        const shiftEntries = page.locator(
+          "div.flex.items-center.justify-between.p-4.bg-muted\\/30.rounded-lg"
+        );
         const emptyState = page.getByText("No shift signups yet");
-        
+
         const hasShifts = await shiftEntries.first().isVisible();
         const isEmpty = await emptyState.isVisible();
-        
+
         // Either shifts or empty state should be visible
         expect(hasShifts || isEmpty).toBe(true);
 
         if (hasShifts) {
           // Check shift entry structure
           const firstShift = shiftEntries.first();
-          
+
           // Should have shift type name
           const shiftName = firstShift.locator("h4");
           await expect(shiftName).toBeVisible();
-          
+
           // Should have date and time information (look for text content patterns)
-          const dateTimeInfo = firstShift.locator(".flex.items-center.gap-4.text-sm");
+          const dateTimeInfo = firstShift.locator(
+            ".flex.items-center.gap-4.text-sm"
+          );
           await expect(dateTimeInfo).toBeVisible();
-          
+
           // Should have status badge
           const statusBadge = firstShift.locator('[data-slot="badge"]').first();
           await expect(statusBadge).toBeVisible();
@@ -409,7 +441,7 @@ test.describe("Admin Volunteer Profile View", () => {
 
     test("should filter shift history by location", async ({ page }) => {
       const volunteerId = await getVolunteerIdFromUsersList(page);
-      
+
       if (volunteerId) {
         await page.goto(`/admin/volunteers/${volunteerId}`);
         await waitForPageLoad(page);
@@ -420,10 +452,15 @@ test.describe("Admin Volunteer Profile View", () => {
         await waitForPageLoad(page);
 
         // URL should include location parameter
-        await expect(page).toHaveURL(new RegExp(`/admin/volunteers/${volunteerId}\\?location=Wellington`));
+        await expect(page).toHaveURL(
+          new RegExp(`/admin/volunteers/${volunteerId}\\?location=Wellington`)
+        );
 
         // Filter badge should be visible
-        const filterBadge = page.getByText("Wellington").locator(".badge, [class*='badge']").first();
+        const filterBadge = page
+          .getByText("Wellington")
+          .locator(".badge, [class*='badge']")
+          .first();
         if (await filterBadge.isVisible()) {
           await expect(filterBadge).toBeVisible();
         }
@@ -435,7 +472,9 @@ test.describe("Admin Volunteer Profile View", () => {
         await waitForPageLoad(page);
 
         // URL should not include location parameter
-        await expect(page).toHaveURL(new RegExp(`/admin/volunteers/${volunteerId}$`));
+        await expect(page).toHaveURL(
+          new RegExp(`/admin/volunteers/${volunteerId}$`)
+        );
       } else {
         test.skip(true, "No volunteer profiles found for testing");
       }
@@ -443,13 +482,15 @@ test.describe("Admin Volunteer Profile View", () => {
 
     test("should display shift status badges correctly", async ({ page }) => {
       const volunteerId = await getVolunteerIdFromUsersList(page);
-      
+
       if (volunteerId) {
         await page.goto(`/admin/volunteers/${volunteerId}`);
         await waitForPageLoad(page);
 
         // Look for shift entries
-        const shiftEntries = page.locator("div.flex.items-center.justify-between.p-4.bg-muted\\/30.rounded-lg");
+        const shiftEntries = page.locator(
+          "div.flex.items-center.justify-between.p-4.bg-muted\\/30.rounded-lg"
+        );
         const shiftCount = await shiftEntries.count();
 
         if (shiftCount > 0) {
@@ -457,14 +498,16 @@ test.describe("Admin Volunteer Profile View", () => {
           for (let i = 0; i < Math.min(3, shiftCount); i++) {
             const shiftEntry = shiftEntries.nth(i);
             const statusBadges = shiftEntry.locator('[data-slot="badge"]');
-            
+
             const badgeCount = await statusBadges.count();
             expect(badgeCount).toBeGreaterThanOrEqual(1); // At least one badge (status or past/location)
-            
+
             // Check if status text is one of the expected values
             const statusText = await statusBadges.first().textContent();
             if (statusText) {
-              expect(statusText).toMatch(/(Confirmed|Waitlisted|Canceled|Past|Wellington|Glenn Innes|Onehunga)/);
+              expect(statusText).toMatch(
+                /(Confirmed|Waitlisted|Canceled|Past|Wellington|Glenn Innes|Onehunga)/
+              );
             }
           }
         }
@@ -479,16 +522,18 @@ test.describe("Admin Volunteer Profile View", () => {
       await loginAsAdmin(page);
     });
 
-    test("should display admin actions section with grade management for volunteers", async ({ page }) => {
+    test("should display admin actions section with grade management for volunteers", async ({
+      page,
+    }) => {
       const volunteerId = await getVolunteerIdFromUsersList(page);
-      
+
       if (volunteerId) {
         await page.goto(`/admin/volunteers/${volunteerId}`);
         await waitForPageLoad(page);
 
         // Check if admin actions card is visible (only for volunteers)
         const adminActionsCard = page.getByTestId("admin-actions-card");
-        
+
         // Admin actions should be visible for volunteers
         if (await adminActionsCard.isVisible()) {
           await expect(adminActionsCard).toBeVisible();
@@ -502,58 +547,56 @@ test.describe("Admin Volunteer Profile View", () => {
           await expect(gradeLabel).toBeVisible();
 
           // Check grade toggle button
-          const gradeToggleButton = page.getByTestId(`grade-toggle-button-${volunteerId}`);
+          const gradeToggleButton = page.getByTestId(
+            `grade-toggle-button-${volunteerId}`
+          );
           await expect(gradeToggleButton).toBeVisible();
 
           // Grade toggle should show one of the three grades
           const gradeButtonText = await gradeToggleButton.textContent();
-          expect(gradeButtonText).toMatch(/(Standard|Experienced|Shift Leader)/);
+          expect(gradeButtonText).toMatch(
+            /(Standard|Experienced|Shift Leader)/
+          );
         }
       } else {
         test.skip(true, "No volunteer profiles found for testing");
       }
     });
 
-    test("should display volunteer grade badge in profile badges section", async ({ page }) => {
+    test("should display volunteer grade badge in profile badges section", async ({
+      page,
+    }) => {
       const volunteerId = await getVolunteerIdFromUsersList(page);
-      
+
       if (volunteerId) {
         await page.goto(`/admin/volunteers/${volunteerId}`);
         await waitForPageLoad(page);
 
         // Look for volunteer grade badge in the badges section
-        const badgesSection = page.locator(".flex.flex-wrap.gap-2.justify-center");
-        
-        if (await badgesSection.isVisible()) {
-          // Check for grade badge with emoji indicators
-          const gradeBadge = badgesSection.locator('text=🟢').or(
-            badgesSection.locator('text=🟡')
-          ).or(
-            badgesSection.locator('text=🩷')
-          ).first();
+        const badge = page
+          .getByTestId("basic-information-card")
+          .getByTestId("volunteer-grade-badge");
 
-          if (await gradeBadge.isVisible()) {
-            await expect(gradeBadge).toBeVisible();
-            
-            // Verify the badge text includes grade name
-            const badgeText = await gradeBadge.textContent();
-            expect(badgeText).toMatch(/(Standard|Experienced|Shift Leader)/);
-          }
-        }
+        const badgeText = await badge.textContent();
+        expect(badgeText).toMatch(/(Standard|Experienced|Shift Leader)/);
       } else {
         test.skip(true, "No volunteer profiles found for testing");
       }
     });
 
-    test("should open grade change dialog from volunteer profile", async ({ page }) => {
+    test("should open grade change dialog from volunteer profile", async ({
+      page,
+    }) => {
       const volunteerId = await getVolunteerIdFromUsersList(page);
-      
+
       if (volunteerId) {
         await page.goto(`/admin/volunteers/${volunteerId}`);
         await waitForPageLoad(page);
 
-        const gradeToggleButton = page.getByTestId(`grade-toggle-button-${volunteerId}`);
-        
+        const gradeToggleButton = page.getByTestId(
+          `grade-toggle-button-${volunteerId}`
+        );
+
         if (await gradeToggleButton.isVisible()) {
           await gradeToggleButton.click();
 
@@ -570,7 +613,9 @@ test.describe("Admin Volunteer Profile View", () => {
           await expect(gradeSelect).toBeVisible();
 
           // Check descriptive text is shown
-          const dialogDescription = page.getByText("Select the appropriate volunteer grade");
+          const dialogDescription = page.getByText(
+            "Select the appropriate volunteer grade"
+          );
           await expect(dialogDescription).toBeVisible();
 
           // Close dialog
@@ -583,21 +628,23 @@ test.describe("Admin Volunteer Profile View", () => {
       }
     });
 
-    test("should display grade descriptions in admin actions", async ({ page }) => {
+    test("should display grade descriptions in admin actions", async ({
+      page,
+    }) => {
       const volunteerId = await getVolunteerIdFromUsersList(page);
-      
+
       if (volunteerId) {
         await page.goto(`/admin/volunteers/${volunteerId}`);
         await waitForPageLoad(page);
 
         const adminActionsCard = page.getByTestId("admin-actions-card");
-        
+
         if (await adminActionsCard.isVisible()) {
           // Check for grade descriptions
           const descriptions = [
             "Standard volunteer with basic access",
-            "Experienced volunteer with additional privileges", 
-            "Shift leader with team management capabilities"
+            "Experienced volunteer with additional privileges",
+            "Shift leader with team management capabilities",
           ];
 
           let foundDescription = false;
@@ -623,16 +670,18 @@ test.describe("Admin Volunteer Profile View", () => {
       await waitForPageLoad(page);
 
       const usersList = page.getByTestId("users-list");
-      
+
       if (await usersList.isVisible()) {
         const userRows = page.locator("[data-testid^='user-row-']");
         const userCount = await userRows.count();
-        
+
         if (userCount > 0) {
           // Get admin user ID from the first row
-          const firstRowTestId = await userRows.first().getAttribute("data-testid");
+          const firstRowTestId = await userRows
+            .first()
+            .getAttribute("data-testid");
           const adminUserId = firstRowTestId?.replace("user-row-", "");
-          
+
           if (adminUserId) {
             await page.goto(`/admin/volunteers/${adminUserId}`);
             await waitForPageLoad(page);
@@ -645,17 +694,19 @@ test.describe("Admin Volunteer Profile View", () => {
       }
     });
 
-    test.skip("should successfully update volunteer grade from profile", async ({ page }) => {
+    test.skip("should successfully update volunteer grade from profile", async ({
+      page,
+    }) => {
       // Skip this test as it modifies data and may affect other tests
       // In a real scenario, this would test the actual grade update functionality
       const volunteerId = await getVolunteerIdFromUsersList(page);
-      
+
       if (volunteerId) {
         await page.goto(`/admin/volunteers/${volunteerId}`);
         await waitForPageLoad(page);
 
         // This test would:
-        // 1. Click grade toggle button  
+        // 1. Click grade toggle button
         // 2. Select a different grade
         // 3. Click confirm button
         // 4. Verify grade change was successful
@@ -670,7 +721,9 @@ test.describe("Admin Volunteer Profile View", () => {
       await loginAsAdmin(page);
     });
 
-    test("should display 404 page for non-existent volunteer ID", async ({ page }) => {
+    test("should display 404 page for non-existent volunteer ID", async ({
+      page,
+    }) => {
       // Try to access a non-existent volunteer profile
       await page.goto("/admin/volunteers/non-existent-id-12345");
       await waitForPageLoad(page);
@@ -680,20 +733,29 @@ test.describe("Admin Volunteer Profile View", () => {
       await expect(notFoundText).toBeVisible();
     });
 
-    test("should handle malformed volunteer IDs gracefully", async ({ page }) => {
+    test("should handle malformed volunteer IDs gracefully", async ({
+      page,
+    }) => {
       // Try to access with various malformed IDs
-      const malformedIds = ["", "   ", "null", "undefined", "/../../../etc/passwd"];
-      
+      const malformedIds = [
+        "",
+        "   ",
+        "null",
+        "undefined",
+        "/../../../etc/passwd",
+      ];
+
       for (const malformedId of malformedIds) {
         await page.goto(`/admin/volunteers/${encodeURIComponent(malformedId)}`);
         await waitForPageLoad(page);
-        
+
         // Should either redirect to error page or show 404
         const currentUrl = page.url();
-        const isErrorPage = currentUrl.includes("404") || 
-                           currentUrl.includes("error") || 
-                           await page.getByText(/not found|error|404/i).isVisible();
-        
+        const isErrorPage =
+          currentUrl.includes("404") ||
+          currentUrl.includes("error") ||
+          (await page.getByText(/not found|error|404/i).isVisible());
+
         expect(isErrorPage).toBe(true);
       }
     });
@@ -706,11 +768,11 @@ test.describe("Admin Volunteer Profile View", () => {
 
     test("should be responsive on mobile viewport", async ({ page }) => {
       const volunteerId = await getVolunteerIdFromUsersList(page);
-      
+
       if (volunteerId) {
         // Set mobile viewport
         await page.setViewportSize({ width: 375, height: 667 });
-        
+
         await page.goto(`/admin/volunteers/${volunteerId}`);
         await waitForPageLoad(page);
 
@@ -718,7 +780,9 @@ test.describe("Admin Volunteer Profile View", () => {
         const pageHeader = page.getByTestId("page-header");
         await expect(pageHeader).toBeVisible();
 
-        const avatar = page.locator("[class*='rounded-full'][class*='overflow-hidden']").first();
+        const avatar = page
+          .locator("[class*='rounded-full'][class*='overflow-hidden']")
+          .first();
         await expect(avatar).toBeVisible();
 
         const volunteerName = page.locator("h2").first();
@@ -737,11 +801,11 @@ test.describe("Admin Volunteer Profile View", () => {
 
     test("should handle tablet viewport correctly", async ({ page }) => {
       const volunteerId = await getVolunteerIdFromUsersList(page);
-      
+
       if (volunteerId) {
         // Set tablet viewport
         await page.setViewportSize({ width: 768, height: 1024 });
-        
+
         await page.goto(`/admin/volunteers/${volunteerId}`);
         await waitForPageLoad(page);
 
@@ -753,7 +817,9 @@ test.describe("Admin Volunteer Profile View", () => {
         const roleBadge = page.getByTestId("user-role");
         await expect(roleBadge).toBeVisible();
 
-        const availabilityCard = page.getByTestId("availability-preferences-card");
+        const availabilityCard = page.getByTestId(
+          "availability-preferences-card"
+        );
         await expect(availabilityCard).toBeVisible();
       } else {
         test.skip(true, "No volunteer profiles found for testing");
@@ -768,7 +834,7 @@ test.describe("Admin Volunteer Profile View", () => {
 
     test("should handle loading states gracefully", async ({ page }) => {
       const volunteerId = await getVolunteerIdFromUsersList(page);
-      
+
       if (volunteerId) {
         await page.goto(`/admin/volunteers/${volunteerId}`);
 
@@ -777,16 +843,20 @@ test.describe("Admin Volunteer Profile View", () => {
         await expect(pageContent).toBeVisible({ timeout: 10000 });
 
         // Check that no error messages are displayed
-        const errorMessage = page.getByText(/error|failed|something went wrong/i);
+        const errorMessage = page.getByText(
+          /error|failed|something went wrong/i
+        );
         await expect(errorMessage).not.toBeVisible();
       } else {
         test.skip(true, "No volunteer profiles found for testing");
       }
     });
 
-    test("should display appropriate fallback text for missing data", async ({ page }) => {
+    test("should display appropriate fallback text for missing data", async ({
+      page,
+    }) => {
       const volunteerId = await getVolunteerIdFromUsersList(page);
-      
+
       if (volunteerId) {
         await page.goto(`/admin/volunteers/${volunteerId}`);
         await waitForPageLoad(page);
