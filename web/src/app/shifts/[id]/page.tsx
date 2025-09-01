@@ -305,6 +305,7 @@ export default async function ShiftDetailPage({
                   shift={shift}
                   confirmedCount={confirmedCount}
                   isWaitlist={isWaitlist}
+                  currentUserId={userId}
                 >
                   <Button
                     variant={isWaitlist ? "secondary" : "default"}
