@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { checkAndUnlockAchievements } from "@/lib/achievements";
 import { getNotificationService } from "@/lib/notification-service";
+import { processAutoApproval } from "@/lib/auto-accept-rules";
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
@@ -120,11 +121,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     return NextResponse.json(signup);
   }
 
-  // Spots available → create pending signup that requires admin approval
+  // Spots available → create pending signup that might be auto-approved
   try {
     const signup = await prisma.signup.create({
       data: { userId: user.id, shiftId: shift.id, status: "PENDING" },
     });
+
+    // Check for auto-approval
+    const autoApprovalResult = await processAutoApproval(signup.id, user.id, shift.id);
 
     // Check for new achievements after successful signup
     try {
@@ -134,7 +138,15 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       console.error("Error checking achievements:", achievementError);
     }
 
-    return NextResponse.json(signup);
+    // Return signup with updated status and auto-approval flag
+    const updatedSignup = await prisma.signup.findUnique({
+      where: { id: signup.id },
+    });
+
+    return NextResponse.json({
+      ...updatedSignup,
+      autoApproved: autoApprovalResult.autoApproved,
+    });
   } catch {
     return NextResponse.json({ error: "Already signed up?" }, { status: 400 });
   }

@@ -15,6 +15,7 @@ import {
   Mail,
   ExternalLink,
   Bell,
+  Settings,
 } from "lucide-react";
 import {
   Sidebar,
@@ -94,6 +95,11 @@ const adminNavCategories = [
         title: "Shortage Notifications",
         href: "/admin/notifications",
         icon: Bell,
+      },
+      {
+        title: "Auto-Accept Rules",
+        href: "/admin/auto-accept-rules",
+        icon: Settings,
       },
     ],
   },
