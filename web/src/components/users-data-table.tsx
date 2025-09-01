@@ -119,8 +119,8 @@ export const columns: ColumnDef<User>[] = [
             </AvatarFallback>
           </Avatar>
           <div>
-            <div className="font-medium text-sm">{displayName}</div>
-            <div className="text-xs text-muted-foreground flex items-center gap-1">
+            <div className="font-medium text-sm" data-testid={`user-name-${user.id}`}>{displayName}</div>
+            <div className="text-xs text-muted-foreground flex items-center gap-1" data-testid={`user-email-${user.id}`}>
               <Mail className="h-3 w-3" />
               {user.email}
             </div>
@@ -147,6 +147,7 @@ export const columns: ColumnDef<User>[] = [
               ? "bg-gradient-to-r from-purple-50 to-violet-50 text-purple-700 border-purple-200 font-medium shadow-sm"
               : "bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border-blue-200 font-medium shadow-sm"
           }
+          data-testid={`user-role-badge-${user.id}`}
         >
           {user.role === "ADMIN" ? (
             <>
@@ -191,8 +192,9 @@ export const columns: ColumnDef<User>[] = [
     },
     cell: ({ row }) => {
       const count = row.original._count?.signups || 0;
+      const user = row.original;
       return (
-        <div className="text-center">
+        <div className="text-center" data-testid={`user-shifts-count-${user.id}`}>
           <div className="text-lg font-bold text-slate-800">{count}</div>
           <div className="text-xs text-muted-foreground">shifts</div>
         </div>
@@ -267,6 +269,7 @@ export const columns: ColumnDef<User>[] = [
                   e.stopPropagation();
                   router.push(`/admin/volunteers/${user.id}`);
                 }}
+                data-testid={`view-user-details-${user.id}`}
               >
                 <User className="mr-2 h-4 w-4" />
                 View Profile
@@ -281,6 +284,7 @@ export const columns: ColumnDef<User>[] = [
                     roleButton.click();
                   }
                 }}
+                data-testid={`role-toggle-button-${user.id}`}
               >
                 {user.role === "ADMIN" ? (
                   <>
@@ -304,6 +308,7 @@ export const columns: ColumnDef<User>[] = [
                       gradeButton.click();
                     }
                   }}
+                  data-testid={`grade-toggle-button-${user.id}`}
                 >
                   <Award className="mr-2 h-4 w-4" />
                   Change Grade
@@ -499,7 +504,7 @@ export function UsersDataTable({ users, searchQuery, roleFilter }: UsersDataTabl
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                   className="hover:bg-slate-50/50 cursor-pointer"
-                  data-testid={`user-table-row-${row.original.id}`}
+                  data-testid={`user-row-${row.original.id}`}
                   onClick={() => router.push(`/admin/volunteers/${row.original.id}`)}
                 >
                   {row.getVisibleCells().map((cell) => (
