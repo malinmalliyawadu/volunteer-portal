@@ -6,10 +6,11 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+
 import { PageHeader } from "@/components/page-header";
 import { InviteUserDialog } from "@/components/invite-user-dialog";
 import { UsersDataTable } from "@/components/users-data-table";
+import { AdminUsersSearch } from "@/components/admin-users-search";
 import {
   Users,
   UserPlus,
@@ -211,86 +212,10 @@ export default async function AdminUsersPage({
 
 
       {/* Search and Filters */}
-      <section data-testid="filters-section" className="mb-6">
-        <form method="GET" data-testid="search-form" className="flex flex-col sm:flex-row gap-4 mb-4">
-          <div className="flex-1">
-            <Input
-              name="search"
-              placeholder="Search users..."
-              defaultValue={searchQuery || ""}
-              className="max-w-md"
-              data-testid="search-input"
-            />
-          </div>
-          <div className="flex gap-2" data-testid="main-role-filter-buttons">
-            <Link
-              href={{
-                pathname: "/admin/users",
-                query: searchQuery ? { search: searchQuery } : {},
-              }}
-            >
-              <Button
-                variant={!roleFilter ? "default" : "outline"}
-                size="sm"
-                className={
-                  !roleFilter
-                    ? "btn-primary shadow-sm"
-                    : "hover:bg-slate-50"
-                }
-                data-testid="filter-all-roles"
-              >
-                All Roles
-              </Button>
-            </Link>
-            <Link
-              href={{
-                pathname: "/admin/users",
-                query: {
-                  role: "VOLUNTEER",
-                  ...(searchQuery ? { search: searchQuery } : {}),
-                },
-              }}
-            >
-              <Button
-                variant={
-                  roleFilter === "VOLUNTEER" ? "default" : "outline"
-                }
-                size="sm"
-                className={
-                  roleFilter === "VOLUNTEER"
-                    ? "btn-primary shadow-sm"
-                    : "hover:bg-slate-50"
-                }
-                data-testid="filter-volunteers"
-              >
-                Volunteers
-              </Button>
-            </Link>
-            <Link
-              href={{
-                pathname: "/admin/users",
-                query: {
-                  role: "ADMIN",
-                  ...(searchQuery ? { search: searchQuery } : {}),
-                },
-              }}
-            >
-              <Button
-                variant={roleFilter === "ADMIN" ? "default" : "outline"}
-                size="sm"
-                className={
-                  roleFilter === "ADMIN"
-                    ? "btn-primary shadow-sm"
-                    : "hover:bg-slate-50"
-                }
-                data-testid="filter-admins"
-              >
-                Admins
-              </Button>
-            </Link>
-          </div>
-        </form>
-      </section>
+      <AdminUsersSearch 
+        initialSearch={searchQuery}
+        roleFilter={roleFilter}
+      />
 
       {/* Users DataTable */}
       <section data-testid="users-section">

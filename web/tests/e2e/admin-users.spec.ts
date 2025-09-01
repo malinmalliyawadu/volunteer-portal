@@ -177,7 +177,8 @@ test.describe("Admin Users Management", () => {
       await expect(roleFilterButtons).toBeVisible();
 
       const allRolesButton = roleFilterButtons.getByTestId("filter-all-roles");
-      const volunteersButton = roleFilterButtons.getByTestId("filter-volunteers");
+      const volunteersButton =
+        roleFilterButtons.getByTestId("filter-volunteers");
       const adminsButton = roleFilterButtons.getByTestId("filter-admins");
 
       await expect(allRolesButton).toBeVisible();
@@ -323,7 +324,7 @@ test.describe("Admin Users Management", () => {
       await waitForPageLoad(page);
 
       // Click on Volunteers filter
-      const volunteersButton = page.getByTestId("filter-volunteers");
+      const volunteersButton = page.getByTestId("main-role-filter-buttons").getByTestId("filter-volunteers");
       await volunteersButton.click();
 
       // Wait for navigation to complete
@@ -342,7 +343,7 @@ test.describe("Admin Users Management", () => {
       await expect(volunteersButton).toHaveClass(/btn-primary/);
 
       // All role button should not be active
-      const allRolesButton = page.getByTestId("filter-all-roles");
+      const allRolesButton = page.getByTestId("main-role-filter-buttons").getByTestId("filter-all-roles");
       await expect(allRolesButton).not.toHaveClass(/btn-primary/);
     });
 
@@ -351,7 +352,7 @@ test.describe("Admin Users Management", () => {
       await waitForPageLoad(page);
 
       // Click on Admins filter
-      const adminsButton = page.getByTestId("filter-admins");
+      const adminsButton = page.getByTestId("main-role-filter-buttons").getByTestId("filter-admins");
       await adminsButton.click();
       await waitForPageLoad(page);
 
@@ -369,7 +370,7 @@ test.describe("Admin Users Management", () => {
       await waitForPageLoad(page);
 
       // Click All Roles button
-      const allRolesButton = page.getByTestId("filter-all-roles");
+      const allRolesButton = page.getByTestId("main-role-filter-buttons").getByTestId("filter-all-roles");
       await allRolesButton.click();
 
       // Wait for navigation to complete
@@ -396,7 +397,7 @@ test.describe("Admin Users Management", () => {
       await waitForPageLoad(page);
 
       // Then filter by role
-      const volunteersButton = page.getByTestId("filter-volunteers");
+      const volunteersButton = page.getByTestId("main-role-filter-buttons").getByTestId("filter-volunteers");
       await volunteersButton.click();
       await waitForPageLoad(page);
 
