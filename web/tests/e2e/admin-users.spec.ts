@@ -673,12 +673,12 @@ test.describe("Admin Users Management", () => {
           if (userId) {
             // First click the dropdown menu button in the user row
             const userRow = page.getByTestId(`user-row-${userId}`);
-            const dropdownButton = userRow.locator('button').last(); // More options button is typically the last button
+            const dropdownButton = userRow.locator("button").last(); // More options button is typically the last button
             await dropdownButton.click();
 
             // Then click the role toggle option in the dropdown (look for "Make Admin" or "Make Volunteer")
-            const roleToggleMenuItem = page.getByRole('menuitem', { 
-              name: /Make (Admin|Volunteer)/ 
+            const roleToggleMenuItem = page.getByRole("menuitem", {
+              name: /Make (Admin|Volunteer)/,
             });
             await roleToggleMenuItem.click();
 
@@ -731,12 +731,12 @@ test.describe("Admin Users Management", () => {
           if (userId) {
             // First click the dropdown menu button in the user row
             const userRow = page.getByTestId(`user-row-${userId}`);
-            const dropdownButton = userRow.locator('button').last();
+            const dropdownButton = userRow.locator("button").last();
             await dropdownButton.click();
 
             // Then click the role toggle option in the dropdown
-            const roleToggleMenuItem = page.getByRole('menuitem', { 
-              name: /Make (Admin|Volunteer)/ 
+            const roleToggleMenuItem = page.getByRole("menuitem", {
+              name: /Make (Admin|Volunteer)/,
             });
             await roleToggleMenuItem.click();
 
