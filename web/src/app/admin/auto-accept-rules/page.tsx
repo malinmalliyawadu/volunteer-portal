@@ -216,7 +216,7 @@ export default function AutoAcceptRulesPage() {
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow>
+                  <TableRow data-testid="auto-accept-rules-table-header">
                     <TableHead className="w-16">Enabled</TableHead>
                     <TableHead className="min-w-48">Name</TableHead>
                     <TableHead className="w-20">Scope</TableHead>

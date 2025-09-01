@@ -5,14 +5,22 @@ import type { Page } from "@playwright/test";
 async function loginAsVolunteer(page: Page) {
   try {
     await page.goto("/login");
-    await page.waitForLoadState("load");
-    
-    const volunteerLoginButton = page.getByTestId("quick-login-volunteer-button");
+    await page.waitForLoadState("domcontentloaded");
+
+    const volunteerLoginButton = page.getByTestId(
+      "quick-login-volunteer-button"
+    );
     await volunteerLoginButton.waitFor({ state: "visible", timeout: 10000 });
     await volunteerLoginButton.click();
-    
-    await page.waitForURL((url) => !url.pathname.includes("/login"), { timeout: 15000 });
-    await page.waitForLoadState("load");
+
+    // Wait for navigation to complete (login redirects to dashboard)
+    await page.waitForURL("/dashboard", { timeout: 20000 });
+    await page.waitForLoadState("domcontentloaded");
+
+    // Wait for dashboard to be visible to ensure login completed
+    await page.waitForSelector('[data-testid="dashboard-page"]', {
+      timeout: 10000,
+    });
   } catch (error) {
     console.log("Error during volunteer login:", error);
     throw error;
@@ -23,14 +31,20 @@ async function loginAsVolunteer(page: Page) {
 async function loginAsAdmin(page: Page) {
   try {
     await page.goto("/login");
-    await page.waitForLoadState("load");
-    
+    await page.waitForLoadState("domcontentloaded");
+
     const adminLoginButton = page.getByTestId("quick-login-admin-button");
     await adminLoginButton.waitFor({ state: "visible", timeout: 10000 });
     await adminLoginButton.click();
-    
-    await page.waitForURL((url) => !url.pathname.includes("/login"), { timeout: 15000 });
-    await page.waitForLoadState("load");
+
+    // Wait for navigation to complete (login redirects to dashboard)
+    await page.waitForURL("/dashboard", { timeout: 20000 });
+    await page.waitForLoadState("domcontentloaded");
+
+    // Wait for admin dashboard to be visible to ensure login completed
+    await page.waitForSelector('[data-testid="dashboard-page"]', {
+      timeout: 10000,
+    });
   } catch (error) {
     console.log("Error during admin login:", error);
     throw error;
@@ -40,7 +54,7 @@ async function loginAsAdmin(page: Page) {
 test.describe("Auto-Approval Signup Flow", () => {
   test.beforeEach(async ({ page }) => {
     await loginAsVolunteer(page);
-    
+
     // Skip tests if login failed
     const currentUrl = page.url();
     if (currentUrl.includes("/login")) {
@@ -48,7 +62,9 @@ test.describe("Auto-Approval Signup Flow", () => {
     }
   });
 
-  test("should display shift signup dialog with proper structure", async ({ page }) => {
+  test("should display shift signup dialog with proper structure", async ({
+    page,
+  }) => {
     // Navigate to shifts page
     await page.goto("/shifts");
     await page.waitForLoadState("load");
@@ -58,7 +74,7 @@ test.describe("Auto-Approval Signup Flow", () => {
 
     // Look for any signup button
     const signupButtons = page.getByText("Sign Up Now");
-    
+
     if (await signupButtons.first().isVisible()) {
       await signupButtons.first().click();
 
@@ -70,23 +86,34 @@ test.describe("Auto-Approval Signup Flow", () => {
       const dialogTitle = page.getByTestId("shift-signup-dialog-title");
       await expect(dialogTitle).toBeVisible();
 
-      const dialogDescription = page.getByTestId("shift-signup-dialog-description");
+      const dialogDescription = page.getByTestId(
+        "shift-signup-dialog-description"
+      );
       await expect(dialogDescription).toBeVisible();
     } else {
       test.skip(true, "No available shifts to test signup with");
     }
   });
 
-  test("should show loading state while checking eligibility", async ({ page }) => {
+  test("should show loading state while checking eligibility", async ({
+    page,
+  }) => {
     await page.goto("/shifts");
     await page.waitForLoadState("load");
 
     // Wait for shifts to load
-    await page.waitForSelector('[data-testid="shifts-list"]', { timeout: 10000 });
+    await page.waitForSelector('[data-testid="shifts-list"]', {
+      timeout: 10000,
+    });
 
     // Find a shift and open signup dialog
-    const firstShiftCard = page.locator('[data-testid^="shifts-date-section-"]').first().locator(".space-y-3").locator("div").first();
-    
+    const firstShiftCard = page
+      .locator('[data-testid^="shifts-date-section-"]')
+      .first()
+      .locator(".space-y-3")
+      .locator("div")
+      .first();
+
     const signupButton = firstShiftCard.getByText("Sign Up Now").first();
     if (await signupButton.isVisible()) {
       await signupButton.click();
@@ -94,23 +121,32 @@ test.describe("Auto-Approval Signup Flow", () => {
       // Check for loading state (may be brief)
       const loadingState = page.getByTestId("approval-process-loading");
       // Loading state might not be visible long enough to test reliably
-      
+
       // At minimum, dialog should be present
       const dialog = page.getByTestId("shift-signup-dialog");
       await expect(dialog).toBeVisible();
     }
   });
 
-  test("should display auto-approval message for eligible volunteers", async ({ page }) => {
+  test("should display auto-approval message for eligible volunteers", async ({
+    page,
+  }) => {
     await page.goto("/shifts");
     await page.waitForLoadState("load");
 
     // Wait for shifts to load
-    await page.waitForSelector('[data-testid="shifts-list"]', { timeout: 10000 });
+    await page.waitForSelector('[data-testid="shifts-list"]', {
+      timeout: 10000,
+    });
 
     // Find a shift and open signup dialog
-    const firstShiftCard = page.locator('[data-testid^="shifts-date-section-"]').first().locator(".space-y-3").locator("div").first();
-    
+    const firstShiftCard = page
+      .locator('[data-testid^="shifts-date-section-"]')
+      .first()
+      .locator(".space-y-3")
+      .locator("div")
+      .first();
+
     const signupButton = firstShiftCard.getByText("Sign Up Now").first();
     if (await signupButton.isVisible()) {
       await signupButton.click();
@@ -132,24 +168,35 @@ test.describe("Auto-Approval Signup Flow", () => {
       expect(hasAutoApproval || hasRegularApproval).toBe(true);
 
       if (hasAutoApproval) {
-        await expect(autoApprovalInfo).toContainText("Instant Approval Available");
+        await expect(autoApprovalInfo).toContainText(
+          "Instant Approval Available"
+        );
         await expect(autoApprovalInfo).toContainText("automatically approved");
-        
+
         // Button text should be different for auto-approved users
         const confirmButton = page.getByTestId("shift-signup-confirm-button");
-        await expect(confirmButton).toContainText("Auto-Approved");
+        await expect(confirmButton).toContainText("Sign Up (Auto-Approved)");
       }
     }
   });
 
-  test("should show different dialog title for auto-approved users", async ({ page }) => {
+  test("should show different dialog title for auto-approved users", async ({
+    page,
+  }) => {
     await page.goto("/shifts");
     await page.waitForLoadState("load");
 
-    await page.waitForSelector('[data-testid="shifts-list"]', { timeout: 10000 });
+    await page.waitForSelector('[data-testid="shifts-list"]', {
+      timeout: 10000,
+    });
 
-    const firstShiftCard = page.locator('[data-testid^="shifts-date-section-"]').first().locator(".space-y-3").locator("div").first();
-    
+    const firstShiftCard = page
+      .locator('[data-testid^="shifts-date-section-"]')
+      .first()
+      .locator(".space-y-3")
+      .locator("div")
+      .first();
+
     const signupButton = firstShiftCard.getByText("Sign Up Now").first();
     if (await signupButton.isVisible()) {
       await signupButton.click();
@@ -164,17 +211,21 @@ test.describe("Auto-Approval Signup Flow", () => {
       await expect(dialogTitle).toBeVisible();
 
       const titleText = await dialogTitle.textContent();
-      
+
       // Should be either "Instant Signup" or "Confirm Signup"
       expect(titleText).toMatch(/(Instant Signup|Confirm Signup)/);
     }
   });
 
-  test("should not check eligibility for waitlist signups", async ({ page }) => {
+  test("should not check eligibility for waitlist signups", async ({
+    page,
+  }) => {
     await page.goto("/shifts");
     await page.waitForLoadState("load");
 
-    await page.waitForSelector('[data-testid="shifts-list"]', { timeout: 10000 });
+    await page.waitForSelector('[data-testid="shifts-list"]', {
+      timeout: 10000,
+    });
 
     // Look for a waitlist button (these have different styling)
     const waitlistButton = page.getByText("Join Waitlist").first();
@@ -199,12 +250,19 @@ test.describe("Auto-Approval Signup Flow", () => {
     await page.goto("/shifts");
     await page.waitForLoadState("load");
 
-    await page.waitForSelector('[data-testid="shifts-list"]', { timeout: 10000 });
+    await page.waitForSelector('[data-testid="shifts-list"]', {
+      timeout: 10000,
+    });
 
     const currentUrl = page.url();
-    
-    const firstShiftCard = page.locator('[data-testid^="shifts-date-section-"]').first().locator(".space-y-3").locator("div").first();
-    
+
+    const firstShiftCard = page
+      .locator('[data-testid^="shifts-date-section-"]')
+      .first()
+      .locator(".space-y-3")
+      .locator("div")
+      .first();
+
     const signupButton = firstShiftCard.getByText("Sign Up Now").first();
     if (await signupButton.isVisible()) {
       await signupButton.click();
@@ -239,9 +297,12 @@ test.describe("Auto-Approval API Integration", () => {
   test("should handle auto-approval check API correctly", async ({ page }) => {
     // Monitor network requests
     const apiRequests: string[] = [];
-    
-    page.on('request', request => {
-      if (request.url().includes('/api/shifts/') && request.url().includes('/auto-approval-check')) {
+
+    page.on("request", (request) => {
+      if (
+        request.url().includes("/api/shifts/") &&
+        request.url().includes("/auto-approval-check")
+      ) {
         apiRequests.push(request.url());
       }
     });
@@ -249,10 +310,17 @@ test.describe("Auto-Approval API Integration", () => {
     await page.goto("/shifts");
     await page.waitForLoadState("load");
 
-    await page.waitForSelector('[data-testid="shifts-list"]', { timeout: 10000 });
+    await page.waitForSelector('[data-testid="shifts-list"]', {
+      timeout: 10000,
+    });
 
-    const firstShiftCard = page.locator('[data-testid^="shifts-date-section-"]').first().locator(".space-y-3").locator("div").first();
-    
+    const firstShiftCard = page
+      .locator('[data-testid^="shifts-date-section-"]')
+      .first()
+      .locator(".space-y-3")
+      .locator("div")
+      .first();
+
     const signupButton = firstShiftCard.getByText("Sign Up Now").first();
     if (await signupButton.isVisible()) {
       await signupButton.click();
@@ -265,16 +333,19 @@ test.describe("Auto-Approval API Integration", () => {
 
       // Should have made an auto-approval check request
       expect(apiRequests.length).toBeGreaterThan(0);
-      expect(apiRequests[0]).toContain('auto-approval-check');
+      expect(apiRequests[0]).toContain("auto-approval-check");
     }
   });
 
   test("should not make API calls for waitlist signups", async ({ page }) => {
     // Monitor network requests
     const apiRequests: string[] = [];
-    
-    page.on('request', request => {
-      if (request.url().includes('/api/shifts/') && request.url().includes('/auto-approval-check')) {
+
+    page.on("request", (request) => {
+      if (
+        request.url().includes("/api/shifts/") &&
+        request.url().includes("/auto-approval-check")
+      ) {
         apiRequests.push(request.url());
       }
     });
@@ -282,7 +353,9 @@ test.describe("Auto-Approval API Integration", () => {
     await page.goto("/shifts");
     await page.waitForLoadState("load");
 
-    await page.waitForSelector('[data-testid="shifts-list"]', { timeout: 10000 });
+    await page.waitForSelector('[data-testid="shifts-list"]', {
+      timeout: 10000,
+    });
 
     const waitlistButton = page.getByText("Join Waitlist").first();
     if (await waitlistButton.isVisible()) {
@@ -305,19 +378,25 @@ test.describe("Individual Shift Page Auto-Approval", () => {
     await loginAsVolunteer(page);
   });
 
-  test("should show auto-approval in individual shift page", async ({ page }) => {
+  test("should show auto-approval in individual shift page", async ({
+    page,
+  }) => {
     // First get a shift ID from the shifts page
     await page.goto("/shifts");
     await page.waitForLoadState("load");
 
-    await page.waitForSelector('[data-testid="shifts-list"]', { timeout: 10000 });
+    await page.waitForSelector('[data-testid="shifts-list"]', {
+      timeout: 10000,
+    });
 
     // Find first shift card and get its link
-    const shiftLinks = page.locator('a[href*="/shifts/"]').filter({ hasText: /Kitchen|Front|Dishwasher/ });
-    
+    const shiftLinks = page
+      .locator('a[href*="/shifts/"]')
+      .filter({ hasText: /Kitchen|Front|Dishwasher/ });
+
     if (await shiftLinks.first().isVisible()) {
-      const shiftUrl = await shiftLinks.first().getAttribute('href');
-      
+      const shiftUrl = await shiftLinks.first().getAttribute("href");
+
       if (shiftUrl) {
         // Navigate to individual shift page
         await page.goto(shiftUrl);
