@@ -46,11 +46,6 @@ export default async function RegularSchedulePage() {
     },
   });
 
-  // Get shift types for editing
-  const shiftTypes = await prisma.shiftType.findMany({
-    orderBy: { name: "asc" },
-  });
-
   const getStatusInfo = (regular: typeof regularVolunteer) => {
     if (!regular?.isActive) {
       return {

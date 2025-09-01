@@ -11,6 +11,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PageHeader } from "@/components/page-header";
 import { InviteUserDialog } from "@/components/invite-user-dialog";
 import { UserRoleToggle } from "@/components/user-role-toggle";
+import { VolunteerGradeToggle } from "@/components/volunteer-grade-toggle";
+import { type VolunteerGrade } from "@prisma/client";
 import {
   Users,
   UserPlus,
@@ -38,6 +40,7 @@ type UserWithStats = {
   phone: string | null;
   profilePhotoUrl: string | null;
   role: "ADMIN" | "VOLUNTEER";
+  volunteerGrade: VolunteerGrade;
   createdAt: Date;
   _count: {
     signups: number;
@@ -95,6 +98,7 @@ export default async function AdminUsersPage({
           phone: true,
           profilePhotoUrl: true,
           role: true,
+          volunteerGrade: true,
           createdAt: true,
           _count: {
             select: {
@@ -549,6 +553,11 @@ export default async function AdminUsersPage({
                       </div>
 
                       <div className="flex items-center gap-2">
+                        <VolunteerGradeToggle
+                          userId={user.id}
+                          currentGrade={user.volunteerGrade}
+                          userRole={user.role}
+                        />
                         <UserRoleToggle
                           userId={user.id}
                           currentRole={user.role}

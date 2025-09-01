@@ -34,6 +34,8 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, AlertCircle } from "lucide-react";
+import { VolunteerGradeBadge } from "@/components/volunteer-grade-badge";
+import { type VolunteerGrade } from "@prisma/client";
 
 export interface Volunteer {
   id: string;
@@ -45,6 +47,7 @@ export interface Volunteer {
   availableDays: string[];
   receiveShortageNotifications: boolean;
   excludedShortageNotificationTypes: string[];
+  volunteerGrade?: VolunteerGrade;
   _count?: {
     signups: number;
   };
@@ -104,6 +107,18 @@ export const columns: ColumnDef<Volunteer>[] = [
           <div className="font-medium">{displayName}</div>
           <div className="text-sm text-muted-foreground">{volunteer.email}</div>
         </div>
+      );
+    },
+  },
+  {
+    accessorKey: "volunteerGrade",
+    header: "Grade",
+    cell: ({ row }) => {
+      const grade = row.getValue("volunteerGrade") as VolunteerGrade | undefined;
+      if (!grade) return null;
+      
+      return (
+        <VolunteerGradeBadge grade={grade} size="sm" />
       );
     },
   },

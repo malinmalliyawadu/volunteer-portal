@@ -326,6 +326,9 @@ test.describe("My Shifts Calendar Page", () => {
     test("should open shift details when clicking on a shift", async ({
       page,
     }) => {
+      const calendar = page.getByTestId("calendar-grid");
+      await expect(calendar).toHaveCSS("opacity", "1");
+
       // Look for clickable shifts
       const shiftElements = getShiftElements(page);
       const shiftCount = await shiftElements.count();
@@ -350,6 +353,9 @@ test.describe("My Shifts Calendar Page", () => {
     });
 
     test("should display shift information in dialog", async ({ page }) => {
+      const calendar = page.getByTestId("calendar-grid");
+      await expect(calendar).toHaveCSS("opacity", "1");
+
       const shiftElements = getShiftElements(page);
       const shiftCount = await shiftElements.count();
 
@@ -376,6 +382,9 @@ test.describe("My Shifts Calendar Page", () => {
     });
 
     test("should show cancel button for upcoming shifts", async ({ page }) => {
+      const calendar = page.getByTestId("calendar-grid");
+      await expect(calendar).toHaveCSS("opacity", "1");
+
       const shiftElements = getShiftElements(page);
       const shiftCount = await shiftElements.count();
 
@@ -423,6 +432,8 @@ test.describe("My Shifts Calendar Page", () => {
     });
 
     test("should display friend details in shift dialog", async ({ page }) => {
+      const calendar = page.getByTestId("calendar-grid");
+      await expect(calendar).toHaveCSS("opacity", "1");
       const shiftElements = getShiftElements(page);
       const shiftCount = await shiftElements.count();
 
