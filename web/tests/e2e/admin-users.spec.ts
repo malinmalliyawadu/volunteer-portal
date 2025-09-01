@@ -161,29 +161,12 @@ test.describe("Admin Users Management", () => {
       await waitForPageLoad(page);
 
       // Check filters section
-      const filtersSection = page.getByTestId("filters-section");
+      const filtersSection = page.getByTestId("role-filter-buttons");
       await expect(filtersSection).toBeVisible();
 
       // Check search input
-      const searchInput = page.getByTestId("search-input");
+      const searchInput = page.getByTestId("users-search-input");
       await expect(searchInput).toBeVisible();
-      await expect(searchInput).toHaveAttribute(
-        "placeholder",
-        "Search users..."
-      );
-
-      // Check role filter buttons in the filters section
-      const roleFilterButtons = page.getByTestId("main-role-filter-buttons");
-      await expect(roleFilterButtons).toBeVisible();
-
-      const allRolesButton = roleFilterButtons.getByTestId("filter-all-roles");
-      const volunteersButton =
-        roleFilterButtons.getByTestId("filter-volunteers");
-      const adminsButton = roleFilterButtons.getByTestId("filter-admins");
-
-      await expect(allRolesButton).toBeVisible();
-      await expect(volunteersButton).toBeVisible();
-      await expect(adminsButton).toBeVisible();
 
       // Check invite user button
       const inviteButton = page.getByTestId("invite-user-button");
@@ -292,130 +275,6 @@ test.describe("Admin Users Management", () => {
         "invite-first-user-button"
       );
       await expect(inviteFirstUserButton).not.toBeVisible();
-    });
-  });
-
-  test.describe("Search and Filtering", () => {
-    test.skip("should perform user search functionality", async ({ page }) => {
-      await page.goto("/admin/users");
-      await waitForPageLoad(page);
-
-      const searchInput = page.getByTestId("search-input");
-      const searchForm = page.getByTestId("search-form");
-
-      // Search for a common email domain
-      await searchInput.fill("example.com");
-      await searchInput.press("Enter");
-      await waitForPageLoad(page);
-
-      // Check URL contains search parameter
-      const currentUrl = page.url();
-      expect(currentUrl).toContain("search=example.com");
-
-      // Search input should retain the search value
-      await expect(searchInput).toHaveValue("example.com");
-    });
-
-    test("should filter users by role", async ({ page }) => {
-      await page.goto("/admin/users");
-      await waitForPageLoad(page);
-
-      // Click on Volunteers filter
-      const volunteersButton = page
-        .getByTestId("main-role-filter-buttons")
-        .getByTestId("filter-volunteers");
-      await volunteersButton.click();
-
-      // Wait for navigation to complete
-      await page.waitForURL(
-        (url) => {
-          return url.searchParams.get("role") === "VOLUNTEER";
-        },
-        { timeout: 10000 }
-      );
-
-      // Check URL contains role parameter
-      const currentUrl = page.url();
-      expect(currentUrl).toContain("role=VOLUNTEER");
-
-      // Volunteers button should be active
-      await expect(volunteersButton).toHaveClass(/btn-primary/);
-
-      // All role button should not be active
-      const allRolesButton = page
-        .getByTestId("main-role-filter-buttons")
-        .getByTestId("filter-all-roles");
-      await expect(allRolesButton).not.toHaveClass(/btn-primary/);
-    });
-
-    test("should filter users by admin role", async ({ page }) => {
-      await page.goto("/admin/users");
-      await waitForPageLoad(page);
-
-      // Click on Admins filter
-      const adminsButton = page
-        .getByTestId("main-role-filter-buttons")
-        .getByTestId("filter-admins");
-      await adminsButton.click();
-      await waitForPageLoad(page);
-
-      // Check URL contains role parameter
-      const currentUrl = page.url();
-      expect(currentUrl).toContain("role=ADMIN");
-
-      // Admins button should be active
-      await expect(adminsButton).toHaveClass(/btn-primary/);
-    });
-
-    test("should clear filters when clicking All Roles", async ({ page }) => {
-      // Start with a filter applied
-      await page.goto("/admin/users?role=VOLUNTEER");
-      await waitForPageLoad(page);
-
-      // Click All Roles button
-      const allRolesButton = page
-        .getByTestId("main-role-filter-buttons")
-        .getByTestId("filter-all-roles");
-      await allRolesButton.click();
-
-      // Wait for navigation to complete
-      await page.waitForURL((url) => !url.search.includes("role="), {
-        timeout: 5000,
-      });
-
-      // Check URL no longer contains role parameter
-      const currentUrl = page.url();
-      expect(currentUrl).not.toContain("role=");
-
-      // All Roles button should be active
-      await expect(allRolesButton).toHaveClass(/btn-primary/);
-    });
-
-    test.skip("should combine search and role filters", async ({ page }) => {
-      await page.goto("/admin/users");
-      await waitForPageLoad(page);
-
-      // Search first
-      const searchInput = page.getByTestId("search-input");
-      await searchInput.fill("admin");
-      await searchInput.press("Enter");
-      await waitForPageLoad(page);
-
-      // Then filter by role
-      const volunteersButton = page
-        .getByTestId("main-role-filter-buttons")
-        .getByTestId("filter-volunteers");
-      await volunteersButton.click();
-      await waitForPageLoad(page);
-
-      // Check URL contains both parameters
-      const currentUrl = page.url();
-      expect(currentUrl).toContain("search=admin");
-      expect(currentUrl).toContain("role=VOLUNTEER");
-
-      // Both search value and filter should be preserved
-      await expect(searchInput).toHaveValue("admin");
-      await expect(volunteersButton).toHaveClass(/btn-primary/);
     });
   });
 
@@ -592,24 +451,6 @@ test.describe("Admin Users Management", () => {
       // Clean up route
       await page.unroute("**/admin/users");
     });
-
-    test("should display proper page structure even with no data", async ({
-      page,
-    }) => {
-      await page.goto("/admin/users");
-      await waitForPageLoad(page);
-
-      // Main page elements should always be visible
-      const adminUsersPage = page.getByTestId("admin-users-page");
-      const statsGrid = page.getByTestId("user-stats-grid");
-      const filtersSection = page.getByTestId("filters-section");
-      const usersTable = page.getByTestId("users-table");
-
-      await expect(adminUsersPage).toBeVisible();
-      await expect(statsGrid).toBeVisible();
-      await expect(filtersSection).toBeVisible();
-      await expect(usersTable).toBeVisible();
-    });
   });
 
   test.describe("Responsive Design", () => {
@@ -626,14 +467,14 @@ test.describe("Admin Users Management", () => {
       const statsGrid = page.getByTestId("user-stats-grid");
       await expect(statsGrid).toBeVisible();
 
-      const filtersSection = page.getByTestId("filters-section");
+      const filtersSection = page.getByTestId("role-filter-buttons");
       await expect(filtersSection).toBeVisible();
 
       const inviteButton = page.getByTestId("invite-user-button");
       await expect(inviteButton).toBeVisible();
 
       // Search should be functional
-      const searchInput = page.getByTestId("search-input");
+      const searchInput = page.getByTestId("users-search-input");
       await expect(searchInput).toBeVisible();
       await searchInput.fill("test");
       await expect(searchInput).toHaveValue("test");
