@@ -254,20 +254,17 @@ test.describe("Admin Users Management", () => {
           const shiftsCount = page.getByTestId(`user-shifts-count-${userId}`);
           if (await shiftsCount.isVisible()) {
             const shiftsText = await shiftsCount.textContent();
-            expect(shiftsText).toMatch(/^\d+$/);
+            // Extract just the number from "Xshifts" format
+            const numberMatch = shiftsText?.match(/^(\d+)/);
+            expect(numberMatch).toBeTruthy();
+            if (numberMatch) {
+              expect(numberMatch[1]).toMatch(/^\d+$/);
+            }
           }
 
-          // Check role toggle button
-          const roleToggleButton = page.getByTestId(
-            `role-toggle-button-${userId}`
-          );
-          await expect(roleToggleButton).toBeVisible();
-
-          // Check view details button
-          const viewDetailsButton = page.getByTestId(
-            `view-user-details-${userId}`
-          );
-          await expect(viewDetailsButton).toBeVisible();
+          // Check that the row has actions dropdown (role toggle and view details are now in dropdown)
+          const userRow = page.getByTestId(`user-row-${userId}`);
+          await expect(userRow).toBeVisible();
         }
       } else {
         // Check for no users message
@@ -324,7 +321,9 @@ test.describe("Admin Users Management", () => {
       await waitForPageLoad(page);
 
       // Click on Volunteers filter
-      const volunteersButton = page.getByTestId("main-role-filter-buttons").getByTestId("filter-volunteers");
+      const volunteersButton = page
+        .getByTestId("main-role-filter-buttons")
+        .getByTestId("filter-volunteers");
       await volunteersButton.click();
 
       // Wait for navigation to complete
@@ -343,7 +342,9 @@ test.describe("Admin Users Management", () => {
       await expect(volunteersButton).toHaveClass(/btn-primary/);
 
       // All role button should not be active
-      const allRolesButton = page.getByTestId("main-role-filter-buttons").getByTestId("filter-all-roles");
+      const allRolesButton = page
+        .getByTestId("main-role-filter-buttons")
+        .getByTestId("filter-all-roles");
       await expect(allRolesButton).not.toHaveClass(/btn-primary/);
     });
 
@@ -352,7 +353,9 @@ test.describe("Admin Users Management", () => {
       await waitForPageLoad(page);
 
       // Click on Admins filter
-      const adminsButton = page.getByTestId("main-role-filter-buttons").getByTestId("filter-admins");
+      const adminsButton = page
+        .getByTestId("main-role-filter-buttons")
+        .getByTestId("filter-admins");
       await adminsButton.click();
       await waitForPageLoad(page);
 
@@ -370,7 +373,9 @@ test.describe("Admin Users Management", () => {
       await waitForPageLoad(page);
 
       // Click All Roles button
-      const allRolesButton = page.getByTestId("main-role-filter-buttons").getByTestId("filter-all-roles");
+      const allRolesButton = page
+        .getByTestId("main-role-filter-buttons")
+        .getByTestId("filter-all-roles");
       await allRolesButton.click();
 
       // Wait for navigation to complete
@@ -397,7 +402,9 @@ test.describe("Admin Users Management", () => {
       await waitForPageLoad(page);
 
       // Then filter by role
-      const volunteersButton = page.getByTestId("main-role-filter-buttons").getByTestId("filter-volunteers");
+      const volunteersButton = page
+        .getByTestId("main-role-filter-buttons")
+        .getByTestId("filter-volunteers");
       await volunteersButton.click();
       await waitForPageLoad(page);
 
@@ -664,10 +671,16 @@ test.describe("Admin Users Management", () => {
           const userId = firstRowTestId?.replace("user-row-", "");
 
           if (userId) {
-            const roleToggleButton = page.getByTestId(
-              `role-toggle-button-${userId}`
-            );
-            await roleToggleButton.click();
+            // First click the dropdown menu button in the user row
+            const userRow = page.getByTestId(`user-row-${userId}`);
+            const dropdownButton = userRow.locator('button').last(); // More options button is typically the last button
+            await dropdownButton.click();
+
+            // Then click the role toggle option in the dropdown (look for "Make Admin" or "Make Volunteer")
+            const roleToggleMenuItem = page.getByRole('menuitem', { 
+              name: /Make (Admin|Volunteer)/ 
+            });
+            await roleToggleMenuItem.click();
 
             // Role change dialog should open
             const roleChangeDialog = page.getByTestId("role-change-dialog");
@@ -716,10 +729,16 @@ test.describe("Admin Users Management", () => {
           const userId = firstRowTestId?.replace("user-row-", "");
 
           if (userId) {
-            const roleToggleButton = page.getByTestId(
-              `role-toggle-button-${userId}`
-            );
-            await roleToggleButton.click();
+            // First click the dropdown menu button in the user row
+            const userRow = page.getByTestId(`user-row-${userId}`);
+            const dropdownButton = userRow.locator('button').last();
+            await dropdownButton.click();
+
+            // Then click the role toggle option in the dropdown
+            const roleToggleMenuItem = page.getByRole('menuitem', { 
+              name: /Make (Admin|Volunteer)/ 
+            });
+            await roleToggleMenuItem.click();
 
             const roleChangeDialog = page.getByTestId("role-change-dialog");
             await expect(roleChangeDialog).toBeVisible();

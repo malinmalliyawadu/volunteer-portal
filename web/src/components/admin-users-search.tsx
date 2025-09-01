@@ -11,14 +11,17 @@ interface AdminUsersSearchProps {
   roleFilter?: string;
 }
 
-export function AdminUsersSearch({ initialSearch, roleFilter }: AdminUsersSearchProps) {
+export function AdminUsersSearch({
+  initialSearch,
+  roleFilter,
+}: AdminUsersSearchProps) {
   const [searchValue, setSearchValue] = useState(initialSearch || "");
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const params = new URLSearchParams();
     if (searchValue.trim()) {
       params.set("search", searchValue.trim());
@@ -34,7 +37,11 @@ export function AdminUsersSearch({ initialSearch, roleFilter }: AdminUsersSearch
 
   return (
     <section data-testid="filters-section" className="mb-6">
-      <form onSubmit={handleSubmit} data-testid="search-form" className="flex flex-col sm:flex-row gap-4 mb-4">
+      <form
+        onSubmit={handleSubmit}
+        data-testid="search-form"
+        className="flex flex-col sm:flex-row gap-4 mb-4"
+      >
         <div className="flex-1">
           <Input
             value={searchValue}
@@ -55,9 +62,7 @@ export function AdminUsersSearch({ initialSearch, roleFilter }: AdminUsersSearch
               variant={!roleFilter ? "default" : "outline"}
               size="sm"
               className={
-                !roleFilter
-                  ? "btn-primary shadow-sm"
-                  : "hover:bg-slate-50"
+                !roleFilter ? "btn-primary shadow-sm" : "hover:bg-slate-50"
               }
               data-testid="filter-all-roles"
             >
@@ -74,9 +79,7 @@ export function AdminUsersSearch({ initialSearch, roleFilter }: AdminUsersSearch
             }}
           >
             <Button
-              variant={
-                roleFilter === "VOLUNTEER" ? "default" : "outline"
-              }
+              variant={roleFilter === "VOLUNTEER" ? "default" : "outline"}
               size="sm"
               className={
                 roleFilter === "VOLUNTEER"

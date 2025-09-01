@@ -11,14 +11,7 @@ import { PageHeader } from "@/components/page-header";
 import { InviteUserDialog } from "@/components/invite-user-dialog";
 import { UsersDataTable } from "@/components/users-data-table";
 import { AdminUsersSearch } from "@/components/admin-users-search";
-import {
-  Users,
-  UserPlus,
-  Search,
-  Shield,
-  Filter,
-  X,
-} from "lucide-react";
+import { Users, UserPlus, Search, Shield, Filter, X } from "lucide-react";
 import { Prisma } from "@prisma/client";
 import { PageContainer } from "@/components/page-container";
 
@@ -141,9 +134,7 @@ export default async function AdminUsersPage({
                 >
                   {totalUsers}
                 </div>
-                <div className="text-xs text-muted-foreground">
-                  Total Users
-                </div>
+                <div className="text-xs text-muted-foreground">Total Users</div>
               </div>
             </div>
           </div>
@@ -161,9 +152,7 @@ export default async function AdminUsersPage({
                 >
                   {totalVolunteers}
                 </div>
-                <div className="text-xs text-muted-foreground">
-                  Volunteers
-                </div>
+                <div className="text-xs text-muted-foreground">Volunteers</div>
               </div>
             </div>
           </div>
@@ -181,9 +170,7 @@ export default async function AdminUsersPage({
                 >
                   {totalAdmins}
                 </div>
-                <div className="text-xs text-muted-foreground">
-                  Admins
-                </div>
+                <div className="text-xs text-muted-foreground">Admins</div>
               </div>
             </div>
           </div>
@@ -210,12 +197,8 @@ export default async function AdminUsersPage({
         </div>
       </section>
 
-
       {/* Search and Filters */}
-      <AdminUsersSearch 
-        initialSearch={searchQuery}
-        roleFilter={roleFilter}
-      />
+      <AdminUsersSearch initialSearch={searchQuery} roleFilter={roleFilter} />
 
       {/* Users DataTable */}
       <section data-testid="users-section">
@@ -279,11 +262,14 @@ export default async function AdminUsersPage({
             </CardContent>
           </Card>
         ) : (
-          <Card className="shadow-md border-slate-200 bg-white/80 backdrop-blur-sm" data-testid="users-table">
+          <Card
+            className="shadow-md border-slate-200 bg-white/80 backdrop-blur-sm"
+            data-testid="users-table"
+          >
             <CardContent className="p-6">
               <div data-testid="users-list">
-                <UsersDataTable 
-                  users={users} 
+                <UsersDataTable
+                  users={users}
                   searchQuery={searchQuery}
                   roleFilter={roleFilter}
                 />
