@@ -333,7 +333,7 @@ test.describe("My Shifts Calendar Page", () => {
       if (shiftCount > 0) {
         // Click on first shift
         await shiftElements.first().waitFor({ state: "visible" });
-        await expect(shiftElements.first()).toHaveCSS("opacity", "1");
+        await expect(shiftElements).toHaveCSS("opacity", "1");
         await shiftElements.first().click();
 
         // Dialog should open
@@ -355,7 +355,7 @@ test.describe("My Shifts Calendar Page", () => {
       const shiftCount = await shiftElements.count();
 
       if (shiftCount > 0) {
-        await expect(shiftElements.first()).toHaveCSS("opacity", "1");
+        await expect(shiftElements).toHaveCSS("opacity", "1");
         await shiftElements.first().click();
 
         const dialog = page.locator("[role='dialog']");
@@ -382,7 +382,7 @@ test.describe("My Shifts Calendar Page", () => {
       const shiftCount = await shiftElements.count();
 
       if (shiftCount > 0) {
-        await expect(shiftElements.first()).toHaveCSS("opacity", "1");
+        await expect(shiftElements).toHaveCSS("opacity", "1");
         await shiftElements.first().click();
 
         const dialog = page.locator("[role='dialog']");
@@ -430,7 +430,7 @@ test.describe("My Shifts Calendar Page", () => {
       const shiftCount = await shiftElements.count();
 
       if (shiftCount > 0) {
-        await expect(shiftElements.first()).toHaveCSS("opacity", "1");
+        await expect(shiftElements).toHaveCSS("opacity", "1");
         await shiftElements.first().click();
 
         const dialog = page.locator("[role='dialog']");

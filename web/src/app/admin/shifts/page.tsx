@@ -219,8 +219,8 @@ export default async function AdminShiftsPage({
           groupBookings: {
             include: {
               leader: { select: { id: true, name: true, email: true } },
-              signups: { 
-                include: { 
+              signups: {
+                include: {
                   user: {
                     select: {
                       id: true,
@@ -265,8 +265,8 @@ export default async function AdminShiftsPage({
           groupBookings: {
             include: {
               leader: { select: { id: true, name: true, email: true } },
-              signups: { 
-                include: { 
+              signups: {
+                include: {
                   user: {
                     select: {
                       id: true,
@@ -646,7 +646,7 @@ export default async function AdminShiftsPage({
                         userId={su.user.id}
                         signupId={su.id}
                         isAutoSignup={!!su.regularSignup}
-                        volunteerGrade={su.user.volunteerGrade as VolunteerGrade}
+                        volunteerGrade={su.user.volunteerGrade}
                       />
                     ))}
                 </div>
