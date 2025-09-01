@@ -326,6 +326,9 @@ test.describe("My Shifts Calendar Page", () => {
     test("should open shift details when clicking on a shift", async ({
       page,
     }) => {
+      const calendar = page.getByTestId("calendar-grid");
+      await expect(calendar).toHaveCSS("opacity", "1");
+
       // Look for clickable shifts
       const shiftElements = getShiftElements(page);
       const shiftCount = await shiftElements.count();
@@ -333,7 +336,6 @@ test.describe("My Shifts Calendar Page", () => {
       if (shiftCount > 0) {
         // Click on first shift
         await shiftElements.first().waitFor({ state: "visible" });
-        await expect(shiftElements).toHaveCSS("opacity", "1");
         await shiftElements.first().click();
 
         // Dialog should open
@@ -351,11 +353,13 @@ test.describe("My Shifts Calendar Page", () => {
     });
 
     test("should display shift information in dialog", async ({ page }) => {
+      const calendar = page.getByTestId("calendar-grid");
+      await expect(calendar).toHaveCSS("opacity", "1");
+
       const shiftElements = getShiftElements(page);
       const shiftCount = await shiftElements.count();
 
       if (shiftCount > 0) {
-        await expect(shiftElements).toHaveCSS("opacity", "1");
         await shiftElements.first().click();
 
         const dialog = page.locator("[role='dialog']");
@@ -378,11 +382,13 @@ test.describe("My Shifts Calendar Page", () => {
     });
 
     test("should show cancel button for upcoming shifts", async ({ page }) => {
+      const calendar = page.getByTestId("calendar-grid");
+      await expect(calendar).toHaveCSS("opacity", "1");
+
       const shiftElements = getShiftElements(page);
       const shiftCount = await shiftElements.count();
 
       if (shiftCount > 0) {
-        await expect(shiftElements).toHaveCSS("opacity", "1");
         await shiftElements.first().click();
 
         const dialog = page.locator("[role='dialog']");
@@ -426,11 +432,12 @@ test.describe("My Shifts Calendar Page", () => {
     });
 
     test("should display friend details in shift dialog", async ({ page }) => {
+      const calendar = page.getByTestId("calendar-grid");
+      await expect(calendar).toHaveCSS("opacity", "1");
       const shiftElements = getShiftElements(page);
       const shiftCount = await shiftElements.count();
 
       if (shiftCount > 0) {
-        await expect(shiftElements).toHaveCSS("opacity", "1");
         await shiftElements.first().click();
 
         const dialog = page.locator("[role='dialog']");
