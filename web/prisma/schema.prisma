@@ -75,6 +75,10 @@ model User {
   regularVolunteer             RegularVolunteer?
   
   notificationGroupMembers     NotificationGroupMember[]
+  
+  // Auto-accept rules
+  createdAutoAcceptRules       AutoAcceptRule[]       @relation("RuleCreator")
+  overriddenAutoApprovals      AutoApproval[]         @relation("ApprovalOverrider")
 }
 
 model ShiftType {
@@ -85,6 +89,7 @@ model ShiftType {
   updatedAt        DateTime           @updatedAt
   shifts           Shift[]
   regularVolunteers RegularVolunteer[]
+  autoAcceptRules  AutoAcceptRule[]
 }
 
 model Shift {
@@ -120,7 +125,8 @@ model Signup {
   user           User           @relation(fields: [userId], references: [id])
   groupBooking   GroupBooking?  @relation(fields: [groupBookingId], references: [id])
   regularSignup  RegularSignup? // One-to-one relation with RegularSignup
-
+  autoApproval   AutoApproval?
+  
   @@unique([userId, shiftId])
   @@index([status, canceledAt])
   @@index([userId, canceledAt])
@@ -412,5 +418,65 @@ model NotificationGroupMember {
   @@unique([groupId, userId])
   @@index([groupId])
   @@index([userId])
+}
+
+// Auto-accept rules for shift signups
+model AutoAcceptRule {
+  id                String              @id @default(cuid())
+  name              String
+  description       String?
+  enabled           Boolean             @default(true)
+  priority          Int                 @default(0) // Higher priority evaluated first
+  global            Boolean             @default(false) // Apply to all shift types
+  shiftTypeId       String?             // Specific shift type (if not global)
+  
+  // Criteria - all optional, evaluated based on what's set
+  minVolunteerGrade VolunteerGrade?     // Minimum grade required
+  minCompletedShifts Int?               // Minimum completed shifts
+  minAttendanceRate Float?              // Minimum attendance percentage (0-100)
+  minAccountAgeDays Int?                // Days since registration
+  maxDaysInAdvance  Int?                // Only auto-accept if shift is X+ days away
+  requireShiftTypeExperience Boolean    @default(false) // Must have done this shift type before
+  
+  // Logic configuration
+  criteriaLogic     CriteriaLogic       @default(AND) // AND or OR logic for criteria
+  stopOnMatch       Boolean             @default(true) // Stop evaluating other rules if matched
+  
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  createdBy         String              // Admin who created the rule
+  
+  // Relations
+  shiftType         ShiftType?          @relation(fields: [shiftTypeId], references: [id])
+  creator           User                @relation("RuleCreator", fields: [createdBy], references: [id])
+  approvals         AutoApproval[]      // Track which signups were auto-approved by this rule
+  
+  @@index([enabled, priority])
+  @@index([shiftTypeId, enabled])
+}
+
+// Track auto-approvals for audit and override purposes
+model AutoApproval {
+  id              String           @id @default(cuid())
+  signupId        String           @unique
+  ruleId          String
+  approvedAt      DateTime         @default(now())
+  overridden      Boolean          @default(false)
+  overriddenBy    String?
+  overriddenAt    DateTime?
+  overrideReason  String?
+  
+  // Relations
+  signup          Signup           @relation(fields: [signupId], references: [id], onDelete: Cascade)
+  rule            AutoAcceptRule   @relation(fields: [ruleId], references: [id])
+  overrider       User?            @relation("ApprovalOverrider", fields: [overriddenBy], references: [id])
+  
+  @@index([ruleId])
+  @@index([overridden])
+}
+
+enum CriteriaLogic {
+  AND  // All criteria must be met
+  OR   // Any criterion must be met
 }
 

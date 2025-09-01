@@ -1,3 +1,9 @@
+## [0.22.1] - 2025-09-01
+
+### Changes
+- feat: implement auto-accept shifts feature with admin configuration ([#81](https://github.com/malinmalliyawadu/volunteer-portal/pull/81)) by @malinmalliyawadu
+
+
 ## [0.22.0] - 2025-09-01
 
 ### Changes
