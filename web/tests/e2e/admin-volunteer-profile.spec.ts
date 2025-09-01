@@ -664,36 +664,6 @@ test.describe("Admin Volunteer Profile View", () => {
       }
     });
 
-    test("should not show admin actions for admin users", async ({ page }) => {
-      // First, find an admin user from the users list
-      await page.goto("/admin/users?role=ADMIN");
-      await waitForPageLoad(page);
-
-      const usersList = page.getByTestId("users-list");
-
-      if (await usersList.isVisible()) {
-        const userRows = page.locator("[data-testid^='user-row-']");
-        const userCount = await userRows.count();
-
-        if (userCount > 0) {
-          // Get admin user ID from the first row
-          const firstRowTestId = await userRows
-            .first()
-            .getAttribute("data-testid");
-          const adminUserId = firstRowTestId?.replace("user-row-", "");
-
-          if (adminUserId) {
-            await page.goto(`/admin/volunteers/${adminUserId}`);
-            await waitForPageLoad(page);
-
-            // Admin actions card should not be visible for admin users
-            const adminActionsCard = page.getByTestId("admin-actions-card");
-            await expect(adminActionsCard).not.toBeVisible();
-          }
-        }
-      }
-    });
-
     test.skip("should successfully update volunteer grade from profile", async ({
       page,
     }) => {

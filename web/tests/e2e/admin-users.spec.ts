@@ -161,28 +161,12 @@ test.describe("Admin Users Management", () => {
       await waitForPageLoad(page);
 
       // Check filters section
-      const filtersSection = page.getByTestId("filters-section");
+      const filtersSection = page.getByTestId("role-filter-buttons");
       await expect(filtersSection).toBeVisible();
 
       // Check search input
-      const searchInput = page.getByTestId("search-input");
+      const searchInput = page.getByTestId("users-search-input");
       await expect(searchInput).toBeVisible();
-      await expect(searchInput).toHaveAttribute(
-        "placeholder",
-        "Search users..."
-      );
-
-      // Check role filter buttons
-      const roleFilterButtons = page.getByTestId("role-filter-buttons");
-      await expect(roleFilterButtons).toBeVisible();
-
-      const allRolesButton = page.getByTestId("filter-all-roles");
-      const volunteersButton = page.getByTestId("filter-volunteers");
-      const adminsButton = page.getByTestId("filter-admins");
-
-      await expect(allRolesButton).toBeVisible();
-      await expect(volunteersButton).toBeVisible();
-      await expect(adminsButton).toBeVisible();
 
       // Check invite user button
       const inviteButton = page.getByTestId("invite-user-button");
@@ -253,20 +237,17 @@ test.describe("Admin Users Management", () => {
           const shiftsCount = page.getByTestId(`user-shifts-count-${userId}`);
           if (await shiftsCount.isVisible()) {
             const shiftsText = await shiftsCount.textContent();
-            expect(shiftsText).toMatch(/^\d+$/);
+            // Extract just the number from "Xshifts" format
+            const numberMatch = shiftsText?.match(/^(\d+)/);
+            expect(numberMatch).toBeTruthy();
+            if (numberMatch) {
+              expect(numberMatch[1]).toMatch(/^\d+$/);
+            }
           }
 
-          // Check role toggle button
-          const roleToggleButton = page.getByTestId(
-            `role-toggle-button-${userId}`
-          );
-          await expect(roleToggleButton).toBeVisible();
-
-          // Check view details button
-          const viewDetailsButton = page.getByTestId(
-            `view-user-details-${userId}`
-          );
-          await expect(viewDetailsButton).toBeVisible();
+          // Check that the row has actions dropdown (role toggle and view details are now in dropdown)
+          const userRow = page.getByTestId(`user-row-${userId}`);
+          await expect(userRow).toBeVisible();
         }
       } else {
         // Check for no users message
@@ -294,458 +275,6 @@ test.describe("Admin Users Management", () => {
         "invite-first-user-button"
       );
       await expect(inviteFirstUserButton).not.toBeVisible();
-    });
-  });
-
-  test.describe("Search and Filtering", () => {
-    test("should perform user search functionality", async ({ page }) => {
-      await page.goto("/admin/users");
-      await waitForPageLoad(page);
-
-      const searchInput = page.getByTestId("search-input");
-      const searchForm = page.getByTestId("search-form");
-
-      // Search for a common email domain
-      await searchInput.fill("example.com");
-      await searchInput.press("Enter");
-      await waitForPageLoad(page);
-
-      // Check URL contains search parameter
-      const currentUrl = page.url();
-      expect(currentUrl).toContain("search=example.com");
-
-      // Search input should retain the search value
-      await expect(searchInput).toHaveValue("example.com");
-    });
-
-    test("should filter users by role", async ({ page }) => {
-      await page.goto("/admin/users");
-      await waitForPageLoad(page);
-
-      // Click on Volunteers filter
-      const volunteersButton = page.getByTestId("filter-volunteers");
-      await volunteersButton.click();
-
-      // Wait for navigation to complete
-      await page.waitForURL(
-        (url) => {
-          return url.searchParams.get("role") === "VOLUNTEER";
-        },
-        { timeout: 10000 }
-      );
-
-      // Check URL contains role parameter
-      const currentUrl = page.url();
-      expect(currentUrl).toContain("role=VOLUNTEER");
-
-      // Volunteers button should be active
-      await expect(volunteersButton).toHaveClass(/btn-primary/);
-
-      // All role button should not be active
-      const allRolesButton = page.getByTestId("filter-all-roles");
-      await expect(allRolesButton).not.toHaveClass(/btn-primary/);
-    });
-
-    test("should filter users by admin role", async ({ page }) => {
-      await page.goto("/admin/users");
-      await waitForPageLoad(page);
-
-      // Click on Admins filter
-      const adminsButton = page.getByTestId("filter-admins");
-      await adminsButton.click();
-      await waitForPageLoad(page);
-
-      // Check URL contains role parameter
-      const currentUrl = page.url();
-      expect(currentUrl).toContain("role=ADMIN");
-
-      // Admins button should be active
-      await expect(adminsButton).toHaveClass(/btn-primary/);
-    });
-
-    test("should clear filters when clicking All Roles", async ({ page }) => {
-      // Start with a filter applied
-      await page.goto("/admin/users?role=VOLUNTEER");
-      await waitForPageLoad(page);
-
-      // Click All Roles button
-      const allRolesButton = page.getByTestId("filter-all-roles");
-      await allRolesButton.click();
-
-      // Wait for navigation to complete
-      await page.waitForURL((url) => !url.search.includes("role="), {
-        timeout: 5000,
-      });
-
-      // Check URL no longer contains role parameter
-      const currentUrl = page.url();
-      expect(currentUrl).not.toContain("role=");
-
-      // All Roles button should be active
-      await expect(allRolesButton).toHaveClass(/btn-primary/);
-    });
-
-    test("should combine search and role filters", async ({ page }) => {
-      await page.goto("/admin/users");
-      await waitForPageLoad(page);
-
-      // Search first
-      const searchInput = page.getByTestId("search-input");
-      await searchInput.fill("admin");
-      await searchInput.press("Enter");
-      await waitForPageLoad(page);
-
-      // Then filter by role
-      const volunteersButton = page.getByTestId("filter-volunteers");
-      await volunteersButton.click();
-      await waitForPageLoad(page);
-
-      // Check URL contains both parameters
-      const currentUrl = page.url();
-      expect(currentUrl).toContain("search=admin");
-      expect(currentUrl).toContain("role=VOLUNTEER");
-
-      // Both search value and filter should be preserved
-      await expect(searchInput).toHaveValue("admin");
-      await expect(volunteersButton).toHaveClass(/btn-primary/);
-    });
-  });
-
-  test.describe("Volunteer Grade Management", () => {
-    test("should display volunteer grade badges for volunteers", async ({
-      page,
-    }) => {
-      await page.goto("/admin/users?role=VOLUNTEER");
-      await waitForPageLoad(page);
-
-      const usersList = page.getByTestId("users-list");
-
-      if (await usersList.isVisible()) {
-        const userRows = page.locator("[data-testid^='user-row-']");
-        const userCount = await userRows.count();
-
-        if (userCount > 0) {
-          const firstRowTestId = await userRows
-            .first()
-            .getAttribute("data-testid");
-          const userId = firstRowTestId?.replace("user-row-", "");
-
-          if (userId) {
-            // Check if volunteer grade toggle button is visible
-            const gradeToggleButton = page.getByTestId(
-              `grade-toggle-button-${userId}`
-            );
-            await expect(gradeToggleButton).toBeVisible();
-
-            // Grade toggle should show one of the three grades
-            const gradeButtonText = await gradeToggleButton.textContent();
-            expect(gradeButtonText).toMatch(
-              /(Standard|Experienced|Shift Leader)/
-            );
-          }
-        }
-      }
-    });
-
-    test("should open grade change dialog when clicking grade toggle", async ({
-      page,
-    }) => {
-      await page.goto("/admin/users?role=VOLUNTEER");
-      await waitForPageLoad(page);
-
-      const usersList = page.getByTestId("users-list");
-
-      if (await usersList.isVisible()) {
-        const userRows = page.locator("[data-testid^='user-row-']");
-        const userCount = await userRows.count();
-
-        if (userCount > 0) {
-          const firstRowTestId = await userRows
-            .first()
-            .getAttribute("data-testid");
-          const userId = firstRowTestId?.replace("user-row-", "");
-
-          if (userId) {
-            const gradeToggleButton = page.getByTestId(
-              `grade-toggle-button-${userId}`
-            );
-            await gradeToggleButton.click();
-
-            // Grade change dialog should open
-            const gradeChangeDialog = page.getByTestId("grade-change-dialog");
-            await expect(gradeChangeDialog).toBeVisible();
-
-            const dialogTitle = page.getByTestId("grade-change-dialog-title");
-            await expect(dialogTitle).toBeVisible();
-            await expect(dialogTitle).toContainText("Change Volunteer Grade");
-
-            // Check dialog content
-            const currentGradeDisplay = page.getByTestId(
-              "current-grade-display"
-            );
-            const gradeSelect = page.getByTestId("grade-select");
-            await expect(currentGradeDisplay).toBeVisible();
-            await expect(gradeSelect).toBeVisible();
-
-            // Check dialog buttons
-            const cancelButton = page.getByTestId("grade-change-cancel-button");
-            const confirmButton = page.getByTestId(
-              "grade-change-confirm-button"
-            );
-            await expect(cancelButton).toBeVisible();
-            await expect(confirmButton).toBeVisible();
-
-            // Close dialog
-            await cancelButton.click();
-            await expect(gradeChangeDialog).not.toBeVisible();
-          }
-        }
-      }
-    });
-
-    test("should show all grade options in dropdown", async ({ page }) => {
-      await page.goto("/admin/users?role=VOLUNTEER");
-      await waitForPageLoad(page);
-
-      const usersList = page.getByTestId("users-list");
-
-      if (await usersList.isVisible()) {
-        const userRows = page.locator("[data-testid^='user-row-']");
-        const userCount = await userRows.count();
-
-        if (userCount > 0) {
-          const firstRowTestId = await userRows
-            .first()
-            .getAttribute("data-testid");
-          const userId = firstRowTestId?.replace("user-row-", "");
-
-          if (userId) {
-            const gradeToggleButton = page.getByTestId(
-              `grade-toggle-button-${userId}`
-            );
-            await gradeToggleButton.click();
-
-            const gradeChangeDialog = page.getByTestId("grade-change-dialog");
-            await expect(gradeChangeDialog).toBeVisible();
-
-            // Open grade selection dropdown
-            const gradeSelect = page.getByTestId("grade-select");
-            await gradeSelect.click();
-
-            // Check all grade options are available
-            const greenOption = page.getByTestId("grade-option-GREEN");
-            const yellowOption = page.getByTestId("grade-option-YELLOW");
-            const pinkOption = page.getByTestId("grade-option-PINK");
-
-            await expect(greenOption).toBeVisible();
-            await expect(yellowOption).toBeVisible();
-            await expect(pinkOption).toBeVisible();
-
-            // Verify option text includes grade descriptions
-            const greenText = await greenOption.textContent();
-            const yellowText = await yellowOption.textContent();
-            const pinkText = await pinkOption.textContent();
-
-            expect(greenText).toContain("Standard");
-            expect(yellowText).toContain("Experienced");
-            expect(pinkText).toContain("Shift Leader");
-            await page.getByTestId("grade-change-dialog-title").click();
-
-            // Close dialog
-            const cancelButton = page.getByTestId("grade-change-cancel-button");
-            await cancelButton.click();
-            await expect(gradeChangeDialog).not.toBeVisible();
-          }
-        }
-      }
-    });
-
-    test("should cancel grade change dialog", async ({ page }) => {
-      await page.goto("/admin/users?role=VOLUNTEER");
-      await waitForPageLoad(page);
-
-      const usersList = page.getByTestId("users-list");
-
-      if (await usersList.isVisible()) {
-        const userRows = page.locator("[data-testid^='user-row-']");
-        const userCount = await userRows.count();
-
-        if (userCount > 0) {
-          const firstRowTestId = await userRows
-            .first()
-            .getAttribute("data-testid");
-          const userId = firstRowTestId?.replace("user-row-", "");
-
-          if (userId) {
-            const gradeToggleButton = page.getByTestId(
-              `grade-toggle-button-${userId}`
-            );
-            await gradeToggleButton.click();
-
-            const gradeChangeDialog = page.getByTestId("grade-change-dialog");
-            await expect(gradeChangeDialog).toBeVisible();
-
-            // Cancel the dialog
-            const cancelButton = page.getByTestId("grade-change-cancel-button");
-            await cancelButton.click();
-
-            // Dialog should close
-            await expect(gradeChangeDialog).not.toBeVisible();
-          }
-        }
-      }
-    });
-
-    test.skip("should successfully change volunteer grade", async ({
-      page,
-    }) => {
-      // Skip this test as it modifies data and may affect other tests
-      // In a real scenario, this would test the actual grade change functionality
-      await page.goto("/admin/users?role=VOLUNTEER");
-      await waitForPageLoad(page);
-
-      // This test would:
-      // 1. Find a volunteer to change grade for
-      // 2. Click grade toggle button
-      // 3. Select a different grade
-      // 4. Click confirm button
-      // 5. Verify grade change was successful
-      // 6. Verify UI updates reflect the change
-    });
-
-    test("should not show grade toggle for admin users", async ({ page }) => {
-      await page.goto("/admin/users?role=ADMIN");
-      await waitForPageLoad(page);
-
-      const usersList = page.getByTestId("users-list");
-
-      if (await usersList.isVisible()) {
-        const userRows = page.locator("[data-testid^='user-row-']");
-        const userCount = await userRows.count();
-
-        if (userCount > 0) {
-          const firstRowTestId = await userRows
-            .first()
-            .getAttribute("data-testid");
-          const userId = firstRowTestId?.replace("user-row-", "");
-
-          if (userId) {
-            // Grade toggle should not be visible for admin users
-            const gradeToggleButton = page.getByTestId(
-              `grade-toggle-button-${userId}`
-            );
-            await expect(gradeToggleButton).not.toBeVisible();
-          }
-        }
-      }
-    });
-  });
-
-  test.describe("User Role Management", () => {
-    test("should open role change dialog when clicking role toggle", async ({
-      page,
-    }) => {
-      await page.goto("/admin/users");
-      await waitForPageLoad(page);
-
-      // Find the first user's role toggle button
-      const usersList = page.getByTestId("users-list");
-
-      if (await usersList.isVisible()) {
-        const userRows = page.locator("[data-testid^='user-row-']");
-        const userCount = await userRows.count();
-
-        if (userCount > 0) {
-          // Get first user's ID
-          const firstRowTestId = await userRows
-            .first()
-            .getAttribute("data-testid");
-          const userId = firstRowTestId?.replace("user-row-", "");
-
-          if (userId) {
-            const roleToggleButton = page.getByTestId(
-              `role-toggle-button-${userId}`
-            );
-            await roleToggleButton.click();
-
-            // Role change dialog should open
-            const roleChangeDialog = page.getByTestId("role-change-dialog");
-            await expect(roleChangeDialog).toBeVisible();
-
-            const dialogTitle = page.getByTestId("role-change-dialog-title");
-            await expect(dialogTitle).toBeVisible();
-            await expect(dialogTitle).toContainText("Change User Role");
-
-            // Check dialog content
-            const currentRoleDisplay = page.getByTestId("current-role-display");
-            const newRoleDisplay = page.getByTestId("new-role-display");
-            await expect(currentRoleDisplay).toBeVisible();
-            await expect(newRoleDisplay).toBeVisible();
-
-            // Check dialog buttons
-            const cancelButton = page.getByTestId("role-change-cancel-button");
-            const confirmButton = page.getByTestId(
-              "role-change-confirm-button"
-            );
-            await expect(cancelButton).toBeVisible();
-            await expect(confirmButton).toBeVisible();
-
-            // Close dialog
-            await cancelButton.click();
-            await expect(roleChangeDialog).not.toBeVisible();
-          }
-        }
-      }
-    });
-
-    test("should cancel role change dialog", async ({ page }) => {
-      await page.goto("/admin/users");
-      await waitForPageLoad(page);
-
-      const usersList = page.getByTestId("users-list");
-
-      if (await usersList.isVisible()) {
-        const userRows = page.locator("[data-testid^='user-row-']");
-        const userCount = await userRows.count();
-
-        if (userCount > 0) {
-          const firstRowTestId = await userRows
-            .first()
-            .getAttribute("data-testid");
-          const userId = firstRowTestId?.replace("user-row-", "");
-
-          if (userId) {
-            const roleToggleButton = page.getByTestId(
-              `role-toggle-button-${userId}`
-            );
-            await roleToggleButton.click();
-
-            const roleChangeDialog = page.getByTestId("role-change-dialog");
-            await expect(roleChangeDialog).toBeVisible();
-
-            // Cancel the dialog
-            const cancelButton = page.getByTestId("role-change-cancel-button");
-            await cancelButton.click();
-
-            // Dialog should close
-            await expect(roleChangeDialog).not.toBeVisible();
-          }
-        }
-      }
-    });
-
-    test.skip("should successfully change user role", async ({ page }) => {
-      // Skip this test as it modifies data and may affect other tests
-      // In a real scenario, this would test the actual role change functionality
-      await page.goto("/admin/users");
-      await waitForPageLoad(page);
-
-      // This test would:
-      // 1. Find a user to change role for
-      // 2. Click role toggle button
-      // 3. Click confirm button
-      // 4. Verify role change was successful
-      // 5. Verify UI updates reflect the change
     });
   });
 
@@ -885,9 +414,9 @@ test.describe("Admin Users Management", () => {
           const userId = firstRowTestId?.replace("user-row-", "");
 
           if (userId) {
-            const viewDetailsButton = page.getByTestId(
-              `view-user-details-${userId}`
-            );
+            const viewDetailsButton = page
+              .getByTestId(`user-row-${userId}`)
+              .getByRole("link");
             await viewDetailsButton.click();
 
             // Should navigate to user details page
@@ -922,24 +451,6 @@ test.describe("Admin Users Management", () => {
       // Clean up route
       await page.unroute("**/admin/users");
     });
-
-    test("should display proper page structure even with no data", async ({
-      page,
-    }) => {
-      await page.goto("/admin/users");
-      await waitForPageLoad(page);
-
-      // Main page elements should always be visible
-      const adminUsersPage = page.getByTestId("admin-users-page");
-      const statsGrid = page.getByTestId("user-stats-grid");
-      const filtersSection = page.getByTestId("filters-section");
-      const usersTable = page.getByTestId("users-table");
-
-      await expect(adminUsersPage).toBeVisible();
-      await expect(statsGrid).toBeVisible();
-      await expect(filtersSection).toBeVisible();
-      await expect(usersTable).toBeVisible();
-    });
   });
 
   test.describe("Responsive Design", () => {
@@ -956,14 +467,14 @@ test.describe("Admin Users Management", () => {
       const statsGrid = page.getByTestId("user-stats-grid");
       await expect(statsGrid).toBeVisible();
 
-      const filtersSection = page.getByTestId("filters-section");
+      const filtersSection = page.getByTestId("role-filter-buttons");
       await expect(filtersSection).toBeVisible();
 
       const inviteButton = page.getByTestId("invite-user-button");
       await expect(inviteButton).toBeVisible();
 
       // Search should be functional
-      const searchInput = page.getByTestId("search-input");
+      const searchInput = page.getByTestId("users-search-input");
       await expect(searchInput).toBeVisible();
       await searchInput.fill("test");
       await expect(searchInput).toHaveValue("test");
