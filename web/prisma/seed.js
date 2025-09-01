@@ -348,7 +348,7 @@ async function main() {
     },
   });
 
-  // Create main sample volunteer with full profile
+  // Create main sample volunteer with full profile (YELLOW grade - experienced)
   const volunteer = await prisma.user.upsert({
     where: { email: volunteerEmail },
     update: {},
@@ -377,14 +377,28 @@ async function main() {
       healthSafetyPolicyAccepted: true,
       hashedPassword: volunteerHash,
       role: "VOLUNTEER",
+      volunteerGrade: "YELLOW", // Experienced volunteer for testing auto-approval
       createdAt: subMonths(new Date(), 6), // Been volunteering for 6 months
     },
   });
 
-  // Create realistic volunteers
+  // Create realistic volunteers with varied grades
   const extraVolunteers = [];
+  const gradeDistribution = [
+    "YELLOW", // Sarah - experienced volunteer
+    "PINK",   // James - shift leader
+    "GREEN",  // Priya - newer volunteer  
+    "YELLOW", // Mike - experienced
+    "GREEN",  // Alex - student, newer
+    "PINK",   // Maria - shift leader
+    "YELLOW", // Tom - experienced older volunteer
+    "GREEN",  // Lucy - newer young volunteer
+  ];
+
   for (let i = 0; i < REALISTIC_VOLUNTEERS.length; i++) {
     const volunteerData = REALISTIC_VOLUNTEERS[i];
+    const volunteerGrade = gradeDistribution[i] || "GREEN"; // Default to GREEN if not specified
+    
     const u = await prisma.user.upsert({
       where: { email: volunteerData.email },
       update: {},
@@ -393,6 +407,7 @@ async function main() {
         name: `${volunteerData.firstName} ${volunteerData.lastName}`,
         hashedPassword: volunteerHash,
         role: "VOLUNTEER",
+        volunteerGrade: volunteerGrade,
       },
     });
     extraVolunteers.push(u);
@@ -433,6 +448,12 @@ async function main() {
     const firstName = firstNames[(i - 1) % firstNames.length];
     const lastName = lastNames[(i - 1) % lastNames.length];
     const age = 20 + (i % 40); // Ages between 20-59
+
+    // Distribute grades across the additional volunteers
+    // Pattern: GREEN (newer), YELLOW (experienced), PINK (leaders), repeat
+    // This creates: GREEN, YELLOW, PINK, GREEN, YELLOW, PINK, etc.
+    const additionalGrades = ["GREEN", "YELLOW", "PINK"];
+    const volunteerGrade = additionalGrades[(i - 1) % 3];
 
     const u = await prisma.user.upsert({
       where: { email },
@@ -481,6 +502,7 @@ async function main() {
         healthSafetyPolicyAccepted: true,
         hashedPassword: volunteerHash,
         role: "VOLUNTEER",
+        volunteerGrade: volunteerGrade,
       },
     });
     extraVolunteers.push(u);
@@ -1380,6 +1402,214 @@ async function main() {
     console.log(`📊 Sample volunteer has completed ${completedShifts} shifts`);
   } catch (error) {
     console.error("Warning: Could not seed achievements:", error.message);
+  }
+
+  // Seed auto-accept rules
+  console.log("⚡ Seeding auto-accept rules...");
+  try {
+    // Get admin user for creating rules
+    const adminUser = await prisma.user.findFirst({
+      where: { role: "ADMIN" }
+    });
+
+    if (!adminUser) {
+      console.log("⚠️ No admin user found, skipping auto-accept rules seeding");
+    } else {
+      const autoAcceptRules = [
+        // Rule 1: Auto-approve experienced volunteers (YELLOW grade) with good attendance
+        {
+          name: "Experienced Volunteer Fast Track",
+          description: "Automatically approve experienced volunteers (Yellow grade) with good attendance records",
+          enabled: true,
+          priority: 10,
+          global: true, // Apply to all shift types
+          shiftTypeId: null,
+          minVolunteerGrade: "YELLOW",
+          minCompletedShifts: 5,
+          minAttendanceRate: 85.0,
+          minAccountAgeDays: 30,
+          maxDaysInAdvance: null,
+          requireShiftTypeExperience: false,
+          criteriaLogic: "AND",
+          stopOnMatch: true,
+          createdBy: adminUser.id,
+        },
+        
+        // Rule 2: Auto-approve shift leaders (PINK grade) immediately
+        {
+          name: "Shift Leader Priority Access",
+          description: "Automatically approve all shift leaders (Pink grade) - they have proven reliability",
+          enabled: true,
+          priority: 20, // Higher priority than experienced volunteers
+          global: true,
+          shiftTypeId: null,
+          minVolunteerGrade: "PINK",
+          minCompletedShifts: null,
+          minAttendanceRate: null,
+          minAccountAgeDays: null,
+          maxDaysInAdvance: null,
+          requireShiftTypeExperience: false,
+          criteriaLogic: "AND",
+          stopOnMatch: true,
+          createdBy: adminUser.id,
+        },
+
+        // Rule 3: Auto-approve volunteers for Kitchen Prep shifts (easier entry point)
+        {
+          name: "Kitchen Prep Open Access",
+          description: "Auto-approve any volunteer with basic experience for Kitchen Prep shifts",
+          enabled: true,
+          priority: 5, // Lower priority than grade-based rules
+          global: false,
+          shiftTypeId: kitchenPrep.id,
+          minVolunteerGrade: "GREEN", // Even green volunteers
+          minCompletedShifts: 2,
+          minAttendanceRate: 75.0,
+          minAccountAgeDays: 14,
+          maxDaysInAdvance: null,
+          requireShiftTypeExperience: false,
+          criteriaLogic: "AND",
+          stopOnMatch: false, // Allow other rules to also match
+          createdBy: adminUser.id,
+        },
+
+        // Rule 4: Auto-approve for shifts happening soon (last-minute coverage)
+        {
+          name: "Last-Minute Coverage",
+          description: "Auto-approve reliable volunteers for shifts starting within 3 days",
+          enabled: true,
+          priority: 15,
+          global: true,
+          shiftTypeId: null,
+          minVolunteerGrade: "GREEN", // Any grade
+          minCompletedShifts: 3,
+          minAttendanceRate: 80.0,
+          minAccountAgeDays: 21,
+          maxDaysInAdvance: 3, // Only for shifts starting within 3 days
+          requireShiftTypeExperience: false,
+          criteriaLogic: "AND",
+          stopOnMatch: true,
+          createdBy: adminUser.id,
+        },
+
+        // Rule 5: Dishwasher experience required (specific skill rule)
+        {
+          name: "Dishwasher Veterans Only",
+          description: "Auto-approve volunteers with dishwashing experience for dishwasher shifts",
+          enabled: true,
+          priority: 8,
+          global: false,
+          shiftTypeId: dishwasher.id,
+          minVolunteerGrade: "GREEN",
+          minCompletedShifts: 1,
+          minAttendanceRate: null,
+          minAccountAgeDays: 7,
+          maxDaysInAdvance: null,
+          requireShiftTypeExperience: true, // Must have done dishwashing before
+          criteriaLogic: "AND",
+          stopOnMatch: true,
+          createdBy: adminUser.id,
+        },
+
+        // Rule 6: High-volume volunteers (OR logic example)
+        {
+          name: "Super Volunteer Express",
+          description: "Auto-approve volunteers who are either very experienced OR have excellent attendance",
+          enabled: true,
+          priority: 12,
+          global: true,
+          shiftTypeId: null,
+          minVolunteerGrade: "GREEN",
+          minCompletedShifts: 15, // Either 15+ shifts
+          minAttendanceRate: 95.0, // OR 95%+ attendance
+          minAccountAgeDays: 60,
+          maxDaysInAdvance: null,
+          requireShiftTypeExperience: false,
+          criteriaLogic: "OR", // Either condition can be true
+          stopOnMatch: true,
+          createdBy: adminUser.id,
+        }
+      ];
+
+      // Create auto-accept rules
+      for (const ruleData of autoAcceptRules) {
+        await prisma.autoAcceptRule.create({
+          data: ruleData,
+        });
+      }
+
+      console.log(`✅ Seeded ${autoAcceptRules.length} auto-accept rules`);
+
+      // Display volunteer grade distribution
+      console.log("🎖️ Checking volunteer grade distribution...");
+      
+      const gradeStats = await prisma.user.groupBy({
+        by: ['volunteerGrade'],
+        where: { role: 'VOLUNTEER' },
+        _count: { volunteerGrade: true },
+      });
+      
+      for (const stat of gradeStats) {
+        const gradeInfo = {
+          GREEN: { emoji: '🟢', name: 'Standard' },
+          YELLOW: { emoji: '🟡', name: 'Experienced' },
+          PINK: { emoji: '🩷', name: 'Shift Leader' }
+        };
+        const info = gradeInfo[stat.volunteerGrade] || { emoji: '❓', name: 'Unknown' };
+        console.log(`   ${info.emoji} ${stat.volunteerGrade} (${info.name}): ${stat._count.volunteerGrade} volunteers`);
+      }
+
+      // Optional: Promote some volunteers based on their extensive shift history if they need it
+      console.log("🔄 Checking for any needed grade promotions based on shift history...");
+      
+      const userShiftCounts = await prisma.user.findMany({
+        where: { role: "VOLUNTEER" },
+        include: {
+          signups: {
+            where: {
+              status: "CONFIRMED",
+              shift: { end: { lt: new Date() } }, // Only completed shifts
+            },
+          },
+        },
+      });
+
+      let promotions = 0;
+      for (const user of userShiftCounts) {
+        const shiftCount = user.signups.length;
+        let recommendedGrade = "GREEN"; // Default
+        
+        if (shiftCount >= 25) {
+          recommendedGrade = "PINK"; // Shift leader after 25 shifts
+        } else if (shiftCount >= 10) {
+          recommendedGrade = "YELLOW"; // Experienced after 10 shifts
+        }
+        
+        // Only promote if they're below what their shift count suggests
+        const gradePriority = { GREEN: 0, YELLOW: 1, PINK: 2 };
+        const currentPriority = gradePriority[user.volunteerGrade];
+        const recommendedPriority = gradePriority[recommendedGrade];
+        
+        if (currentPriority < recommendedPriority) {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { volunteerGrade: recommendedGrade },
+          });
+          console.log(`   📈 Promoted ${user.email} from ${user.volunteerGrade} → ${recommendedGrade} (${shiftCount} completed shifts)`);
+          promotions++;
+        }
+      }
+
+      if (promotions === 0) {
+        console.log("   ✅ All volunteer grades are appropriate for their experience level");
+      } else {
+        console.log(`   ✅ Applied ${promotions} promotions based on shift history`);
+      }
+
+      console.log("✅ Auto-accept rules seeding completed");
+    }
+  } catch (error) {
+    console.error("Warning: Could not seed auto-accept rules:", error.message);
   }
 
   // Download and convert profile images after all users are created

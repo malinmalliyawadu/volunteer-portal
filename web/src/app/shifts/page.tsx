@@ -325,6 +325,7 @@ function ShiftCard({
                 }}
                 confirmedCount={confirmedCount}
                 isWaitlist={isFull}
+                currentUserId={currentUserId}
               >
                 <Button
                   className={`w-full font-medium transition-all duration-200 ${
