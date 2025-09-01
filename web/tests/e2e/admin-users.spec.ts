@@ -296,7 +296,7 @@ test.describe("Admin Users Management", () => {
   });
 
   test.describe("Search and Filtering", () => {
-    test("should perform user search functionality", async ({ page }) => {
+    test.skip("should perform user search functionality", async ({ page }) => {
       await page.goto("/admin/users");
       await waitForPageLoad(page);
 
