@@ -172,13 +172,13 @@ test.describe("Admin Users Management", () => {
         "Search users..."
       );
 
-      // Check role filter buttons
-      const roleFilterButtons = page.getByTestId("role-filter-buttons");
+      // Check role filter buttons in the filters section
+      const roleFilterButtons = page.getByTestId("main-role-filter-buttons");
       await expect(roleFilterButtons).toBeVisible();
 
-      const allRolesButton = page.getByTestId("filter-all-roles");
-      const volunteersButton = page.getByTestId("filter-volunteers");
-      const adminsButton = page.getByTestId("filter-admins");
+      const allRolesButton = roleFilterButtons.getByTestId("filter-all-roles");
+      const volunteersButton = roleFilterButtons.getByTestId("filter-volunteers");
+      const adminsButton = roleFilterButtons.getByTestId("filter-admins");
 
       await expect(allRolesButton).toBeVisible();
       await expect(volunteersButton).toBeVisible();
