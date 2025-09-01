@@ -1,3 +1,9 @@
+## [0.22.0] - 2025-09-01
+
+### Changes
+- feat: implement volunteer grading system with three-tier classification ([#79](https://github.com/malinmalliyawadu/volunteer-portal/pull/79)) by @malinmalliyawadu
+
+
 ## [0.21.1] - 2025-08-29
 
 ### Changes
