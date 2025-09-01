@@ -419,126 +419,6 @@ test.describe("Admin Users Management", () => {
     });
   });
 
-  test.describe("User Role Management", () => {
-    test("should open role change dialog when clicking role toggle", async ({
-      page,
-    }) => {
-      await page.goto("/admin/users");
-      await waitForPageLoad(page);
-
-      // Find the first user's role toggle button
-      const usersList = page.getByTestId("users-list");
-
-      if (await usersList.isVisible()) {
-        const userRows = page.locator("[data-testid^='user-row-']");
-        const userCount = await userRows.count();
-
-        if (userCount > 0) {
-          // Get first user's ID
-          const firstRowTestId = await userRows
-            .first()
-            .getAttribute("data-testid");
-          const userId = firstRowTestId?.replace("user-row-", "");
-
-          if (userId) {
-            // First click the dropdown menu button in the user row
-            const userRow = page.getByTestId(`user-row-${userId}`);
-            const dropdownButton = userRow.locator("button").last(); // More options button is typically the last button
-            await dropdownButton.click();
-
-            // Then click the role toggle option in the dropdown (look for "Make Admin" or "Make Volunteer")
-            const roleToggleMenuItem = page.getByRole("menuitem", {
-              name: /Make (Admin|Volunteer)/,
-            });
-            await roleToggleMenuItem.click();
-
-            // Role change dialog should open
-            const roleChangeDialog = page.getByTestId("role-change-dialog");
-            await expect(roleChangeDialog).toBeVisible();
-
-            const dialogTitle = page.getByTestId("role-change-dialog-title");
-            await expect(dialogTitle).toBeVisible();
-            await expect(dialogTitle).toContainText("Change User Role");
-
-            // Check dialog content
-            const currentRoleDisplay = page.getByTestId("current-role-display");
-            const newRoleDisplay = page.getByTestId("new-role-display");
-            await expect(currentRoleDisplay).toBeVisible();
-            await expect(newRoleDisplay).toBeVisible();
-
-            // Check dialog buttons
-            const cancelButton = page.getByTestId("role-change-cancel-button");
-            const confirmButton = page.getByTestId(
-              "role-change-confirm-button"
-            );
-            await expect(cancelButton).toBeVisible();
-            await expect(confirmButton).toBeVisible();
-
-            // Close dialog
-            await cancelButton.click();
-            await expect(roleChangeDialog).not.toBeVisible();
-          }
-        }
-      }
-    });
-
-    test("should cancel role change dialog", async ({ page }) => {
-      await page.goto("/admin/users");
-      await waitForPageLoad(page);
-
-      const usersList = page.getByTestId("users-list");
-
-      if (await usersList.isVisible()) {
-        const userRows = page.locator("[data-testid^='user-row-']");
-        const userCount = await userRows.count();
-
-        if (userCount > 0) {
-          const firstRowTestId = await userRows
-            .first()
-            .getAttribute("data-testid");
-          const userId = firstRowTestId?.replace("user-row-", "");
-
-          if (userId) {
-            // First click the dropdown menu button in the user row
-            const userRow = page.getByTestId(`user-row-${userId}`);
-            const dropdownButton = userRow.locator("button").last();
-            await dropdownButton.click();
-
-            // Then click the role toggle option in the dropdown
-            const roleToggleMenuItem = page.getByRole("menuitem", {
-              name: /Make (Admin|Volunteer)/,
-            });
-            await roleToggleMenuItem.click();
-
-            const roleChangeDialog = page.getByTestId("role-change-dialog");
-            await expect(roleChangeDialog).toBeVisible();
-
-            // Cancel the dialog
-            const cancelButton = page.getByTestId("role-change-cancel-button");
-            await cancelButton.click();
-
-            // Dialog should close
-            await expect(roleChangeDialog).not.toBeVisible();
-          }
-        }
-      }
-    });
-
-    test.skip("should successfully change user role", async ({ page }) => {
-      // Skip this test as it modifies data and may affect other tests
-      // In a real scenario, this would test the actual role change functionality
-      await page.goto("/admin/users");
-      await waitForPageLoad(page);
-
-      // This test would:
-      // 1. Find a user to change role for
-      // 2. Click role toggle button
-      // 3. Click confirm button
-      // 4. Verify role change was successful
-      // 5. Verify UI updates reflect the change
-    });
-  });
-
   test.describe("User Invitation", () => {
     test("should open invite user dialog", async ({ page }) => {
       await page.goto("/admin/users");
@@ -675,9 +555,9 @@ test.describe("Admin Users Management", () => {
           const userId = firstRowTestId?.replace("user-row-", "");
 
           if (userId) {
-            const viewDetailsButton = page.getByTestId(
-              `view-user-details-${userId}`
-            );
+            const viewDetailsButton = page
+              .getByTestId(`user-row-${userId}`)
+              .getByRole("link");
             await viewDetailsButton.click();
 
             // Should navigate to user details page

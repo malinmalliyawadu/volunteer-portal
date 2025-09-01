@@ -29,6 +29,7 @@ import { PageContainer } from "@/components/page-container";
 import { safeParseAvailability } from "@/lib/parse-availability";
 import { VolunteerGradeToggle } from "@/components/volunteer-grade-toggle";
 import { VolunteerGradeBadge } from "@/components/volunteer-grade-badge";
+import { UserRoleToggle } from "@/components/user-role-toggle";
 import { type VolunteerGrade } from "@prisma/client";
 
 interface AdminVolunteerPageProps {
@@ -384,15 +385,50 @@ export default async function AdminVolunteerPage({
           </Card>
 
           {/* Admin Actions */}
-          {volunteer.role === "VOLUNTEER" && (
-            <Card data-testid="admin-actions-card">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Shield className="h-5 w-5 text-purple-600" />
-                  Admin Actions
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
+          <Card data-testid="admin-actions-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5 text-purple-600" />
+                Admin Actions
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">User Role</label>
+                <div className="flex items-center gap-3">
+                  <Badge
+                    variant="outline"
+                    className={
+                      volunteer.role === "ADMIN"
+                        ? "bg-gradient-to-r from-purple-50 to-violet-50 text-purple-700 border-purple-200 font-medium shadow-sm"
+                        : "bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border-blue-200 font-medium shadow-sm"
+                    }
+                  >
+                    {volunteer.role === "ADMIN" ? (
+                      <>
+                        <Shield className="h-3 w-3 mr-1" />
+                        Administrator
+                      </>
+                    ) : (
+                      <>
+                        <User className="h-3 w-3 mr-1" />
+                        Volunteer
+                      </>
+                    )}
+                  </Badge>
+                  <UserRoleToggle
+                    userId={volunteer.id}
+                    currentRole={volunteer.role}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {volunteer.role === "ADMIN"
+                    ? "Full access to manage users, shifts, and system settings"
+                    : "Can sign up for shifts and manage their own profile"}
+                </p>
+              </div>
+              
+              {volunteer.role === "VOLUNTEER" && (
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Volunteer Grade</label>
                   <div className="flex items-center gap-3">
@@ -415,9 +451,9 @@ export default async function AdminVolunteerPage({
                       "Shift leader with team management capabilities"}
                   </p>
                 </div>
-              </CardContent>
-            </Card>
-          )}
+              )}
+            </CardContent>
+          </Card>
 
           {/* Contact Information */}
           <Card data-testid="contact-information-card">

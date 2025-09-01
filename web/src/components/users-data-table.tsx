@@ -13,7 +13,7 @@ import {
   VisibilityState,
 } from "@tanstack/react-table";
 import { useState } from "react";
-import { ArrowUpDown, ChevronDown, Mail, Calendar, Shield, Users, MoreHorizontal, User, Award, X } from "lucide-react";
+import { ArrowUpDown, ChevronDown, Mail, Calendar, Shield, Users, ChevronRight, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
@@ -24,8 +24,6 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import {
@@ -38,8 +36,6 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { UserRoleToggle } from "@/components/user-role-toggle";
-import { VolunteerGradeToggle } from "@/components/volunteer-grade-toggle";
 import { type VolunteerGrade } from "@prisma/client";
 
 export interface User {
@@ -233,91 +229,17 @@ export const columns: ColumnDef<User>[] = [
     cell: ({ row }) => {
       const user = row.original;
       return (
-        <div className="flex items-center gap-2">
-          {/* Hidden toggle components to trigger their functionality */}
-          <div style={{ display: 'none' }}>
-            <UserRoleToggle
-              userId={user.id}
-              currentRole={user.role}
-            />
-            <VolunteerGradeToggle
-              userId={user.id}
-              currentGrade={user.volunteerGrade}
-              userRole={user.role}
-            />
-          </div>
-          
-          <div onClick={(e) => e.stopPropagation()}>
-            <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0 hover:bg-slate-100 transition-colors"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent 
-              align="end" 
-              className="w-40"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <DropdownMenuItem 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  router.push(`/admin/volunteers/${user.id}`);
-                }}
-                data-testid={`view-user-details-${user.id}`}
-              >
-                <User className="mr-2 h-4 w-4" />
-                View Profile
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  // Find and click the hidden role toggle button
-                  const roleButton = document.querySelector(`[data-testid="role-toggle-button-${user.id}"]`) as HTMLElement;
-                  if (roleButton) {
-                    roleButton.click();
-                  }
-                }}
-                data-testid={`role-toggle-button-${user.id}`}
-              >
-                {user.role === "ADMIN" ? (
-                  <>
-                    <Users className="mr-2 h-4 w-4" />
-                    Make Volunteer
-                  </>
-                ) : (
-                  <>
-                    <Shield className="mr-2 h-4 w-4" />
-                    Make Admin
-                  </>
-                )}
-              </DropdownMenuItem>
-              {user.role === "VOLUNTEER" && (
-                <DropdownMenuItem 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    // Find and click the hidden grade toggle button
-                    const gradeButton = document.querySelector(`[data-testid="grade-toggle-button-${user.id}"]`) as HTMLElement;
-                    if (gradeButton) {
-                      gradeButton.click();
-                    }
-                  }}
-                  data-testid={`grade-toggle-button-${user.id}`}
-                >
-                  <Award className="mr-2 h-4 w-4" />
-                  Change Grade
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
+        <Button
+          asChild
+          variant="ghost"
+          size="sm"
+          className="h-8 w-8 p-0 hover:bg-slate-100 transition-colors"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Link href={`/admin/volunteers/${user.id}`}>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </Link>
+        </Button>
       );
     },
   },
