@@ -1,3 +1,9 @@
+## [0.23.0] - 2025-09-01
+
+### Changes
+- feat: implement datatable for admin users page ([#82](https://github.com/malinmalliyawadu/volunteer-portal/pull/82)) by @malinmalliyawadu
+
+
 ## [0.22.1] - 2025-09-01
 
 ### Changes
