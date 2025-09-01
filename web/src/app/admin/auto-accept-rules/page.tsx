@@ -85,9 +85,9 @@ export default function AutoAcceptRulesPage() {
       );
       if (!response.ok) throw new Error("Failed to toggle rule");
       const data = await response.json();
-      
-      setRules(rules.map(r => r.id === ruleId ? data.rule : r));
-      
+
+      setRules(rules.map((r) => (r.id === ruleId ? data.rule : r)));
+
       toast({
         title: "Success",
         description: data.message,
@@ -105,20 +105,19 @@ export default function AutoAcceptRulesPage() {
     if (!confirm("Are you sure you want to delete this rule?")) return;
 
     try {
-      const response = await fetch(
-        `/api/admin/auto-accept-rules/${ruleId}`,
-        { method: "DELETE" }
-      );
+      const response = await fetch(`/api/admin/auto-accept-rules/${ruleId}`, {
+        method: "DELETE",
+      });
       if (!response.ok) throw new Error("Failed to delete rule");
       const data = await response.json();
-      
-      setRules(rules.filter(r => r.id !== ruleId));
-      
+
+      setRules(rules.filter((r) => r.id !== ruleId));
+
       toast({
         title: "Success",
         description: data.message,
       });
-      
+
       if (data.warning) {
         toast({
           title: "Warning",
@@ -136,9 +135,11 @@ export default function AutoAcceptRulesPage() {
 
   const formatCriteria = (rule: AutoAcceptRule) => {
     const criteria = [];
-    
+
     if (rule.minVolunteerGrade) {
-      const gradeInfo = getVolunteerGradeInfo(rule.minVolunteerGrade as "GREEN" | "YELLOW" | "PINK");
+      const gradeInfo = getVolunteerGradeInfo(
+        rule.minVolunteerGrade as "GREEN" | "YELLOW" | "PINK"
+      );
       criteria.push(`Min Grade: ${gradeInfo.label}`);
     }
     if (rule.minCompletedShifts !== null) {
@@ -156,7 +157,7 @@ export default function AutoAcceptRulesPage() {
     if (rule.requireShiftTypeExperience) {
       criteria.push("Shift type experience required");
     }
-    
+
     return criteria;
   };
 
@@ -172,16 +173,16 @@ export default function AutoAcceptRulesPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Auto-Accept Rules</h2>
+          <h2 className="text-3xl font-bold tracking-tight">
+            Auto-Accept Rules
+          </h2>
           <p className="text-muted-foreground">
-            Configure automatic approval rules for shift signups based on volunteer grades and criteria
+            Configure automatic approval rules for shift signups based on
+            volunteer grades and criteria
           </p>
         </div>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setShowStatsDialog(true)}
-          >
+          <Button variant="outline" onClick={() => setShowStatsDialog(true)}>
             <BarChart className="mr-2 h-4 w-4" />
             View Stats
           </Button>
@@ -201,110 +202,127 @@ export default function AutoAcceptRulesPage() {
         <CardHeader>
           <CardTitle>Active Rules</CardTitle>
           <CardDescription>
-            Rules are evaluated in priority order. Higher priority rules are checked first.
+            Rules are evaluated in priority order. Higher priority rules are
+            checked first.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           {rules.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              No auto-accept rules configured yet. Create your first rule to get started.
+            <div className="text-center py-8 text-gray-500 p-6">
+              No auto-accept rules configured yet. Create your first rule to get
+              started.
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Enabled</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Scope</TableHead>
-                  <TableHead>Priority</TableHead>
-                  <TableHead>Criteria</TableHead>
-                  <TableHead>Logic</TableHead>
-                  <TableHead>Uses</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {rules.map((rule) => (
-                  <TableRow key={rule.id}>
-                    <TableCell>
-                      <Switch
-                        checked={rule.enabled}
-                        onCheckedChange={() => toggleRule(rule.id)}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{rule.name}</div>
-                        {rule.description && (
-                          <div className="text-sm text-gray-500">
-                            {rule.description}
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-16">Enabled</TableHead>
+                    <TableHead className="min-w-48">Name</TableHead>
+                    <TableHead className="w-20">Scope</TableHead>
+                    <TableHead className="w-16">Priority</TableHead>
+                    <TableHead className="min-w-48">Criteria</TableHead>
+                    <TableHead className="w-24">Logic</TableHead>
+                    <TableHead className="w-16">Uses</TableHead>
+                    <TableHead className="w-20">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {rules.map((rule) => (
+                    <TableRow key={rule.id}>
+                      <TableCell>
+                        <Switch
+                          checked={rule.enabled}
+                          onCheckedChange={() => toggleRule(rule.id)}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <div className="max-w-96">
+                          <div
+                            className="font-medium truncate"
+                            title={rule.name}
+                          >
+                            {rule.name}
                           </div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {rule.global ? (
-                        <Badge variant="secondary">Global</Badge>
-                      ) : (
-                        <Badge variant="outline">
-                          {rule.shiftType?.name || "Unknown"}
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{rule.priority}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        {formatCriteria(rule).map((criterion, idx) => (
-                          <div key={idx} className="text-sm">
-                            {criterion}
-                          </div>
-                        ))}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <Badge variant={rule.criteriaLogic === "AND" ? "default" : "secondary"}>
-                          {rule.criteriaLogic}
-                        </Badge>
-                        {rule.stopOnMatch && (
-                          <Badge variant="outline" className="block">
-                            Stop on match
+                          {rule.description && (
+                            <div className="text-xs text-muted-foreground whitespace-normal break-words">
+                              {rule.description}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {rule.global ? (
+                          <Badge variant="secondary">Global</Badge>
+                        ) : (
+                          <Badge variant="outline">
+                            {rule.shiftType?.name || "Unknown"}
                           </Badge>
                         )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">
-                        {rule._count.approvals}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedRule(rule);
-                            setShowRuleDialog(true);
-                          }}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => deleteRule(rule.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{rule.priority}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-1 max-w-48">
+                          {formatCriteria(rule).map((criterion, idx) => (
+                            <div
+                              key={idx}
+                              className="text-xs text-muted-foreground truncate"
+                              title={criterion}
+                            >
+                              {criterion}
+                            </div>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          <Badge
+                            variant={
+                              rule.criteriaLogic === "AND"
+                                ? "default"
+                                : "secondary"
+                            }
+                          >
+                            {rule.criteriaLogic}
+                          </Badge>
+                          {rule.stopOnMatch && (
+                            <Badge variant="outline" className="block">
+                              Stop on match
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{rule._count.approvals}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedRule(rule);
+                              setShowRuleDialog(true);
+                            }}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => deleteRule(rule.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>
