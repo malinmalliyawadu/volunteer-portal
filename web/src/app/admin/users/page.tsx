@@ -2,16 +2,13 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { redirect } from "next/navigation";
-import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-
 import { PageHeader } from "@/components/page-header";
 import { InviteUserDialog } from "@/components/invite-user-dialog";
 import { UsersDataTable } from "@/components/users-data-table";
-import { AdminUsersSearch } from "@/components/admin-users-search";
-import { Users, UserPlus, Search, Shield, Filter, X } from "lucide-react";
+import { Users, UserPlus, Shield, Filter } from "lucide-react";
 import { Prisma } from "@prisma/client";
 import { PageContainer } from "@/components/page-container";
 
@@ -19,7 +16,6 @@ interface AdminUsersPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-import { type User } from "@/components/users-data-table";
 
 export default async function AdminUsersPage({
   searchParams,
@@ -83,7 +79,7 @@ export default async function AdminUsersPage({
         orderBy: {
           createdAt: "desc",
         },
-      }) as User[],
+      }),
       prisma.user.count(),
       prisma.user.count({ where: { role: "ADMIN" } }),
       prisma.user.count({ where: { role: "VOLUNTEER" } }),
