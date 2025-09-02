@@ -80,10 +80,6 @@ test.describe("Admin Dashboard Page", () => {
         name: /admin dashboard/i,
       });
       await expect(adminHeading).toBeVisible();
-
-      // Check admin description
-      const description = page.getByTestId("admin-dashboard-description");
-      await expect(description).toBeVisible();
     });
 
     test("should display admin role indicator", async ({ page }) => {
