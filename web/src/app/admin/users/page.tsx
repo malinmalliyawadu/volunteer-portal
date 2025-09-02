@@ -3,14 +3,13 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { redirect } from "next/navigation";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { PageHeader } from "@/components/page-header";
 import { InviteUserDialog } from "@/components/invite-user-dialog";
 import { UsersDataTable } from "@/components/users-data-table";
-import { Users, UserPlus, Shield, Filter } from "lucide-react";
+import { Users, UserPlus, Shield } from "lucide-react";
 import { Prisma } from "@prisma/client";
 import { PageContainer } from "@/components/page-container";
+import { AdminPageWrapper } from "@/components/admin-page-wrapper";
 
 interface AdminUsersPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -92,23 +91,23 @@ export default async function AdminUsersPage({
     ]);
 
   return (
-    <PageContainer testid="admin-users-page">
-      <PageHeader
-        title="User Management"
-        description="Manage volunteers, administrators, and invite new users to the platform."
-        actions={
-          <InviteUserDialog>
-            <Button
-              size="sm"
-              className="btn-primary gap-2"
-              data-testid="invite-user-button"
-            >
-              <UserPlus className="h-4 w-4" />
-              Invite User
-            </Button>
-          </InviteUserDialog>
-        }
-      />
+    <AdminPageWrapper 
+      title="User Management" 
+      description="Manage volunteers, administrators, and invite new users to the platform."
+      actions={
+        <InviteUserDialog>
+          <Button
+            size="sm"
+            className="btn-primary gap-2"
+            data-testid="invite-user-button"
+          >
+            <UserPlus className="h-4 w-4" />
+            Invite User
+          </Button>
+        </InviteUserDialog>
+      }
+    >
+      <PageContainer testid="admin-users-page">
 
       {/* Quick Stats */}
       <section className="mb-6" data-testid="stats-section">
@@ -231,6 +230,7 @@ export default async function AdminUsersPage({
           </div>
         )}
       </section>
-    </PageContainer>
+      </PageContainer>
+    </AdminPageWrapper>
   );
 }

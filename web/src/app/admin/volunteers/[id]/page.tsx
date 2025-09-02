@@ -23,8 +23,8 @@ import {
   PauseCircle,
   CheckCircle,
 } from "lucide-react";
-import { PageHeader } from "@/components/page-header";
 import { cn } from "@/lib/utils";
+import { AdminPageWrapper } from "@/components/admin-page-wrapper";
 import { PageContainer } from "@/components/page-container";
 import { safeParseAvailability } from "@/lib/parse-availability";
 import { VolunteerGradeToggle } from "@/components/volunteer-grade-toggle";
@@ -224,20 +224,15 @@ export default async function AdminVolunteerPage({
   };
 
   return (
-    <PageContainer
-      testid="admin-volunteer-profile-page"
-      className="bg-background"
-    >
-      <PageHeader
-        title="Volunteer Profile"
-        description="Comprehensive view of volunteer information and activity"
-        data-testid="page-header"
-      >
+    <AdminPageWrapper 
+      title="Volunteer Profile" 
+      description="Comprehensive view of volunteer information and activity"
+      actions={
         <Button
           asChild
           variant="outline"
           size="sm"
-          className="gap-2 mt-6"
+          className="gap-2"
           data-testid="back-to-shifts-button"
         >
           <Link href="/admin/shifts">
@@ -245,7 +240,12 @@ export default async function AdminVolunteerPage({
             Back to Shifts
           </Link>
         </Button>
-      </PageHeader>
+      }
+    >
+      <PageContainer
+        testid="admin-volunteer-profile-page"
+        className="bg-background"
+      >
 
       <div
         className="grid grid-cols-1 lg:grid-cols-3 gap-6"
@@ -912,6 +912,7 @@ export default async function AdminVolunteerPage({
           </Card>
         </div>
       </div>
-    </PageContainer>
+      </PageContainer>
+    </AdminPageWrapper>
   );
 }

@@ -10,8 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { SelectField } from "@/components/ui/select-field";
-import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
+import { AdminPageWrapper } from "@/components/admin-page-wrapper";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   CalendarIcon,
@@ -489,16 +489,16 @@ export default async function NewShiftPage() {
   });
 
   return (
-    <PageContainer testid="create-shift-page">
-      <PageHeader
-        title="Create shifts"
-        description="Schedule new volunteer shifts efficiently with single or bulk creation options."
-        actions={
-          <Button asChild variant="outline" size="sm">
-            <Link href="/admin/shifts">← Back to shifts</Link>
-          </Button>
-        }
-      />
+    <AdminPageWrapper 
+      title="Create shifts" 
+      description="Schedule new volunteer shifts efficiently with single or bulk creation options."
+      actions={
+        <Button asChild variant="outline" size="sm">
+          <Link href="/admin/shifts">← Back to shifts</Link>
+        </Button>
+      }
+    >
+      <PageContainer testid="create-shift-page">
 
       <Tabs defaultValue="single" className="space-y-6">
         <TabsList className="grid w-full grid-cols-3">
@@ -1036,6 +1036,7 @@ export default async function NewShiftPage() {
           </Card>
         </TabsContent>
       </Tabs>
-    </PageContainer>
+      </PageContainer>
+    </AdminPageWrapper>
   );
 }

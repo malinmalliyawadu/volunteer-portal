@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { useAdminPageTitle } from "@/hooks/use-admin-page-title";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -55,6 +56,26 @@ export default function AutoAcceptRulesPage() {
   const [showRuleDialog, setShowRuleDialog] = useState(false);
   const [showStatsDialog, setShowStatsDialog] = useState(false);
   const { toast } = useToast();
+
+  const headerActions = useMemo(() => (
+    <>
+      <Button variant="outline" onClick={() => setShowStatsDialog(true)}>
+        <BarChart className="mr-2 h-4 w-4" />
+        View Stats
+      </Button>
+      <Button
+        onClick={() => {
+          setSelectedRule(null);
+          setShowRuleDialog(true);
+        }}
+      >
+        <Plus className="mr-2 h-4 w-4" />
+        Add Rule
+      </Button>
+    </>
+  ), []);
+
+  useAdminPageTitle("Auto Accept Rules", "Configure automatic approval rules for shift signups based on volunteer grades and criteria", headerActions);
 
   useEffect(() => {
     fetchRules();
@@ -171,32 +192,6 @@ export default function AutoAcceptRulesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">
-            Auto-Accept Rules
-          </h2>
-          <p className="text-muted-foreground">
-            Configure automatic approval rules for shift signups based on
-            volunteer grades and criteria
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setShowStatsDialog(true)}>
-            <BarChart className="mr-2 h-4 w-4" />
-            View Stats
-          </Button>
-          <Button
-            onClick={() => {
-              setSelectedRule(null);
-              setShowRuleDialog(true);
-            }}
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Add Rule
-          </Button>
-        </div>
-      </div>
 
       <Card>
         <CardHeader>

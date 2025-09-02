@@ -8,8 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Plus, Star as StarIcon, User as UserIcon } from "lucide-react";
-import { PageHeader } from "@/components/page-header";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AdminPageWrapper } from "@/components/admin-page-wrapper";
 
 const LOCATIONS = ["Wellington", "Glenn Innes", "Onehunga"] as const;
 type LocationOption = (typeof LOCATIONS)[number];
@@ -199,14 +199,12 @@ export default async function AdminDashboardPage({
   );
 
   return (
-    <div data-testid="admin-dashboard-page" className="space-y-6">
+    <AdminPageWrapper 
+      title="Admin Dashboard" 
+      description="Overview of volunteer portal activity and management tools."
+    >
+      <div data-testid="admin-dashboard-page" className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-        <PageHeader
-          title="Admin Dashboard"
-          description="Overview of volunteer portal activity and management tools."
-          className="flex-1"
-          data-testid="admin-dashboard-heading"
-        />
 
         {/* Compact location filter using tabs */}
         <div className="flex flex-col gap-2">
@@ -611,6 +609,7 @@ export default async function AdminDashboardPage({
           )}
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </AdminPageWrapper>
   );
 }
