@@ -1,13 +1,16 @@
 import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
+
 import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
-import { redirect } from "next/navigation";
+
 import { AdminSidebar } from "@/components/admin-sidebar";
+import { AdminLayoutHeader } from "@/components/admin-layout-header";
 import {
   SidebarProvider,
   SidebarInset,
 } from "@/components/ui/sidebar";
-import { AdminLayoutHeader } from "@/components/admin-layout-header";
+
 import { AdminHeaderProvider } from "@/contexts/admin-header-context";
 
 export default async function AdminLayout({

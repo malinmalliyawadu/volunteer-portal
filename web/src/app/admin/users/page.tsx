@@ -1,15 +1,16 @@
-import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth-options";
 import { redirect } from "next/navigation";
-
-import { Button } from "@/components/ui/button";
-import { InviteUserDialog } from "@/components/invite-user-dialog";
-import { UsersDataTable } from "@/components/users-data-table";
-import { Users, UserPlus, Shield } from "lucide-react";
 import { Prisma } from "@prisma/client";
-import { PageContainer } from "@/components/page-container";
+import { Users, UserPlus, Shield } from "lucide-react";
+
+import { authOptions } from "@/lib/auth-options";
+import { prisma } from "@/lib/prisma";
+
 import { AdminPageWrapper } from "@/components/admin-page-wrapper";
+import { InviteUserDialog } from "@/components/invite-user-dialog";
+import { PageContainer } from "@/components/page-container";
+import { UsersDataTable } from "@/components/users-data-table";
+import { Button } from "@/components/ui/button";
 
 interface AdminUsersPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;

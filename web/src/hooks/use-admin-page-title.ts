@@ -7,6 +7,7 @@ export function useAdminPageTitle(title: string, description?: string, actions?:
   const { setTitle, setDescription, setActions } = useAdminHeader();
 
   useEffect(() => {
+    // Immediate update on mount to prevent stale state during navigation
     setTitle(title);
     setDescription(description);
     setActions(actions);

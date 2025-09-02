@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { useAdminPageTitle } from "@/hooks/use-admin-page-title";
+import { Plus, Edit, Trash2, BarChart } from "lucide-react";
+
+import { getVolunteerGradeInfo } from "@/lib/volunteer-grades";
+
+import { RuleFormDialog } from "@/components/auto-accept/rule-form-dialog";
+import { RuleStatsDialog } from "@/components/auto-accept/rule-stats-dialog";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,6 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -18,13 +25,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { Plus, Edit, Trash2, BarChart } from "lucide-react";
+
+import { useAdminPageTitle } from "@/hooks/use-admin-page-title";
 import { useToast } from "@/hooks/use-toast";
-import { RuleFormDialog } from "@/components/auto-accept/rule-form-dialog";
-import { RuleStatsDialog } from "@/components/auto-accept/rule-stats-dialog";
-import { getVolunteerGradeInfo } from "@/lib/volunteer-grades";
 
 interface AutoAcceptRule {
   id: string;
@@ -80,7 +83,7 @@ export default function AutoAcceptRulesPage() {
 
   useEffect(() => {
     fetchRules();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps -- fetchRules is stable and should only run on mount
 
   const fetchRules = async () => {
     try {
