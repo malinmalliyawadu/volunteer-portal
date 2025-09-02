@@ -66,9 +66,9 @@ test.describe("Auto-Accept Rules Admin Interface", () => {
     await page.waitForLoadState("load");
 
     // Check page title and description
-    await expect(
-      page.getByRole("heading", { name: "Auto-Accept Rules" })
-    ).toBeVisible();
+    await expect(page.getByTestId("admin-page-header")).toContainText(
+      "Auto-Accept Rules"
+    );
     await expect(
       page.getByText("Configure automatic approval rules")
     ).toBeVisible();
