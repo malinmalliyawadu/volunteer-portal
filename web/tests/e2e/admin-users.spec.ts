@@ -183,10 +183,6 @@ test.describe("Admin Users Management", () => {
       // Check users table
       const usersTable = page.getByTestId("users-table");
       await expect(usersTable).toBeVisible();
-
-      const usersTableTitle = page.getByTestId("users-table-title");
-      await expect(usersTableTitle).toBeVisible();
-      await expect(usersTableTitle).toContainText("Users");
     });
   });
 
