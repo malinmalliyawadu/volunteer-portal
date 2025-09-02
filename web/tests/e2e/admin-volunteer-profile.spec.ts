@@ -121,7 +121,7 @@ test.describe("Admin Volunteer Profile View", () => {
         await waitForPageLoad(page);
 
         // Check page header elements
-        const pageHeader = page.getByTestId("page-header");
+        const pageHeader = page.getByTestId("admin-page-header");
         await expect(pageHeader).toBeVisible();
 
         const pageTitle = page.getByText("Volunteer Profile");
@@ -747,7 +747,7 @@ test.describe("Admin Volunteer Profile View", () => {
         await waitForPageLoad(page);
 
         // Check that main elements are still visible and accessible
-        const pageHeader = page.getByTestId("page-header");
+        const pageHeader = page.getByTestId("admin-page-header");
         await expect(pageHeader).toBeVisible();
 
         const avatar = page

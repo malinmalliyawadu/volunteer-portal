@@ -7,7 +7,7 @@ export function AdminLayoutHeader() {
   const { title, description, actions } = useAdminHeader();
 
   return (
-    <header className="flex min-h-16 shrink-0 items-center gap-2 border-b px-4 bg-background rounded-t-xl">
+    <header data-testid="admin-page-header" className="flex min-h-16 shrink-0 items-center gap-2 border-b px-4 bg-background rounded-t-xl">
       <SidebarTrigger data-testid="admin-sidebar-toggle" />
       <div className="h-4 w-px bg-border mx-2" />
       <div className="flex-1">

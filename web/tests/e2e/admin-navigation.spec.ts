@@ -113,7 +113,7 @@ test.describe('Admin Navigation', () => {
       await page.waitForURL('/admin/migration#upload');
       
       // Verify we're on the migration page with the upload tab
-      await expect(page.getByTestId('page-header')).toContainText('User Migration');
+      await expect(page.getByTestId('admin-page-header')).toContainText('User Migration');
       await expect(page.getByTestId('tab-content-upload')).toBeVisible();
     });
 
@@ -125,7 +125,7 @@ test.describe('Admin Navigation', () => {
       await page.goto('/admin');
       await page.getByTestId('sidebar-migration#status').click();
       await page.waitForURL('/admin/migration#status');
-      await expect(page.getByTestId('page-header')).toContainText('User Migration');
+      await expect(page.getByTestId('admin-page-header')).toContainText('User Migration');
 
       // Test navigation from admin users page
       await page.goto('/admin/users');
