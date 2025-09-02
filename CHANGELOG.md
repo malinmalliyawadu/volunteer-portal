@@ -1,3 +1,9 @@
+## [0.23.1] - 2025-09-02
+
+### Changes
+- feat: enhance admin header with dynamic titles and action buttons ([#83](https://github.com/malinmalliyawadu/volunteer-portal/pull/83)) by @malinmalliyawadu
+
+
 ## [0.23.0] - 2025-09-01
 
 ### Changes
