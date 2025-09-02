@@ -1,6 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { Plus, Edit, Trash2, BarChart } from "lucide-react";
+
+import { getVolunteerGradeInfo } from "@/lib/volunteer-grades";
+
+import { RuleFormDialog } from "@/components/auto-accept/rule-form-dialog";
+import { RuleStatsDialog } from "@/components/auto-accept/rule-stats-dialog";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -9,6 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -17,13 +25,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { Plus, Edit, Trash2, BarChart } from "lucide-react";
+
+import { useAdminPageTitle } from "@/hooks/use-admin-page-title";
 import { useToast } from "@/hooks/use-toast";
-import { RuleFormDialog } from "@/components/auto-accept/rule-form-dialog";
-import { RuleStatsDialog } from "@/components/auto-accept/rule-stats-dialog";
-import { getVolunteerGradeInfo } from "@/lib/volunteer-grades";
 
 interface AutoAcceptRule {
   id: string;
@@ -56,9 +60,30 @@ export default function AutoAcceptRulesPage() {
   const [showStatsDialog, setShowStatsDialog] = useState(false);
   const { toast } = useToast();
 
+  const handleShowStats = useCallback(() => setShowStatsDialog(true), []);
+  const handleAddRule = useCallback(() => {
+    setSelectedRule(null);
+    setShowRuleDialog(true);
+  }, []);
+
+  const headerActions = useMemo(() => (
+    <>
+      <Button variant="outline" onClick={handleShowStats}>
+        <BarChart className="mr-2 h-4 w-4" />
+        View Stats
+      </Button>
+      <Button onClick={handleAddRule}>
+        <Plus className="mr-2 h-4 w-4" />
+        Add Rule
+      </Button>
+    </>
+  ), [handleShowStats, handleAddRule]);
+
+  useAdminPageTitle("Auto Accept Rules", "Configure automatic approval rules for shift signups based on volunteer grades and criteria", headerActions);
+
   useEffect(() => {
     fetchRules();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps -- fetchRules is stable and should only run on mount
 
   const fetchRules = async () => {
     try {
@@ -171,32 +196,6 @@ export default function AutoAcceptRulesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">
-            Auto-Accept Rules
-          </h2>
-          <p className="text-muted-foreground">
-            Configure automatic approval rules for shift signups based on
-            volunteer grades and criteria
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setShowStatsDialog(true)}>
-            <BarChart className="mr-2 h-4 w-4" />
-            View Stats
-          </Button>
-          <Button
-            onClick={() => {
-              setSelectedRule(null);
-              setShowRuleDialog(true);
-            }}
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Add Rule
-          </Button>
-        </div>
-      </div>
 
       <Card>
         <CardHeader>

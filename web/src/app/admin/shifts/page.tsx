@@ -25,11 +25,11 @@ import {
   CheckCircle,
   Trash2,
 } from "lucide-react";
-import { PageHeader } from "@/components/page-header";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { PageContainer } from "@/components/page-container";
 import { VolunteerGradeBadge } from "@/components/volunteer-grade-badge";
 import { type VolunteerGrade } from "@prisma/client";
+import { AdminPageWrapper } from "@/components/admin-page-wrapper";
 
 const LOCATIONS = ["Wellington", "Glenn Innes", "Onehunga"] as const;
 
@@ -759,24 +759,24 @@ export default async function AdminShiftsPage({
   }
 
   return (
-    <PageContainer testid="admin-shifts-page">
-      <PageHeader
-        title="Admin · Shifts"
-        description="Manage volunteer shifts and view signup details"
-        actions={
-          <Button
-            asChild
-            size="sm"
-            className="btn-primary gap-2"
-            data-testid="create-shift-button"
-          >
-            <Link href="/admin/shifts/new">
-              <Plus className="h-4 w-4" />
-              Create shift
-            </Link>
-          </Button>
-        }
-      />
+    <AdminPageWrapper 
+      title="Admin · Shifts" 
+      description="Manage volunteer shifts and view signup details"
+      actions={
+        <Button
+          asChild
+          size="sm"
+          className="btn-primary gap-2"
+          data-testid="create-shift-button"
+        >
+          <Link href="/admin/shifts/new">
+            <Plus className="h-4 w-4" />
+            Create shift
+          </Link>
+        </Button>
+      }
+    >
+      <PageContainer testid="admin-shifts-page">
 
       {/* Success Messages */}
       {created && (
@@ -1254,6 +1254,7 @@ export default async function AdminShiftsPage({
           </div>
         )}
       </section>
-    </PageContainer>
+      </PageContainer>
+    </AdminPageWrapper>
   );
 }

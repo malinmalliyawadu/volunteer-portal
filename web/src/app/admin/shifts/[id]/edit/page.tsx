@@ -11,8 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { SelectField } from "@/components/ui/select-field";
-import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
+import { AdminPageWrapper } from "@/components/admin-page-wrapper";
 import {
   CalendarIcon,
   ClockIcon,
@@ -204,40 +204,40 @@ export default async function EditShiftPage({
   const errorMessage = getErrorMessage(error);
   const isPastShift = shift.start <= new Date();
 
+  const description = `Modify details for ${shift.shiftType.name} on ${format(
+    shift.start,
+    "EEEE, MMMM d, yyyy"
+  )}`;
+
+  const headerActions = (
+    <>
+      <DeleteShiftDialog
+        shiftId={shift.id}
+        shiftName={shift.shiftType.name}
+        shiftDate={format(shift.start, "EEEE, MMMM d, yyyy")}
+        hasSignups={hasSignups}
+        signupCount={activeSignups.length}
+        onDelete={deleteShift}
+      >
+        <Button
+          variant="outline"
+          size="sm"
+          className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+          data-testid="delete-shift-from-edit-button"
+        >
+          <Trash2Icon className="h-4 w-4 mr-2" />
+          Delete Shift
+        </Button>
+      </DeleteShiftDialog>
+      <Button asChild variant="outline" size="sm">
+        <Link href="/admin/shifts">← Back to shifts</Link>
+      </Button>
+    </>
+  );
+
   return (
-    <PageContainer testid="edit-shift-page">
-      <PageHeader
-        title="Edit shift"
-        description={`Modify details for ${shift.shiftType.name} on ${format(
-          shift.start,
-          "EEEE, MMMM d, yyyy"
-        )}`}
-        actions={
-          <div className="flex items-center gap-2">
-            <DeleteShiftDialog
-              shiftId={shift.id}
-              shiftName={shift.shiftType.name}
-              shiftDate={format(shift.start, "EEEE, MMMM d, yyyy")}
-              hasSignups={hasSignups}
-              signupCount={activeSignups.length}
-              onDelete={deleteShift}
-            >
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
-                data-testid="delete-shift-from-edit-button"
-              >
-                <Trash2Icon className="h-4 w-4 mr-1" />
-                Delete
-              </Button>
-            </DeleteShiftDialog>
-            <Button asChild variant="outline" size="sm">
-              <Link href="/admin/shifts">← Back to shifts</Link>
-            </Button>
-          </div>
-        }
-      />
+    <AdminPageWrapper title="Edit shift" description={description} actions={headerActions}>
+      <PageContainer testid="edit-shift-page">
 
       {errorMessage && (
         <Alert variant="destructive" className="mb-6">
@@ -535,6 +535,7 @@ export default async function EditShiftPage({
           </form>
         </CardContent>
       </Card>
-    </PageContainer>
+      </PageContainer>
+    </AdminPageWrapper>
   );
 }

@@ -1,8 +1,8 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { redirect } from "next/navigation";
-import { PageHeader } from "@/components/page-header";
 import { RestaurantManagersContent } from "./restaurant-managers-content";
+import { AdminPageWrapper } from "@/components/admin-page-wrapper";
 
 export default async function RestaurantManagersPage() {
   const session = await getServerSession(authOptions);
@@ -16,14 +16,13 @@ export default async function RestaurantManagersPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Restaurant Manager Assignments"
-        description="Assign admins to restaurant locations to receive shift cancellation notifications."
-        data-testid="page-header"
-      />
-
-      <RestaurantManagersContent />
-    </div>
+    <AdminPageWrapper 
+      title="Restaurant Manager Assignments" 
+      description="Assign admins to restaurant locations to receive shift cancellation notifications."
+    >
+      <div className="space-y-6">
+        <RestaurantManagersContent />
+      </div>
+    </AdminPageWrapper>
   );
 }

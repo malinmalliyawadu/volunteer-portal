@@ -1,21 +1,20 @@
-import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth-options";
 import { redirect } from "next/navigation";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { PageHeader } from "@/components/page-header";
-import { InviteUserDialog } from "@/components/invite-user-dialog";
-import { UsersDataTable } from "@/components/users-data-table";
-import { Users, UserPlus, Shield, Filter } from "lucide-react";
 import { Prisma } from "@prisma/client";
+import { Users, UserPlus, Shield } from "lucide-react";
+
+import { authOptions } from "@/lib/auth-options";
+import { prisma } from "@/lib/prisma";
+
+import { AdminPageWrapper } from "@/components/admin-page-wrapper";
+import { InviteUserDialog } from "@/components/invite-user-dialog";
 import { PageContainer } from "@/components/page-container";
+import { UsersDataTable } from "@/components/users-data-table";
+import { Button } from "@/components/ui/button";
 
 interface AdminUsersPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
-
 
 export default async function AdminUsersPage({
   searchParams,
@@ -93,23 +92,23 @@ export default async function AdminUsersPage({
     ]);
 
   return (
-    <PageContainer testid="admin-users-page">
-      <PageHeader
-        title="User Management"
-        description="Manage volunteers, administrators, and invite new users to the platform."
-        actions={
-          <InviteUserDialog>
-            <Button
-              size="sm"
-              className="btn-primary gap-2"
-              data-testid="invite-user-button"
-            >
-              <UserPlus className="h-4 w-4" />
-              Invite User
-            </Button>
-          </InviteUserDialog>
-        }
-      />
+    <AdminPageWrapper 
+      title="User Management" 
+      description="Manage volunteers, administrators, and invite new users to the platform."
+      actions={
+        <InviteUserDialog>
+          <Button
+            size="sm"
+            className="btn-primary gap-2"
+            data-testid="invite-user-button"
+          >
+            <UserPlus className="h-4 w-4" />
+            Invite User
+          </Button>
+        </InviteUserDialog>
+      }
+    >
+      <PageContainer testid="admin-users-page">
 
       {/* Quick Stats */}
       <section className="mb-6" data-testid="stats-section">
@@ -195,82 +194,44 @@ export default async function AdminUsersPage({
 
       {/* Users DataTable */}
       <section data-testid="users-section">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-          <div className="flex items-center gap-3">
-            <h2
-              className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent"
-              data-testid="users-table-title"
-            >
-              Users
-            </h2>
-            <Badge
-              variant="outline"
-              className="bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border-blue-200 font-semibold px-2.5 py-1"
-            >
-              {users.length}
-            </Badge>
-            {(searchQuery || roleFilter) && (
-              <Badge
-                variant="outline"
-                className="bg-gradient-to-r from-slate-50 to-gray-50 text-slate-700 border-slate-200 font-medium"
-              >
-                <Filter className="h-3 w-3 mr-1" />
-                {searchQuery
-                  ? `"${searchQuery}"`
-                  : roleFilter
-                  ? roleFilter.toLowerCase()
-                  : "filtered"}
-              </Badge>
+        {users.length === 0 ? (
+          <div className="text-center py-16" data-testid="no-users-message">
+            <div className="h-20 w-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-slate-100 to-gray-100 flex items-center justify-center shadow-inner">
+              <Users className="h-10 w-10 text-slate-400" />
+            </div>
+            <h3 className="text-xl font-semibold text-slate-800 mb-2">
+              No users found
+            </h3>
+            <p className="text-slate-600 max-w-md mx-auto mb-6">
+              {searchQuery || roleFilter
+                ? "No users found matching your filters. Try adjusting your search or filter criteria."
+                : "Get started by inviting your first user to the platform."}
+            </p>
+            {!searchQuery && !roleFilter && (
+              <InviteUserDialog>
+                <Button
+                  className="btn-primary gap-2"
+                  data-testid="invite-first-user-button"
+                >
+                  <UserPlus className="h-4 w-4" />
+                  Invite First User
+                </Button>
+              </InviteUserDialog>
             )}
           </div>
-        </div>
-
-        {users.length === 0 ? (
-          <Card className="shadow-md border-slate-200 bg-white/80 backdrop-blur-sm">
-            <CardContent>
-              <div className="text-center py-16" data-testid="no-users-message">
-                <div className="h-20 w-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-slate-100 to-gray-100 flex items-center justify-center shadow-inner">
-                  <Users className="h-10 w-10 text-slate-400" />
-                </div>
-                <h3 className="text-xl font-semibold text-slate-800 mb-2">
-                  No users found
-                </h3>
-                <p className="text-slate-600 max-w-md mx-auto mb-6">
-                  {searchQuery || roleFilter
-                    ? "No users found matching your filters. Try adjusting your search or filter criteria."
-                    : "Get started by inviting your first user to the platform."}
-                </p>
-                {!searchQuery && !roleFilter && (
-                  <InviteUserDialog>
-                    <Button
-                      className="btn-primary gap-2"
-                      data-testid="invite-first-user-button"
-                    >
-                      <UserPlus className="h-4 w-4" />
-                      Invite First User
-                    </Button>
-                  </InviteUserDialog>
-                )}
-              </div>
-            </CardContent>
-          </Card>
         ) : (
-          <Card
-            className="shadow-md border-slate-200 bg-white/80 backdrop-blur-sm"
-            data-testid="users-table"
-          >
-            <CardContent className="p-6">
-              <div data-testid="users-list">
-                <UsersDataTable
-                  users={users}
-                  searchQuery={searchQuery}
-                  roleFilter={roleFilter}
-                />
-              </div>
-            </CardContent>
-          </Card>
+          <div data-testid="users-table">
+            <div data-testid="users-list">
+              <UsersDataTable
+                users={users}
+                searchQuery={searchQuery}
+                roleFilter={roleFilter}
+              />
+            </div>
+          </div>
         )}
       </section>
-    </PageContainer>
+      </PageContainer>
+    </AdminPageWrapper>
   );
 }

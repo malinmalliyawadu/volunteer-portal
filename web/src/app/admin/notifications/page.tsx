@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth-options";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { NotificationsContent } from "./notifications-content";
+import { AdminPageWrapper } from "@/components/admin-page-wrapper";
 
 export const metadata: Metadata = {
   title: "Shift Shortage Notifications | Admin",
@@ -29,9 +30,13 @@ export default async function NotificationsPage() {
   });
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <h1 className="text-3xl font-bold mb-8">Shift Shortage Notifications</h1>
-      <NotificationsContent shiftTypes={shiftTypes} />
-    </div>
+    <AdminPageWrapper 
+      title="Shift Shortage Notifications" 
+      description="Send shift shortage notifications to volunteers"
+    >
+      <div className="container mx-auto py-8 px-4">
+        <NotificationsContent shiftTypes={shiftTypes} />
+      </div>
+    </AdminPageWrapper>
   );
 }

@@ -3,8 +3,8 @@ import { authOptions } from "@/lib/auth-options";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { PageContainer } from "@/components/page-container";
-import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
+import { AdminPageWrapper } from "@/components/admin-page-wrapper";
 import Link from "next/link";
 import { StarIcon, PauseIcon, CalendarIcon } from "lucide-react";
 import { RegularsTable } from "./regulars-table";
@@ -85,18 +85,16 @@ export default async function RegularVolunteersPage() {
   };
 
   return (
-    <PageContainer testid="regular-volunteers-page">
-      <PageHeader
-        title="Regular Volunteers"
-        description="Manage volunteers with recurring shift assignments"
-        actions={
-          <div className="flex gap-2">
-            <Button asChild variant="outline" size="sm">
-              <Link href="/admin">← Back to admin</Link>
-            </Button>
-          </div>
-        }
-      />
+    <AdminPageWrapper 
+      title="Regular Volunteers" 
+      description="Manage volunteers with recurring shift assignments"
+      actions={
+        <Button asChild variant="outline" size="sm">
+          <Link href="/admin">← Back to admin</Link>
+        </Button>
+      }
+    >
+      <PageContainer testid="regular-volunteers-page">
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
@@ -164,6 +162,7 @@ export default async function RegularVolunteersPage() {
 
       {/* Regulars Table */}
       <RegularsTable regulars={regulars} />
-    </PageContainer>
+      </PageContainer>
+    </AdminPageWrapper>
   );
 }

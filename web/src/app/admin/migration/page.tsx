@@ -1,9 +1,9 @@
 import { Metadata } from "next";
-import { PageHeader } from "@/components/page-header";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { redirect } from "next/navigation";
 import { MigrationTabs } from "./migration-tabs";
+import { AdminPageWrapper } from "@/components/admin-page-wrapper";
 
 export const metadata: Metadata = {
   title: "User Migration | Admin Dashboard",
@@ -23,14 +23,13 @@ export default async function MigrationPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="User Migration"
-        description="Import users from the legacy volunteer portal and send invitations to join the new system."
-        data-testid="page-header"
-      />
-
-      <MigrationTabs />
-    </div>
+    <AdminPageWrapper 
+      title="User Migration" 
+      description="Import users from the legacy volunteer portal and send invitations to join the new system."
+    >
+      <div className="space-y-6">
+        <MigrationTabs />
+      </div>
+    </AdminPageWrapper>
   );
 }

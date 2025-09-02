@@ -1,13 +1,17 @@
 import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
+
 import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
-import { redirect } from "next/navigation";
+
 import { AdminSidebar } from "@/components/admin-sidebar";
+import { AdminLayoutHeader } from "@/components/admin-layout-header";
 import {
   SidebarProvider,
   SidebarInset,
-  SidebarTrigger,
 } from "@/components/ui/sidebar";
+
+import { AdminHeaderProvider } from "@/contexts/admin-header-context";
 
 export default async function AdminLayout({
   children,
@@ -53,22 +57,20 @@ export default async function AdminLayout({
   }
 
   return (
-    <SidebarProvider defaultOpen={true}>
-      <AdminSidebar
-        session={session}
-        userProfile={userProfile}
-        displayName={displayName}
-      />
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 bg-background rounded-t-xl">
-          <SidebarTrigger data-testid="admin-sidebar-toggle" />
-          <div className="h-4 w-px bg-border mx-2" />
-          <h1 className="text-lg font-semibold">Admin Panel</h1>
-        </header>
-        <div className="flex-1 p-6">
-          <div className="max-w-7xl mx-auto">{children}</div>
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+    <AdminHeaderProvider>
+      <SidebarProvider defaultOpen={true}>
+        <AdminSidebar
+          session={session}
+          userProfile={userProfile}
+          displayName={displayName}
+        />
+        <SidebarInset>
+          <AdminLayoutHeader />
+          <div className="flex-1 p-6">
+            <div className="max-w-7xl mx-auto">{children}</div>
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    </AdminHeaderProvider>
   );
 }

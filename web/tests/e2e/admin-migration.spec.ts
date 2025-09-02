@@ -26,7 +26,7 @@ test.describe('Admin Migration System', () => {
       await expect(page.getByTestId('tab-migrated-users')).toContainText('Migrated Users');
       
       // Check page header
-      await expect(page.getByTestId('page-header')).toContainText('User Migration');
+      await expect(page.getByTestId('admin-page-header')).toContainText('User Migration');
     });
 
     test('should show CSV format requirements', async ({ page }) => {
