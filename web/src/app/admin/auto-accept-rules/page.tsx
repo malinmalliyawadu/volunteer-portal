@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useAdminPageTitle } from "@/hooks/use-admin-page-title";
 import { Button } from "@/components/ui/button";
 import {
@@ -57,23 +57,24 @@ export default function AutoAcceptRulesPage() {
   const [showStatsDialog, setShowStatsDialog] = useState(false);
   const { toast } = useToast();
 
+  const handleShowStats = useCallback(() => setShowStatsDialog(true), []);
+  const handleAddRule = useCallback(() => {
+    setSelectedRule(null);
+    setShowRuleDialog(true);
+  }, []);
+
   const headerActions = useMemo(() => (
     <>
-      <Button variant="outline" onClick={() => setShowStatsDialog(true)}>
+      <Button variant="outline" onClick={handleShowStats}>
         <BarChart className="mr-2 h-4 w-4" />
         View Stats
       </Button>
-      <Button
-        onClick={() => {
-          setSelectedRule(null);
-          setShowRuleDialog(true);
-        }}
-      >
+      <Button onClick={handleAddRule}>
         <Plus className="mr-2 h-4 w-4" />
         Add Rule
       </Button>
     </>
-  ), []);
+  ), [handleShowStats, handleAddRule]);
 
   useAdminPageTitle("Auto Accept Rules", "Configure automatic approval rules for shift signups based on volunteer grades and criteria", headerActions);
 
