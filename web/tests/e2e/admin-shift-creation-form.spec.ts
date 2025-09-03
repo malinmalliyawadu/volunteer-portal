@@ -178,7 +178,8 @@ test.describe("Admin Shift Creation Form", () => {
       // Calendar should be visible
       await expect(page.getByRole("dialog")).toBeVisible();
       // Check for calendar grid with date buttons
-      await expect(page.locator('[role="gridcell"] button')).toHaveCount.toBeGreaterThan(0);
+      const dateButtons = page.locator('[role="gridcell"] button');
+      await expect(dateButtons.first()).toBeVisible();
     });
 
     test("should update form when template is selected", async ({ page }) => {
