@@ -6,13 +6,12 @@ import {
   endOfDay,
   addDays,
   subDays,
-  addHours,
 } from "date-fns";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,28 +19,19 @@ import {
   Clock,
   Users,
   Plus,
-  ChevronLeft,
-  ChevronRight,
   AlertCircle,
   CheckCircle2,
   AlertTriangle,
   Shield,
   Star,
   Award,
-  MoreVertical,
-  Edit,
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { PageContainer } from "@/components/page-container";
 import { AdminPageWrapper } from "@/components/admin-page-wrapper";
 import { ShiftLocationSelector } from "@/components/shift-location-selector";
 import { VolunteerActions } from "@/components/volunteer-actions";
+import { ShiftCalendarWrapper } from "@/components/shift-calendar-wrapper";
 
 const LOCATIONS = ["Wellington", "Glenn Innes", "Onehunga"] as const;
 type LocationOption = (typeof LOCATIONS)[number];
@@ -104,12 +94,8 @@ export default async function AdminShiftsPage({
     ? (locationParam as LocationOption)
     : LOCATIONS[0];
 
-  // Calculate previous and next dates
-  const prevDate = format(subDays(selectedDate, 1), "yyyy-MM-dd");
-  const nextDate = format(addDays(selectedDate, 1), "yyyy-MM-dd");
   const today = format(new Date(), "yyyy-MM-dd");
   const isToday = dateString === today;
-  const isPast = selectedDate < new Date() && !isToday;
 
   // Fetch shifts for the selected date and location
   const dayStart = startOfDay(selectedDate);
@@ -129,7 +115,7 @@ export default async function AdminShiftsPage({
       signups: {
         where: {
           status: {
-            in: ["CONFIRMED", "PENDING", "REGULAR_PENDING"],
+            in: ["CONFIRMED", "PENDING", "REGULAR_PENDING", "WAITLISTED"],
           },
         },
         include: {
@@ -149,7 +135,7 @@ export default async function AdminShiftsPage({
           signups: {
             where: {
               status: {
-                in: ["CONFIRMED", "PENDING"],
+                in: ["CONFIRMED", "PENDING", "WAITLISTED"],
               },
             },
           },
@@ -158,32 +144,90 @@ export default async function AdminShiftsPage({
     },
   });
 
-  type ShiftWithAll = (typeof shifts)[number];
+  // Fetch shift summaries for the calendar (30 days around current date)
+  const calendarStartDate = subDays(selectedDate, 15);
+  const calendarEndDate = addDays(selectedDate, 15);
+  
 
-  // Calculate total stats
-  const totalCapacity = shifts.reduce((sum, s) => sum + s.capacity, 0);
-  const totalConfirmed = shifts.reduce((sum, s) => {
-    const individualConfirmed = s.signups.filter(
-      (su) => su.status === "CONFIRMED"
-    ).length;
-    const groupConfirmed = s.groupBookings.reduce(
-      (gSum, gb) =>
-        gSum + gb.signups.filter((gsu) => gsu.status === "CONFIRMED").length,
+  // Get detailed shift data for calendar
+  const calendarShifts = await prisma.shift.findMany({
+    where: {
+      start: {
+        gte: startOfDay(calendarStartDate),
+        lte: endOfDay(calendarEndDate),
+      },
+    },
+    select: {
+      id: true,
+      location: true,
+      capacity: true,
+      start: true,
+      signups: {
+        where: {
+          status: {
+            in: ["CONFIRMED", "PENDING", "REGULAR_PENDING", "WAITLISTED"],
+          },
+        },
+        select: {
+          status: true,
+        },
+      },
+      groupBookings: {
+        select: {
+          signups: {
+            where: {
+              status: {
+                in: ["CONFIRMED", "PENDING", "WAITLISTED"],
+              },
+            },
+            select: {
+              status: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  // Process calendar data
+  const shiftsByDate = calendarShifts.reduce((acc, shift) => {
+    const dateKey = format(shift.start, "yyyy-MM-dd");
+    if (!acc[dateKey]) {
+      acc[dateKey] = {
+        date: dateKey,
+        count: 0,
+        totalCapacity: 0,
+        totalConfirmed: 0,
+        locations: new Set<string>(),
+      };
+    }
+
+    acc[dateKey].count += 1;
+    acc[dateKey].totalCapacity += shift.capacity;
+    acc[dateKey].locations.add(shift.location);
+
+    // Count confirmed signups
+    const confirmedIndividual = shift.signups.filter(s => s.status === "CONFIRMED").length;
+    const confirmedGroup = shift.groupBookings.reduce(
+      (sum, gb) => sum + gb.signups.filter(s => s.status === "CONFIRMED").length,
       0
     );
-    return sum + individualConfirmed + groupConfirmed;
-  }, 0);
-  const totalPending = shifts.reduce((sum, s) => {
-    const individualPending = s.signups.filter(
-      (su) => su.status === "PENDING" || su.status === "REGULAR_PENDING"
-    ).length;
-    const groupPending = s.groupBookings.reduce(
-      (gSum, gb) =>
-        gSum + gb.signups.filter((gsu) => gsu.status === "PENDING").length,
-      0
-    );
-    return sum + individualPending + groupPending;
-  }, 0);
+    acc[dateKey].totalConfirmed += confirmedIndividual + confirmedGroup;
+
+    return acc;
+  }, {} as Record<string, {
+    date: string;
+    count: number;
+    totalCapacity: number;
+    totalConfirmed: number;
+    locations: Set<string>;
+  }>);
+
+  const processedShiftSummaries = Object.values(shiftsByDate).map(summary => ({
+    ...summary,
+    locations: Array.from(summary.locations),
+  }));
+
 
   // Helper function to get volunteer grade color and icon
   function getGradeInfo(grade: string | null | undefined) {
@@ -192,19 +236,19 @@ export default async function AdminShiftsPage({
         return {
           color: "bg-pink-100 text-pink-700",
           icon: Award,
-          label: "Pink",
+          label: "Shift Leader",
         };
       case "YELLOW":
         return {
           color: "bg-yellow-100 text-yellow-700",
           icon: Star,
-          label: "Yellow",
+          label: "Experienced",
         };
       case "GREEN":
         return {
           color: "bg-green-100 text-green-700",
           icon: Shield,
-          label: "Green",
+          label: "Standard",
         };
       default:
         return { color: "bg-gray-100 text-gray-600", icon: null, label: "New" };
@@ -275,49 +319,12 @@ export default async function AdminShiftsPage({
         {/* Navigation Controls */}
         <div className="mb-6 bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
           <div className="flex flex-col lg:flex-row gap-4 items-center">
-            {/* Date Navigation */}
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-medium text-slate-600">Date:</span>
-              <div className="flex items-center gap-2">
-                <Button
-                  asChild
-                  variant="outline"
-                  size="sm"
-                  data-testid="prev-date-button"
-                >
-                  <Link
-                    href={`/admin/shifts?date=${prevDate}&location=${selectedLocation}`}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Link>
-                </Button>
-                <div className="px-3 py-2 bg-slate-50 rounded border text-center min-w-[160px]">
-                  <div className="text-sm text-slate-900 font-medium">
-                    {format(selectedDate, "MMM d, yyyy")}
-                  </div>
-                  <div className="text-xs text-slate-600">
-                    {format(selectedDate, "EEEE")}
-                    {isToday && (
-                      <span className="ml-2 px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-medium">
-                        Today
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <Button
-                  asChild
-                  variant="outline"
-                  size="sm"
-                  data-testid="next-date-button"
-                >
-                  <Link
-                    href={`/admin/shifts?date=${nextDate}&location=${selectedLocation}`}
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Link>
-                </Button>
-              </div>
-            </div>
+            {/* Calendar Date Navigation */}
+            <ShiftCalendarWrapper
+              selectedDate={selectedDate}
+              selectedLocation={selectedLocation}
+              shiftSummaries={processedShiftSummaries}
+            />
 
             {/* Location Selector */}
             <div className="flex items-center gap-3">
@@ -374,6 +381,9 @@ export default async function AdminShiftsPage({
                   const pending = shift.signups.filter(
                     (s) =>
                       s.status === "PENDING" || s.status === "REGULAR_PENDING"
+                  ).length;
+                  const waitlisted = shift.signups.filter(
+                    (s) => s.status === "WAITLISTED"
                   ).length;
                   const staffingStatus = getStaffingStatus(
                     confirmed,
@@ -469,6 +479,12 @@ export default async function AdminShiftsPage({
                                   {pending} pending
                                 </div>
                               )}
+                              {waitlisted > 0 && (
+                                <div className="flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs font-medium">
+                                  <Users className="h-3 w-3" />
+                                  {waitlisted} waitlisted
+                                </div>
+                              )}
                             </div>
                           )}
 
@@ -486,7 +502,7 @@ export default async function AdminShiftsPage({
                               </div>
                             ) : (
                               <div className="space-y-2">
-                                {shift.signups.slice(0, 4).map((signup) => {
+                                {shift.signups.map((signup) => {
                                   const gradeInfo = getGradeInfo(
                                     signup.user.volunteerGrade
                                   );
@@ -530,13 +546,6 @@ export default async function AdminShiftsPage({
                                     </Link>
                                   );
                                 })}
-                                {shift.signups.length > 4 && (
-                                  <div className="flex items-center justify-center p-3 bg-slate-100 rounded-lg">
-                                    <span className="text-sm font-medium text-slate-600">
-                                      +{shift.signups.length - 4} more volunteers
-                                    </span>
-                                  </div>
-                                )}
                               </div>
                             )}
                           </div>

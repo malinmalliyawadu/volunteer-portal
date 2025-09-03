@@ -282,7 +282,7 @@ function ShiftCard({
                     {friendSignups.length !== 1 ? "s" : ""} joining:
                   </span>
                   <AvatarList
-                    users={friendSignups.map(signup => signup.user)}
+                    users={friendSignups.map((signup) => signup.user)}
                     size="sm"
                     maxDisplay={3}
                   />
@@ -429,7 +429,9 @@ export default async function ShiftsPageRedesigned({
   }
 
   // Parse user's preferred locations
-  const userPreferredLocations = safeParseAvailability(currentUser?.availableLocations);
+  const userPreferredLocations = safeParseAvailability(
+    currentUser?.availableLocations
+  );
 
   // Handle location filtering
   const rawLocation = Array.isArray(params.location)
@@ -692,7 +694,7 @@ export default async function ShiftsPageRedesigned({
                         {format(dateObj, "EEEE, MMMM d, yyyy")}
                       </h2>
                       <p className="text-sm text-muted-foreground">
-                        {totalShiftsThisDate} shift
+                        {totalShiftsThisDate} role
                         {totalShiftsThisDate !== 1 ? "s" : ""} available
                       </p>
                     </div>
@@ -727,7 +729,7 @@ export default async function ShiftsPageRedesigned({
                                       {locationKey}
                                     </h3>
                                     <p className="text-sm text-muted-foreground">
-                                      {locationShifts.length} shift
+                                      {locationShifts.length} role
                                       {locationShifts.length !== 1 ? "s" : ""}
                                     </p>
                                   </div>
