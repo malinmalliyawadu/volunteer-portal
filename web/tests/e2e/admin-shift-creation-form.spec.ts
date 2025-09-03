@@ -7,7 +7,7 @@ import {
 } from "./helpers/test-helpers";
 import { randomUUID } from "crypto";
 
-test.describe("Enhanced Admin Shift Creation", () => {
+test.describe("Admin Shift Creation Form", () => {
   const testId = randomUUID().slice(0, 8);
   const testEmails = [`admin-shift-creation-${testId}@example.com`];
   const testShiftIds: string[] = [];
@@ -33,7 +33,7 @@ test.describe("Enhanced Admin Shift Creation", () => {
       // Check templates section is visible
       await expect(page.getByTestId("shift-templates-section")).toBeVisible();
       
-      // Check some default templates exist
+      // Check some default templates exist (using actual template names)
       await expect(page.getByTestId("template-kitchen-prep")).toBeVisible();
       await expect(page.getByTestId("template-front-of-house")).toBeVisible();
       
@@ -177,7 +177,8 @@ test.describe("Enhanced Admin Shift Creation", () => {
       
       // Calendar should be visible
       await expect(page.getByRole("dialog")).toBeVisible();
-      await expect(page.getByRole("button", { name: /^\d+$/ }).first()).toBeVisible();
+      // Check for calendar grid with date buttons
+      await expect(page.locator('[role="gridcell"] button')).toHaveCount.toBeGreaterThan(0);
     });
 
     test("should update form when template is selected", async ({ page }) => {
@@ -233,7 +234,8 @@ test.describe("Enhanced Admin Shift Creation", () => {
 
       // Fill date
       await page.getByTestId("shift-date-input").click();
-      await page.getByRole("button", { name: "25" }).click(); // Select 25th
+      // Select the first available date in the calendar
+      await page.getByRole("button", { name: /^\d+$/ }).first().click();
 
       // Fill times
       await page.getByTestId("shift-start-time-input").fill("14:00");
@@ -287,6 +289,7 @@ test.describe("Enhanced Admin Shift Creation", () => {
       
       // Close and try end date
       await page.keyboard.press("Escape");
+      await page.waitForTimeout(100); // Small delay to ensure dialog closes
       await page.getByTestId("bulk-end-date-input").click();
       await expect(page.getByRole("dialog")).toBeVisible();
     });
