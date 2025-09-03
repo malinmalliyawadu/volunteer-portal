@@ -1,3 +1,9 @@
+## [0.23.2] - 2025-09-03
+
+### Changes
+- Fix card overflow issues in admin shifts page ([#84](https://github.com/malinmalliyawadu/volunteer-portal/pull/84)) by @malinmalliyawadu
+
+
 ## [0.23.1] - 2025-09-02
 
 ### Changes
