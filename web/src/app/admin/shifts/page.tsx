@@ -25,6 +25,8 @@ import {
   Shield,
   Star,
   Award,
+  MapPin,
+  Mail,
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { PageContainer } from "@/components/page-container";
@@ -327,42 +329,54 @@ export default async function AdminShiftsPage({
         )}
 
         {/* Navigation Controls */}
-        <div className="mb-6 bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
-          <div className="flex flex-col lg:flex-row gap-4 items-center">
-            {/* Calendar Date Navigation */}
-            <ShiftCalendarWrapper
-              selectedDate={selectedDate}
-              selectedLocation={selectedLocation}
-              shiftSummaries={processedShiftSummaries}
-            />
+        <div className="mb-6 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="p-6">
+            <div className="flex flex-col space-y-4 lg:space-y-0 lg:flex-row lg:items-center lg:justify-between">
+              {/* Left Section: Date Navigation */}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-blue-50 flex items-center justify-center">
+                    <Calendar className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <ShiftCalendarWrapper
+                    selectedDate={selectedDate}
+                    selectedLocation={selectedLocation}
+                    shiftSummaries={processedShiftSummaries}
+                  />
+                </div>
 
-            {/* Location Selector */}
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-medium text-slate-600">
-                Location:
-              </span>
-              <ShiftLocationSelector
-                selectedLocation={selectedLocation}
-                dateString={dateString}
-                locations={LOCATIONS}
-              />
-            </div>
+                <div className="hidden sm:block h-8 w-px bg-slate-200" />
 
-            {/* Quick Actions */}
-            <div className="flex items-center gap-2 ml-auto">
-              <Button
-                asChild
-                variant={isToday ? "default" : "outline"}
-                size="sm"
-                data-testid="today-button"
-              >
-                <Link
-                  href={`/admin/shifts?date=${today}&location=${selectedLocation}`}
+                {/* Location Selector */}
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-green-50 flex items-center justify-center">
+                    <MapPin className="h-5 w-5 text-green-600" />
+                  </div>
+                  <ShiftLocationSelector
+                    selectedLocation={selectedLocation}
+                    dateString={dateString}
+                    locations={LOCATIONS}
+                  />
+                </div>
+              </div>
+
+              {/* Right Section: Quick Actions */}
+              <div className="flex items-center gap-3">
+                <Button
+                  asChild
+                  variant={isToday ? "default" : "outline"}
+                  size="sm"
+                  className="h-10"
+                  data-testid="today-button"
                 >
-                  <Calendar className="h-3.5 w-3.5 mr-1.5" />
-                  Today
-                </Link>
-              </Button>
+                  <Link
+                    href={`/admin/shifts?date=${today}&location=${selectedLocation}`}
+                  >
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Today
+                  </Link>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -589,6 +603,27 @@ export default async function AdminShiftsPage({
                         </div>
                       )}
                     </div>
+
+                    {/* Shortage Action Button */}
+                    {(staffingStatus.text === "Critical" || staffingStatus.text === "Understaffed") && (
+                      <div className="mt-4 pt-4 border-t border-slate-100">
+                        <Button
+                          asChild
+                          variant="outline"
+                          size="sm"
+                          className="w-full border-orange-200 text-orange-600 hover:bg-orange-50"
+                          data-testid={`send-shortage-email-${shift.id}`}
+                        >
+                          <Link
+                            href={`/admin/notifications?shiftId=${shift.id}&shiftType=${shift.shiftType.id}&location=${selectedLocation}`}
+                            className="flex items-center gap-2 justify-center"
+                          >
+                            <Mail className="h-4 w-4" />
+                            Send Shortage Email
+                          </Link>
+                        </Button>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               );

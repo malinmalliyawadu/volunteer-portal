@@ -78,7 +78,6 @@ export function ShiftCalendar({
 
   return (
     <div className={cn("flex items-center gap-3", className)}>
-      <span className="text-sm font-medium text-slate-600">Date:</span>
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
           <Button

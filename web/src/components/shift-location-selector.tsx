@@ -28,20 +28,17 @@ export function ShiftLocationSelector({
   };
 
   return (
-    <div className="flex items-center gap-3">
-      <MapPin className="h-4 w-4 text-slate-500" />
-      <Select value={selectedLocation} onValueChange={handleLocationChange}>
-        <SelectTrigger className="w-[180px]" data-testid="location-selector">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {locations.map((location) => (
-            <SelectItem key={location} value={location}>
-              {location}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
+    <Select value={selectedLocation} onValueChange={handleLocationChange}>
+      <SelectTrigger className="w-[180px]" data-testid="location-selector">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {locations.map((location) => (
+          <SelectItem key={location} value={location}>
+            {location}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }
