@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Check, X, Clock } from "lucide-react";
+import { Check, X, Clock, UserMinus } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface VolunteerActionsProps {
@@ -15,7 +15,7 @@ export function VolunteerActions({ signupId, currentStatus, onUpdate }: Voluntee
   const [loading, setLoading] = useState<string | null>(null);
   const router = useRouter();
 
-  const handleAction = async (action: "approve" | "reject") => {
+  const handleAction = async (action: "approve" | "reject" | "cancel" | "confirm") => {
     setLoading(action);
     try {
       const response = await fetch(`/api/admin/signups/${signupId}`, {
@@ -25,7 +25,8 @@ export function VolunteerActions({ signupId, currentStatus, onUpdate }: Voluntee
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to ${action} signup`);
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Failed to ${action} signup`);
       }
 
       router.refresh();
@@ -40,18 +41,50 @@ export function VolunteerActions({ signupId, currentStatus, onUpdate }: Voluntee
 
   if (currentStatus === "CONFIRMED") {
     return (
-      <div className="flex items-center text-xs text-green-600 font-medium">
-        <Check className="h-3 w-3 mr-1" />
-        Confirmed
+      <div className="flex gap-1">
+        <div className="flex items-center text-xs text-green-600 font-medium">
+          <Check className="h-3 w-3 mr-1" />
+          Confirmed
+        </div>
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-6 px-2 text-xs bg-red-50 border-red-200 text-red-700 hover:bg-red-100"
+          onClick={() => handleAction("cancel")}
+          disabled={loading === "cancel"}
+          title="Cancel this shift"
+        >
+          {loading === "cancel" ? (
+            <Clock className="h-3 w-3 animate-spin" />
+          ) : (
+            <UserMinus className="h-3 w-3" />
+          )}
+        </Button>
       </div>
     );
   }
 
   if (currentStatus === "WAITLISTED") {
     return (
-      <div className="flex items-center text-xs text-yellow-600 font-medium">
-        <Clock className="h-3 w-3 mr-1" />
-        Waitlisted
+      <div className="flex gap-1">
+        <div className="flex items-center text-xs text-purple-600 font-medium">
+          <Clock className="h-3 w-3 mr-1" />
+          Waitlisted
+        </div>
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-6 px-2 text-xs bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+          onClick={() => handleAction("confirm")}
+          disabled={loading === "confirm"}
+          title="Confirm this volunteer (allows over-capacity)"
+        >
+          {loading === "confirm" ? (
+            <Clock className="h-3 w-3 animate-spin" />
+          ) : (
+            <Check className="h-3 w-3" />
+          )}
+        </Button>
       </div>
     );
   }

@@ -27,69 +27,11 @@ import {
 import { GroupBookingDialogWrapper } from "@/components/group-booking-dialog-wrapper";
 import { PageContainer } from "@/components/page-container";
 import { safeParseAvailability } from "@/lib/parse-availability";
+import { getShiftTheme } from "@/lib/shift-themes";
 
 const LOCATIONS = ["Wellington", "Glenn Innes", "Onehunga"] as const;
 type LocationOption = (typeof LOCATIONS)[number];
 
-// Shift type theming configuration
-export const SHIFT_THEMES = {
-  Dishwasher: {
-    gradient: "from-blue-500 to-cyan-500",
-    bgColor: "bg-blue-50 dark:bg-blue-950/20",
-    borderColor: "border-blue-200 dark:border-blue-800/50",
-    textColor: "text-blue-700 dark:text-blue-300",
-    emoji: "🧽",
-  },
-  "FOH Set-Up & Service": {
-    gradient: "from-purple-500 to-pink-500",
-    bgColor: "bg-purple-50 dark:bg-purple-950/20",
-    borderColor: "border-purple-200 dark:border-purple-800/50",
-    textColor: "text-purple-700 dark:text-purple-300",
-    emoji: "✨",
-  },
-  "Front of House": {
-    gradient: "from-green-500 to-emerald-500",
-    bgColor: "bg-green-50 dark:bg-green-950/20",
-    borderColor: "border-green-200 dark:border-green-800/50",
-    textColor: "text-green-700 dark:text-green-300",
-    emoji: "🌟",
-  },
-  "Kitchen Prep": {
-    gradient: "from-orange-500 to-amber-500",
-    bgColor: "bg-orange-50 dark:bg-orange-950/20",
-    borderColor: "border-orange-200 dark:border-orange-800/50",
-    textColor: "text-orange-700 dark:text-orange-300",
-    emoji: "🔪",
-  },
-  "Kitchen Prep & Service": {
-    gradient: "from-red-500 to-pink-500",
-    bgColor: "bg-red-50 dark:bg-red-950/20",
-    borderColor: "border-red-200 dark:border-red-800/50",
-    textColor: "text-red-700 dark:text-red-300",
-    emoji: "🍳",
-  },
-  "Kitchen Service & Pack Down": {
-    gradient: "from-indigo-500 to-purple-500",
-    bgColor: "bg-indigo-50 dark:bg-indigo-950/20",
-    borderColor: "border-indigo-200 dark:border-indigo-800/50",
-    textColor: "text-indigo-700 dark:text-indigo-300",
-    emoji: "📦",
-  },
-} as const;
-
-export const DEFAULT_THEME = {
-  gradient: "from-gray-500 to-slate-500",
-  bgColor: "bg-gray-50 dark:bg-gray-950/20",
-  borderColor: "border-gray-200 dark:border-gray-800/50",
-  textColor: "text-gray-700 dark:text-gray-300",
-  emoji: "❤️",
-};
-
-export function getShiftTheme(shiftTypeName: string) {
-  return (
-    SHIFT_THEMES[shiftTypeName as keyof typeof SHIFT_THEMES] || DEFAULT_THEME
-  );
-}
 
 function getDurationInHours(start: Date, end: Date): string {
   const durationMs = end.getTime() - start.getTime();
@@ -181,7 +123,7 @@ function ShiftCard({
     >
       {/* Gradient accent bar */}
       <div
-        className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${theme.gradient}`}
+        className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${theme.fullGradient}`}
       />
 
       <CardContent className="p-6 h-full">
@@ -191,7 +133,7 @@ function ShiftCard({
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 <div
-                  className={`p-2 rounded-xl bg-gradient-to-br ${theme.gradient} shadow-lg flex items-center justify-center text-white text-lg font-medium`}
+                  className={`p-2 rounded-xl bg-gradient-to-br ${theme.fullGradient} shadow-lg flex items-center justify-center text-white text-lg font-medium`}
                 >
                   {theme.emoji}
                 </div>
@@ -332,7 +274,7 @@ function ShiftCard({
                     isFull
                       ? "bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 hover:border-orange-300"
                       : "bg-gradient-to-r " +
-                        theme.gradient +
+                        theme.fullGradient +
                         " hover:shadow-lg transform hover:scale-[1.02] text-white"
                   }`}
                   variant={isFull ? "outline" : "default"}
@@ -343,7 +285,7 @@ function ShiftCard({
             ) : (
               <Button
                 asChild
-                className={`w-full font-medium bg-gradient-to-r ${theme.gradient} hover:shadow-lg transform hover:scale-[1.02] text-white transition-all duration-200`}
+                className={`w-full font-medium bg-gradient-to-r ${theme.fullGradient} hover:shadow-lg transform hover:scale-[1.02] text-white transition-all duration-200`}
               >
                 <Link href="/login?callbackUrl=/shifts">✨ Sign Up Now</Link>
               </Button>
