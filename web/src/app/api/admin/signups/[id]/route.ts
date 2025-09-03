@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { createShiftConfirmedNotification, createShiftWaitlistedNotification } from "@/lib/notifications";
+import { getEmailService } from "@/lib/email-service";
+import { format } from "date-fns";
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
@@ -25,9 +27,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
   try {
     const body = await req.json();
-    const { action } = body; // "approve" or "reject"
+    const { action } = body; // "approve", "reject", "cancel", or "confirm"
 
-    if (!["approve", "reject"].includes(action)) {
+    if (!["approve", "reject", "cancel", "confirm"].includes(action)) {
       return NextResponse.json({ error: "Invalid action" }, { status: 400 });
     }
 
@@ -40,7 +42,15 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
             shiftType: true,
           },
         },
-        user: { select: { id: true, email: true, name: true } },
+        user: { 
+          select: { 
+            id: true, 
+            email: true, 
+            name: true, 
+            firstName: true, 
+            lastName: true 
+          } 
+        },
       },
     });
 
@@ -54,11 +64,28 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       }, { status: 404 });
     }
 
-    if (signup.status !== "PENDING") {
-      return NextResponse.json(
-        { error: "Only pending signups can be approved or rejected" },
-        { status: 400 }
-      );
+    // Different status requirements for different actions
+    if (action === "approve" || action === "reject") {
+      if (signup.status !== "PENDING" && signup.status !== "REGULAR_PENDING") {
+        return NextResponse.json(
+          { error: "Only pending signups can be approved or rejected" },
+          { status: 400 }
+        );
+      }
+    } else if (action === "cancel") {
+      if (signup.status !== "CONFIRMED") {
+        return NextResponse.json(
+          { error: "Only confirmed signups can be cancelled" },
+          { status: 400 }
+        );
+      }
+    } else if (action === "confirm") {
+      if (signup.status !== "WAITLISTED") {
+        return NextResponse.json(
+          { error: "Only waitlisted signups can be confirmed" },
+          { status: 400 }
+        );
+      }
     }
 
     // For approval, check if there's capacity
@@ -108,7 +135,26 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         data: { status: "CONFIRMED" },
       });
 
-      // Create confirmation notification
+      // Send confirmation email to volunteer
+      try {
+        const emailService = getEmailService();
+        const shiftDate = format(signup.shift.start, "EEEE, MMMM d, yyyy");
+        const shiftTime = `${format(signup.shift.start, "h:mm a")} - ${format(signup.shift.end, "h:mm a")}`;
+        
+        await emailService.sendShiftConfirmationNotification({
+          to: signup.user.email!,
+          volunteerName: signup.user.name || `${signup.user.firstName || ''} ${signup.user.lastName || ''}`.trim(),
+          shiftName: signup.shift.shiftType.name,
+          shiftDate: shiftDate,
+          shiftTime: shiftTime,
+          location: signup.shift.location || 'TBD',
+          shiftId: signup.shift.id,
+        });
+      } catch (emailError) {
+        console.error("Error sending confirmation email:", emailError);
+      }
+
+      // Create in-app notification
       try {
         const shiftDate = new Intl.DateTimeFormat('en-NZ', {
           weekday: 'long',
@@ -131,7 +177,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         ...updatedSignup,
         message: "Signup approved and confirmed",
       });
-    } else {
+    }
+    
+    if (action === "reject") {
       // Reject the signup
       const updatedSignup = await prisma.signup.update({
         where: { id: signupId },
@@ -141,6 +189,90 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       return NextResponse.json({
         ...updatedSignup,
         message: "Signup rejected",
+      });
+    }
+    
+    if (action === "cancel") {
+      // Cancel a confirmed signup
+      const updatedSignup = await prisma.signup.update({
+        where: { id: signupId },
+        data: { status: "CANCELED" },
+      });
+
+      // Send cancellation email to volunteer
+      try {
+        const emailService = getEmailService();
+        const shiftDate = format(signup.shift.start, "EEEE, MMMM d, yyyy");
+        const shiftTime = `${format(signup.shift.start, "h:mm a")} - ${format(signup.shift.end, "h:mm a")}`;
+        
+        await emailService.sendVolunteerCancellationNotification({
+          to: signup.user.email!,
+          volunteerName: signup.user.name || `${signup.user.firstName || ''} ${signup.user.lastName || ''}`.trim(),
+          shiftName: signup.shift.shiftType.name,
+          shiftDate: shiftDate,
+          shiftTime: shiftTime,
+          location: signup.shift.location || 'TBD',
+        });
+      } catch (emailError) {
+        console.error("Error sending cancellation email:", emailError);
+        // Don't fail the API call if email fails
+      }
+
+      return NextResponse.json({
+        ...updatedSignup,
+        message: "Signup cancelled and volunteer notified",
+      });
+    }
+    
+    if (action === "confirm") {
+      // Confirm a waitlisted signup (allow over-capacity)
+      const updatedSignup = await prisma.signup.update({
+        where: { id: signupId },
+        data: { status: "CONFIRMED" },
+      });
+
+      // Send confirmation email to volunteer
+      try {
+        const emailService = getEmailService();
+        const shiftDate = format(signup.shift.start, "EEEE, MMMM d, yyyy");
+        const shiftTime = `${format(signup.shift.start, "h:mm a")} - ${format(signup.shift.end, "h:mm a")}`;
+        
+        await emailService.sendShiftConfirmationNotification({
+          to: signup.user.email!,
+          volunteerName: signup.user.name || `${signup.user.firstName || ''} ${signup.user.lastName || ''}`.trim(),
+          shiftName: signup.shift.shiftType.name,
+          shiftDate: shiftDate,
+          shiftTime: shiftTime,
+          location: signup.shift.location || 'TBD',
+          shiftId: signup.shift.id,
+        });
+      } catch (emailError) {
+        console.error("Error sending confirmation email:", emailError);
+        // Don't fail the API call if email fails
+      }
+
+      // Create in-app notification
+      try {
+        const shiftDate = new Intl.DateTimeFormat('en-NZ', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        }).format(signup.shift.start);
+
+        await createShiftConfirmedNotification(
+          signup.user.id,
+          signup.shift.shiftType.name,
+          shiftDate,
+          signup.shift.id
+        );
+      } catch (notificationError) {
+        console.error("Error creating confirmation notification:", notificationError);
+      }
+
+      return NextResponse.json({
+        ...updatedSignup,
+        message: "Signup confirmed and volunteer notified",
       });
     }
   } catch (error) {

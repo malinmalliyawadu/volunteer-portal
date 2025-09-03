@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -66,6 +67,7 @@ interface NotificationsContentProps {
 export function NotificationsContent({
   shiftTypes,
 }: NotificationsContentProps) {
+  const searchParams = useSearchParams();
   const [selectedShift, setSelectedShift] = useState<string>("");
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
@@ -87,6 +89,42 @@ export function NotificationsContent({
   const [filterMinShifts, setFilterMinShifts] = useState<number>(0);
   const [filterNotificationsEnabled, setFilterNotificationsEnabled] =
     useState<boolean>(true);
+
+  // Check for URL parameters to pre-select shift type and location
+  useEffect(() => {
+    const shiftTypeParam = searchParams.get('shiftType');
+    const locationParam = searchParams.get('location');
+    
+    if (shiftTypeParam && shiftTypes.some(st => st.id === shiftTypeParam)) {
+      setFilterShiftType(shiftTypeParam);
+    }
+    
+    if (locationParam && ['Wellington', 'Glenn Innes', 'Onehunga'].includes(locationParam)) {
+      setFilterLocation(locationParam);
+    }
+  }, [searchParams, shiftTypes]);
+
+  // Auto-select specific shift once shifts are loaded
+  useEffect(() => {
+    const shiftIdParam = searchParams.get('shiftId');
+    const shiftTypeParam = searchParams.get('shiftType');
+    
+    if (shifts.length > 0 && shiftIdParam) {
+      const targetShift = shifts.find(shift => shift.id === shiftIdParam);
+      if (targetShift) {
+        setSelectedShift(shiftIdParam);
+      } else {
+        // If the specific shift isn't in shortage list, but we have shifts of the same type, 
+        // let's select the first one of that type
+        if (shiftTypeParam) {
+          const firstMatchingTypeShift = shifts.find(shift => shift.shiftType.id === shiftTypeParam);
+          if (firstMatchingTypeShift) {
+            setSelectedShift(firstMatchingTypeShift.id);
+          }
+        }
+      }
+    }
+  }, [shifts, searchParams]);
 
 
   // Group saving
