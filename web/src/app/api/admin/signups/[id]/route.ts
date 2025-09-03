@@ -169,7 +169,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         ...updatedSignup,
         message: "Signup approved and confirmed",
       });
-    } else {
+    }
+    
+    if (action === "reject") {
       // Reject the signup
       const updatedSignup = await prisma.signup.update({
         where: { id: signupId },
@@ -180,7 +182,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         ...updatedSignup,
         message: "Signup rejected",
       });
-    } else if (action === "cancel") {
+    }
+    
+    if (action === "cancel") {
       // Cancel a confirmed signup
       const updatedSignup = await prisma.signup.update({
         where: { id: signupId },
@@ -210,7 +214,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         ...updatedSignup,
         message: "Signup cancelled and volunteer notified",
       });
-    } else if (action === "confirm") {
+    }
+    
+    if (action === "confirm") {
       // Confirm a waitlisted signup (allow over-capacity)
       const updatedSignup = await prisma.signup.update({
         where: { id: signupId },

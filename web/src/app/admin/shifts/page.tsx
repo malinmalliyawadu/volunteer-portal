@@ -67,6 +67,7 @@ export default async function AdminShiftsPage({
               firstName: true,
               lastName: true,
               volunteerGrade: true,
+              profilePhotoUrl: true,
             },
           },
         },
