@@ -86,6 +86,7 @@ export function ShiftCalendar({
               "w-[280px] justify-start text-left font-normal",
               !selectedDate && "text-muted-foreground"
             )}
+            data-testid="shift-calendar-trigger"
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
             <div className="flex items-center gap-2 flex-1">
@@ -119,7 +120,7 @@ export function ShiftCalendar({
             </div>
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
+        <PopoverContent className="w-auto p-0" align="start" data-testid="shift-calendar-popover">
           <Calendar
             mode="single"
             selected={selectedDate}
@@ -133,6 +134,7 @@ export function ShiftCalendar({
               hasShifts: "bg-blue-50 hover:bg-blue-100 text-blue-900 font-medium",
               selected: "bg-blue-600 text-white hover:bg-blue-700",
             }}
+            data-testid="shift-calendar"
             components={{
               DayButton: (props) => {
                 const shiftData = getShiftDataForDate(props.day.date);
@@ -163,7 +165,7 @@ export function ShiftCalendar({
             }}
             className="rounded-md border"
           />
-          <div className="p-3 border-t bg-muted/50">
+          <div className="p-3 border-t bg-muted/50" data-testid="calendar-legend">
             <div className="text-xs text-muted-foreground space-y-1">
               <div className="font-medium mb-2">Legend:</div>
               <div className="flex items-center gap-2">

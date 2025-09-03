@@ -329,8 +329,9 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
                               <Link
                                 href={`/admin/volunteers/${signup.user.id}`}
                                 className="flex-shrink-0"
+                                data-testid={`volunteer-avatar-link-${signup.id}`}
                               >
-                                <Avatar className="h-9 w-9 border-2 border-white shadow-md hover:shadow-lg transition-shadow">
+                                <Avatar className="h-9 w-9 border-2 border-white shadow-md hover:shadow-lg transition-shadow" data-testid={`volunteer-avatar-${signup.id}`}>
                                   <AvatarImage
                                     src={
                                       signup.user.profilePhotoUrl || undefined
@@ -340,8 +341,9 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
                                       `${signup.user.firstName} ${signup.user.lastName}` ||
                                       "Volunteer"
                                     }
+                                    data-testid={`volunteer-avatar-image-${signup.id}`}
                                   />
-                                  <AvatarFallback className="bg-gradient-to-br from-blue-400 to-blue-600 text-white font-bold text-xs">
+                                  <AvatarFallback className="bg-gradient-to-br from-blue-400 to-blue-600 text-white font-bold text-xs" data-testid={`volunteer-avatar-fallback-${signup.id}`}>
                                     {(signup.user.name ||
                                       signup.user
                                         .firstName)?.[0]?.toUpperCase() || "V"}
@@ -352,6 +354,7 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
                                 <Link
                                   href={`/admin/volunteers/${signup.user.id}`}
                                   className="text-sm font-medium text-slate-900 truncate hover:text-blue-600 mb-1 block"
+                                  data-testid={`volunteer-name-link-${signup.id}`}
                                 >
                                   {signup.user.name ||
                                     `${signup.user.firstName || ""} ${
@@ -362,6 +365,7 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
                                 <div className="flex items-center justify-between gap-2">
                                   <div
                                     className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${gradeInfo.color} flex-shrink-0`}
+                                    data-testid={`volunteer-grade-${signup.id}`}
                                   >
                                     {GradeIcon && (
                                       <GradeIcon className="h-3 w-3" />
@@ -372,6 +376,7 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
                                     <VolunteerActions
                                       signupId={signup.id}
                                       currentStatus={signup.status}
+                                      testIdPrefix={`shift-${shift.id}-volunteer-${signup.id}`}
                                     />
                                   </div>
                                 </div>

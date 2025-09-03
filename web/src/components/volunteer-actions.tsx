@@ -18,9 +18,10 @@ interface VolunteerActionsProps {
   signupId: string;
   currentStatus: string;
   onUpdate?: () => void;
+  testIdPrefix?: string;
 }
 
-export function VolunteerActions({ signupId, currentStatus, onUpdate }: VolunteerActionsProps) {
+export function VolunteerActions({ signupId, currentStatus, onUpdate, testIdPrefix }: VolunteerActionsProps) {
   const [loading, setLoading] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState<string | null>(null);
   const router = useRouter();
@@ -88,8 +89,8 @@ export function VolunteerActions({ signupId, currentStatus, onUpdate }: Voluntee
     const dialogContent = getDialogContent("cancel");
     
     return (
-      <div className="flex gap-1">
-        <div className="flex items-center text-xs text-green-600 font-medium">
+      <div className="flex gap-1" data-testid={testIdPrefix ? `${testIdPrefix}-confirmed-actions` : `volunteer-actions-${signupId}-confirmed`}>
+        <div className="flex items-center text-xs text-green-600 font-medium" data-testid={testIdPrefix ? `${testIdPrefix}-confirmed-status` : `volunteer-status-${signupId}-confirmed`}>
           <Check className="h-3 w-3 mr-1" />
           Confirmed
         </div>
@@ -101,6 +102,7 @@ export function VolunteerActions({ signupId, currentStatus, onUpdate }: Voluntee
               className="h-6 px-2 text-xs bg-red-50 border-red-200 text-red-700 hover:bg-red-100"
               disabled={loading === "cancel"}
               title="Cancel this shift"
+              data-testid={testIdPrefix ? `${testIdPrefix}-cancel-button` : `volunteer-cancel-${signupId}`}
             >
               {loading === "cancel" ? (
                 <Clock className="h-3 w-3 animate-spin" />
@@ -109,13 +111,13 @@ export function VolunteerActions({ signupId, currentStatus, onUpdate }: Voluntee
               )}
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-[425px]" data-testid={testIdPrefix ? `${testIdPrefix}-cancel-dialog` : `volunteer-cancel-dialog-${signupId}`}>
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
+              <DialogTitle className="flex items-center gap-2" data-testid={testIdPrefix ? `${testIdPrefix}-cancel-dialog-title` : `volunteer-cancel-dialog-title-${signupId}`}>
                 <AlertTriangle className="h-5 w-5 text-red-500" />
                 {dialogContent.title}
               </DialogTitle>
-              <DialogDescription className="text-sm text-slate-600">
+              <DialogDescription className="text-sm text-slate-600" data-testid={testIdPrefix ? `${testIdPrefix}-cancel-dialog-description` : `volunteer-cancel-dialog-description-${signupId}`}>
                 {dialogContent.description}
               </DialogDescription>
             </DialogHeader>
@@ -124,6 +126,7 @@ export function VolunteerActions({ signupId, currentStatus, onUpdate }: Voluntee
                 variant="outline"
                 onClick={() => setDialogOpen(null)}
                 disabled={loading === "cancel"}
+                data-testid={testIdPrefix ? `${testIdPrefix}-cancel-dialog-cancel` : `volunteer-cancel-dialog-cancel-${signupId}`}
               >
                 Cancel
               </Button>
@@ -131,6 +134,7 @@ export function VolunteerActions({ signupId, currentStatus, onUpdate }: Voluntee
                 variant={dialogContent.variant}
                 onClick={() => handleAction("cancel")}
                 disabled={loading === "cancel"}
+                data-testid={testIdPrefix ? `${testIdPrefix}-cancel-dialog-confirm` : `volunteer-cancel-dialog-confirm-${signupId}`}
               >
                 {loading === "cancel" ? (
                   <Clock className="h-3 w-3 animate-spin mr-2" />
@@ -148,8 +152,8 @@ export function VolunteerActions({ signupId, currentStatus, onUpdate }: Voluntee
     const dialogContent = getDialogContent("confirm");
     
     return (
-      <div className="flex gap-1">
-        <div className="flex items-center text-xs text-purple-600 font-medium">
+      <div className="flex gap-1" data-testid={testIdPrefix ? `${testIdPrefix}-waitlisted-actions` : `volunteer-actions-${signupId}-waitlisted`}>
+        <div className="flex items-center text-xs text-purple-600 font-medium" data-testid={testIdPrefix ? `${testIdPrefix}-waitlisted-status` : `volunteer-status-${signupId}-waitlisted`}>
           <Clock className="h-3 w-3 mr-1" />
           Waitlisted
         </div>
@@ -161,6 +165,7 @@ export function VolunteerActions({ signupId, currentStatus, onUpdate }: Voluntee
               className="h-6 px-2 text-xs bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
               disabled={loading === "confirm"}
               title="Confirm this volunteer (allows over-capacity)"
+              data-testid={testIdPrefix ? `${testIdPrefix}-confirm-button` : `volunteer-confirm-${signupId}`}
             >
               {loading === "confirm" ? (
                 <Clock className="h-3 w-3 animate-spin" />
@@ -169,13 +174,13 @@ export function VolunteerActions({ signupId, currentStatus, onUpdate }: Voluntee
               )}
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-[425px]" data-testid={testIdPrefix ? `${testIdPrefix}-confirm-dialog` : `volunteer-confirm-dialog-${signupId}`}>
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
+              <DialogTitle className="flex items-center gap-2" data-testid={testIdPrefix ? `${testIdPrefix}-confirm-dialog-title` : `volunteer-confirm-dialog-title-${signupId}`}>
                 <Check className="h-5 w-5 text-green-500" />
                 {dialogContent.title}
               </DialogTitle>
-              <DialogDescription className="text-sm text-slate-600">
+              <DialogDescription className="text-sm text-slate-600" data-testid={testIdPrefix ? `${testIdPrefix}-confirm-dialog-description` : `volunteer-confirm-dialog-description-${signupId}`}>
                 {dialogContent.description}
               </DialogDescription>
             </DialogHeader>
@@ -184,6 +189,7 @@ export function VolunteerActions({ signupId, currentStatus, onUpdate }: Voluntee
                 variant="outline"
                 onClick={() => setDialogOpen(null)}
                 disabled={loading === "confirm"}
+                data-testid={testIdPrefix ? `${testIdPrefix}-confirm-dialog-cancel` : `volunteer-confirm-dialog-cancel-${signupId}`}
               >
                 Cancel
               </Button>
@@ -191,6 +197,7 @@ export function VolunteerActions({ signupId, currentStatus, onUpdate }: Voluntee
                 variant={dialogContent.variant}
                 onClick={() => handleAction("confirm")}
                 disabled={loading === "confirm"}
+                data-testid={testIdPrefix ? `${testIdPrefix}-confirm-dialog-confirm` : `volunteer-confirm-dialog-confirm-${signupId}`}
               >
                 {loading === "confirm" ? (
                   <Clock className="h-3 w-3 animate-spin mr-2" />
@@ -206,7 +213,7 @@ export function VolunteerActions({ signupId, currentStatus, onUpdate }: Voluntee
 
   if (currentStatus === "CANCELED") {
     return (
-      <div className="flex items-center text-xs text-red-600 font-medium">
+      <div className="flex items-center text-xs text-red-600 font-medium" data-testid={testIdPrefix ? `${testIdPrefix}-canceled-status` : `volunteer-status-${signupId}-canceled`}>
         <X className="h-3 w-3 mr-1" />
         Canceled
       </div>
@@ -217,13 +224,14 @@ export function VolunteerActions({ signupId, currentStatus, onUpdate }: Voluntee
   const rejectDialogContent = getDialogContent("reject");
   
   return (
-    <div className="flex gap-1">
+    <div className="flex gap-1" data-testid={testIdPrefix ? `${testIdPrefix}-pending-actions` : `volunteer-actions-${signupId}-pending`}>
       <Button
         size="sm"
         variant="outline"
         className="h-6 px-2 text-xs bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
         onClick={() => handleAction("approve")}
         disabled={loading === "approve"}
+        data-testid={testIdPrefix ? `${testIdPrefix}-approve-button` : `volunteer-approve-${signupId}`}
       >
         {loading === "approve" ? (
           <Clock className="h-3 w-3 animate-spin" />
@@ -239,6 +247,7 @@ export function VolunteerActions({ signupId, currentStatus, onUpdate }: Voluntee
             variant="outline"
             className="h-6 px-2 text-xs bg-red-50 border-red-200 text-red-700 hover:bg-red-100"
             disabled={loading === "reject"}
+            data-testid={testIdPrefix ? `${testIdPrefix}-reject-button` : `volunteer-reject-${signupId}`}
           >
             {loading === "reject" ? (
               <Clock className="h-3 w-3 animate-spin" />
@@ -247,13 +256,13 @@ export function VolunteerActions({ signupId, currentStatus, onUpdate }: Voluntee
             )}
           </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px]" data-testid={testIdPrefix ? `${testIdPrefix}-reject-dialog` : `volunteer-reject-dialog-${signupId}`}>
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+            <DialogTitle className="flex items-center gap-2" data-testid={testIdPrefix ? `${testIdPrefix}-reject-dialog-title` : `volunteer-reject-dialog-title-${signupId}`}>
               <AlertTriangle className="h-5 w-5 text-red-500" />
               {rejectDialogContent.title}
             </DialogTitle>
-            <DialogDescription className="text-sm text-slate-600">
+            <DialogDescription className="text-sm text-slate-600" data-testid={testIdPrefix ? `${testIdPrefix}-reject-dialog-description` : `volunteer-reject-dialog-description-${signupId}`}>
               {rejectDialogContent.description}
             </DialogDescription>
           </DialogHeader>
@@ -262,6 +271,7 @@ export function VolunteerActions({ signupId, currentStatus, onUpdate }: Voluntee
               variant="outline"
               onClick={() => setDialogOpen(null)}
               disabled={loading === "reject"}
+              data-testid={testIdPrefix ? `${testIdPrefix}-reject-dialog-cancel` : `volunteer-reject-dialog-cancel-${signupId}`}
             >
               Cancel
             </Button>
@@ -269,6 +279,7 @@ export function VolunteerActions({ signupId, currentStatus, onUpdate }: Voluntee
               variant={rejectDialogContent.variant}
               onClick={() => handleAction("reject")}
               disabled={loading === "reject"}
+              data-testid={testIdPrefix ? `${testIdPrefix}-reject-dialog-confirm` : `volunteer-reject-dialog-confirm-${signupId}`}
             >
               {loading === "reject" ? (
                 <Clock className="h-3 w-3 animate-spin mr-2" />
