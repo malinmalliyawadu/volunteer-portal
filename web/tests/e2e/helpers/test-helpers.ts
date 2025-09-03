@@ -15,6 +15,11 @@ export async function createTestUser(
     excludedShortageNotificationTypes?: string[];
   }
 ): Promise<void> {
+  // Delete existing user first to avoid conflicts
+  await prisma.user.deleteMany({
+    where: { email }
+  });
+
   const hashedPassword = await hash("Test123456", 12);
   await prisma.user.create({
     data: {

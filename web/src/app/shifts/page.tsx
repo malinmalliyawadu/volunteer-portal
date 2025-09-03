@@ -32,7 +32,7 @@ const LOCATIONS = ["Wellington", "Glenn Innes", "Onehunga"] as const;
 type LocationOption = (typeof LOCATIONS)[number];
 
 // Shift type theming configuration
-const SHIFT_THEMES = {
+export const SHIFT_THEMES = {
   Dishwasher: {
     gradient: "from-blue-500 to-cyan-500",
     bgColor: "bg-blue-50 dark:bg-blue-950/20",
@@ -77,7 +77,7 @@ const SHIFT_THEMES = {
   },
 } as const;
 
-const DEFAULT_THEME = {
+export const DEFAULT_THEME = {
   gradient: "from-gray-500 to-slate-500",
   bgColor: "bg-gray-50 dark:bg-gray-950/20",
   borderColor: "border-gray-200 dark:border-gray-800/50",
@@ -85,7 +85,7 @@ const DEFAULT_THEME = {
   emoji: "❤️",
 };
 
-function getShiftTheme(shiftTypeName: string) {
+export function getShiftTheme(shiftTypeName: string) {
   return (
     SHIFT_THEMES[shiftTypeName as keyof typeof SHIFT_THEMES] || DEFAULT_THEME
   );
