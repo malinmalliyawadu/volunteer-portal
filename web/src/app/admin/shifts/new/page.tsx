@@ -64,13 +64,6 @@ const SHIFT_TEMPLATES = {
   },
 } as const;
 
-type ShiftType = {
-  id: string;
-  name: string;
-  description: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-};
 
 type RecentShift = {
   id: string;

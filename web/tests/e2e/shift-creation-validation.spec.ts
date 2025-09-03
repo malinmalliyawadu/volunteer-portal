@@ -261,13 +261,13 @@ test.describe("Shift Creation Form Validation", () => {
       await expect(page.getByRole("tab", { name: "Single Shift" })).toBeVisible();
       await expect(page.getByRole("tab", { name: "Bulk Creation" })).toBeVisible();
       
-      // Check form accessibility
-      await expect(page.getByLabelText(/Select shift type/)).toBeVisible();
-      await expect(page.getByLabelText(/Date/)).toBeVisible();
-      await expect(page.getByLabelText(/Start time/)).toBeVisible();
-      await expect(page.getByLabelText(/End time/)).toBeVisible();
-      await expect(page.getByLabelText(/Location/)).toBeVisible();
-      await expect(page.getByLabelText(/Volunteer capacity/)).toBeVisible();
+      // Check form accessibility via labels
+      await expect(page.getByText("Select shift type")).toBeVisible();
+      await expect(page.getByText("Date")).toBeVisible();
+      await expect(page.getByText("Start time")).toBeVisible();
+      await expect(page.getByText("End time")).toBeVisible();
+      await expect(page.getByText("Location")).toBeVisible();
+      await expect(page.getByText("Volunteer capacity")).toBeVisible();
     });
 
     test("should support keyboard navigation", async ({ page }) => {

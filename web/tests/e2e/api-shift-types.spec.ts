@@ -29,7 +29,7 @@ test.describe("Shift Types API", () => {
           name: `Test Kitchen Helper ${testId}`,
           description: "Assists with kitchen preparation and cleanup"
         },
-        extraHTTPHeaders: sessionCookie ? {
+        headers: sessionCookie ? {
           'Cookie': `${sessionCookie.name}=${sessionCookie.value}`
         } : {}
       });
@@ -51,7 +51,7 @@ test.describe("Shift Types API", () => {
         data: {
           description: "Missing name field"
         },
-        extraHTTPHeaders: sessionCookie ? {
+        headers: sessionCookie ? {
           'Cookie': `${sessionCookie.name}=${sessionCookie.value}`
         } : {}
       });
@@ -74,7 +74,7 @@ test.describe("Shift Types API", () => {
           name: duplicateName,
           description: "First one"
         },
-        extraHTTPHeaders: sessionCookie ? {
+        headers: sessionCookie ? {
           'Cookie': `${sessionCookie.name}=${sessionCookie.value}`
         } : {}
       });
@@ -85,7 +85,7 @@ test.describe("Shift Types API", () => {
           name: duplicateName,
           description: "Duplicate attempt"
         },
-        extraHTTPHeaders: sessionCookie ? {
+        headers: sessionCookie ? {
           'Cookie': `${sessionCookie.name}=${sessionCookie.value}`
         } : {}
       });
@@ -127,7 +127,7 @@ test.describe("Shift Types API", () => {
           name: "Volunteer Attempt",
           description: "Should be forbidden"
         },
-        extraHTTPHeaders: sessionCookie ? {
+        headers: sessionCookie ? {
           'Cookie': `${sessionCookie.name}=${sessionCookie.value}`
         } : {}
       });
@@ -150,7 +150,7 @@ test.describe("Shift Types API", () => {
           name: `No Description ${testId}`
           // description intentionally omitted
         },
-        extraHTTPHeaders: sessionCookie ? {
+        headers: sessionCookie ? {
           'Cookie': `${sessionCookie.name}=${sessionCookie.value}`
         } : {}
       });
@@ -171,7 +171,7 @@ test.describe("Shift Types API", () => {
           name: `Empty Description ${testId}`,
           description: ""
         },
-        extraHTTPHeaders: sessionCookie ? {
+        headers: sessionCookie ? {
           'Cookie': `${sessionCookie.name}=${sessionCookie.value}`
         } : {}
       });
@@ -189,7 +189,7 @@ test.describe("Shift Types API", () => {
       const sessionCookie = cookies.find(c => c.name.includes('session') || c.name.includes('auth'));
 
       const response = await request.get('/api/admin/shift-types', {
-        extraHTTPHeaders: sessionCookie ? {
+        headers: sessionCookie ? {
           'Cookie': `${sessionCookie.name}=${sessionCookie.value}`
         } : {}
       });
