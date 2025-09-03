@@ -7,7 +7,7 @@ interface Shift {
   id: string;
   start: Date;
   end: Date;
-  location: string;
+  location: string | null;
   capacity: number;
   shiftType: {
     id: string;

@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { format, parseISO, startOfDay, endOfDay, isToday } from "date-fns";
+import { format, parseISO, startOfDay, endOfDay } from "date-fns";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { redirect } from "next/navigation";
@@ -39,8 +39,6 @@ export default async function AdminShiftsPage({
   const today = format(new Date(), "yyyy-MM-dd");
   const isToday = dateString === today;
 
-  // Set admin page header
-  const { useAdminHeader } = await import("@/contexts/admin-header-context");
 
   // Fetch shifts for the selected date and location
   const shifts = await prisma.shift.findMany({

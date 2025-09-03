@@ -42,7 +42,15 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
             shiftType: true,
           },
         },
-        user: { select: { id: true, email: true, name: true } },
+        user: { 
+          select: { 
+            id: true, 
+            email: true, 
+            name: true, 
+            firstName: true, 
+            lastName: true 
+          } 
+        },
       },
     });
 
@@ -139,7 +147,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
           shiftName: signup.shift.shiftType.name,
           shiftDate: shiftDate,
           shiftTime: shiftTime,
-          location: signup.shift.location,
+          location: signup.shift.location || 'TBD',
           shiftId: signup.shift.id,
         });
       } catch (emailError) {
@@ -203,7 +211,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
           shiftName: signup.shift.shiftType.name,
           shiftDate: shiftDate,
           shiftTime: shiftTime,
-          location: signup.shift.location,
+          location: signup.shift.location || 'TBD',
         });
       } catch (emailError) {
         console.error("Error sending cancellation email:", emailError);
@@ -235,7 +243,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
           shiftName: signup.shift.shiftType.name,
           shiftDate: shiftDate,
           shiftTime: shiftTime,
-          location: signup.shift.location,
+          location: signup.shift.location || 'TBD',
           shiftId: signup.shift.id,
         });
       } catch (emailError) {
