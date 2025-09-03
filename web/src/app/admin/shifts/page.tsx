@@ -428,7 +428,7 @@ export default async function AdminShiftsPage({
                     className={`absolute inset-0 bg-gradient-to-br ${shiftTheme.gradient} opacity-5`}
                   />
 
-                  <CardContent className="p-5 relative z-10">
+                  <CardContent className="relative z-10">
                     {/* Header */}
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
