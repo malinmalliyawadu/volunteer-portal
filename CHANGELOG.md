@@ -1,3 +1,9 @@
+## [0.26.0] - 2025-09-04
+
+### Changes
+- feat: enhance shift template management with database persistence and UI improvements ([#87](https://github.com/malinmalliyawadu/volunteer-portal/pull/87)) by @malinmalliyawadu
+
+
 ## [0.25.0] - 2025-09-04
 
 ### Changes
