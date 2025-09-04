@@ -729,9 +729,18 @@ async function main() {
     },
   });
 
+  const mediaRole = await prisma.shiftType.upsert({
+    where: { name: "Media Role" },
+    update: {},
+    create: {
+      name: "Media Role",
+      description: "Photography, social media content creation, and community engagement (5:00pm-7:00pm)",
+    },
+  });
+
   const today = new Date();
 
-  // Define shift times based on the actual roles
+  // Define shift times and location-specific capacities
   const shiftConfigs = [
     {
       type: dishwasher,
@@ -739,7 +748,11 @@ async function main() {
       startMinute: 30,
       endHour: 21, // 9:00pm
       endMinute: 0,
-      capacity: 2,
+      capacities: {
+        "Wellington": 3, // 3 dishwasher
+        "Glen Innes": 2, // 2 dishwasher
+        "Onehunga": 2, // 2 dishwasher
+      },
     },
     {
       type: fohSetup,
@@ -747,7 +760,11 @@ async function main() {
       startMinute: 30,
       endHour: 21, // 9:00pm
       endMinute: 0,
-      capacity: 3,
+      capacities: {
+        "Wellington": 2, // 2 front of house + setup
+        "Glen Innes": 1, // 1 front of house + setup
+        "Onehunga": 2, // 2 front of house + setup
+      },
     },
     {
       type: frontOfHouse,
@@ -755,7 +772,11 @@ async function main() {
       startMinute: 30,
       endHour: 21, // 9:00pm
       endMinute: 0,
-      capacity: 4,
+      capacities: {
+        "Wellington": 8, // 8 front of house
+        "Glen Innes": 8, // 8 front of house
+        "Onehunga": 10, // 10 front of house
+      },
     },
     {
       type: kitchenPrep,
@@ -763,7 +784,11 @@ async function main() {
       startMinute: 0,
       endHour: 17, // 5:30pm
       endMinute: 30,
-      capacity: 3,
+      capacities: {
+        "Wellington": 7, // 7 kitchen prep
+        "Glen Innes": 5, // 5 kitchen prep
+        "Onehunga": 6, // 6 kitchen prep
+      },
     },
     {
       type: kitchenPrepService,
@@ -771,7 +796,11 @@ async function main() {
       startMinute: 0,
       endHour: 21, // 9:00pm
       endMinute: 0,
-      capacity: 2,
+      capacities: {
+        "Wellington": 6, // 6 kitchen service
+        "Glen Innes": 4, // 4 kitchen service
+        "Onehunga": 6, // 6 kitchen service
+      },
     },
     {
       type: kitchenServicePack,
@@ -779,11 +808,27 @@ async function main() {
       startMinute: 30,
       endHour: 21, // 9:00pm
       endMinute: 0,
-      capacity: 3,
+      capacities: {
+        "Wellington": 6, // 6 kitchen service
+        "Glen Innes": 4, // 4 kitchen service
+        "Onehunga": 6, // 6 kitchen service
+      },
+    },
+    {
+      type: mediaRole,
+      startHour: 17, // 5:00pm
+      startMinute: 0,
+      endHour: 19, // 7:00pm
+      endMinute: 0,
+      capacities: {
+        "Wellington": 1, // 1 media role
+        "Glen Innes": 1, // 1 media role
+        "Onehunga": 1, // 1 media role
+      },
     },
   ];
 
-  const LOCATIONS = ["Wellington", "Glenn Innes", "Onehunga"];
+  const LOCATIONS = ["Wellington", "Glen Innes", "Onehunga"];
   const createdShifts = [];
 
   // Create historical shifts for the past 4 weeks to show volunteer history
@@ -866,7 +911,7 @@ async function main() {
           start,
           end,
           location,
-          capacity: config.capacity,
+          capacity: config.capacities[location],
           notes:
             period.weeksAgo === 1 && shiftInWeek === 0
               ? "Great teamwork this shift!"
@@ -893,7 +938,7 @@ async function main() {
 
       // Also add some other volunteers to these shifts for realism
       const volunteersToAdd = Math.min(
-        config.capacity - 1, // Leave space for sample volunteer
+        config.capacities[location] - 1, // Leave space for sample volunteer
         Math.floor(Math.random() * 3) + 1 // 1-3 other volunteers
       );
 
@@ -963,7 +1008,7 @@ async function main() {
             start,
             end,
             location,
-            capacity: config.capacity,
+            capacity: config.capacities[location],
             notes:
               i === 0 && configIndex === 0
                 ? "Bring closed-toe shoes and apron"
@@ -1613,6 +1658,236 @@ async function main() {
   }
 
   // Download and convert profile images after all users are created
+  // Create shift templates for location-specific capacities
+  console.log("📋 Seeding shift templates...");
+  
+  const templateConfigs = [
+    // Wellington templates
+    {
+      name: "Wellington Kitchen Prep",
+      location: "Wellington",
+      shiftType: kitchenPrep,
+      startTime: "12:00",
+      endTime: "17:30",
+      capacity: 7,
+      notes: "Food preparation and ingredient prep",
+    },
+    {
+      name: "Wellington Kitchen Service",
+      location: "Wellington",
+      shiftType: kitchenPrepService,
+      startTime: "12:00",
+      endTime: "21:00",
+      capacity: 6,
+      notes: "Food prep and cooking service",
+    },
+    {
+      name: "Wellington Kitchen Service & Pack Down",
+      location: "Wellington",
+      shiftType: kitchenServicePack,
+      startTime: "17:30",
+      endTime: "21:00",
+      capacity: 6,
+      notes: "Cooking service and kitchen cleanup",
+    },
+    {
+      name: "Wellington Front of House",
+      location: "Wellington",
+      shiftType: frontOfHouse,
+      startTime: "17:30",
+      endTime: "21:00",
+      capacity: 8,
+      notes: "Guest service and dining room support",
+    },
+    {
+      name: "Wellington FOH Set-Up & Service",
+      location: "Wellington",
+      shiftType: fohSetup,
+      startTime: "16:30",
+      endTime: "21:00",
+      capacity: 2,
+      notes: "Front of house setup and service support",
+    },
+    {
+      name: "Wellington Dishwasher",
+      location: "Wellington",
+      shiftType: dishwasher,
+      startTime: "17:30",
+      endTime: "21:00",
+      capacity: 3,
+      notes: "Dishwashing and kitchen cleaning duties",
+    },
+    {
+      name: "Wellington Media Role",
+      location: "Wellington",
+      shiftType: mediaRole,
+      startTime: "17:00",
+      endTime: "19:00",
+      capacity: 1,
+      notes: "Photography, social media content creation, and community engagement",
+    },
+    
+    // Glen Innes templates
+    {
+      name: "Glen Innes Kitchen Prep",
+      location: "Glen Innes",
+      shiftType: kitchenPrep,
+      startTime: "12:00",
+      endTime: "17:30",
+      capacity: 5,
+      notes: "Food preparation and ingredient prep",
+    },
+    {
+      name: "Glen Innes Kitchen Service",
+      location: "Glen Innes",
+      shiftType: kitchenPrepService,
+      startTime: "12:00",
+      endTime: "21:00",
+      capacity: 4,
+      notes: "Food prep and cooking service",
+    },
+    {
+      name: "Glen Innes Kitchen Service & Pack Down",
+      location: "Glen Innes",
+      shiftType: kitchenServicePack,
+      startTime: "17:30",
+      endTime: "21:00",
+      capacity: 4,
+      notes: "Cooking service and kitchen cleanup",
+    },
+    {
+      name: "Glen Innes Front of House",
+      location: "Glen Innes",
+      shiftType: frontOfHouse,
+      startTime: "17:30",
+      endTime: "21:00",
+      capacity: 8,
+      notes: "Guest service and dining room support",
+    },
+    {
+      name: "Glen Innes FOH Set-Up & Service",
+      location: "Glen Innes",
+      shiftType: fohSetup,
+      startTime: "16:30",
+      endTime: "21:00",
+      capacity: 1,
+      notes: "Front of house setup and service support",
+    },
+    {
+      name: "Glen Innes Dishwasher",
+      location: "Glen Innes",
+      shiftType: dishwasher,
+      startTime: "17:30",
+      endTime: "21:00",
+      capacity: 2,
+      notes: "Dishwashing and kitchen cleaning duties",
+    },
+    {
+      name: "Glen Innes Media Role",
+      location: "Glen Innes",
+      shiftType: mediaRole,
+      startTime: "17:00",
+      endTime: "19:00",
+      capacity: 1,
+      notes: "Photography, social media content creation, and community engagement",
+    },
+    
+    // Onehunga templates
+    {
+      name: "Onehunga Kitchen Prep",
+      location: "Onehunga",
+      shiftType: kitchenPrep,
+      startTime: "12:00",
+      endTime: "17:30",
+      capacity: 6,
+      notes: "Food preparation and ingredient prep",
+    },
+    {
+      name: "Onehunga Kitchen Service",
+      location: "Onehunga",
+      shiftType: kitchenPrepService,
+      startTime: "12:00",
+      endTime: "21:00",
+      capacity: 6,
+      notes: "Food prep and cooking service",
+    },
+    {
+      name: "Onehunga Kitchen Service & Pack Down",
+      location: "Onehunga",
+      shiftType: kitchenServicePack,
+      startTime: "17:30",
+      endTime: "21:00",
+      capacity: 6,
+      notes: "Cooking service and kitchen cleanup",
+    },
+    {
+      name: "Onehunga Front of House",
+      location: "Onehunga",
+      shiftType: frontOfHouse,
+      startTime: "17:30",
+      endTime: "21:00",
+      capacity: 10,
+      notes: "Guest service and dining room support",
+    },
+    {
+      name: "Onehunga FOH Set-Up & Service",
+      location: "Onehunga",
+      shiftType: fohSetup,
+      startTime: "16:30",
+      endTime: "21:00",
+      capacity: 2,
+      notes: "Front of house setup and service support",
+    },
+    {
+      name: "Onehunga Dishwasher",
+      location: "Onehunga",
+      shiftType: dishwasher,
+      startTime: "17:30",
+      endTime: "21:00",
+      capacity: 2,
+      notes: "Dishwashing and kitchen cleaning duties",
+    },
+    {
+      name: "Onehunga Media Role",
+      location: "Onehunga",
+      shiftType: mediaRole,
+      startTime: "17:00",
+      endTime: "19:00",
+      capacity: 1,
+      notes: "Photography, social media content creation, and community engagement",
+    },
+  ];
+
+  // Create shift templates
+  for (const templateConfig of templateConfigs) {
+    await prisma.shiftTemplate.upsert({
+      where: {
+        name_location: {
+          name: templateConfig.name,
+          location: templateConfig.location,
+        },
+      },
+      update: {
+        shiftTypeId: templateConfig.shiftType.id,
+        startTime: templateConfig.startTime,
+        endTime: templateConfig.endTime,
+        capacity: templateConfig.capacity,
+        notes: templateConfig.notes,
+      },
+      create: {
+        name: templateConfig.name,
+        location: templateConfig.location,
+        shiftTypeId: templateConfig.shiftType.id,
+        startTime: templateConfig.startTime,
+        endTime: templateConfig.endTime,
+        capacity: templateConfig.capacity,
+        notes: templateConfig.notes,
+      },
+    });
+  }
+
+  console.log(`✅ Seeded ${templateConfigs.length} shift templates`);
+
   await downloadAndConvertProfileImages();
 }
 
