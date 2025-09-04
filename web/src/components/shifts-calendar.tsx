@@ -343,12 +343,12 @@ export function ShiftsCalendar({
 
       {displayLocations.length === 0 && (
         <Card>
-          <CardContent className="py-12 text-center">
+          <CardContent className="py-12 text-center" data-testid="empty-state">
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
               <Calendar className="w-8 h-8 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-semibold mb-2">No shifts scheduled</h3>
-            <p className="text-muted-foreground">
+            <h3 className="text-lg font-semibold mb-2" data-testid="empty-state-title">No shifts scheduled</h3>
+            <p className="text-muted-foreground" data-testid="empty-state-description">
               {selectedLocation
                 ? `No shifts found for ${selectedLocation} this month.`
                 : "No shifts are currently scheduled for this month."}
