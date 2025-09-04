@@ -166,14 +166,14 @@ test.describe("Admin Shift Creation Form", () => {
       // Switch to bulk creation
       await page.getByRole("tab", { name: "Weekly Schedule" }).click();
       
-      // Check day checkboxes exist
-      await expect(page.getByLabel("Monday")).toBeVisible();
-      await expect(page.getByLabel("Tuesday")).toBeVisible();
-      await expect(page.getByLabel("Wednesday")).toBeVisible();
-      await expect(page.getByLabel("Thursday")).toBeVisible();
-      await expect(page.getByLabel("Friday")).toBeVisible();
-      await expect(page.getByLabel("Saturday")).toBeVisible();
-      await expect(page.getByLabel("Sunday")).toBeVisible();
+      // Check day checkboxes exist (using test IDs since labels are abbreviated)
+      await expect(page.getByTestId("day-monday-checkbox")).toBeVisible();
+      await expect(page.getByTestId("day-tuesday-checkbox")).toBeVisible();
+      await expect(page.getByTestId("day-wednesday-checkbox")).toBeVisible();
+      await expect(page.getByTestId("day-thursday-checkbox")).toBeVisible();
+      await expect(page.getByTestId("day-friday-checkbox")).toBeVisible();
+      await expect(page.getByTestId("day-saturday-checkbox")).toBeVisible();
+      await expect(page.getByTestId("day-sunday-checkbox")).toBeVisible();
     });
 
     test("should open calendar pickers for bulk date range", async ({ page }) => {

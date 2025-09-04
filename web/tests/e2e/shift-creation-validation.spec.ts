@@ -92,15 +92,15 @@ test.describe("Shift Creation Form Validation", () => {
     });
   });
 
-  test.describe("Bulk Creation Validation", () => {
+  test.describe("Weekly Schedule Validation", () => {
     test.beforeEach(async ({ page }) => {
       // Switch to bulk creation tab
-      await page.getByRole("tab", { name: "Bulk Creation" }).click();
+      await page.getByRole("tab", { name: "Weekly Schedule" }).click();
     });
 
     test("should require date range selection", async ({ page }) => {
       // Try to submit without setting dates
-      await page.getByRole("button", { name: "Create Shifts" }).click();
+      await page.getByRole("button", { name: "Create Schedule" }).click();
       
       // Should prevent submission without dates
       await expect(page).toHaveURL(/\/admin\/shifts\/new/);
@@ -137,23 +137,23 @@ test.describe("Shift Creation Form Validation", () => {
 
     test("should require at least one day selection", async ({ page }) => {
       // Try to submit without selecting any days
-      await page.getByRole("button", { name: "Create Shifts" }).click();
+      await page.getByRole("button", { name: "Create Schedule" }).click();
       
       // Should prevent submission
       await expect(page).toHaveURL(/\/admin\/shifts\/new/);
       
       // Day checkboxes should be visible
-      await expect(page.getByLabel("Monday")).toBeVisible();
-      await expect(page.getByLabel("Tuesday")).toBeVisible();
+      await expect(page.getByTestId("day-monday-checkbox")).toBeVisible();
+      await expect(page.getByTestId("day-tuesday-checkbox")).toBeVisible();
     });
 
     test("should require template selection", async ({ page }) => {
       // Select days but no templates
-      await page.getByLabel("Monday").check();
-      await page.getByLabel("Tuesday").check();
+      await page.getByTestId("day-monday-checkbox").check();
+      await page.getByTestId("day-tuesday-checkbox").check();
       
       // Try to submit
-      await page.getByRole("button", { name: "Create Shifts" }).click();
+      await page.getByRole("button", { name: "Create Schedule" }).click();
       
       // Should prevent submission without templates
       await expect(page).toHaveURL(/\/admin\/shifts\/new/);
@@ -270,7 +270,7 @@ test.describe("Shift Creation Form Validation", () => {
       await page.getByTestId("shift-notes-textarea").fill("Important notes");
       
       // Switch tabs and back
-      await page.getByRole("tab", { name: "Bulk Creation" }).click();
+      await page.getByRole("tab", { name: "Weekly Schedule" }).click();
       await page.getByRole("tab", { name: "Single Shift" }).click();
       
       // Data should be preserved (if implemented)
