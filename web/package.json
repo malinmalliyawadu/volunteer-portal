@@ -47,6 +47,7 @@
     "@tanstack/react-table": "^8.21.3",
     "@types/bcryptjs": "^2.4.6",
     "@types/node-fetch": "^2.6.13",
+    "@vercel/speed-insights": "^1.2.0",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^2.4.3",
     "canvas-confetti": "^1.9.3",

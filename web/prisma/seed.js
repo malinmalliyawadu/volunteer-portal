@@ -7,22 +7,40 @@ const https = require('https');
 
 const prisma = new PrismaClient();
 
-// Generate random profile images using randomuser.me
-function generateRandomProfileImages() {
-  const profileMap = [
-    { email: 'sarah.chen@gmail.com', gender: 'women' },
-    { email: 'james.williams@hotmail.com', gender: 'men' },
-    { email: 'priya.patel@yahoo.com', gender: 'women' },
-    { email: 'mike.johnson@outlook.com', gender: 'men' },
-    { email: 'alex.taylor@gmail.com', gender: 'men' }, // Alex is they/them but using men category
-    { email: 'maria.gonzalez@gmail.com', gender: 'women' },
-    { email: 'tom.brown@hotmail.com', gender: 'men' },
-    { email: 'lucy.kim@yahoo.com', gender: 'women' },
-    { email: 'volunteer@example.com', gender: 'women' },
-    { email: 'admin@everybodyeats.nz', gender: 'men' },
-  ];
+// Generate random profile images using randomuser.me for all users
+async function generateRandomProfileImagesForAllUsers() {
+  // Get all users from database
+  const allUsers = await prisma.user.findMany({
+    select: { email: true, pronouns: true, firstName: true }
+  });
 
-  return profileMap.map(({ email, gender }) => {
+  return allUsers.map(({ email, pronouns, firstName }) => {
+    // Determine gender category based on pronouns, with fallback logic
+    let gender = 'women'; // Default
+    if (pronouns) {
+      if (pronouns.includes('he/him')) {
+        gender = 'men';
+      } else if (pronouns.includes('she/her')) {
+        gender = 'women';
+      } else {
+        // For they/them or other pronouns, randomly assign or use name heuristics
+        gender = Math.random() > 0.5 ? 'men' : 'women';
+      }
+    } else {
+      // Fallback: use email or firstName for gender guess, or random
+      const maleNames = ['james', 'mike', 'tom', 'david', 'john', 'alex', 'noah', 'ethan', 'lucas', 'mason', 'oliver', 'liam'];
+      const femaleNames = ['sarah', 'priya', 'maria', 'lucy', 'emma', 'olivia', 'ava', 'isabella', 'sophia', 'mia'];
+      
+      const nameToCheck = firstName?.toLowerCase() || email.split('@')[0].toLowerCase();
+      if (maleNames.some(name => nameToCheck.includes(name))) {
+        gender = 'men';
+      } else if (femaleNames.some(name => nameToCheck.includes(name))) {
+        gender = 'women';
+      } else {
+        gender = Math.random() > 0.5 ? 'men' : 'women';
+      }
+    }
+    
     // Generate random number between 0-99 for profile diversity
     const randomId = Math.floor(Math.random() * 100);
     const filename = `${email.split('@')[0].replace('.', '-')}-${randomId}.jpg`;
@@ -34,9 +52,6 @@ function generateRandomProfileImages() {
     };
   });
 }
-
-// Generate profile images with randomness
-const profileImages = generateRandomProfileImages();
 
 
 function downloadImageAsBase64(url) {
@@ -64,7 +79,11 @@ function downloadImageAsBase64(url) {
 }
 
 async function downloadAndConvertProfileImages() {
-  console.log('🎲 Generating random profile photos from randomuser.me...\n');
+  console.log('🎲 Generating random profile photos from randomuser.me for all users...\n');
+  
+  // Generate profile images for all users dynamically
+  const profileImages = await generateRandomProfileImagesForAllUsers();
+  console.log(`📊 Found ${profileImages.length} users to process`);
   
   for (const image of profileImages) {
     try {
