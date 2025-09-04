@@ -10,65 +10,60 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { SelectField } from "@/components/ui/select-field";
-import { Badge } from "@/components/ui/badge";
 import { AdminPageWrapper } from "@/components/admin-page-wrapper";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  CalendarIcon,
-  ClockIcon,
-  MapPinIcon,
-  UsersIcon,
-  FileTextIcon,
   PlusIcon,
   CopyIcon,
   CalendarDaysIcon,
   RefreshCwIcon,
 } from "lucide-react";
 import { PageContainer } from "@/components/page-container";
+import { BulkDateRangeSection } from "@/components/shift-date-time-section";
+import { ShiftCreationClientForm } from "@/components/shift-creation-client-form";
 
 const LOCATIONS = ["Wellington", "Glenn Innes", "Onehunga"] as const;
 
-// Common shift patterns for restaurants
+// Shift templates matching the actual restaurant operations
 const SHIFT_TEMPLATES = {
-  "Morning Kitchen": {
-    startTime: "08:00",
-    endTime: "12:00",
-    capacity: 4,
-    notes: "Food prep and morning setup",
-  },
-  "Lunch Service": {
-    startTime: "11:00",
-    endTime: "15:00",
-    capacity: 6,
-    notes: "Lunch service and customer support",
-  },
-  "Afternoon Prep": {
-    startTime: "14:00",
-    endTime: "18:00",
+  "Kitchen Prep": {
+    startTime: "12:00",
+    endTime: "17:30",
     capacity: 3,
-    notes: "Dinner prep and inventory",
+    notes: "Food preparation and ingredient prep",
   },
-  "Dinner Service": {
-    startTime: "17:00",
+  "Kitchen Prep & Service": {
+    startTime: "12:00",
     endTime: "21:00",
-    capacity: 8,
-    notes: "Evening service and cleanup",
+    capacity: 2,
+    notes: "Food prep and cooking service",
   },
-  "Cleanup & Close": {
-    startTime: "20:00",
-    endTime: "23:00",
+  "FOH Set-Up & Service": {
+    startTime: "16:30",
+    endTime: "21:00",
+    capacity: 3,
+    notes: "Front of house setup and service support",
+  },
+  "Front of House": {
+    startTime: "17:30",
+    endTime: "21:00",
     capacity: 4,
-    notes: "Kitchen cleanup and closing duties",
+    notes: "Guest service and dining room support",
+  },
+  "Kitchen Service & Pack Down": {
+    startTime: "17:30",
+    endTime: "21:00",
+    capacity: 3,
+    notes: "Cooking service and kitchen cleanup",
+  },
+  "Dishwasher": {
+    startTime: "17:30",
+    endTime: "21:00",
+    capacity: 2,
+    notes: "Dishwashing and kitchen cleaning duties",
   },
 } as const;
 
-type ShiftType = {
-  id: string;
-  name: string;
-  description: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-};
 
 type RecentShift = {
   id: string;
@@ -249,7 +244,6 @@ export default async function NewShiftPage() {
     "use server";
 
     const schema = z.object({
-      shiftTypeId: z.string().cuid(),
       startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
       endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
       location: z.string().min(1),
@@ -275,7 +269,6 @@ export default async function NewShiftPage() {
     }
 
     const parsed = schema.safeParse({
-      shiftTypeId: formData.get("shiftTypeId"),
       startDate: formData.get("startDate"),
       endDate: formData.get("endDate"),
       location: formData.get("location"),
@@ -291,7 +284,6 @@ export default async function NewShiftPage() {
     }
 
     const {
-      shiftTypeId,
       startDate,
       endDate,
       location,
@@ -316,8 +308,7 @@ export default async function NewShiftPage() {
 
       if (selectedDays.includes(dayName)) {
         for (const templateName of selectedTemplates) {
-          const template =
-            SHIFT_TEMPLATES[templateName as keyof typeof SHIFT_TEMPLATES];
+          const template = templatesWithShiftTypes[templateName];
           if (template) {
             const shiftStart = new Date(
               `${current.toISOString().split("T")[0]}T${template.startTime}:00`
@@ -329,7 +320,7 @@ export default async function NewShiftPage() {
             // Only create future shifts
             if (shiftStart > new Date()) {
               shifts.push({
-                shiftTypeId,
+                shiftTypeId: template.shiftTypeId,
                 start: shiftStart,
                 end: shiftEnd,
                 location,
@@ -357,7 +348,6 @@ export default async function NewShiftPage() {
       // Get the created shifts
       const createdShifts = await prisma.shift.findMany({
         where: {
-          shiftTypeId,
           location,
           start: {
             gte: shifts[0].start,
@@ -464,9 +454,69 @@ export default async function NewShiftPage() {
     redirect(`/admin/shifts?created=${shifts.length}`);
   }
 
+  async function createShiftType(formData: FormData) {
+    "use server";
+
+    const schema = z.object({
+      name: z.string().min(1, "Name is required").max(100, "Name too long"),
+      description: z.string().optional().nullable().transform((v) => (v && v.length > 0 ? v : null)),
+    });
+
+    const parsed = schema.safeParse({
+      name: formData.get("name"),
+      description: formData.get("description"),
+    });
+
+    if (!parsed.success) {
+      redirect("/admin/shifts/new?error=shift_type_validation");
+    }
+
+    const { name, description } = parsed.data;
+
+    try {
+      // Check if shift type with this name already exists
+      const existing = await prisma.shiftType.findUnique({
+        where: { name },
+      });
+
+      if (existing) {
+        redirect("/admin/shifts/new?error=shift_type_exists");
+      }
+
+      await prisma.shiftType.create({
+        data: {
+          name,
+          description,
+        },
+      });
+
+      redirect("/admin/shifts/new?shift_type_created=1");
+    } catch (error) {
+      console.error("Shift type creation error:", error);
+      redirect("/admin/shifts/new?error=shift_type_create");
+    }
+  }
+
   const shiftTypes = await prisma.shiftType.findMany({
     orderBy: { name: "asc" },
   });
+
+  // Create shift type name to ID mapping
+  const shiftTypeMap = Object.fromEntries(
+    shiftTypes.map(st => [st.name, st.id])
+  );
+
+  // Enhanced templates with shift type IDs
+  const templatesWithShiftTypes = Object.fromEntries(
+    Object.entries(SHIFT_TEMPLATES).map(([name, template]) => [
+      name,
+      { 
+        ...template, 
+        name,
+        shiftTypeId: shiftTypeMap[name] || shiftTypeMap["Kitchen Prep"] || shiftTypes[0]?.id || ""
+      }
+    ])
+  );
 
   // Get last week's shifts for potential copying
   const lastWeekStart = new Date();
@@ -530,207 +580,12 @@ export default async function NewShiftPage() {
             </CardHeader>
             <CardContent className="space-y-8">
               <form action={createShift} className="space-y-8">
-                {/* Quick Templates */}
-                <div
-                  className="space-y-3"
-                  data-testid="quick-templates-section"
-                >
-                  <div className="flex items-center gap-2 mb-4">
-                    <h3 className="font-medium text-gray-900 dark:text-gray-100">
-                      Quick Templates
-                    </h3>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {Object.entries(SHIFT_TEMPLATES).map(([name, template]) => (
-                      <Badge
-                        key={name}
-                        variant="outline"
-                        className="cursor-pointer hover:bg-primary/10 transition-colors"
-                      >
-                        {name} ({template.startTime}-{template.endTime})
-                      </Badge>
-                    ))}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Template times and capacities for quick reference
-                  </p>
-                </div>
-
-                {/* Shift Type Section */}
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 mb-4">
-                    <h3 className="font-medium text-gray-900 dark:text-gray-100">
-                      Shift Type
-                    </h3>
-                  </div>
-                  <div>
-                    <Label
-                      htmlFor="shiftTypeId"
-                      className="text-sm font-medium mb-2 block"
-                    >
-                      Select shift type *
-                    </Label>
-                    <SelectField
-                      name="shiftTypeId"
-                      id="shiftTypeId"
-                      placeholder="Choose the type of volunteer work..."
-                      required
-                      options={shiftTypes.map((t: ShiftType) => ({
-                        value: t.id,
-                        label: t.name,
-                      }))}
-                      className="w-full"
-                      data-testid="shift-type-select"
-                    />
-                  </div>
-                </div>
-
-                {/* Date & Time Section */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 mb-4">
-                    <h3 className="font-medium text-gray-900 dark:text-gray-100">
-                      Schedule
-                    </h3>
-                  </div>
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="date"
-                        className="text-sm font-medium flex items-center gap-2"
-                      >
-                        <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                        Date *
-                      </Label>
-                      <Input
-                        type="date"
-                        name="date"
-                        id="date"
-                        required
-                        className="h-11"
-                        data-testid="shift-date-input"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="startTime"
-                        className="text-sm font-medium flex items-center gap-2"
-                      >
-                        <ClockIcon className="h-4 w-4 text-muted-foreground" />
-                        Start time *
-                      </Label>
-                      <Input
-                        type="time"
-                        name="startTime"
-                        id="startTime"
-                        required
-                        className="h-11"
-                        data-testid="shift-start-time-input"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="endTime"
-                        className="text-sm font-medium flex items-center gap-2"
-                      >
-                        <ClockIcon className="h-4 w-4 text-muted-foreground" />
-                        End time *
-                      </Label>
-                      <Input
-                        type="time"
-                        name="endTime"
-                        id="endTime"
-                        required
-                        className="h-11"
-                        data-testid="shift-end-time-input"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Location & Capacity Section */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 mb-4">
-                    <h3 className="font-medium text-gray-900 dark:text-gray-100">
-                      Location & Capacity
-                    </h3>
-                  </div>
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="location"
-                        className="text-sm font-medium flex items-center gap-2"
-                      >
-                        <MapPinIcon className="h-4 w-4 text-muted-foreground" />
-                        Location *
-                      </Label>
-                      <SelectField
-                        name="location"
-                        id="location"
-                        placeholder="Choose a location..."
-                        required
-                        options={LOCATIONS.map((loc) => ({
-                          value: loc,
-                          label: loc,
-                        }))}
-                        className="w-full"
-                        data-testid="shift-location-select"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="capacity"
-                        className="text-sm font-medium flex items-center gap-2"
-                      >
-                        <UsersIcon className="h-4 w-4 text-muted-foreground" />
-                        Volunteer capacity *
-                      </Label>
-                      <Input
-                        type="number"
-                        name="capacity"
-                        id="capacity"
-                        min={1}
-                        step={1}
-                        placeholder="e.g. 6"
-                        required
-                        className="h-11"
-                        data-testid="shift-capacity-input"
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Maximum number of volunteers needed
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Notes Section */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 mb-4">
-                    <h3 className="font-medium text-gray-900 dark:text-gray-100">
-                      Additional Information
-                    </h3>
-                  </div>
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="notes"
-                      className="text-sm font-medium flex items-center gap-2"
-                    >
-                      <FileTextIcon className="h-4 w-4 text-muted-foreground" />
-                      Notes (optional)
-                    </Label>
-                    <Textarea
-                      name="notes"
-                      id="notes"
-                      rows={4}
-                      placeholder="Add any special instructions, requirements, or additional details for volunteers..."
-                      className="resize-none"
-                      data-testid="shift-notes-textarea"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      These notes will be visible to volunteers when they view
-                      the shift details.
-                    </p>
-                  </div>
-                </div>
+                <ShiftCreationClientForm
+                  shiftTypes={shiftTypes}
+                  initialTemplates={templatesWithShiftTypes}
+                  locations={LOCATIONS}
+                  createShiftTypeAction={createShiftType}
+                />
 
                 {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t">
@@ -773,53 +628,12 @@ export default async function NewShiftPage() {
             </CardHeader>
             <CardContent className="space-y-8">
               <form action={createBulkShifts} className="space-y-8">
-                {/* Shift Type */}
-                <div className="space-y-3">
-                  <h3 className="font-medium text-gray-900 dark:text-gray-100">
-                    Shift Type
-                  </h3>
-                  <SelectField
-                    name="shiftTypeId"
-                    placeholder="Choose the type of volunteer work..."
-                    required
-                    options={shiftTypes.map((t: ShiftType) => ({
-                      value: t.id,
-                      label: t.name,
-                    }))}
-                    className="w-full"
-                    data-testid="bulk-shift-type-select"
-                  />
-                </div>
-
                 {/* Date Range */}
                 <div className="space-y-4">
                   <h3 className="font-medium text-gray-900 dark:text-gray-100">
                     Date Range
                   </h3>
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="startDate">Start Date *</Label>
-                      <Input
-                        type="date"
-                        name="startDate"
-                        id="startDate"
-                        required
-                        className="h-11"
-                        data-testid="bulk-start-date-input"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="endDate">End Date *</Label>
-                      <Input
-                        type="date"
-                        name="endDate"
-                        id="endDate"
-                        required
-                        className="h-11"
-                        data-testid="bulk-end-date-input"
-                      />
-                    </div>
-                  </div>
+                  <BulkDateRangeSection />
                 </div>
 
                 {/* Days Selection */}
@@ -859,37 +673,43 @@ export default async function NewShiftPage() {
                     Shift Templates
                   </h3>
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    {Object.entries(SHIFT_TEMPLATES).map(([name, template]) => (
-                      <div
-                        key={name}
-                        className="flex items-start space-x-3 p-4 border rounded-lg"
-                      >
-                        <input
-                          type="checkbox"
-                          name={`template_${name}`}
-                          id={`template_${name}`}
-                          className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary mt-1"
-                          data-testid={`template-${name
-                            .toLowerCase()
-                            .replace(/\s+/g, "-")}-checkbox`}
-                        />
-                        <div className="flex-1">
-                          <Label
-                            htmlFor={`template_${name}`}
-                            className="font-medium"
-                          >
-                            {name}
-                          </Label>
-                          <p className="text-sm text-muted-foreground">
-                            {template.startTime} - {template.endTime} •{" "}
-                            {template.capacity} volunteers
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {template.notes}
-                          </p>
+                    {Object.entries(templatesWithShiftTypes).map(([name, template]) => {
+                      const shiftTypeName = shiftTypes.find(st => st.id === template.shiftTypeId)?.name || 'Unknown';
+                      return (
+                        <div
+                          key={name}
+                          className="flex items-start space-x-3 p-4 border rounded-lg"
+                        >
+                          <input
+                            type="checkbox"
+                            name={`template_${name}`}
+                            id={`template_${name}`}
+                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary mt-1"
+                            data-testid={`template-${name
+                              .toLowerCase()
+                              .replace(/\s+/g, "-")}-checkbox`}
+                          />
+                          <div className="flex-1">
+                            <Label
+                              htmlFor={`template_${name}`}
+                              className="font-medium"
+                            >
+                              {name}
+                            </Label>
+                            <p className="text-sm text-muted-foreground">
+                              {template.startTime} - {template.endTime} •{" "}
+                              {template.capacity} volunteers
+                            </p>
+                            <p className="text-xs text-primary/80 mt-1">
+                              Shift Type: {shiftTypeName}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {template.notes}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
 
