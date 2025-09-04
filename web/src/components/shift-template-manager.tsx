@@ -250,21 +250,6 @@ export function ShiftTemplateManager({ initialTemplates, shiftTypes, onTemplateC
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="template-shift-type">Shift Type *</Label>
-                  <Select value={newTemplate.shiftTypeId} onValueChange={(value) => setNewTemplate(prev => ({ ...prev, shiftTypeId: value }))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select shift type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {shiftTypes.map((shiftType) => (
-                        <SelectItem key={shiftType.id} value={shiftType.id}>
-                          {shiftType.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">

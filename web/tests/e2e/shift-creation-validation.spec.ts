@@ -179,7 +179,7 @@ test.describe("Shift Creation Form Validation", () => {
       await page.getByTestId("add-template-button").click();
       
       // Check required field indicators in template dialog (more specific selectors)
-      const templateDialog = page.getByRole("dialog");
+      const templateDialog = page.getByRole("dialog").filter({ hasText: "Add New Template" });
       await expect(templateDialog.getByText("Template Name *")).toBeVisible();
       await expect(templateDialog.getByText("Start Time *")).toBeVisible();
       await expect(templateDialog.getByText("End Time *")).toBeVisible();
