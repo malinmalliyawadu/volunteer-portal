@@ -1,6 +1,23 @@
 import { test, expect } from "./base";
 import { loginAsAdmin } from "./helpers/auth";
 
+/**
+ * Tests for the enhanced admin shift creation form components.
+ * 
+ * NOTE: These tests require a running database with admin user setup.
+ * The tests will fail if:
+ * - Database is not running on localhost:5432
+ * - Admin user is not properly seeded in the database
+ * - Authentication system is not functional
+ * 
+ * Tests focus on UI component functionality including:
+ * - Template management system
+ * - Form field interactions
+ * - Calendar date pickers
+ * - Bulk creation workflow
+ * - Form validation
+ * - Accessibility features
+ */
 test.describe("Admin Shift Creation Form", () => {
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);
