@@ -15,10 +15,13 @@ Tests the main shift creation form UI components:
 
 ### `shift-creation-validation.spec.ts`
 Tests form validation functionality:
-- Required field validation
-- Input constraints (capacity, time ranges)
-- Error handling
-- Template validation
+- Required field validation and browser validation behavior
+- Input constraints (capacity min/max, number types)
+- Time input validation and edge cases
+- Template management validation (creation, editing)
+- Shift type creation validation
+- Error handling and form state preservation
+- Cross-browser validation compatibility
 
 ### `api-shift-types.spec.ts`
 Tests the shift types API endpoints:
@@ -92,6 +95,8 @@ npx playwright test admin-shift-creation-form.spec.ts --project=chromium --ui
 2. **Authentication Requirement**: Tests depend on seeded admin users for login
 3. **Network Dependency**: Tests require the Next.js development server to be running
 4. **Test Data**: Some tests may create test data that needs cleanup
+5. **Browser Validation Variability**: Form validation behavior may vary between browsers
+6. **Calendar Date Availability**: Calendar picker tests use first available dates which may vary
 
 ## Troubleshooting
 
