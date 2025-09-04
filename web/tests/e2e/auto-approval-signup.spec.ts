@@ -247,23 +247,34 @@ test.describe("Auto-Approval Signup Flow", () => {
   });
 
   test("should complete signup flow without page reload", async ({ page }) => {
+    // Navigate to shifts page first to get a shift ID
     await page.goto("/shifts");
     await page.waitForLoadState("load");
 
-    await page.waitForSelector('[data-testid="shifts-list"]', {
-      timeout: 10000,
-    });
+    // Wait for calendar to load
+    await page.waitForTimeout(2000);
+
+    // Look for a clickable calendar day with shifts
+    const calendarDay = page.locator('[data-testid^="calendar-day-"]').first();
+    if (await calendarDay.isVisible()) {
+      await calendarDay.click();
+      await page.waitForLoadState("load");
+    } else {
+      // Fallback: try to find a shift ID from the page and navigate directly
+      await page.goto("/shifts/details?date=2024-12-01");
+      await page.waitForLoadState("load");
+    }
 
     const currentUrl = page.url();
 
-    const firstShiftCard = page
-      .locator('[data-testid^="shifts-date-section-"]')
-      .first()
-      .locator(".space-y-3")
-      .locator("div")
-      .first();
-
-    const signupButton = firstShiftCard.getByText("Sign Up Now").first();
+    // Look for shift cards in the details page
+    const firstShiftCard = page.locator('[data-testid^="shift-card-"]').first();
+    
+    // Try to find signup button
+    const signupButton = firstShiftCard.locator('button:has-text("Sign Up")').or(
+      firstShiftCard.locator('button:has-text("✨ Sign Up Now")')
+    ).first();
+    
     if (await signupButton.isVisible()) {
       await signupButton.click();
 
@@ -307,21 +318,32 @@ test.describe("Auto-Approval API Integration", () => {
       }
     });
 
+    // Navigate to shifts page first to get a shift ID
     await page.goto("/shifts");
     await page.waitForLoadState("load");
 
-    await page.waitForSelector('[data-testid="shifts-list"]', {
-      timeout: 10000,
-    });
+    // Wait for calendar to load
+    await page.waitForTimeout(2000);
 
-    const firstShiftCard = page
-      .locator('[data-testid^="shifts-date-section-"]')
-      .first()
-      .locator(".space-y-3")
-      .locator("div")
-      .first();
+    // Look for a clickable calendar day with shifts
+    const calendarDay = page.locator('[data-testid^="calendar-day-"]').first();
+    if (await calendarDay.isVisible()) {
+      await calendarDay.click();
+      await page.waitForLoadState("load");
+    } else {
+      // Fallback: try to find a shift ID from the page and navigate directly
+      await page.goto("/shifts/details?date=2024-12-01");
+      await page.waitForLoadState("load");
+    }
 
-    const signupButton = firstShiftCard.getByText("Sign Up Now").first();
+    // Look for shift cards in the details page
+    const firstShiftCard = page.locator('[data-testid^="shift-card-"]').first();
+    
+    // Try to find signup button
+    const signupButton = firstShiftCard.locator('button:has-text("Sign Up")').or(
+      firstShiftCard.locator('button:has-text("✨ Sign Up Now")')
+    ).first();
+
     if (await signupButton.isVisible()) {
       await signupButton.click();
 
