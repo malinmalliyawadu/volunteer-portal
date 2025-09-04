@@ -757,6 +757,16 @@ async function main() {
     },
   });
 
+  // Special shift type for flexible PM placement
+  const anywhereNeeded = await prisma.shiftType.upsert({
+    where: { name: "Anywhere I'm Needed (PM)" },
+    update: {},
+    create: {
+      name: "Anywhere I'm Needed (PM)",
+      description: "Flexible placement for PM shifts starting after 4:00pm - you'll be assigned to where help is most needed",
+    },
+  });
+
   const today = new Date();
 
   // Define shift times and location-specific capacities
@@ -843,6 +853,18 @@ async function main() {
         "Wellington": 1, // 1 media role
         "Glen Innes": 1, // 1 media role
         "Onehunga": 1, // 1 media role
+      },
+    },
+    {
+      type: anywhereNeeded,
+      startHour: 16, // 4:00pm (flexible start for PM shifts)
+      startMinute: 0,
+      endHour: 21, // 9:00pm
+      endMinute: 0,
+      capacities: {
+        "Wellington": 3, // Allow 3 flexible volunteers
+        "Glen Innes": 2, // Allow 2 flexible volunteers
+        "Onehunga": 3, // Allow 3 flexible volunteers
       },
     },
   ];

@@ -143,6 +143,12 @@ model Signup {
   previousStatus String?        // Status before cancellation (only set when canceling from CONFIRMED)
   cancellationReason String?     // Optional reason for cancellation
   
+  // Flexible placement tracking
+  isFlexiblePlacement Boolean    @default(false)  // True if this is an "Anywhere I'm Needed" signup
+  originalShiftId     String?    // Original flexible shift ID before placement
+  placedAt           DateTime?   // When volunteer was moved to final shift
+  placementNotes     String?     // Admin notes about the placement
+  
   shift          Shift          @relation(fields: [shiftId], references: [id])
   user           User           @relation(fields: [userId], references: [id])
   groupBooking   GroupBooking?  @relation(fields: [groupBookingId], references: [id])
@@ -356,6 +362,7 @@ enum NotificationType {
   GROUP_INVITATION        // You were invited to a group booking
   ACHIEVEMENT_UNLOCKED    // You unlocked a new achievement
   SHIFT_CANCELLATION_MANAGER // Volunteer canceled shift - notify managers
+  FLEXIBLE_PLACEMENT      // You've been placed from "Anywhere I'm Needed" to specific shift
 }
 
 model RestaurantManager {

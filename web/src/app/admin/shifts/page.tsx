@@ -12,6 +12,7 @@ import { AdminPageWrapper } from "@/components/admin-page-wrapper";
 import { ShiftLocationSelector } from "@/components/shift-location-selector";
 import { ShiftCalendarWrapper } from "@/components/shift-calendar-wrapper";
 import { AnimatedShiftCardsWrapper } from "@/components/animated-shift-cards-wrapper";
+import { FlexiblePlacementManager } from "@/components/flexible-placement-manager";
 
 const LOCATIONS = ["Wellington", "Glenn Innes", "Onehunga"] as const;
 type LocationOption = (typeof LOCATIONS)[number];
@@ -274,11 +275,19 @@ export default async function AdminShiftsPage({
             </Button>
           </div>
         ) : (
-          <AnimatedShiftCardsWrapper 
-            shifts={shifts}
-            dateString={dateString}
-            selectedLocation={selectedLocation}
-          />
+          <>
+            {/* Flexible Placement Manager - shows above regular shifts */}
+            <FlexiblePlacementManager 
+              selectedDate={dateString}
+              selectedLocation={selectedLocation}
+            />
+            
+            <AnimatedShiftCardsWrapper 
+              shifts={shifts}
+              dateString={dateString}
+              selectedLocation={selectedLocation}
+            />
+          </>
         )}
       </PageContainer>
     </AdminPageWrapper>

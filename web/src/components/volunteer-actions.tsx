@@ -1,9 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Check, X, Clock, UserMinus, AlertTriangle } from "lucide-react";
+import { Check, X, Clock, UserMinus, AlertTriangle, ArrowRightLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { format } from "date-fns";
 import {
   Dialog,
   DialogContent,
@@ -19,12 +23,92 @@ interface VolunteerActionsProps {
   currentStatus: string;
   onUpdate?: () => void;
   testIdPrefix?: string;
+  currentShift?: {
+    id: string;
+    start: Date;
+    location: string | null;
+    shiftType: {
+      name: string;
+    };
+  };
+  volunteerName?: string;
 }
 
-export function VolunteerActions({ signupId, currentStatus, onUpdate, testIdPrefix }: VolunteerActionsProps) {
+export function VolunteerActions({ signupId, currentStatus, onUpdate, testIdPrefix, currentShift, volunteerName }: VolunteerActionsProps) {
   const [loading, setLoading] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState<string | null>(null);
+  const [availableShifts, setAvailableShifts] = useState<{
+    id: string;
+    start: string;
+    end: string;
+    location: string | null;
+    capacity: number;
+    confirmedCount: number;
+    shiftType: {
+      id: string;
+      name: string;
+    };
+  }[]>([]);
+  const [selectedTargetShift, setSelectedTargetShift] = useState<string>("");
+  const [movementNotes, setMovementNotes] = useState("");
   const router = useRouter();
+
+  const fetchAvailableShifts = useCallback(async () => {
+    if (!currentShift) return;
+
+    try {
+      const shiftDate = format(currentShift.start, "yyyy-MM-dd");
+      const response = await fetch(`/api/admin/shifts/available?date=${shiftDate}&location=${currentShift.location}`);
+      if (response.ok) {
+        const data = await response.json();
+        // Filter out the current shift and show all available shifts
+        const filtered = data.filter((shift: typeof availableShifts[0]) => shift.id !== currentShift.id);
+        setAvailableShifts(filtered);
+      }
+    } catch (error) {
+      console.error("Error fetching available shifts:", error);
+    }
+  }, [currentShift]);
+
+  // Fetch available shifts for movement
+  useEffect(() => {
+    if (dialogOpen === "move" && currentShift) {
+      fetchAvailableShifts();
+    }
+  }, [dialogOpen, currentShift, fetchAvailableShifts]);
+
+  const handleVolunteerMove = async () => {
+    if (!selectedTargetShift) return;
+
+    setLoading("move");
+    try {
+      const response = await fetch("/api/admin/volunteer-movement", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          signupId,
+          targetShiftId: selectedTargetShift,
+          movementNotes: movementNotes || undefined,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to move volunteer");
+      }
+
+      setDialogOpen(null);
+      setSelectedTargetShift("");
+      setMovementNotes("");
+      router.refresh();
+      if (onUpdate) onUpdate();
+    } catch (error) {
+      console.error("Error moving volunteer:", error);
+      alert(`Failed to move volunteer. ${error instanceof Error ? error.message : 'Please try again.'}`);
+    } finally {
+      setLoading(null);
+    }
+  };
 
   const handleAction = async (action: "approve" | "reject" | "cancel" | "confirm") => {
     setLoading(action);
@@ -86,7 +170,7 @@ export function VolunteerActions({ signupId, currentStatus, onUpdate, testIdPref
   };
 
   if (currentStatus === "CONFIRMED") {
-    const dialogContent = getDialogContent("cancel");
+    const cancelDialogContent = getDialogContent("cancel");
     
     return (
       <div className="flex gap-1" data-testid={testIdPrefix ? `${testIdPrefix}-confirmed-actions` : `volunteer-actions-${signupId}-confirmed`}>
@@ -94,6 +178,87 @@ export function VolunteerActions({ signupId, currentStatus, onUpdate, testIdPref
           <Check className="h-3 w-3 mr-1" />
           Confirmed
         </div>
+
+        {/* Move Button */}
+        {currentShift && (
+          <Dialog open={dialogOpen === "move"} onOpenChange={(open) => setDialogOpen(open ? "move" : null)}>
+            <DialogTrigger asChild>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-6 px-2 text-xs bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+                disabled={loading === "move"}
+                title="Move to different shift"
+                data-testid={testIdPrefix ? `${testIdPrefix}-move-button` : `volunteer-move-${signupId}`}
+              >
+                {loading === "move" ? (
+                  <Clock className="h-3 w-3 animate-spin" />
+                ) : (
+                  <ArrowRightLeft className="h-3 w-3" />
+                )}
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md" data-testid={testIdPrefix ? `${testIdPrefix}-move-dialog` : `volunteer-move-dialog-${signupId}`}>
+              <DialogHeader>
+                <DialogTitle data-testid={testIdPrefix ? `${testIdPrefix}-move-dialog-title` : `volunteer-move-dialog-title-${signupId}`}>
+                  Move {volunteerName || 'Volunteer'} to Different Shift
+                </DialogTitle>
+                <DialogDescription className="text-sm text-slate-600" data-testid={testIdPrefix ? `${testIdPrefix}-move-dialog-description` : `volunteer-move-dialog-description-${signupId}`}>
+                  Move this volunteer from {currentShift.shiftType.name} to a different shift on the same day.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="targetShift">Select Target Shift</Label>
+                  <Select value={selectedTargetShift} onValueChange={setSelectedTargetShift}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose a shift..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableShifts.map(shift => (
+                        <SelectItem key={shift.id} value={shift.id}>
+                          {shift.shiftType.name} • {format(new Date(shift.start), "h:mm a")} - {format(new Date(shift.end), "h:mm a")} • {shift.capacity - shift.confirmedCount} spots available
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="movementNotes">Movement Notes (optional)</Label>
+                  <Textarea
+                    id="movementNotes"
+                    value={movementNotes}
+                    onChange={(e) => setMovementNotes(e.target.value)}
+                    placeholder="Add any notes about this movement..."
+                    rows={3}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => setDialogOpen(null)}
+                  disabled={loading === "move"}
+                  data-testid={testIdPrefix ? `${testIdPrefix}-move-dialog-cancel` : `volunteer-move-dialog-cancel-${signupId}`}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleVolunteerMove}
+                  disabled={!selectedTargetShift || loading === "move"}
+                  data-testid={testIdPrefix ? `${testIdPrefix}-move-dialog-confirm` : `volunteer-move-dialog-confirm-${signupId}`}
+                >
+                  {loading === "move" ? (
+                    <Clock className="h-3 w-3 animate-spin mr-2" />
+                  ) : null}
+                  Move Volunteer
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
+
+        {/* Cancel Button */}
         <Dialog open={dialogOpen === "cancel"} onOpenChange={(open) => setDialogOpen(open ? "cancel" : null)}>
           <DialogTrigger asChild>
             <Button
@@ -115,10 +280,10 @@ export function VolunteerActions({ signupId, currentStatus, onUpdate, testIdPref
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2" data-testid={testIdPrefix ? `${testIdPrefix}-cancel-dialog-title` : `volunteer-cancel-dialog-title-${signupId}`}>
                 <AlertTriangle className="h-5 w-5 text-red-500" />
-                {dialogContent.title}
+                {cancelDialogContent.title}
               </DialogTitle>
               <DialogDescription className="text-sm text-slate-600" data-testid={testIdPrefix ? `${testIdPrefix}-cancel-dialog-description` : `volunteer-cancel-dialog-description-${signupId}`}>
-                {dialogContent.description}
+                {cancelDialogContent.description}
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
@@ -131,7 +296,7 @@ export function VolunteerActions({ signupId, currentStatus, onUpdate, testIdPref
                 Cancel
               </Button>
               <Button
-                variant={dialogContent.variant}
+                variant={cancelDialogContent.variant}
                 onClick={() => handleAction("cancel")}
                 disabled={loading === "cancel"}
                 data-testid={testIdPrefix ? `${testIdPrefix}-cancel-dialog-confirm` : `volunteer-cancel-dialog-confirm-${signupId}`}
@@ -139,7 +304,7 @@ export function VolunteerActions({ signupId, currentStatus, onUpdate, testIdPref
                 {loading === "cancel" ? (
                   <Clock className="h-3 w-3 animate-spin mr-2" />
                 ) : null}
-                {dialogContent.actionText}
+                {cancelDialogContent.actionText}
               </Button>
             </DialogFooter>
           </DialogContent>
