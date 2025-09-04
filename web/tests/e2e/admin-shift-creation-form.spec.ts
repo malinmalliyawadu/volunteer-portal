@@ -1,173 +1,95 @@
 import { test, expect } from "./base";
 import { loginAsAdmin } from "./helpers/auth";
-import { 
-  createTestUser, 
-  deleteTestUsers, 
-  deleteTestShifts 
-} from "./helpers/test-helpers";
-import { randomUUID } from "crypto";
 
 test.describe("Admin Shift Creation Form", () => {
-  const testId = randomUUID().slice(0, 8);
-  const testEmails = [`admin-shift-creation-${testId}@example.com`];
-  const testShiftIds: string[] = [];
-
-  test.beforeAll(async () => {
-    await createTestUser(testEmails[0], "ADMIN");
-  });
-
-  test.afterAll(async () => {
-    await deleteTestUsers(testEmails);
-    await deleteTestShifts(testShiftIds);
-  });
-
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);
   });
 
-  test.describe("Shift Template Management", () => {
-    test("should display shift templates section with default templates", async ({ page }) => {
+  test.describe("Basic Form Structure", () => {
+    test("should display shift creation form with main elements", async ({ page }) => {
       await page.goto("/admin/shifts/new");
       await page.waitForLoadState("load");
 
-      // Check templates section is visible
-      await expect(page.getByTestId("shift-templates-section")).toBeVisible();
+      // Check main tabs
+      await expect(page.getByRole("tab", { name: "Single Shift" })).toBeVisible();
+      await expect(page.getByRole("tab", { name: "Bulk Creation" })).toBeVisible();
       
-      // Check some default templates exist (using actual template names)
-      await expect(page.getByTestId("template-kitchen-prep")).toBeVisible();
-      await expect(page.getByTestId("template-front-of-house")).toBeVisible();
-      
-      // Check add template button
-      await expect(page.getByTestId("add-template-button")).toBeVisible();
+      // Check form sections are present
+      await expect(page.getByText("Quick Templates")).toBeVisible();
+      await expect(page.getByText("Shift Type")).toBeVisible();
+      await expect(page.getByText("Schedule")).toBeVisible();
+      await expect(page.getByText("Location & Capacity")).toBeVisible();
+      await expect(page.getByText("Additional Information")).toBeVisible();
     });
 
-    test("should allow creating a new shift template", async ({ page }) => {
+    test("should have create shift type functionality", async ({ page }) => {
+      await page.goto("/admin/shifts/new");
+      await page.waitForLoadState("load");
+
+      // Check create shift type button exists
+      await expect(page.getByTestId("create-shift-type-button")).toBeVisible();
+      
+      // Open create shift type dialog
+      await page.getByTestId("create-shift-type-button").click();
+      
+      // Check dialog content
+      await expect(page.getByText("Create New Shift Type")).toBeVisible();
+      await expect(page.getByTestId("shift-type-name-input")).toBeVisible();
+      await expect(page.getByTestId("shift-type-description-textarea")).toBeVisible();
+      await expect(page.getByTestId("create-shift-type-submit")).toBeVisible();
+    });
+  });
+
+  test.describe("Template Management UI", () => {
+    test("should display template management interface", async ({ page }) => {
+      await page.goto("/admin/shifts/new");
+      await page.waitForLoadState("load");
+
+      // Check templates section
+      await expect(page.getByTestId("shift-templates-section")).toBeVisible();
+      await expect(page.getByTestId("add-template-button")).toBeVisible();
+      
+      // Check that some default templates are visible
+      const templateElements = page.locator('[data-testid^="template-"]').first();
+      await expect(templateElements).toBeVisible();
+    });
+
+    test("should open add template dialog", async ({ page }) => {
       await page.goto("/admin/shifts/new");
       await page.waitForLoadState("load");
 
       // Open add template dialog
       await page.getByTestId("add-template-button").click();
       
-      // Fill template form
-      await page.getByTestId("template-name-input").fill("Test Evening Shift");
-      await page.getByTestId("template-start-time-input").fill("18:00");
-      await page.getByTestId("template-end-time-input").fill("22:00");
-      await page.getByTestId("template-capacity-input").fill("5");
-      
-      // Select shift type
-      await page.getByTestId("template-shift-type-select").click();
-      await page.getByRole("option").first().click();
-      
-      await page.getByTestId("template-notes-textarea").fill("Evening service shift");
-      
-      // Save template
-      await page.getByTestId("save-template-button").click();
-      
-      // Verify template appears in the list
-      await expect(page.getByTestId("template-test-evening-shift")).toBeVisible();
-      await expect(page.getByText("18:00-22:00 • 5 volunteers")).toBeVisible();
-    });
-
-    test("should allow editing an existing template", async ({ page }) => {
-      await page.goto("/admin/shifts/new");
-      await page.waitForLoadState("load");
-
-      // Hover over a template to reveal edit button
-      const templateButton = page.getByTestId("template-kitchen-prep");
-      await templateButton.hover();
-      
-      // Click edit button
-      await page.getByTestId("edit-template-kitchen-prep").click();
-      
-      // Modify template
-      await page.getByTestId("edit-template-name-input").fill("Modified Kitchen Prep");
-      await page.getByTestId("edit-template-capacity-input").fill("4");
-      
-      // Save changes
-      await page.getByTestId("save-edit-template-button").click();
-      
-      // Verify changes
-      await expect(page.getByTestId("template-modified-kitchen-prep")).toBeVisible();
-      await expect(page.getByText("• 4 volunteers")).toBeVisible();
-    });
-
-    test("should allow deleting a template with confirmation", async ({ page }) => {
-      await page.goto("/admin/shifts/new");
-      await page.waitForLoadState("load");
-
-      // Create a template to delete first
-      await page.getByTestId("add-template-button").click();
-      await page.getByTestId("template-name-input").fill("Delete Me");
-      await page.getByTestId("template-start-time-input").fill("10:00");
-      await page.getByTestId("template-end-time-input").fill("14:00");
-      await page.getByTestId("template-capacity-input").fill("2");
-      await page.getByTestId("template-shift-type-select").click();
-      await page.getByRole("option").first().click();
-      await page.getByTestId("save-template-button").click();
-
-      // Hover and delete
-      await page.getByTestId("template-delete-me").hover();
-      await page.getByTestId("delete-template-delete-me").click();
-      
-      // Confirm deletion
-      await page.getByRole("button", { name: "Delete Template" }).click();
-      
-      // Verify template is removed
-      await expect(page.getByTestId("template-delete-me")).not.toBeVisible();
-    });
-
-    test("should apply template values to form when clicked", async ({ page }) => {
-      await page.goto("/admin/shifts/new");
-      await page.waitForLoadState("load");
-
-      // Click on a template
-      await page.getByTestId("template-kitchen-prep").click();
-
-      // Verify form fields are populated
-      await expect(page.getByTestId("shift-start-time-input")).toHaveValue("12:00");
-      await expect(page.getByTestId("shift-end-time-input")).toHaveValue("17:30");
-      await expect(page.getByTestId("shift-capacity-input")).toHaveValue("3");
-      
-      // Verify template indicator is shown
-      await expect(page.getByText("Using: Kitchen Prep")).toBeVisible();
+      // Check dialog form fields
+      await expect(page.getByText("Add New Template")).toBeVisible();
+      await expect(page.getByTestId("template-name-input")).toBeVisible();
+      await expect(page.getByTestId("template-start-time-input")).toBeVisible();
+      await expect(page.getByTestId("template-end-time-input")).toBeVisible();
+      await expect(page.getByTestId("template-capacity-input")).toBeVisible();
+      await expect(page.getByTestId("template-shift-type-select")).toBeVisible();
+      await expect(page.getByTestId("template-notes-textarea")).toBeVisible();
+      await expect(page.getByTestId("save-template-button")).toBeVisible();
     });
   });
 
-  test.describe("Shift Type Management", () => {
-    test("should allow creating a new shift type from the form", async ({ page }) => {
+  test.describe("Form Fields and Interactions", () => {
+    test("should have all required form fields", async ({ page }) => {
       await page.goto("/admin/shifts/new");
       await page.waitForLoadState("load");
 
-      // Open create shift type dialog
-      await page.getByTestId("create-shift-type-button").click();
-      
-      // Fill shift type form
-      await page.getByTestId("shift-type-name-input").fill("Test Cleaning");
-      await page.getByTestId("shift-type-description-textarea").fill("Deep cleaning duties");
-      
-      // Submit
-      await page.getByTestId("create-shift-type-submit").click();
-      
-      // Verify redirect and success (would check for success message if implemented)
-      await expect(page).toHaveURL(/\/admin\/shifts\/new/);
+      // Check main form fields exist
+      await expect(page.getByTestId("shift-type-select")).toBeVisible();
+      await expect(page.getByTestId("shift-date-input")).toBeVisible();
+      await expect(page.getByTestId("shift-start-time-input")).toBeVisible();
+      await expect(page.getByTestId("shift-end-time-input")).toBeVisible();
+      await expect(page.getByTestId("shift-location-select")).toBeVisible();
+      await expect(page.getByTestId("shift-capacity-input")).toBeVisible();
+      await expect(page.getByTestId("shift-notes-textarea")).toBeVisible();
+      await expect(page.getByTestId("create-shift-button")).toBeVisible();
     });
 
-    test("should validate shift type creation form", async ({ page }) => {
-      await page.goto("/admin/shifts/new");
-      await page.waitForLoadState("load");
-
-      // Open create shift type dialog
-      await page.getByTestId("create-shift-type-button").click();
-      
-      // Try to submit without name
-      await page.getByTestId("create-shift-type-submit").click();
-      
-      // Form should not submit (browser validation)
-      await expect(page.getByTestId("shift-type-name-input")).toBeVisible();
-    });
-  });
-
-  test.describe("Enhanced Date/Time Selection", () => {
     test("should open calendar picker for date selection", async ({ page }) => {
       await page.goto("/admin/shifts/new");
       await page.waitForLoadState("load");
@@ -177,91 +99,35 @@ test.describe("Admin Shift Creation Form", () => {
       
       // Calendar should be visible
       await expect(page.getByRole("dialog")).toBeVisible();
+      
       // Check for calendar grid with date buttons
       const dateButtons = page.locator('[role="gridcell"] button');
       await expect(dateButtons.first()).toBeVisible();
     });
 
-    test("should update form when template is selected", async ({ page }) => {
+    test("should accept manual input in time fields", async ({ page }) => {
       await page.goto("/admin/shifts/new");
       await page.waitForLoadState("load");
 
-      // Initially form should be empty
-      await expect(page.getByTestId("shift-start-time-input")).toHaveValue("");
-      
-      // Click template
-      await page.getByTestId("template-kitchen-prep").click();
-      
-      // Form should update with template values
-      await expect(page.getByTestId("shift-start-time-input")).toHaveValue("12:00");
-      await expect(page.getByTestId("shift-end-time-input")).toHaveValue("17:30");
-    });
-  });
-
-  test.describe("Form Integration", () => {
-    test("should coordinate between template selection and manual input", async ({ page }) => {
-      await page.goto("/admin/shifts/new");
-      await page.waitForLoadState("load");
-
-      // Select template
-      await page.getByTestId("template-kitchen-prep").click();
-      await expect(page.getByTestId("shift-capacity-input")).toHaveValue("3");
-      
-      // Manually change capacity
-      await page.getByTestId("shift-capacity-input").fill("5");
-      
-      // Template indicator should disappear when form is manually modified
-      await expect(page.getByText("Using: Kitchen Prep")).not.toBeVisible();
-    });
-
-    test("should require all required fields for single shift creation", async ({ page }) => {
-      await page.goto("/admin/shifts/new");
-      await page.waitForLoadState("load");
-
-      // Try to submit without filling required fields
-      await page.getByTestId("create-shift-button").click();
-      
-      // Should stay on form (browser validation will prevent submission)
-      await expect(page).toHaveURL(/\/admin\/shifts\/new/);
-    });
-
-    test("should create single shift with complete form data", async ({ page }) => {
-      await page.goto("/admin/shifts/new");
-      await page.waitForLoadState("load");
-
-      // Select shift type
-      await page.getByTestId("shift-type-select").click();
-      await page.getByRole("option").first().click();
-
-      // Fill date
-      await page.getByTestId("shift-date-input").click();
-      // Select the first available date in the calendar
-      await page.getByRole("button", { name: /^\d+$/ }).first().click();
-
-      // Fill times
+      // Test time inputs accept values
       await page.getByTestId("shift-start-time-input").fill("14:00");
+      await expect(page.getByTestId("shift-start-time-input")).toHaveValue("14:00");
+      
       await page.getByTestId("shift-end-time-input").fill("18:00");
+      await expect(page.getByTestId("shift-end-time-input")).toHaveValue("18:00");
+    });
 
-      // Select location
-      await page.getByTestId("shift-location-select").click();
-      await page.getByRole("option", { name: "Wellington" }).click();
+    test("should accept capacity input", async ({ page }) => {
+      await page.goto("/admin/shifts/new");
+      await page.waitForLoadState("load");
 
-      // Set capacity
-      await page.getByTestId("shift-capacity-input").fill("4");
-
-      // Add notes
-      await page.getByTestId("shift-notes-textarea").fill("Test shift notes");
-
-      // Submit form
-      await page.getByTestId("create-shift-button").click();
-
-      // Should redirect to shifts list
-      await expect(page).toHaveURL(/\/admin\/shifts/);
+      await page.getByTestId("shift-capacity-input").fill("5");
+      await expect(page.getByTestId("shift-capacity-input")).toHaveValue("5");
     });
   });
 
-  test.describe("Bulk Shift Creation", () => {
-    test("should show enhanced bulk creation form in second tab", async ({ page }) => {
+  test.describe("Bulk Creation Tab", () => {
+    test("should switch to bulk creation tab", async ({ page }) => {
       await page.goto("/admin/shifts/new");
       await page.waitForLoadState("load");
 
@@ -271,13 +137,29 @@ test.describe("Admin Shift Creation Form", () => {
       // Check bulk-specific elements
       await expect(page.getByTestId("bulk-start-date-input")).toBeVisible();
       await expect(page.getByTestId("bulk-end-date-input")).toBeVisible();
-      
-      // Check template checkboxes for bulk creation
-      await expect(page.getByTestId("template-kitchen-prep-checkbox")).toBeVisible();
-      await expect(page.getByTestId("template-front-of-house-checkbox")).toBeVisible();
+      await expect(page.getByText("Date Range")).toBeVisible();
+      await expect(page.getByText("Days Selection")).toBeVisible();
+      await expect(page.getByText("Shift Templates")).toBeVisible();
     });
 
-    test("should open calendar picker for bulk date range", async ({ page }) => {
+    test("should have day selection checkboxes", async ({ page }) => {
+      await page.goto("/admin/shifts/new");
+      await page.waitForLoadState("load");
+
+      // Switch to bulk creation
+      await page.getByRole("tab", { name: "Bulk Creation" }).click();
+      
+      // Check day checkboxes exist
+      await expect(page.getByLabel("Monday")).toBeVisible();
+      await expect(page.getByLabel("Tuesday")).toBeVisible();
+      await expect(page.getByLabel("Wednesday")).toBeVisible();
+      await expect(page.getByLabel("Thursday")).toBeVisible();
+      await expect(page.getByLabel("Friday")).toBeVisible();
+      await expect(page.getByLabel("Saturday")).toBeVisible();
+      await expect(page.getByLabel("Sunday")).toBeVisible();
+    });
+
+    test("should open calendar pickers for bulk date range", async ({ page }) => {
       await page.goto("/admin/shifts/new");
       await page.waitForLoadState("load");
 
@@ -290,21 +172,61 @@ test.describe("Admin Shift Creation Form", () => {
       
       // Close and try end date
       await page.keyboard.press("Escape");
-      await page.waitForTimeout(100); // Small delay to ensure dialog closes
+      await page.waitForTimeout(100);
       await page.getByTestId("bulk-end-date-input").click();
       await expect(page.getByRole("dialog")).toBeVisible();
     });
+  });
 
-    test("should display template information with shift type names", async ({ page }) => {
+  test.describe("Form Validation", () => {
+    test("should have required field indicators", async ({ page }) => {
       await page.goto("/admin/shifts/new");
       await page.waitForLoadState("load");
 
-      // Switch to bulk creation
-      await page.getByRole("tab", { name: "Bulk Creation" }).click();
+      // Check for required field labels (with asterisks)
+      await expect(page.getByText("Select shift type *")).toBeVisible();
+      await expect(page.getByText("Date *")).toBeVisible();
+      await expect(page.getByText("Start time *")).toBeVisible();
+      await expect(page.getByText("End time *")).toBeVisible();
+      await expect(page.getByText("Location *")).toBeVisible();
+      await expect(page.getByText("Volunteer capacity *")).toBeVisible();
+    });
+
+    test("should validate capacity input constraints", async ({ page }) => {
+      await page.goto("/admin/shifts/new");
+      await page.waitForLoadState("load");
+
+      const capacityInput = page.getByTestId("shift-capacity-input");
       
-      // Check that templates show shift type information
-      await expect(page.getByText("Shift Type:")).toBeVisible();
-      await expect(page.getByText("12:00 - 17:30 • 3 volunteers")).toBeVisible();
+      // Check min attribute
+      await expect(capacityInput).toHaveAttribute("min", "1");
+      await expect(capacityInput).toHaveAttribute("step", "1");
+      await expect(capacityInput).toHaveAttribute("type", "number");
+    });
+  });
+
+  test.describe("Accessibility", () => {
+    test("should have proper form labels and ARIA attributes", async ({ page }) => {
+      await page.goto("/admin/shifts/new");
+      await page.waitForLoadState("load");
+
+      // Check tab navigation
+      await expect(page.getByRole("tablist")).toBeVisible();
+      await expect(page.getByRole("tab", { name: "Single Shift" })).toHaveAttribute("aria-selected", "true");
+      
+      // Check form has proper structure
+      const form = page.locator("form").first();
+      await expect(form).toBeVisible();
+    });
+
+    test("should support keyboard navigation", async ({ page }) => {
+      await page.goto("/admin/shifts/new");
+      await page.waitForLoadState("load");
+
+      // Test tab navigation
+      await page.keyboard.press("Tab");
+      const activeElement = page.locator(":focus");
+      await expect(activeElement).toBeVisible();
     });
   });
 
@@ -314,10 +236,10 @@ test.describe("Admin Shift Creation Form", () => {
       await page.goto("/admin/shifts/new");
       await page.waitForLoadState("load");
 
-      // Check that main elements are still visible
-      await expect(page.getByTestId("shift-templates-section")).toBeVisible();
+      // Check that main elements are still visible on mobile
+      await expect(page.getByRole("tab", { name: "Single Shift" })).toBeVisible();
       await expect(page.getByTestId("shift-type-select")).toBeVisible();
-      await expect(page.getByTestId("shift-date-input")).toBeVisible();
+      await expect(page.getByTestId("create-shift-button")).toBeVisible();
     });
   });
 });

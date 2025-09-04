@@ -1,23 +1,7 @@
 import { test, expect } from "./base";
 import { loginAsAdmin } from "./helpers/auth";
-import { 
-  createTestUser, 
-  deleteTestUsers 
-} from "./helpers/test-helpers";
-import { randomUUID } from "crypto";
 
 test.describe("Shift Creation Form Validation", () => {
-  const testId = randomUUID().slice(0, 8);
-  const testEmails = [`admin-shift-validation-${testId}@example.com`];
-
-  test.beforeAll(async () => {
-    await createTestUser(testEmails[0], "ADMIN");
-  });
-
-  test.afterAll(async () => {
-    await deleteTestUsers(testEmails);
-  });
-
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);
     await page.goto("/admin/shifts/new");
