@@ -1,3 +1,9 @@
+## [0.25.0] - 2025-09-04
+
+### Changes
+- feat: implement two-step shift signup with calendar overview ([#86](https://github.com/malinmalliyawadu/volunteer-portal/pull/86)) by @malinmalliyawadu
+
+
 ## [0.24.0] - 2025-09-04
 
 ### Changes
