@@ -348,7 +348,7 @@ test.describe("Migration Registration Flow", () => {
         .locator('[data-testid="available-location-wellington-label"]')
         .click();
       await page
-        .locator('[data-testid="available-location-glenn innes-label"]')
+        .locator('[data-testid="available-location-glen innes-label"]')
         .click();
 
       // Proceed to photo upload step
@@ -597,7 +597,7 @@ test.describe("Migration Registration Flow", () => {
         .locator('[data-testid="available-location-wellington-label"]')
         .click();
       await page
-        .locator('[data-testid="available-location-glenn innes-label"]')
+        .locator('[data-testid="available-location-glen innes-label"]')
         .click();
 
       // Proceed to next step
