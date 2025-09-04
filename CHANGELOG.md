@@ -1,3 +1,9 @@
+## [0.27.0] - 2025-09-04
+
+### Changes
+- feat: Add edit and delete functionality to admin shift management ([#88](https://github.com/malinmalliyawadu/volunteer-portal/pull/88)) by @malinmalliyawadu
+
+
 ## [0.26.0] - 2025-09-04
 
 ### Changes
