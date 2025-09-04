@@ -1,3 +1,9 @@
+## [0.24.0] - 2025-09-04
+
+### Changes
+- feat: enhance admin shift creation with modular components and template management ([#85](https://github.com/malinmalliyawadu/volunteer-portal/pull/85)) by @malinmalliyawadu
+
+
 ## [0.23.2] - 2025-09-03
 
 ### Changes
