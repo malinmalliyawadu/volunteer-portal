@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useCallback } from "react";
 import { Label } from "@/components/ui/label";
 import { ChevronDownIcon } from "lucide-react";
 import {
@@ -35,6 +35,43 @@ export function CollapsibleTemplateSelection({
   sortedLocations,
   shiftTypes,
 }: CollapsibleTemplateSelectionProps) {
+  // State to track selected templates per location
+  const [selectedTemplates, setSelectedTemplates] = useState<Record<string, Set<string>>>(() => {
+    const initial: Record<string, Set<string>> = {};
+    sortedLocations.forEach(location => {
+      initial[location] = new Set<string>();
+    });
+    return initial;
+  });
+
+  // Handle individual template selection
+  const handleTemplateSelect = useCallback((location: string, templateName: string, isSelected: boolean) => {
+    setSelectedTemplates(prev => {
+      const newState = { ...prev };
+      const locationSet = new Set(newState[location]);
+      if (isSelected) {
+        locationSet.add(templateName);
+      } else {
+        locationSet.delete(templateName);
+      }
+      newState[location] = locationSet;
+      return newState;
+    });
+  }, []);
+
+  // Handle "Select All" for a location
+  const handleSelectAll = useCallback((location: string, isSelected: boolean) => {
+    setSelectedTemplates(prev => {
+      const newState = { ...prev };
+      if (isSelected) {
+        const allTemplateNames = templatesByLocation[location].map(([name]) => name);
+        newState[location] = new Set(allTemplateNames);
+      } else {
+        newState[location] = new Set();
+      }
+      return newState;
+    });
+  }, [templatesByLocation]);
   return (
     <div className="space-y-4">
       {sortedLocations.map((location, index) => (
@@ -57,13 +94,9 @@ export function CollapsibleTemplateSelection({
                 type="checkbox"
                 id={`select-all-${location.toLowerCase().replace(/\s+/g, "-")}`}
                 className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                checked={selectedTemplates[location]?.size === templatesByLocation[location].length}
                 onChange={(e) => {
-                  const isChecked = e.target.checked;
-                  // Toggle all checkboxes for this location
-                  templatesByLocation[location].forEach(([name]) => {
-                    const checkbox = document.getElementById(`template_${name}`) as HTMLInputElement;
-                    if (checkbox) checkbox.checked = isChecked;
-                  });
+                  handleSelectAll(location, e.target.checked);
                 }}
               />
               <Label 
@@ -86,6 +119,10 @@ export function CollapsibleTemplateSelection({
                       name={`template_${name}`}
                       id={`template_${name}`}
                       className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary mt-1"
+                      checked={selectedTemplates[location]?.has(name) || false}
+                      onChange={(e) => {
+                        handleTemplateSelect(location, name, e.target.checked);
+                      }}
                       data-testid={`template-${name
                         .toLowerCase()
                         .replace(/\s+/g, "-")}-checkbox`}
