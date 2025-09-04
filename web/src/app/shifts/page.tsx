@@ -1,303 +1,33 @@
 import { prisma } from "@/lib/prisma";
-import { format, parseISO } from "date-fns";
 import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { AvatarList } from "@/components/ui/avatar-list";
-import { ShiftSignupDialog } from "@/components/shift-signup-dialog";
-import { CancelSignupButton } from "./mine/cancel-signup-button";
 import { PageHeader } from "@/components/page-header";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Calendar,
-  Clock,
-  MapPin,
-  Users,
-  ChevronDown,
-  UserCheck,
-} from "lucide-react";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { GroupBookingDialogWrapper } from "@/components/group-booking-dialog-wrapper";
+import { MapPin } from "lucide-react";
 import { PageContainer } from "@/components/page-container";
 import { safeParseAvailability } from "@/lib/parse-availability";
-import { getShiftTheme } from "@/lib/shift-themes";
+import { ShiftsCalendar } from "@/components/shifts-calendar";
 
 const LOCATIONS = ["Wellington", "Glenn Innes", "Onehunga"] as const;
 type LocationOption = (typeof LOCATIONS)[number];
 
-
-function getDurationInHours(start: Date, end: Date): string {
-  const durationMs = end.getTime() - start.getTime();
-  const hours = durationMs / (1000 * 60 * 60);
-  const wholeHours = Math.floor(hours);
-  const minutes = Math.round((hours - wholeHours) * 60);
-  return minutes === 0 ? `${wholeHours}h` : `${wholeHours}h ${minutes}m`;
-}
-
-interface ShiftWithRelations {
+interface ShiftSummary {
   id: string;
   start: Date;
   end: Date;
   location: string | null;
   capacity: number;
-  notes: string | null;
+  confirmedCount: number;
+  pendingCount: number;
   shiftType: {
-    id: string;
     name: string;
     description: string | null;
   };
-  signups: Array<{
-    id: string;
-    userId: string;
-    status: string;
-    user: {
-      id: string;
-      name: string | null;
-      firstName: string | null;
-      lastName: string | null;
-      email: string;
-      profilePhotoUrl: string | null;
-    };
-  }>;
-  groupBookings: Array<{
-    id: string;
-    name: string;
-    status: string;
-    signups: Array<{
-      id: string;
-      userId: string;
-      status: string;
-    }>;
-  }>;
 }
 
-function ShiftCard({
-  shift,
-  currentUserId,
-  session,
-  userFriendIds = [],
-}: {
-  shift: ShiftWithRelations;
-  currentUserId?: string;
-  session: unknown;
-  userFriendIds?: string[];
-}) {
-  const theme = getShiftTheme(shift.shiftType.name);
-  const duration = getDurationInHours(shift.start, shift.end);
 
-  // Calculate signup counts
-  let confirmedCount = 0;
-  let pendingCount = 0;
-
-  for (const signup of shift.signups) {
-    if (signup.status === "CONFIRMED") confirmedCount += 1;
-    if (signup.status === "PENDING") pendingCount += 1;
-  }
-
-  const remaining = Math.max(0, shift.capacity - confirmedCount - pendingCount);
-  const isFull = remaining === 0;
-
-  // Check if user has existing signup
-  const mySignup = currentUserId
-    ? shift.signups.find(
-        (s) => s.userId === currentUserId && s.status !== "CANCELED"
-      )
-    : undefined;
-
-  // Find friends who have signed up for this shift
-  const friendSignups = shift.signups.filter(
-    (signup) =>
-      userFriendIds.includes(signup.userId) && signup.status === "CONFIRMED"
-  );
-
-  return (
-    <Card
-      className={`group relative overflow-hidden border-0 shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 ${theme.bgColor} h-full`}
-    >
-      {/* Gradient accent bar */}
-      <div
-        className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${theme.fullGradient}`}
-      />
-
-      <CardContent className="p-6 h-full">
-        <div className="flex flex-col h-full">
-          <div className="space-y-4 flex-1">
-            {/* Header with emoji and title */}
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex items-center gap-3 min-w-0 flex-1">
-                <div
-                  className={`p-2 rounded-xl bg-gradient-to-br ${theme.fullGradient} shadow-lg flex items-center justify-center text-white text-lg font-medium`}
-                >
-                  {theme.emoji}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h3 className="font-bold text-xl text-gray-900 dark:text-white truncate mb-1">
-                    {shift.shiftType.name}
-                  </h3>
-                  <div className="flex items-center gap-2">
-                    <Badge
-                      variant="secondary"
-                      className={`text-xs font-medium ${theme.textColor} ${theme.bgColor} border ${theme.borderColor}`}
-                    >
-                      {duration}
-                    </Badge>
-                    {mySignup && (
-                      <Badge
-                        variant={
-                          mySignup.status === "CONFIRMED"
-                            ? "default"
-                            : "secondary"
-                        }
-                        className={`text-xs font-medium ${
-                          mySignup.status === "CONFIRMED"
-                            ? "bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700"
-                            : "bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700"
-                        }`}
-                      >
-                        {mySignup.status === "CONFIRMED"
-                          ? "✅ Confirmed"
-                          : mySignup.status === "PENDING"
-                          ? "⏳ Pending"
-                          : "⏳ Waitlisted"}
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Description */}
-            {shift.shiftType.description && (
-              <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed line-clamp-2">
-                {shift.shiftType.description}
-              </p>
-            )}
-
-            {/* Time and capacity info */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center gap-2 p-3 bg-white/50 dark:bg-gray-800/30 rounded-lg">
-                <Clock className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                <div className="text-sm">
-                  <div className="font-medium text-gray-900 dark:text-white">
-                    {format(shift.start, "h:mm a")}
-                  </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
-                    to {format(shift.end, "h:mm a")}
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 p-3 bg-white/50 dark:bg-gray-800/30 rounded-lg">
-                <Users className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                <div className="text-sm">
-                  <div className="font-medium text-gray-900 dark:text-white">
-                    {confirmedCount + pendingCount}/{shift.capacity}
-                  </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
-                    {remaining > 0 ? (
-                      <span className="text-green-600 dark:text-green-400 font-medium">
-                        {remaining} spots left
-                      </span>
-                    ) : (
-                      <span className="text-orange-600 dark:text-orange-400 font-medium">
-                        Full
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Friends participating */}
-            {friendSignups.length > 0 && (
-              <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-100 dark:border-green-800/50">
-                <UserCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
-                <div className="flex items-center gap-2 flex-1 min-w-0">
-                  <span className="text-sm font-medium text-green-700 dark:text-green-300">
-                    {friendSignups.length} friend
-                    {friendSignups.length !== 1 ? "s" : ""} joining:
-                  </span>
-                  <AvatarList
-                    users={friendSignups.map((signup) => signup.user)}
-                    size="sm"
-                    maxDisplay={3}
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Group bookings indicator */}
-            {shift.groupBookings.length > 0 && (
-              <div className="flex items-center gap-2 p-3 bg-purple-50 dark:bg-purple-950/30 rounded-lg border border-purple-100 dark:border-purple-800/50">
-                <Users className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                <span className="text-sm font-medium text-purple-700 dark:text-purple-300">
-                  {shift.groupBookings.length} group booking
-                  {shift.groupBookings.length !== 1 ? "s" : ""}
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* Action button - anchored to bottom */}
-          <div className="pt-4 mt-auto">
-            {mySignup ? (
-              <CancelSignupButton
-                shiftId={shift.id}
-                shiftName={shift.shiftType.name}
-                className="w-full"
-              />
-            ) : session ? (
-              <ShiftSignupDialog
-                shift={{
-                  id: shift.id,
-                  start: shift.start,
-                  end: shift.end,
-                  location: shift.location,
-                  capacity: shift.capacity,
-                  shiftType: {
-                    name: shift.shiftType.name,
-                    description: shift.shiftType.description,
-                  },
-                }}
-                confirmedCount={confirmedCount}
-                isWaitlist={isFull}
-                currentUserId={currentUserId}
-              >
-                <Button
-                  className={`w-full font-medium transition-all duration-200 ${
-                    isFull
-                      ? "bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 hover:border-orange-300"
-                      : "bg-gradient-to-r " +
-                        theme.fullGradient +
-                        " hover:shadow-lg transform hover:scale-[1.02] text-white"
-                  }`}
-                  variant={isFull ? "outline" : "default"}
-                >
-                  {isFull ? "🎯 Join Waitlist" : "✨ Sign Up Now"}
-                </Button>
-              </ShiftSignupDialog>
-            ) : (
-              <Button
-                asChild
-                className={`w-full font-medium bg-gradient-to-r ${theme.fullGradient} hover:shadow-lg transform hover:scale-[1.02] text-white transition-all duration-200`}
-              >
-                <Link href="/login?callbackUrl=/shifts">✨ Sign Up Now</Link>
-              </Button>
-            )}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-export default async function ShiftsPageRedesigned({
+export default async function ShiftsCalendarPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -305,69 +35,13 @@ export default async function ShiftsPageRedesigned({
   const session = await getServerSession(authOptions);
   const params = await searchParams;
 
-  // Get current user and their friends
+  // Get current user 
   let currentUser = null;
-  let userFriendIds: string[] = [];
-  let userDailySignups: Array<{ start: Date; shiftType: { name: string } }> =
-    [];
-
   if (session?.user?.email) {
     currentUser = await prisma.user.findUnique({
       where: { email: session.user.email },
       select: { id: true, availableLocations: true },
     });
-
-    // Get user's friend IDs and daily signups
-    if (currentUser?.id) {
-      const [friendships, dailySignups] = await Promise.all([
-        prisma.friendship.findMany({
-          where: {
-            AND: [
-              {
-                OR: [{ userId: currentUser.id }, { friendId: currentUser.id }],
-              },
-              { status: "ACCEPTED" },
-            ],
-          },
-          select: {
-            userId: true,
-            friendId: true,
-          },
-        }),
-        prisma.signup.findMany({
-          where: {
-            userId: currentUser.id,
-            status: "CONFIRMED",
-            shift: {
-              start: { gte: new Date() },
-            },
-          },
-          select: {
-            shift: {
-              select: {
-                start: true,
-                shiftType: {
-                  select: {
-                    name: true,
-                  },
-                },
-              },
-            },
-          },
-        }),
-      ]);
-
-      userFriendIds = friendships.map((friendship) =>
-        friendship.userId === currentUser!.id
-          ? friendship.friendId
-          : friendship.userId
-      );
-
-      userDailySignups = dailySignups.map((signup) => ({
-        start: signup.shift.start,
-        shiftType: { name: signup.shift.shiftType.name },
-      }));
-    }
   }
 
   // Parse user's preferred locations
@@ -402,8 +76,8 @@ export default async function ShiftsPageRedesigned({
     isUsingProfileFilter = true;
   }
 
-  // Fetch shifts
-  const shifts = (await prisma.shift.findMany({
+  // Fetch shifts for calendar view - simplified data structure
+  const shifts = await prisma.shift.findMany({
     where: {
       start: { gte: new Date() },
       ...(filterLocations.length > 0
@@ -412,80 +86,40 @@ export default async function ShiftsPageRedesigned({
     },
     orderBy: { start: "asc" },
     include: {
-      shiftType: true,
-      signups: {
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              firstName: true,
-              lastName: true,
-              email: true,
-              profilePhotoUrl: true,
+      shiftType: {
+        select: {
+          name: true,
+          description: true,
+        },
+      },
+      _count: {
+        select: {
+          signups: {
+            where: {
+              status: {
+                in: ["CONFIRMED", "PENDING"],
+              },
             },
           },
         },
       },
-      groupBookings: {
-        include: {
-          signups: true,
-        },
-      },
     },
-  })) as ShiftWithRelations[];
-
-  // Filter shifts: only show shifts on days where user doesn't have an existing signup,
-  // or the shifts they're actually signed up for
-  const filteredShifts = shifts.filter((shift) => {
-    // Always show if not logged in
-    if (!currentUser?.id) return true;
-
-    // Check if user has a signup for this specific shift
-    const hasMySignup = shift.signups.some(
-      (signup) =>
-        signup.userId === currentUser.id && signup.status !== "CANCELED"
-    );
-
-    // If they have a signup for this shift, always show it
-    if (hasMySignup) return true;
-
-    // Check if user has any confirmed signup on this day
-    const shiftDate = new Date(shift.start);
-    const hasConfirmedShiftOnSameDay = userDailySignups.some((dailySignup) => {
-      const dailySignupDate = new Date(dailySignup.start);
-      return (
-        dailySignupDate.getFullYear() === shiftDate.getFullYear() &&
-        dailySignupDate.getMonth() === shiftDate.getMonth() &&
-        dailySignupDate.getDate() === shiftDate.getDate()
-      );
-    });
-
-    // If they have a confirmed shift on this day, don't show other shifts
-    return !hasConfirmedShiftOnSameDay;
   });
 
-  // Group shifts by date and location
-  const shiftsByDate = new Map<string, Map<string, ShiftWithRelations[]>>();
-
-  for (const shift of filteredShifts) {
-    const dateKey = format(shift.start, "yyyy-MM-dd");
-    const locationKey = shift.location || "No location specified";
-
-    if (!shiftsByDate.has(dateKey)) {
-      shiftsByDate.set(dateKey, new Map());
-    }
-
-    const dateGroup = shiftsByDate.get(dateKey)!;
-    if (!dateGroup.has(locationKey)) {
-      dateGroup.set(locationKey, []);
-    }
-
-    dateGroup.get(locationKey)!.push(shift);
-  }
-
-  // Sort dates
-  const sortedDates = Array.from(shiftsByDate.keys()).sort();
+  // Transform to ShiftSummary format for calendar
+  const shiftSummaries: ShiftSummary[] = shifts.map((shift) => ({
+    id: shift.id,
+    start: shift.start,
+    end: shift.end,
+    location: shift.location,
+    capacity: shift.capacity,
+    confirmedCount: shift._count.signups, // This includes both CONFIRMED and PENDING
+    pendingCount: 0, // For calendar view, we simplify this
+    shiftType: {
+      name: shift.shiftType.name,
+      description: shift.shiftType.description,
+    },
+  }));
 
   return (
     <PageContainer testid="shifts-browse-page">
@@ -498,7 +132,7 @@ export default async function ShiftsPageRedesigned({
               : isUsingProfileFilter
               ? ` in your preferred locations`
               : ""
-          }.`}
+          }. Click on any date to see details and sign up.`}
           className="flex-1"
           data-testid="shifts-page-header"
         />
@@ -571,154 +205,12 @@ export default async function ShiftsPageRedesigned({
         </div>
       )}
 
-      {filteredShifts.length === 0 ? (
-        <div className="text-center py-20" data-testid="empty-state">
-          <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Calendar className="w-10 h-10 text-primary/60" />
-          </div>
-          <h3
-            className="text-2xl font-semibold mb-3"
-            data-testid="empty-state-title"
-          >
-            No shifts available
-          </h3>
-          <p
-            className="text-muted-foreground max-w-md mx-auto"
-            data-testid="empty-state-description"
-          >
-            No upcoming shifts found
-            {selectedLocation
-              ? ` in ${selectedLocation}`
-              : isUsingProfileFilter
-              ? ` in your preferred locations`
-              : ""}
-            . Check back later for new opportunities.
-          </p>
-          {isUsingProfileFilter && (
-            <div className="mt-4 space-x-4">
-              <Button asChild variant="outline">
-                <Link href="/shifts?showAll=true">View All Locations</Link>
-              </Button>
-              <Button asChild>
-                <Link href="/profile/edit">Update Preferences</Link>
-              </Button>
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="space-y-8" data-testid="shifts-list">
-          {sortedDates.map((dateKey, dateIndex) => {
-            const locationGroups = shiftsByDate.get(dateKey)!;
-            const sortedLocations = Array.from(locationGroups.keys()).sort();
-            const dateObj = parseISO(dateKey);
-            const totalShiftsThisDate = Array.from(
-              locationGroups.values()
-            ).reduce((sum, shifts) => sum + shifts.length, 0);
+      {/* Calendar View */}
+      <ShiftsCalendar 
+        shifts={shiftSummaries} 
+        selectedLocation={selectedLocation}
+      />
 
-            return (
-              <section
-                key={dateKey}
-                className="animate-slide-up"
-                style={{ animationDelay: `${dateIndex * 0.1}s` }}
-                data-testid={`shifts-date-section-${dateKey}`}
-              >
-                {/* Date Header */}
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg">
-                      <Calendar className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <h2
-                        className="text-2xl font-bold"
-                        data-testid={`shifts-date-heading-${dateKey}`}
-                      >
-                        {format(dateObj, "EEEE, MMMM d, yyyy")}
-                      </h2>
-                      <p className="text-sm text-muted-foreground">
-                        {totalShiftsThisDate} role
-                        {totalShiftsThisDate !== 1 ? "s" : ""} available
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Location Groups */}
-                <div className="space-y-6">
-                  {sortedLocations.map((locationKey) => {
-                    const locationShifts = locationGroups.get(locationKey)!;
-
-                    return (
-                      <Collapsible
-                        key={locationKey}
-                        defaultOpen
-                        className="space-y-4"
-                      >
-                        <div className="flex items-center justify-between gap-8">
-                          <CollapsibleTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              className="flex-1 justify-start p-4 h-auto hover:bg-muted/50"
-                              data-testid={`location-toggle-${dateKey}-${locationKey
-                                .toLowerCase()
-                                .replace(/\s+/g, "-")}`}
-                            >
-                              <div className="flex items-center justify-between w-full">
-                                <div className="flex items-center gap-3">
-                                  <MapPin className="h-5 w-5 text-primary" />
-                                  <div className="text-left">
-                                    <h3 className="font-semibold text-lg">
-                                      {locationKey}
-                                    </h3>
-                                    <p className="text-sm text-muted-foreground">
-                                      {locationShifts.length} role
-                                      {locationShifts.length !== 1 ? "s" : ""}
-                                    </p>
-                                  </div>
-                                </div>
-                                <ChevronDown className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                              </div>
-                            </Button>
-                          </CollapsibleTrigger>
-
-                          {/* Group Booking Button at Location Level */}
-                          {session && (
-                            <GroupBookingDialogWrapper
-                              shifts={locationShifts}
-                              date={format(dateObj, "EEEE, MMMM d, yyyy")}
-                              location={locationKey}
-                              testid={`group-booking-${dateKey}-${locationKey
-                                .toLowerCase()
-                                .replace(/\s+/g, "-")}`}
-                              currentUserEmail={
-                                session.user?.email || undefined
-                              }
-                            />
-                          )}
-                        </div>
-
-                        <CollapsibleContent className="space-y-3 pl-4">
-                          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                            {locationShifts.map((shift) => (
-                              <ShiftCard
-                                key={shift.id}
-                                shift={shift}
-                                currentUserId={currentUser?.id}
-                                session={session}
-                                userFriendIds={userFriendIds}
-                              />
-                            ))}
-                          </div>
-                        </CollapsibleContent>
-                      </Collapsible>
-                    );
-                  })}
-                </div>
-              </section>
-            );
-          })}
-        </div>
-      )}
     </PageContainer>
   );
 }
