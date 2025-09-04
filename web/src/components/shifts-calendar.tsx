@@ -1,12 +1,25 @@
 "use client";
 
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth } from "date-fns";
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  isSameDay,
+  isSameMonth,
+} from "date-fns";
 import { useState } from "react";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Calendar, Users, MapPin } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Calendar,
+  Users,
+  MapPin,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ShiftSummary {
@@ -37,7 +50,10 @@ interface DayShifts {
   spotsAvailable: number;
 }
 
-export function ShiftsCalendar({ shifts, selectedLocation }: ShiftsCalendarProps) {
+export function ShiftsCalendar({
+  shifts,
+  selectedLocation,
+}: ShiftsCalendarProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
   const monthStart = startOfMonth(currentMonth);
@@ -57,16 +73,25 @@ export function ShiftsCalendar({ shifts, selectedLocation }: ShiftsCalendarProps
   // Group shifts by date for each location
   const getLocationDayShifts = (location: string): DayShifts[] => {
     const locationShifts = shiftsByLocation[location] || [];
-    
+
     return monthDays.map((date) => {
-      const dayShifts = locationShifts.filter((shift) => 
+      const dayShifts = locationShifts.filter((shift) =>
         isSameDay(shift.start, date)
       );
-      
+
       const totalCapacity = dayShifts.reduce((sum, s) => sum + s.capacity, 0);
-      const totalConfirmed = dayShifts.reduce((sum, s) => sum + s.confirmedCount, 0);
-      const totalPending = dayShifts.reduce((sum, s) => sum + s.pendingCount, 0);
-      const spotsAvailable = Math.max(0, totalCapacity - totalConfirmed - totalPending);
+      const totalConfirmed = dayShifts.reduce(
+        (sum, s) => sum + s.confirmedCount,
+        0
+      );
+      const totalPending = dayShifts.reduce(
+        (sum, s) => sum + s.pendingCount,
+        0
+      );
+      const spotsAvailable = Math.max(
+        0,
+        totalCapacity - totalConfirmed - totalPending
+      );
 
       return {
         date,
@@ -100,16 +125,20 @@ export function ShiftsCalendar({ shifts, selectedLocation }: ShiftsCalendarProps
   };
 
   const previousMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1));
+    setCurrentMonth(
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1)
+    );
   };
 
   const nextMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1));
+    setCurrentMonth(
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1)
+    );
   };
 
   // Show only selected location if filter is applied
-  const displayLocations = selectedLocation 
-    ? locations.filter(loc => loc === selectedLocation)
+  const displayLocations = selectedLocation
+    ? locations.filter((loc) => loc === selectedLocation)
     : locations;
 
   return (
@@ -129,7 +158,7 @@ export function ShiftsCalendar({ shifts, selectedLocation }: ShiftsCalendarProps
             </p>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
@@ -175,89 +204,126 @@ export function ShiftsCalendar({ shifts, selectedLocation }: ShiftsCalendarProps
       <div className="space-y-8">
         {displayLocations.map((location) => {
           const locationDayShifts = getLocationDayShifts(location);
-          const hasAnyShifts = locationDayShifts.some(day => day.shifts.length > 0);
-          
+          const hasAnyShifts = locationDayShifts.some(
+            (day) => day.shifts.length > 0
+          );
+
           if (!hasAnyShifts) return null;
 
           return (
-            <Card key={location} className="overflow-hidden" data-testid={`calendar-${location.toLowerCase().replace(/\s+/g, '-')}`}>
+            <Card
+              key={location}
+              className="overflow-hidden py-0"
+              data-testid={`calendar-${location
+                .toLowerCase()
+                .replace(/\s+/g, "-")}`}
+            >
               <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 px-6 py-4 border-b">
                 <div className="flex items-center gap-3">
                   <MapPin className="h-5 w-5 text-primary" />
                   <h3 className="text-xl font-semibold">{location}</h3>
                 </div>
               </div>
-              
+
               <CardContent className="p-6">
                 {/* Days of week header */}
                 <div className="grid grid-cols-7 gap-2 mb-4">
-                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                    <div
-                      key={day}
-                      className="text-center text-sm font-medium text-muted-foreground py-2"
-                    >
-                      {day}
-                    </div>
-                  ))}
+                  {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
+                    (day) => (
+                      <div
+                        key={day}
+                        className="text-center text-sm font-medium text-muted-foreground py-2"
+                      >
+                        {day}
+                      </div>
+                    )
+                  )}
                 </div>
 
                 {/* Calendar grid */}
                 <div className="grid grid-cols-7 gap-2">
                   {locationDayShifts.map((dayShifts, index) => {
                     const status = getDayStatus(dayShifts);
-                    const isCurrentMonth = isSameMonth(dayShifts.date, currentMonth);
-                    const isPastDate = dayShifts.date < new Date(new Date().setHours(0, 0, 0, 0));
-                    
+                    const isCurrentMonth = isSameMonth(
+                      dayShifts.date,
+                      currentMonth
+                    );
+                    const isPastDate =
+                      dayShifts.date <
+                      new Date(new Date().setHours(0, 0, 0, 0));
+
                     const dayContent = (
                       <div
                         className={cn(
                           "relative aspect-square rounded-lg border-2 transition-all duration-200 group",
-                          isCurrentMonth 
+                          isCurrentMonth
                             ? status === "none" || isPastDate
                               ? "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30"
-                              : `border-transparent ${getStatusColor(status)} hover:shadow-md hover:scale-105 cursor-pointer`
+                              : `border-transparent ${getStatusColor(
+                                  status
+                                )} hover:shadow-md hover:scale-105 cursor-pointer`
                             : "border-gray-100 dark:border-gray-800 bg-gray-25 dark:bg-gray-950/50 opacity-40",
-                          dayShifts.shifts.length > 0 && isCurrentMonth && !isPastDate && "hover:border-primary"
+                          dayShifts.shifts.length > 0 &&
+                            isCurrentMonth &&
+                            !isPastDate &&
+                            "hover:border-primary"
                         )}
-                        data-testid={`calendar-day-${format(dayShifts.date, 'yyyy-MM-dd')}`}
+                        data-testid={`calendar-day-${format(
+                          dayShifts.date,
+                          "yyyy-MM-dd"
+                        )}`}
                       >
                         {/* Date number */}
                         <div className="absolute top-2 left-2">
-                          <span className={cn(
-                            "text-sm font-medium",
-                            !isCurrentMonth && "text-muted-foreground/50",
-                            isPastDate && isCurrentMonth && "text-muted-foreground"
-                          )}>
-                            {format(dayShifts.date, 'd')}
+                          <span
+                            className={cn(
+                              "text-sm font-medium",
+                              !isCurrentMonth && "text-muted-foreground/50",
+                              isPastDate &&
+                                isCurrentMonth &&
+                                "text-muted-foreground"
+                            )}
+                          >
+                            {format(dayShifts.date, "d")}
                           </span>
                         </div>
 
                         {/* Shift indicators */}
-                        {dayShifts.shifts.length > 0 && isCurrentMonth && !isPastDate && (
-                          <div className="absolute bottom-2 left-2 right-2">
-                            <div className="flex items-center justify-between text-xs">
-                              <div className="flex items-center gap-1">
-                                <Users className="h-3 w-3" />
-                                <span className="font-medium">
-                                  {dayShifts.shifts.length}
-                                </span>
+                        {dayShifts.shifts.length > 0 &&
+                          isCurrentMonth &&
+                          !isPastDate && (
+                            <div className="absolute bottom-2 left-2 right-2">
+                              <div className="flex items-center justify-between text-xs">
+                                <div className="flex items-center gap-1">
+                                  <Users className="h-3 w-3" />
+                                  <span className="font-medium">
+                                    {dayShifts.shifts.length}
+                                  </span>
+                                </div>
+                                {dayShifts.spotsAvailable > 0 && (
+                                  <Badge
+                                    variant="secondary"
+                                    className="text-xs px-1 py-0 h-5"
+                                  >
+                                    {dayShifts.spotsAvailable} left
+                                  </Badge>
+                                )}
                               </div>
-                              {dayShifts.spotsAvailable > 0 && (
-                                <Badge variant="secondary" className="text-xs px-1 py-0 h-5">
-                                  {dayShifts.spotsAvailable} left
-                                </Badge>
-                              )}
                             </div>
-                          </div>
-                        )}
+                          )}
                       </div>
                     );
 
                     return (
                       <div key={index}>
-                        {dayShifts.shifts.length > 0 && isCurrentMonth && !isPastDate ? (
+                        {dayShifts.shifts.length > 0 &&
+                        isCurrentMonth &&
+                        !isPastDate ? (
                           <Link
-                            href={`/shifts/details?date=${format(dayShifts.date, 'yyyy-MM-dd')}&location=${encodeURIComponent(location)}`}
+                            href={`/shifts/details?date=${format(
+                              dayShifts.date,
+                              "yyyy-MM-dd"
+                            )}&location=${encodeURIComponent(location)}`}
                             className="block"
                           >
                             {dayContent}
@@ -283,10 +349,9 @@ export function ShiftsCalendar({ shifts, selectedLocation }: ShiftsCalendarProps
             </div>
             <h3 className="text-lg font-semibold mb-2">No shifts scheduled</h3>
             <p className="text-muted-foreground">
-              {selectedLocation 
+              {selectedLocation
                 ? `No shifts found for ${selectedLocation} this month.`
-                : "No shifts are currently scheduled for this month."
-              }
+                : "No shifts are currently scheduled for this month."}
             </p>
           </CardContent>
         </Card>
