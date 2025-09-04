@@ -21,48 +21,11 @@ import {
 import { PageContainer } from "@/components/page-container";
 import { BulkDateRangeSection } from "@/components/shift-date-time-section";
 import { ShiftCreationClientForm } from "@/components/shift-creation-client-form";
+import { CollapsibleTemplateSelection } from "@/components/collapsible-template-selection";
 
-const LOCATIONS = ["Wellington", "Glenn Innes", "Onehunga"] as const;
+const LOCATIONS = ["Wellington", "Glen Innes", "Onehunga"] as const;
 
-// Shift templates matching the actual restaurant operations
-const SHIFT_TEMPLATES = {
-  "Kitchen Prep": {
-    startTime: "12:00",
-    endTime: "17:30",
-    capacity: 3,
-    notes: "Food preparation and ingredient prep",
-  },
-  "Kitchen Prep & Service": {
-    startTime: "12:00",
-    endTime: "21:00",
-    capacity: 2,
-    notes: "Food prep and cooking service",
-  },
-  "FOH Set-Up & Service": {
-    startTime: "16:30",
-    endTime: "21:00",
-    capacity: 3,
-    notes: "Front of house setup and service support",
-  },
-  "Front of House": {
-    startTime: "17:30",
-    endTime: "21:00",
-    capacity: 4,
-    notes: "Guest service and dining room support",
-  },
-  "Kitchen Service & Pack Down": {
-    startTime: "17:30",
-    endTime: "21:00",
-    capacity: 3,
-    notes: "Cooking service and kitchen cleanup",
-  },
-  "Dishwasher": {
-    startTime: "17:30",
-    endTime: "21:00",
-    capacity: 2,
-    notes: "Dishwashing and kitchen cleaning duties",
-  },
-} as const;
+// Templates are now stored in the database and fetched dynamically
 
 
 type RecentShift = {
@@ -501,19 +464,26 @@ export default async function NewShiftPage() {
     orderBy: { name: "asc" },
   });
 
-  // Create shift type name to ID mapping
-  const shiftTypeMap = Object.fromEntries(
-    shiftTypes.map(st => [st.name, st.id])
-  );
+  // Fetch shift templates from database
+  const dbTemplates = await prisma.shiftTemplate.findMany({
+    where: { isActive: true },
+    include: { shiftType: true },
+    orderBy: [{ location: "asc" }, { name: "asc" }],
+  });
 
-  // Enhanced templates with shift type IDs
+  // Convert database templates to the format expected by the component
   const templatesWithShiftTypes = Object.fromEntries(
-    Object.entries(SHIFT_TEMPLATES).map(([name, template]) => [
-      name,
-      { 
-        ...template, 
-        name,
-        shiftTypeId: shiftTypeMap[name] || shiftTypeMap["Kitchen Prep"] || shiftTypes[0]?.id || ""
+    dbTemplates.map((template) => [
+      template.name,
+      {
+        name: template.name,
+        startTime: template.startTime,
+        endTime: template.endTime,
+        capacity: template.capacity,
+        notes: template.notes || "",
+        shiftTypeId: template.shiftTypeId,
+        location: template.location || undefined, // Convert null to undefined to match interface
+        id: template.id, // Include database ID for editing/deleting
       }
     ])
   );
@@ -667,50 +637,39 @@ export default async function NewShiftPage() {
                   </div>
                 </div>
 
-                {/* Template Selection */}
+                {/* Template Selection - Grouped by Location */}
                 <div className="space-y-4">
                   <h3 className="font-medium text-gray-900 dark:text-gray-100">
                     Shift Templates
                   </h3>
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    {Object.entries(templatesWithShiftTypes).map(([name, template]) => {
-                      const shiftTypeName = shiftTypes.find(st => st.id === template.shiftTypeId)?.name || 'Unknown';
-                      return (
-                        <div
-                          key={name}
-                          className="flex items-start space-x-3 p-4 border rounded-lg"
-                        >
-                          <input
-                            type="checkbox"
-                            name={`template_${name}`}
-                            id={`template_${name}`}
-                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary mt-1"
-                            data-testid={`template-${name
-                              .toLowerCase()
-                              .replace(/\s+/g, "-")}-checkbox`}
-                          />
-                          <div className="flex-1">
-                            <Label
-                              htmlFor={`template_${name}`}
-                              className="font-medium"
-                            >
-                              {name}
-                            </Label>
-                            <p className="text-sm text-muted-foreground">
-                              {template.startTime} - {template.endTime} •{" "}
-                              {template.capacity} volunteers
-                            </p>
-                            <p className="text-xs text-primary/80 mt-1">
-                              Shift Type: {shiftTypeName}
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {template.notes}
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                  {(() => {
+                    // Group templates by location
+                    const templatesByLocation = Object.entries(templatesWithShiftTypes).reduce((acc, [name, template]) => {
+                      const location = template.location || "General";
+                      if (!acc[location]) acc[location] = [];
+                      acc[location].push([name, template]);
+                      return acc;
+                    }, {} as Record<string, [string, typeof templatesWithShiftTypes[string]][]>);
+
+                    // Sort locations with specific order: Wellington, Glen Innes, Onehunga, then others
+                    const locationOrder = ["Wellington", "Glen Innes", "Onehunga"];
+                    const sortedLocations = Object.keys(templatesByLocation).sort((a, b) => {
+                      const indexA = locationOrder.indexOf(a);
+                      const indexB = locationOrder.indexOf(b);
+                      if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+                      if (indexA !== -1) return -1;
+                      if (indexB !== -1) return 1;
+                      return a.localeCompare(b);
+                    });
+
+                    return (
+                      <CollapsibleTemplateSelection
+                        templatesByLocation={templatesByLocation}
+                        sortedLocations={sortedLocations}
+                        shiftTypes={shiftTypes}
+                      />
+                    );
+                  })()}
                 </div>
 
                 {/* Location and Overrides */}

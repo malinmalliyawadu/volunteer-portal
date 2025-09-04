@@ -72,6 +72,15 @@ export const SHIFT_THEMES = {
     bgColor: "bg-indigo-50 dark:bg-indigo-950/20",
     fullGradient: "from-indigo-500 to-purple-500",
   },
+  "Media Role": {
+    emoji: "📷",
+    borderColor: "border-pink-300",
+    textColor: "text-pink-800",
+    gradient: "from-pink-100 to-rose-100",
+    // Public page specific styles
+    bgColor: "bg-pink-50 dark:bg-pink-950/20",
+    fullGradient: "from-pink-500 to-rose-500",
+  },
 };
 
 export const DEFAULT_THEME = {

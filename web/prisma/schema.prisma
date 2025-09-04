@@ -79,6 +79,7 @@ model User {
   // Auto-accept rules
   createdAutoAcceptRules       AutoAcceptRule[]       @relation("RuleCreator")
   overriddenAutoApprovals      AutoApproval[]         @relation("ApprovalOverrider")
+  createdShiftTemplates        ShiftTemplate[]        @relation("TemplateCreator")
 }
 
 model ShiftType {
@@ -90,6 +91,27 @@ model ShiftType {
   shifts           Shift[]
   regularVolunteers RegularVolunteer[]
   autoAcceptRules  AutoAcceptRule[]
+  shiftTemplates   ShiftTemplate[]
+}
+
+model ShiftTemplate {
+  id          String    @id @default(cuid())
+  name        String    
+  shiftTypeId String
+  location    String?   // If null, template applies to all locations
+  startTime   String    // Format: "HH:MM"
+  endTime     String    // Format: "HH:MM"
+  capacity    Int
+  notes       String?
+  isActive    Boolean   @default(true)
+  createdBy   String?   // User ID who created the template
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  shiftType   ShiftType @relation(fields: [shiftTypeId], references: [id])
+  creator     User?     @relation("TemplateCreator", fields: [createdBy], references: [id])
+  
+  @@unique([name, location]) // Template names must be unique per location (or globally if location is null)
 }
 
 model Shift {
