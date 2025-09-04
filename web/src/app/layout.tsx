@@ -9,6 +9,7 @@ import { SiteFooterWrapper } from "@/components/site-footer-wrapper";
 import { Providers } from "@/components/providers";
 import { MainContentWrapper } from "@/components/main-content-wrapper";
 import { Toaster } from "sonner";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const libreFranklin = Libre_Franklin({
   variable: "--font-libre-franklin",
@@ -57,15 +58,17 @@ export default async function RootLayout({
         className={`${libreFranklin.variable} ${fraunces.variable} antialiased`}
       >
         <Providers>
-          <SiteHeaderClientWrapper session={session} userProfile={userProfile} />
+          <SiteHeaderClientWrapper
+            session={session}
+            userProfile={userProfile}
+          />
           <main className="min-h-screen">
-            <MainContentWrapper>
-              {children}
-            </MainContentWrapper>
+            <MainContentWrapper>{children}</MainContentWrapper>
           </main>
           <SiteFooterWrapper session={session} />
           <Toaster />
         </Providers>
+        <SpeedInsights />
       </body>
     </html>
   );
