@@ -253,6 +253,7 @@ test.describe("Admin Shift Edit and Delete", () => {
 
       await page.goto(`/admin/shifts?date=${tomorrowStr}&location=Wellington`);
       await page.waitForLoadState("load");
+      await page.waitForTimeout(1000);
 
       // Click delete button
       const deleteButton = page
