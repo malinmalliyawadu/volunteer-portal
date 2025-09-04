@@ -67,9 +67,12 @@ import {
   Shield,
   Star,
   Award,
+  Edit,
+  Trash2,
 } from "lucide-react";
 import { VolunteerActions } from "@/components/volunteer-actions";
 import { getShiftTheme } from "@/lib/shift-themes";
+import { DeleteShiftDialog } from "@/components/delete-shift-dialog";
 
 interface Shift {
   id: string;
@@ -77,6 +80,7 @@ interface Shift {
   end: Date;
   location: string | null;
   capacity: number;
+  notes: string | null;
   shiftType: {
     id: string;
     name: string;
@@ -409,6 +413,57 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
                       </Button>
                     </div>
                   )}
+
+                  {/* Admin Action Buttons */}
+                  <div className="mt-4 pt-4 border-t border-slate-100 flex gap-2">
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 text-blue-600 hover:bg-blue-50 border-blue-200"
+                      data-testid={`edit-shift-button-${shift.id}`}
+                    >
+                      <Link
+                        href={`/admin/shifts/${shift.id}/edit`}
+                        className="flex items-center gap-2 justify-center"
+                      >
+                        <Edit className="h-4 w-4" />
+                        Edit
+                      </Link>
+                    </Button>
+                    
+                    <DeleteShiftDialog
+                      shiftId={shift.id}
+                      shiftName={shift.shiftType.name}
+                      shiftDate={format(shift.start, "EEEE, MMMM d, yyyy")}
+                      hasSignups={shift.signups.length > 0}
+                      signupCount={shift.signups.filter(
+                        (signup) => signup.status !== "CANCELED" && signup.status !== "NO_SHOW"
+                      ).length}
+                      onDelete={async () => {
+                        const response = await fetch(`/api/admin/shifts/${shift.id}`, {
+                          method: 'DELETE',
+                        });
+                        
+                        if (!response.ok) {
+                          throw new Error('Failed to delete shift');
+                        }
+                        
+                        // Refresh the page to show the updated list
+                        window.location.href = '/admin/shifts?deleted=1';
+                      }}
+                    >
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 text-red-600 hover:bg-red-50 border-red-200"
+                        data-testid={`delete-shift-button-${shift.id}`}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </Button>
+                    </DeleteShiftDialog>
+                  </div>
                 </CardContent>
               </Card>
             </motion.div>

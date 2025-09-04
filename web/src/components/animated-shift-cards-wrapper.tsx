@@ -9,6 +9,7 @@ interface Shift {
   end: Date;
   location: string | null;
   capacity: number;
+  notes: string | null;
   shiftType: {
     id: string;
     name: string;
