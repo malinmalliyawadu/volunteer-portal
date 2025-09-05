@@ -130,7 +130,7 @@ export function AdminNotesDialog({
                   <MessageSquare className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
                   <p className="text-sm text-muted-foreground">No admin notes for this volunteer</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Notes can be added from the volunteer's profile page
+                    Notes can be added from the volunteer&apos;s profile page
                   </p>
                 </div>
               ) : (
@@ -188,7 +188,7 @@ export function AdminNotesDialog({
           {/* Quick action to go to volunteer profile */}
           <div className="mt-6 pt-4 border-t">
             <p className="text-xs text-muted-foreground mb-2">
-              To add, edit, or delete notes, visit the volunteer's profile page:
+              To add, edit, or delete notes, visit the volunteer&apos;s profile page:
             </p>
             <Button
               asChild
@@ -198,7 +198,7 @@ export function AdminNotesDialog({
             >
               <a href={`/admin/volunteers/${volunteerId}`} target="_blank" rel="noopener noreferrer">
                 <User className="h-4 w-4 mr-2" />
-                Open {volunteerName}'s Profile
+                Open {volunteerName}&apos;s Profile
               </a>
             </Button>
           </div>

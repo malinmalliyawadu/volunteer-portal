@@ -65,6 +65,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Get the full user record for the session user
+    const adminUser = await prisma.user.findUnique({
+      where: { email: session.user.email! },
+      select: { id: true },
+    });
+
+    if (!adminUser) {
+      return NextResponse.json({ error: "Admin user not found" }, { status: 404 });
+    }
+
     // Verify volunteer exists
     const volunteer = await prisma.user.findUnique({
       where: { id: volunteerId },
@@ -79,7 +89,7 @@ export async function POST(request: NextRequest) {
       data: {
         volunteerId,
         content: content.trim(),
-        createdBy: session.user.id!,
+        createdBy: adminUser.id,
       },
       include: {
         creator: {

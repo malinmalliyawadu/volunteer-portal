@@ -6,6 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { 
   Plus, 
   Edit2, 
@@ -14,7 +22,8 @@ import {
   Trash2,
   MessageSquare,
   Clock,
-  User
+  User,
+  AlertTriangle
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
@@ -44,6 +53,8 @@ export function AdminNotesManager({ volunteerId }: AdminNotesManagerProps) {
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [newNoteContent, setNewNoteContent] = useState("");
   const [editNoteContent, setEditNoteContent] = useState("");
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [noteToDelete, setNoteToDelete] = useState<string | null>(null);
 
   // Fetch notes
   const fetchNotes = useCallback(async () => {
@@ -128,13 +139,11 @@ export function AdminNotesManager({ volunteerId }: AdminNotesManagerProps) {
   };
 
   // Delete note
-  const handleDeleteNote = async (noteId: string) => {
-    if (!confirm('Are you sure you want to delete this note? This action cannot be undone.')) {
-      return;
-    }
+  const handleDeleteNote = async () => {
+    if (!noteToDelete) return;
 
     try {
-      const response = await fetch(`/api/admin/admin-notes/${noteId}`, {
+      const response = await fetch(`/api/admin/admin-notes/${noteToDelete}`, {
         method: 'DELETE',
       });
 
@@ -142,12 +151,28 @@ export function AdminNotesManager({ volunteerId }: AdminNotesManagerProps) {
         throw new Error('Failed to delete note');
       }
 
-      setNotes(notes.filter(note => note.id !== noteId));
+      setNotes(notes.filter(note => note.id !== noteToDelete));
       setError(null);
+      setDeleteConfirmOpen(false);
+      setNoteToDelete(null);
     } catch (error) {
       console.error('Error deleting note:', error);
       setError('Failed to delete note');
+      setDeleteConfirmOpen(false);
+      setNoteToDelete(null);
     }
+  };
+
+  // Open delete confirmation
+  const openDeleteConfirm = (noteId: string) => {
+    setNoteToDelete(noteId);
+    setDeleteConfirmOpen(true);
+  };
+
+  // Close delete confirmation
+  const closeDeleteConfirm = () => {
+    setDeleteConfirmOpen(false);
+    setNoteToDelete(null);
   };
 
   // Start editing
@@ -329,7 +354,7 @@ export function AdminNotesManager({ volunteerId }: AdminNotesManagerProps) {
                           <Edit2 className="h-4 w-4" />
                         </Button>
                         <Button
-                          onClick={() => handleDeleteNote(note.id)}
+                          onClick={() => openDeleteConfirm(note.id)}
                           variant="ghost"
                           size="sm"
                           className="h-8 w-8 p-0 text-muted-foreground hover:text-red-600"
@@ -346,6 +371,38 @@ export function AdminNotesManager({ volunteerId }: AdminNotesManagerProps) {
           ))}
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              Delete Admin Note
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this note? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2">
+            <Button
+              onClick={closeDeleteConfirm}
+              variant="outline"
+              data-testid="delete-cancel-button"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDeleteNote}
+              variant="destructive"
+              data-testid="delete-confirm-button"
+            >
+              <Trash2 className="h-4 w-4 mr-1" />
+              Delete Note
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
