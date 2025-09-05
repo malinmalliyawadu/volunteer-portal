@@ -80,6 +80,10 @@ model User {
   createdAutoAcceptRules       AutoAcceptRule[]       @relation("RuleCreator")
   overriddenAutoApprovals      AutoApproval[]         @relation("ApprovalOverrider")
   createdShiftTemplates        ShiftTemplate[]        @relation("TemplateCreator")
+  
+  // Admin notes
+  adminNotes                   AdminNote[]            @relation("VolunteerNotes")
+  createdAdminNotes            AdminNote[]            @relation("NoteCreator")
 }
 
 model ShiftType {
@@ -507,5 +511,24 @@ model AutoApproval {
 enum CriteriaLogic {
   AND  // All criteria must be met
   OR   // Any criterion must be met
+}
+
+// Admin notes for volunteer management
+model AdminNote {
+  id          String   @id @default(cuid())
+  volunteerId String   // User ID this note is about
+  content     String   // Note content
+  createdBy   String   // Admin who created the note
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  isArchived  Boolean  @default(false) // For soft deletes
+  
+  // Relations
+  volunteer   User     @relation("VolunteerNotes", fields: [volunteerId], references: [id], onDelete: Cascade)
+  creator     User     @relation("NoteCreator", fields: [createdBy], references: [id])
+  
+  @@index([volunteerId, isArchived])
+  @@index([createdBy])
+  @@index([createdAt])
 }
 

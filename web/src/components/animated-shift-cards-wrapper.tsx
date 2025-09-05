@@ -24,6 +24,16 @@ interface Shift {
       lastName: string | null;
       volunteerGrade: string | null;
       profilePhotoUrl: string | null;
+      adminNotes: Array<{
+        id: string;
+        content: string;
+        createdAt: Date;
+        creator: {
+          name: string | null;
+          firstName: string | null;
+          lastName: string | null;
+        };
+      }>;
     };
   }>;
   groupBookings: Array<{

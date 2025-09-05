@@ -70,6 +70,27 @@ export default async function AdminShiftsPage({
               lastName: true,
               volunteerGrade: true,
               profilePhotoUrl: true,
+              adminNotes: {
+                where: {
+                  isArchived: false,
+                },
+                select: {
+                  id: true,
+                  content: true,
+                  createdAt: true,
+                  creator: {
+                    select: {
+                      name: true,
+                      firstName: true,
+                      lastName: true,
+                    },
+                  },
+                },
+                orderBy: {
+                  createdAt: "desc",
+                },
+                take: 1,
+              },
             },
           },
         },

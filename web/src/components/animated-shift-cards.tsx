@@ -69,10 +69,12 @@ import {
   Award,
   Edit,
   Trash2,
+  Info,
 } from "lucide-react";
 import { VolunteerActions } from "@/components/volunteer-actions";
 import { getShiftTheme } from "@/lib/shift-themes";
 import { DeleteShiftDialog } from "@/components/delete-shift-dialog";
+import { AdminNotesDialog } from "@/components/admin-notes-dialog";
 
 interface Shift {
   id: string;
@@ -95,6 +97,16 @@ interface Shift {
       lastName: string | null;
       volunteerGrade: string | null;
       profilePhotoUrl: string | null;
+      adminNotes: Array<{
+        id: string;
+        content: string;
+        createdAt: Date;
+        creator: {
+          name: string | null;
+          firstName: string | null;
+          lastName: string | null;
+        };
+      }>;
     };
   }>;
   groupBookings: Array<{
@@ -355,17 +367,42 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
                                 </Avatar>
                               </Link>
                               <div className="flex-1 min-w-0">
-                                <Link
-                                  href={`/admin/volunteers/${signup.user.id}`}
-                                  className="text-sm font-medium text-slate-900 truncate hover:text-blue-600 mb-1 block"
-                                  data-testid={`volunteer-name-link-${signup.id}`}
-                                >
-                                  {signup.user.name ||
-                                    `${signup.user.firstName || ""} ${
-                                      signup.user.lastName || ""
-                                    }`.trim() ||
-                                    "Volunteer"}
-                                </Link>
+                                <div className="flex items-center gap-1 mb-1">
+                                  <Link
+                                    href={`/admin/volunteers/${signup.user.id}`}
+                                    className="text-sm font-medium text-slate-900 truncate hover:text-blue-600"
+                                    data-testid={`volunteer-name-link-${signup.id}`}
+                                  >
+                                    {signup.user.name ||
+                                      `${signup.user.firstName || ""} ${
+                                        signup.user.lastName || ""
+                                      }`.trim() ||
+                                      "Volunteer"}
+                                  </Link>
+                                  {signup.user.adminNotes.length > 0 && (
+                                    <AdminNotesDialog
+                                      volunteerId={signup.user.id}
+                                      volunteerName={signup.user.name ||
+                                        `${signup.user.firstName || ""} ${signup.user.lastName || ""}`.trim() ||
+                                        "Volunteer"}
+                                      trigger={
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-5 px-1.5 text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                                          data-testid={`admin-notes-button-${signup.id}`}
+                                        >
+                                          <Info className="h-3.5 w-3.5 mr-0.5" />
+                                          <span className="text-xs">
+                                            {signup.user.adminNotes.length > 1 
+                                              ? `${signup.user.adminNotes.length} notes` 
+                                              : 'Note'}
+                                          </span>
+                                        </Button>
+                                      }
+                                    />
+                                  )}
+                                </div>
                                 <div className="flex items-center justify-between gap-2">
                                   <div
                                     className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${gradeInfo.color} flex-shrink-0`}
