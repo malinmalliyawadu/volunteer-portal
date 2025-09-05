@@ -158,9 +158,9 @@ test.describe("Flexible Placement System", () => {
       await page.goto("/shifts/mine");
       await page.waitForLoadState("load");
 
-      // Should see the flexible shift
-      await expect(page.getByText("Anywhere I'm Needed (PM)")).toBeVisible();
-      await expect(page.getByText("Flexible placement")).toBeVisible();
+      // Should see the flexible shift (use first() to avoid strict mode violation)
+      await expect(page.getByText("Anywhere I'm Needed (PM)").first()).toBeVisible();
+      await expect(page.getByText("Flexible placement").first()).toBeVisible();
     });
   });
 
@@ -168,20 +168,13 @@ test.describe("Flexible Placement System", () => {
     test("admin can see flexible placements needing assignment", async ({ page }) => {
       await loginAsAdmin(page);
       
-      // Navigate to shifts page for tomorrow
-      await page.goto("/admin/shifts");
-      await page.waitForLoadState("load");
-      
-      // Select Wellington location
-      await page.getByTestId("location-selector").click();
-      await page.getByRole("option", { name: "Wellington" }).click();
-
-      // Navigate to tomorrow's date
+      // Navigate directly to shifts page for tomorrow with Wellington location
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      const dateSelector = page.getByTestId("date-picker");
-      await dateSelector.click();
-      await page.getByRole("gridcell", { name: tomorrow.getDate().toString() }).click();
+      const tomorrowStr = tomorrow.toISOString().split('T')[0];
+      
+      await page.goto(`/admin/shifts?date=${tomorrowStr}&location=Wellington`);
+      await page.waitForLoadState("load");
 
       // Should see the flexible placement section
       await expect(page.getByText("Flexible Placements Needed")).toBeVisible();
@@ -194,18 +187,14 @@ test.describe("Flexible Placement System", () => {
 
     test("admin can place volunteer from flexible to specific shift", async ({ page }) => {
       await loginAsAdmin(page);
-      await page.goto("/admin/shifts");
-      await page.waitForLoadState("load");
-
-      // Select Wellington and tomorrow's date
-      await page.getByTestId("location-selector").click();
-      await page.getByRole("option", { name: "Wellington" }).click();
-
+      
+      // Navigate directly to shifts page for tomorrow with Wellington location
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      const dateSelector = page.getByTestId("date-picker");
-      await dateSelector.click();
-      await page.getByRole("gridcell", { name: tomorrow.getDate().toString() }).click();
+      const tomorrowStr = tomorrow.toISOString().split('T')[0];
+      
+      await page.goto(`/admin/shifts?date=${tomorrowStr}&location=Wellington`);
+      await page.waitForLoadState("load");
 
       // Click "Place Volunteer" button
       const placeButton = page.getByText("Place Volunteer");
@@ -248,11 +237,11 @@ test.describe("Flexible Placement System", () => {
       await page.waitForLoadState("load");
 
       // Check for placement notification
-      const notificationBell = page.getByTestId("notifications-button");
+      const notificationBell = page.getByTestId("notification-bell-button");
       await expect(notificationBell).toBeVisible();
       
       // Check if there's an unread notification indicator
-      const unreadIndicator = page.getByTestId("unread-notifications-indicator");
+      const unreadIndicator = page.getByTestId("notification-count-badge");
       if (await unreadIndicator.isVisible()) {
         await notificationBell.click();
         await expect(page.getByText("You've been placed!")).toBeVisible();
@@ -273,18 +262,14 @@ test.describe("Flexible Placement System", () => {
 
     test("flexible placement section disappears after all volunteers are placed", async ({ page }) => {
       await loginAsAdmin(page);
-      await page.goto("/admin/shifts");
-      await page.waitForLoadState("load");
-
-      // Select Wellington and tomorrow's date
-      await page.getByTestId("location-selector").click();
-      await page.getByRole("option", { name: "Wellington" }).click();
-
+      
+      // Navigate directly to shifts page for tomorrow with Wellington location
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      const dateSelector = page.getByTestId("date-picker");
-      await dateSelector.click();
-      await page.getByRole("gridcell", { name: tomorrow.getDate().toString() }).click();
+      const tomorrowStr = tomorrow.toISOString().split('T')[0];
+      
+      await page.goto(`/admin/shifts?date=${tomorrowStr}&location=Wellington`);
+      await page.waitForLoadState("load");
 
       // Flexible placements section should not be visible (all volunteers placed)
       await expect(page.getByText("Flexible Placements Needed")).not.toBeVisible();
@@ -326,18 +311,14 @@ test.describe("Flexible Placement System", () => {
       });
 
       await loginAsAdmin(page);
-      await page.goto("/admin/shifts");
-      await page.waitForLoadState("load");
-
-      // Select Wellington and tomorrow's date
-      await page.getByTestId("location-selector").click();
-      await page.getByRole("option", { name: "Wellington" }).click();
-
+      
+      // Navigate directly to shifts page for tomorrow with Wellington location
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      const dateSelector = page.getByTestId("date-picker");
-      await dateSelector.click();
-      await page.getByRole("gridcell", { name: tomorrow.getDate().toString() }).click();
+      const tomorrowStr = tomorrow.toISOString().split('T')[0];
+      
+      await page.goto(`/admin/shifts?date=${tomorrowStr}&location=Wellington`);
+      await page.waitForLoadState("load");
 
       // Try to place the new volunteer
       const placeButtons = page.getByText("Place Volunteer");
