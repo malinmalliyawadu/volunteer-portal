@@ -218,12 +218,15 @@ export function ShiftsCalendar({
                 .toLowerCase()
                 .replace(/\s+/g, "-")}`}
             >
-              <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 px-6 py-4 border-b">
-                <div className="flex items-center gap-3">
-                  <MapPin className="h-5 w-5 text-primary" />
-                  <h3 className="text-xl font-semibold">{location}</h3>
+              {/* Only show location header when displaying multiple locations */}
+              {!selectedLocation && (
+                <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 px-6 py-4 border-b">
+                  <div className="flex items-center gap-3">
+                    <MapPin className="h-5 w-5 text-primary" />
+                    <h3 className="text-xl font-semibold">{location}</h3>
+                  </div>
                 </div>
-              </div>
+              )}
 
               <CardContent className="p-6">
                 {/* Days of week header */}

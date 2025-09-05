@@ -3,7 +3,6 @@ import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { PageHeader } from "@/components/page-header";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MapPin } from "lucide-react";
 import { PageContainer } from "@/components/page-container";
 import { safeParseAvailability } from "@/lib/parse-availability";
@@ -63,16 +62,24 @@ export default async function ShiftsCalendarPage({
   // Determine filter locations
   let filterLocations: string[] = [];
   let isUsingProfileFilter = false;
+  let hasExplicitLocationChoice = false;
 
   if (selectedLocation) {
     filterLocations = [selectedLocation];
+    hasExplicitLocationChoice = true;
   } else if (showAll) {
     filterLocations = [];
+    hasExplicitLocationChoice = true;
   } else if (userPreferredLocations.length > 0) {
-    filterLocations = userPreferredLocations.filter((loc: string) =>
-      LOCATIONS.includes(loc as LocationOption)
-    );
-    isUsingProfileFilter = true;
+    // Only auto-filter by profile preferences if there's only one preferred location
+    // Otherwise, force explicit selection to avoid confusion
+    if (userPreferredLocations.length === 1) {
+      filterLocations = userPreferredLocations.filter((loc: string) =>
+        LOCATIONS.includes(loc as LocationOption)
+      );
+      isUsingProfileFilter = true;
+      hasExplicitLocationChoice = true;
+    }
   }
 
   // Fetch shifts for calendar view - simplified data structure
@@ -120,16 +127,125 @@ export default async function ShiftsCalendarPage({
     },
   }));
 
+  // If no explicit location choice has been made, show location selection screen
+  if (!hasExplicitLocationChoice) {
+    return (
+      <PageContainer testid="shifts-browse-page">
+        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-8">
+          <div className="space-y-4">
+            <div className="w-16 h-16 mx-auto bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-lg">
+              <MapPin className="h-8 w-8" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight mb-2" data-testid="location-selection-title">
+                Choose Your Location
+              </h1>
+              <p className="text-muted-foreground text-lg" data-testid="location-selection-description">
+                Please select a location to view available volunteer shifts
+              </p>
+            </div>
+          </div>
+
+          <div className="max-w-md w-full space-y-4" data-testid="location-selection-options">
+            {/* User's preferred locations (if any) */}
+            {userPreferredLocations.length > 1 && (
+              <div className="space-y-3">
+                <p className="text-sm font-medium text-muted-foreground">Your preferred locations:</p>
+                <div className="grid gap-3">
+                  {userPreferredLocations.map((loc) => (
+                    LOCATIONS.includes(loc as LocationOption) && (
+                      <Link
+                        key={loc}
+                        href={`/shifts?location=${loc}`}
+                        className="flex items-center justify-between p-4 bg-primary/5 hover:bg-primary/10 border border-primary/20 hover:border-primary/30 rounded-lg transition-all duration-200 group"
+                        data-testid={`preferred-location-${loc.toLowerCase().replace(/\s+/g, "-")}`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-3 h-3 bg-primary rounded-full"></div>
+                          <span className="font-medium">{loc}</span>
+                        </div>
+                        <div className="text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                          →
+                        </div>
+                      </Link>
+                    )
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* All locations */}
+            <div className="space-y-3">
+              {userPreferredLocations.length > 1 && (
+                <p className="text-sm font-medium text-muted-foreground">All locations:</p>
+              )}
+              <div className="grid gap-3">
+                {LOCATIONS.map((loc) => (
+                  <Link
+                    key={loc}
+                    href={`/shifts?location=${loc}`}
+                    className="flex items-center justify-between p-4 bg-background hover:bg-muted border border-border hover:border-primary/30 rounded-lg transition-all duration-200 group"
+                    data-testid={`location-option-${loc.toLowerCase().replace(/\s+/g, "-")}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-3 h-3 bg-muted-foreground rounded-full"></div>
+                      <span className="font-medium">{loc}</span>
+                    </div>
+                    <div className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+                      →
+                    </div>
+                  </Link>
+                ))}
+                
+                {/* Show all locations option */}
+                <Link
+                  href="/shifts?showAll=true"
+                  className="flex items-center justify-between p-4 bg-muted/50 hover:bg-muted border border-dashed border-muted-foreground/30 hover:border-muted-foreground/50 rounded-lg transition-all duration-200 group"
+                  data-testid="show-all-locations"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-3 h-3 border-2 border-muted-foreground rounded-full"></div>
+                    <span className="font-medium">All Locations</span>
+                  </div>
+                  <div className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+                    →
+                  </div>
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Help text */}
+          <div className="text-sm text-muted-foreground max-w-lg">
+            <p>
+              Selecting a location helps prevent accidental sign-ups to the wrong shifts. 
+              You can change locations at any time using the tabs above the calendar.
+            </p>
+            {userPreferredLocations.length === 0 && (
+              <p className="mt-2">
+                <Link href="/profile/edit" className="underline hover:text-primary">
+                  Set your preferred locations
+                </Link> to customize your experience.
+              </p>
+            )}
+          </div>
+        </div>
+      </PageContainer>
+    );
+  }
+
   return (
     <PageContainer testid="shifts-browse-page">
       <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
         <PageHeader
-          title="Volunteer Shifts"
+          title={selectedLocation || (showAll ? "All Locations" : (isUsingProfileFilter ? userPreferredLocations.join(", ") : "Shifts"))}
           description={`Find and sign up for upcoming volunteer opportunities${
             selectedLocation
               ? ` in ${selectedLocation}`
+              : showAll
+              ? " at all locations"
               : isUsingProfileFilter
-              ? ` in your preferred locations`
+              ? ` in your preferred location`
               : ""
           }. Click on any date to see details and sign up.`}
           className="flex-1"
@@ -137,50 +253,14 @@ export default async function ShiftsCalendarPage({
         />
 
         <div className="flex flex-col lg:flex-row gap-4 lg:items-end">
-          {/* Location filter */}
-          <div className="flex flex-col gap-3" data-testid="location-filter">
-            <span className="text-sm font-medium text-muted-foreground">
-              Filter by location:
-            </span>
-            <Tabs
-              value={
-                selectedLocation ||
-                (isUsingProfileFilter ? "preferences" : "all")
-              }
-              className="w-fit"
-              data-testid="location-tabs"
-            >
-              <TabsList
-                className="flex-wrap h-auto"
-                data-testid="location-tabs-list"
-              >
-                {userPreferredLocations.length > 0 && (
-                  <TabsTrigger
-                    value="preferences"
-                    asChild
-                    data-testid="location-tab-preferences"
-                  >
-                    <Link href="/shifts">My Locations</Link>
-                  </TabsTrigger>
-                )}
-                <TabsTrigger value="all" asChild data-testid="location-tab-all">
-                  <Link href="/shifts?showAll=true">All</Link>
-                </TabsTrigger>
-                {LOCATIONS.map((loc) => (
-                  <TabsTrigger
-                    key={loc}
-                    value={loc}
-                    asChild
-                    data-testid={`location-tab-${loc
-                      .toLowerCase()
-                      .replace(/\s+/g, "-")}`}
-                  >
-                    <Link href={`/shifts?location=${loc}`}>{loc}</Link>
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </Tabs>
-          </div>
+          {/* Back to locations button */}
+          <Link
+            href="/shifts"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground border border-border hover:border-primary/30 rounded-lg transition-colors"
+            data-testid="back-to-locations-button"
+          >
+            ← Choose Different Location
+          </Link>
         </div>
       </div>
 
@@ -192,8 +272,7 @@ export default async function ShiftsCalendarPage({
         >
           <p className="text-sm font-medium flex items-center gap-2">
             <MapPin className="h-4 w-4" />
-            Showing shifts in your preferred locations:{" "}
-            {userPreferredLocations.join(", ")}
+            Showing shifts in your preferred location: {userPreferredLocations.join(", ")}
           </p>
           <p className="text-xs text-muted-foreground mt-2">
             <Link href="/profile/edit" className="underline hover:text-primary">
