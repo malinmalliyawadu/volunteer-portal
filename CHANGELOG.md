@@ -1,3 +1,9 @@
+## [0.29.0] - 2025-09-05
+
+### Changes
+- feat: require explicit location selection before viewing volunteer shifts ([#90](https://github.com/malinmalliyawadu/volunteer-portal/pull/90)) by @malinmalliyawadu
+
+
 ## [0.28.0] - 2025-09-05
 
 ### Changes
