@@ -409,7 +409,7 @@ test.describe("Shifts Browse Page", () => {
       page,
     }) => {
       // Navigate directly to filtered URL
-      await page.goto("/shifts?location=glen%20Innes");
+      await page.goto("/shifts?location=Glen%20Innes");
       await page.waitForLoadState("load");
 
       // Glen Innes tab should be visually active

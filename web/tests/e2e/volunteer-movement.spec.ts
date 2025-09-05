@@ -232,7 +232,7 @@ test.describe("General Volunteer Movement System", () => {
       await page.waitForLoadState("load");
 
       // Check for movement notification
-      const notificationBell = page.getByTestId("notifications-button");
+      const notificationBell = page.getByTestId("notification-bell-button");
       await expect(notificationBell).toBeVisible();
       
       // Click to view notifications
