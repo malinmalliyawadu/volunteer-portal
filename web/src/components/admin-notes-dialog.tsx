@@ -195,6 +195,7 @@ export function AdminNotesDialog({
               variant="outline"
               size="sm"
               className="text-blue-600 hover:bg-blue-50 border-blue-200"
+              data-testid="open-volunteer-profile-button"
             >
               <a href={`/admin/volunteers/${volunteerId}`} target="_blank" rel="noopener noreferrer">
                 <User className="h-4 w-4 mr-2" />
