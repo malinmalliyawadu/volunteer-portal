@@ -115,7 +115,7 @@ test.describe("General Volunteer Movement System", () => {
       await page.getByRole("gridcell", { name: tomorrow.getDate().toString() }).click();
 
       // Find the shift card with our volunteer
-      const shiftCard = page.locator('[data-testid*="shift-card"]').filter({
+      const shiftCard = page.locator('[data-testid^="shift-card-"]').filter({
         hasText: "Test User"
       }).first();
 
@@ -146,7 +146,7 @@ test.describe("General Volunteer Movement System", () => {
       await page.getByRole("gridcell", { name: tomorrow.getDate().toString() }).click();
 
       // Find and click the move button
-      const shiftCard = page.locator('[data-testid*="shift-card"]').filter({
+      const shiftCard = page.locator('[data-testid^="shift-card-"]').filter({
         hasText: "Test User"
       }).first();
       
@@ -208,7 +208,7 @@ test.describe("General Volunteer Movement System", () => {
       await page.getByRole("gridcell", { name: tomorrow.getDate().toString() }).click();
 
       // Find the FOH shift card - volunteer should now be there
-      const fohShiftCard = page.locator('[data-testid*="shift-card"]').filter({
+      const fohShiftCard = page.locator('[data-testid^="shift-card-"]').filter({
         hasText: "FOH Set-Up & Service"
       }).first();
 
@@ -217,7 +217,7 @@ test.describe("General Volunteer Movement System", () => {
       await expect(fohShiftCard.getByText("Confirmed")).toBeVisible();
 
       // Original shift should no longer have the volunteer
-      const originalShiftCard = page.locator('[data-testid*="shift-card"]').filter({
+      const originalShiftCard = page.locator('[data-testid^="shift-card-"]').filter({
         hasText: "Kitchen Prep & Service"
       }).first();
 
@@ -285,7 +285,7 @@ test.describe("General Volunteer Movement System", () => {
       await page.getByRole("gridcell", { name: tomorrow.getDate().toString() }).click();
 
       // Find the FOH shift card where volunteer is currently assigned
-      const fohShiftCard = page.locator('[data-testid*="shift-card"]').filter({
+      const fohShiftCard = page.locator('[data-testid^="shift-card-"]').filter({
         hasText: "FOH Set-Up & Service"
       }).first();
 
@@ -355,7 +355,7 @@ test.describe("General Volunteer Movement System", () => {
       await page.getByRole("gridcell", { name: tomorrow.getDate().toString() }).click();
 
       // Try to move our main test volunteer to the evening shift (would create double booking)
-      const fohShiftCard = page.locator('[data-testid*="shift-card"]').filter({
+      const fohShiftCard = page.locator('[data-testid^="shift-card-"]').filter({
         hasText: "Test User"
       }).first();
 

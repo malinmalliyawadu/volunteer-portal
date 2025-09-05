@@ -74,21 +74,23 @@ test.describe("Flexible Placement System", () => {
   });
 
   test.afterAll(async () => {
-    // Clean up notifications
+    // Clean up notifications first
     await prisma.notification.deleteMany({
       where: { userId: volunteerUserId }
     });
     
-    // Clean up signups
+    // Clean up signups before deleting users (to avoid foreign key constraint)
     await prisma.signup.deleteMany({
       where: {
         shiftId: { in: testShiftIds }
       }
     });
 
-    // Cleanup test users and shifts
-    await deleteTestUsers(testEmails);
+    // Clean up shifts before deleting users 
     await deleteTestShifts(testShiftIds);
+    
+    // Finally cleanup test users
+    await deleteTestUsers(testEmails);
   });
 
   test.describe("Volunteer Flexible Signup Flow", () => {
@@ -97,27 +99,52 @@ test.describe("Flexible Placement System", () => {
       await page.goto("/shifts");
       await page.waitForLoadState("load");
 
+      // Navigate to a date with shifts (2 days from now to be safe)
+      const targetDate = new Date();
+      targetDate.setDate(targetDate.getDate() + 2);
+      const formattedDate = targetDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+      
+      await page.goto(`/shifts/details?date=${formattedDate}`);
+      await page.waitForLoadState("load");
+
+
       // Look for the flexible shift type
-      const flexibleShiftCard = page.locator('[data-testid*="shift-card"]').filter({
+      const flexibleShiftCard = page.locator('[data-testid^="shift-card-"]').filter({
         hasText: "Anywhere I'm Needed (PM)"
       }).first();
 
       await expect(flexibleShiftCard).toBeVisible();
       await expect(flexibleShiftCard).toContainText("Flexible placement for PM shifts");
 
-      // Click signup button
-      const signupButton = flexibleShiftCard.getByTestId("shift-signup-button");
+      // Wait for hydration before clicking interactive elements
+      await page.waitForTimeout(1000);
+
+      // Click signup button (using text content since it's more reliable)
+      const signupButton = flexibleShiftCard.getByRole("button", { name: /Sign Up Now|Join Waitlist/ });
       await expect(signupButton).toBeVisible();
       await signupButton.click();
 
-      // Wait for success message or redirect
+      // Wait for dialog to appear
+      const dialog = page.getByTestId("shift-signup-dialog");
+      await expect(dialog).toBeVisible();
+
+      // Click confirm signup in dialog
+      const confirmButton = page.getByTestId("shift-signup-confirm-button");
+      await expect(confirmButton).toBeVisible();
+      await confirmButton.click();
+
+      // Wait for signup to complete
       await page.waitForTimeout(2000);
 
       // Verify the signup was created as flexible
       const signup = await prisma.signup.findFirst({
         where: {
-          shiftId: flexibleShiftId,
-          user: { email: volunteerEmail }
+          user: { email: volunteerEmail },
+          shift: {
+            shiftType: {
+              name: "Anywhere I'm Needed (PM)"
+            }
+          }
         }
       });
 

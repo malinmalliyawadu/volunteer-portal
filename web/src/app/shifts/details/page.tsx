@@ -108,6 +108,7 @@ function ShiftCard({
 
   return (
     <Card
+      data-testid={`shift-card-${shift.id}`}
       className={`group relative overflow-hidden border-0 shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 ${theme.bgColor} h-full`}
     >
       {/* Gradient accent bar */}
@@ -259,6 +260,7 @@ function ShiftCard({
                 currentUserId={currentUserId}
               >
                 <Button
+                  data-testid="shift-signup-button"
                   className={`w-full font-medium transition-all duration-200 ${
                     isFull
                       ? "bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 hover:border-orange-300"
