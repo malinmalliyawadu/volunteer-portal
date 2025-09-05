@@ -31,14 +31,12 @@ import { VolunteerGradeToggle } from "@/components/volunteer-grade-toggle";
 import { VolunteerGradeBadge } from "@/components/volunteer-grade-badge";
 import { UserRoleToggle } from "@/components/user-role-toggle";
 import { type VolunteerGrade } from "@prisma/client";
+import { LOCATIONS, LocationOption } from "@/lib/locations";
 
 interface AdminVolunteerPageProps {
   params: Promise<{ id: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
-
-const LOCATIONS = ["Wellington", "Glen Innes", "Onehunga"] as const;
-type LocationOption = (typeof LOCATIONS)[number];
 
 export default async function AdminVolunteerPage({
   params,

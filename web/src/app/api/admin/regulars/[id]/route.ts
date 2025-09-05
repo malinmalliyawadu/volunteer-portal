@@ -3,11 +3,12 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { LocationSchema } from "@/lib/validation-schemas";
 
 // Validation schema for updating a regular volunteer
 const updateRegularVolunteerSchema = z.object({
   shiftTypeId: z.string().optional(),
-  location: z.enum(["Wellington", "Glen Innes", "Onehunga"]).optional(),
+  location: LocationSchema.optional(),
   frequency: z.enum(["WEEKLY", "FORTNIGHTLY", "MONTHLY"]).optional(),
   availableDays: z
     .array(
