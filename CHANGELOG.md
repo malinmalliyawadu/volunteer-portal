@@ -1,3 +1,9 @@
+## [0.30.0] - 2025-09-05
+
+### Changes
+- feat: centralize location configuration into single source of truth ([#91](https://github.com/malinmalliyawadu/volunteer-portal/pull/91)) by @malinmalliyawadu
+
+
 ## [0.29.0] - 2025-09-05
 
 ### Changes
