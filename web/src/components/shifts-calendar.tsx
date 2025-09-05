@@ -7,17 +7,18 @@ import {
   eachDayOfInterval,
   isSameDay,
   isSameMonth,
+  startOfWeek,
+  endOfWeek,
 } from "date-fns";
 import { useState } from "react";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { AvatarList } from "@/components/ui/avatar-list";
 import {
   ChevronLeft,
   ChevronRight,
   Calendar,
-  Users,
   MapPin,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -34,6 +35,16 @@ interface ShiftSummary {
     name: string;
     description: string | null;
   };
+  friendSignups?: Array<{
+    user: {
+      id: string;
+      name: string | null;
+      firstName: string | null;
+      lastName: string | null;
+      email: string;
+      profilePhotoUrl: string | null;
+    };
+  }>;
 }
 
 interface ShiftsCalendarProps {
@@ -48,6 +59,16 @@ interface DayShifts {
   totalConfirmed: number;
   totalPending: number;
   spotsAvailable: number;
+  allFriendSignups: Array<{
+    user: {
+      id: string;
+      name: string | null;
+      firstName: string | null;
+      lastName: string | null;
+      email: string;
+      profilePhotoUrl: string | null;
+    };
+  }>;
 }
 
 export function ShiftsCalendar({
@@ -58,7 +79,14 @@ export function ShiftsCalendar({
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
-  const monthDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
+
+  // Create a proper calendar grid that starts with Sunday and includes padding days
+  const calendarStart = startOfWeek(monthStart);
+  const calendarEnd = endOfWeek(monthEnd);
+  const calendarDays = eachDayOfInterval({
+    start: calendarStart,
+    end: calendarEnd,
+  });
 
   // Group shifts by restaurant location
   const shiftsByLocation = shifts.reduce((acc, shift) => {
@@ -74,7 +102,7 @@ export function ShiftsCalendar({
   const getLocationDayShifts = (location: string): DayShifts[] => {
     const locationShifts = shiftsByLocation[location] || [];
 
-    return monthDays.map((date) => {
+    return calendarDays.map((date) => {
       const dayShifts = locationShifts.filter((shift) =>
         isSameDay(shift.start, date)
       );
@@ -93,6 +121,14 @@ export function ShiftsCalendar({
         totalCapacity - totalConfirmed - totalPending
       );
 
+      // Collect all friend signups for this day
+      const allFriendSignups = dayShifts.reduce((acc, shift) => {
+        if (shift.friendSignups) {
+          acc.push(...shift.friendSignups);
+        }
+        return acc;
+      }, [] as NonNullable<(typeof dayShifts)[0]["friendSignups"]>);
+
       return {
         date,
         shifts: dayShifts,
@@ -100,6 +136,7 @@ export function ShiftsCalendar({
         totalConfirmed,
         totalPending,
         spotsAvailable,
+        allFriendSignups: allFriendSignups || [],
       };
     });
   };
@@ -141,6 +178,12 @@ export function ShiftsCalendar({
     ? locations.filter((loc) => loc === selectedLocation)
     : locations;
 
+  // Check if any display locations have shifts in the current month
+  const hasAnyShiftsInMonth = displayLocations.some((location) => {
+    const locationDayShifts = getLocationDayShifts(location);
+    return locationDayShifts.some((day) => day.shifts.length > 0);
+  });
+
   return (
     <div className="space-y-6">
       {/* Calendar Header */}
@@ -164,6 +207,9 @@ export function ShiftsCalendar({
             variant="outline"
             size="sm"
             onClick={previousMonth}
+            disabled={
+              format(currentMonth, "yyyy-MM") <= format(new Date(), "yyyy-MM")
+            }
             data-testid="calendar-prev-month"
           >
             <ChevronLeft className="h-4 w-4" />
@@ -218,12 +264,15 @@ export function ShiftsCalendar({
                 .toLowerCase()
                 .replace(/\s+/g, "-")}`}
             >
-              <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 px-6 py-4 border-b">
-                <div className="flex items-center gap-3">
-                  <MapPin className="h-5 w-5 text-primary" />
-                  <h3 className="text-xl font-semibold">{location}</h3>
+              {/* Only show location header when displaying multiple locations */}
+              {!selectedLocation && (
+                <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 px-6 py-4 border-b">
+                  <div className="flex items-center gap-3">
+                    <MapPin className="h-5 w-5 text-primary" />
+                    <h3 className="text-xl font-semibold">{location}</h3>
+                  </div>
                 </div>
-              </div>
+              )}
 
               <CardContent className="p-6">
                 {/* Days of week header */}
@@ -248,69 +297,118 @@ export function ShiftsCalendar({
                       dayShifts.date,
                       currentMonth
                     );
-                    const isPastDate =
-                      dayShifts.date <
-                      new Date(new Date().setHours(0, 0, 0, 0));
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const dayStart = new Date(dayShifts.date);
+                    dayStart.setHours(0, 0, 0, 0);
+                    const isPastDate = dayStart < today;
+                    const isToday = isSameDay(dayShifts.date, today);
 
                     const dayContent = (
                       <div
                         className={cn(
-                          "relative aspect-square rounded-lg border-2 transition-all duration-200 group",
+                          "relative aspect-square rounded-xl transition-all duration-300 group overflow-hidden",
                           isCurrentMonth
-                            ? status === "none" || isPastDate
-                              ? "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30"
-                              : `border-transparent ${getStatusColor(
+                            ? isPastDate
+                              ? "border-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 opacity-60"
+                              : isToday
+                              ? "bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-950/50 dark:via-indigo-950/50 dark:to-purple-950/50 border-2 border-blue-400 dark:border-blue-600 shadow-lg ring-4 ring-blue-100/50 dark:ring-blue-900/30"
+                              : status === "none"
+                              ? "border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-800/70"
+                              : `border-2 ${getStatusColor(
                                   status
-                                )} hover:shadow-md hover:scale-105 cursor-pointer`
-                            : "border-gray-100 dark:border-gray-800 bg-gray-25 dark:bg-gray-950/50 opacity-40",
+                                )} hover:shadow-lg hover:scale-[1.02] cursor-pointer transform-gpu`
+                            : "border border-gray-150 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/30 opacity-50",
                           dayShifts.shifts.length > 0 &&
                             isCurrentMonth &&
                             !isPastDate &&
-                            "hover:border-primary"
+                            "hover:border-primary/60 shadow-md"
                         )}
                         data-testid={`calendar-day-${format(
                           dayShifts.date,
                           "yyyy-MM-dd"
                         )}`}
                       >
-                        {/* Date number */}
-                        <div className="absolute top-2 left-2">
-                          <span
-                            className={cn(
-                              "text-sm font-medium",
-                              !isCurrentMonth && "text-muted-foreground/50",
-                              isPastDate &&
-                                isCurrentMonth &&
-                                "text-muted-foreground"
+                        {/* Header with date and today indicator */}
+                        <div className="absolute top-0 left-0 right-0 p-3">
+                          <div className="flex items-center justify-between">
+                            <span
+                              className={cn(
+                                "text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center transition-colors",
+                                !isCurrentMonth &&
+                                  "text-gray-400 dark:text-gray-600",
+                                isPastDate &&
+                                  isCurrentMonth &&
+                                  "text-gray-500 dark:text-gray-400",
+                                isToday &&
+                                  isCurrentMonth &&
+                                  "text-white bg-gradient-to-br from-blue-500 to-indigo-500 shadow-lg shadow-blue-500/25",
+                                !isToday &&
+                                  isCurrentMonth &&
+                                  !isPastDate &&
+                                  "text-gray-700 dark:text-gray-200"
+                              )}
+                            >
+                              {format(dayShifts.date, "d")}
+                            </span>
+                            {isToday && (
+                              <div className="text-[10px] font-semibold text-blue-600 dark:text-blue-300 bg-blue-100/80 dark:bg-blue-900/60 px-2.5 py-1 rounded-full backdrop-blur-sm shadow-sm">
+                                Today
+                              </div>
                             )}
-                          >
-                            {format(dayShifts.date, "d")}
-                          </span>
+                          </div>
                         </div>
 
-                        {/* Shift indicators */}
-                        {dayShifts.shifts.length > 0 &&
+                        {/* Content area */}
+                        <div className="absolute inset-0 pt-12 px-3 flex flex-col">
+                          {dayShifts.shifts.length > 0 &&
                           isCurrentMonth &&
-                          !isPastDate && (
-                            <div className="absolute bottom-2 left-2 right-2">
-                              <div className="flex items-center justify-between text-xs">
-                                <div className="flex items-center gap-1">
-                                  <Users className="h-3 w-3" />
-                                  <span className="font-medium">
-                                    {dayShifts.shifts.length}
-                                  </span>
+                          !isPastDate ? (
+                            <>
+                              {/* Status indicator - absolutely centered */}
+                              <div className="absolute inset-x-3 top-12 bottom-8 flex items-center justify-center">
+                                <div className="text-center">
+                                  {status === "full" ? (
+                                    <div className="inline-flex items-center px-2.5 py-1 rounded-full bg-orange-100/80 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-xs font-semibold">
+                                      WAITLIST
+                                    </div>
+                                  ) : status === "limited" ? (
+                                    <div className="inline-flex items-center px-2.5 py-1 rounded-full bg-yellow-100/80 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 text-xs font-semibold">
+                                      {dayShifts.spotsAvailable} LEFT
+                                    </div>
+                                  ) : (
+                                    <div className="inline-flex items-center px-2.5 py-1 rounded-full bg-green-100/80 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-xs font-semibold">
+                                      {dayShifts.spotsAvailable} available
+                                    </div>
+                                  )}
                                 </div>
-                                {dayShifts.spotsAvailable > 0 && (
-                                  <Badge
-                                    variant="secondary"
-                                    className="text-xs px-1 py-0 h-5"
-                                  >
-                                    {dayShifts.spotsAvailable} left
-                                  </Badge>
-                                )}
                               </div>
+
+                              {/* Friend avatars at bottom - fixed position */}
+                              {dayShifts.allFriendSignups.length > 0 && (
+                                <div className="absolute bottom-2 left-0 right-0 flex justify-center">
+                                  <AvatarList
+                                    users={dayShifts.allFriendSignups.map(
+                                      (signup) => signup.user
+                                    )}
+                                    maxDisplay={2}
+                                    size="sm"
+                                  />
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            <div className="absolute inset-x-3 top-12 bottom-3 flex items-center justify-center">
+                              {!isPastDate && isCurrentMonth && (
+                                <div className="text-center">
+                                  <div className="text-xs text-gray-400 dark:text-gray-500 font-medium">
+                                    No shifts
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           )}
+                        </div>
                       </div>
                     );
 
@@ -341,17 +439,39 @@ export function ShiftsCalendar({
         })}
       </div>
 
-      {displayLocations.length === 0 && (
+      {!hasAnyShiftsInMonth && (
         <Card>
           <CardContent className="py-12 text-center" data-testid="empty-state">
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
               <Calendar className="w-8 h-8 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-semibold mb-2" data-testid="empty-state-title">No shifts scheduled</h3>
-            <p className="text-muted-foreground" data-testid="empty-state-description">
+            <h3
+              className="text-lg font-semibold mb-2"
+              data-testid="empty-state-title"
+            >
+              No shifts scheduled
+            </h3>
+            <p
+              className="text-muted-foreground mb-4"
+              data-testid="empty-state-description"
+            >
               {selectedLocation
-                ? `No shifts found for ${selectedLocation} this month.`
-                : "No shifts are currently scheduled for this month."}
+                ? `No shifts found for ${selectedLocation} in ${format(
+                    currentMonth,
+                    "MMMM yyyy"
+                  )}.`
+                : `No shifts are currently scheduled for ${format(
+                    currentMonth,
+                    "MMMM yyyy"
+                  )}.`}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {format(currentMonth, "yyyy-MM") > format(new Date(), "yyyy-MM")
+                ? "Shifts are usually published closer to the date."
+                : format(currentMonth, "yyyy-MM") <
+                  format(new Date(), "yyyy-MM")
+                ? "This month has passed. Try viewing current or future months."
+                : "Check back soon for upcoming shifts, or try a different location."}
             </p>
           </CardContent>
         </Card>

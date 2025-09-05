@@ -27,6 +27,31 @@ async function loginAsVolunteer(page: Page) {
   }
 }
 
+// Helper function to navigate to shifts with location selected
+async function navigateToShiftsWithLocation(page: Page, location = "Wellington") {
+  await page.goto("/shifts");
+  await page.waitForLoadState("load");
+  
+  // Check if location selection screen is shown
+  const locationSelectionTitle = page.getByTestId("location-selection-title");
+  
+  if (await locationSelectionTitle.isVisible()) {
+    const locationKey = location.toLowerCase().replace(/\s+/g, "-");
+    
+    // Try preferred location first (for authenticated users)
+    const preferredLocationOption = page.getByTestId(`preferred-location-${locationKey}`);
+    const regularLocationOption = page.getByTestId(`location-option-${locationKey}`);
+    
+    // Click whichever option is visible
+    if (await preferredLocationOption.isVisible()) {
+      await preferredLocationOption.click();
+    } else {
+      await regularLocationOption.click();
+    }
+    await page.waitForLoadState("load");
+  }
+}
+
 test.describe("Shifts Browse Page", () => {
   test.describe("Unauthenticated Access", () => {
     test.beforeEach(async ({ page }) => {
@@ -34,7 +59,7 @@ test.describe("Shifts Browse Page", () => {
       await page.waitForLoadState("load");
     });
 
-    test("should display shifts page without authentication", async ({
+    test("should display location selection screen without authentication", async ({
       page,
     }) => {
       // Check page loads successfully
@@ -44,87 +69,62 @@ test.describe("Shifts Browse Page", () => {
       const browsePage = page.getByTestId("shifts-browse-page");
       await expect(browsePage).toBeVisible();
 
-      // Check main page title
+      // Check location selection title and description
+      const selectionTitle = page.getByTestId("location-selection-title");
+      await expect(selectionTitle).toBeVisible();
+      await expect(selectionTitle).toContainText("Choose Your Location");
+
+      const selectionDescription = page.getByTestId("location-selection-description");
+      await expect(selectionDescription).toBeVisible();
+      await expect(selectionDescription).toContainText("Please select a location to view available volunteer shifts");
+    });
+
+    test("should display location options for selection", async ({ page }) => {
+      // Check location selection options container
+      const locationOptions = page.getByTestId("location-selection-options");
+      await expect(locationOptions).toBeVisible();
+
+      // Check individual location options are available
+      const wellingtonOption = page.getByTestId("location-option-wellington");
+      await expect(wellingtonOption).toBeVisible();
+
+      const glenInnesOption = page.getByTestId("location-option-glen-innes");  
+      await expect(glenInnesOption).toBeVisible();
+
+      const onehungaOption = page.getByTestId("location-option-onehunga");
+      await expect(onehungaOption).toBeVisible();
+
+      // Check "Show All" option
+      const showAllOption = page.getByTestId("show-all-locations");
+      await expect(showAllOption).toBeVisible();
+    });
+
+    test("should navigate to filtered shifts page when selecting a location", async ({
+      page,
+    }) => {
+      // Click on Wellington location option
+      const wellingtonOption = page.getByTestId("location-option-wellington");
+      await wellingtonOption.click();
+      await page.waitForLoadState("load");
+
+      // Should navigate to filtered URL  
+      await expect(page).toHaveURL("/shifts?location=Wellington");
+
+      // Should now show the shifts page with Wellington as title
       const pageTitle = page.getByRole("heading", {
-        name: /volunteer shifts/i,
+        name: /wellington/i,
       });
       await expect(pageTitle).toBeVisible();
 
-      // Check page description
-      const pageDescription = page.getByText(
-        /find and sign up for upcoming volunteer opportunities/i
-      );
-      await expect(pageDescription).toBeVisible();
-    });
-
-    test("should display location filter tabs", async ({ page }) => {
-      // Check location filter section
-      const locationFilter = page.getByTestId("location-filter");
-      await expect(locationFilter).toBeVisible();
-
-      // Check filter label
-      const filterLabel = page.getByText("Filter by location:");
-      await expect(filterLabel).toBeVisible();
-
-      // Check location tabs container
-      const locationTabs = page.getByTestId("location-tabs");
-      await expect(locationTabs).toBeVisible();
-
-      // Check "All" tab
-      const allTab = page.getByTestId("location-tab-all");
-      await expect(allTab).toBeVisible();
-
-      // Check location-specific tabs
-      const wellingtonTab = page.getByTestId("location-tab-wellington");
-      await expect(wellingtonTab).toBeVisible();
-
-      const glenInnesTab = page.getByTestId("location-tab-glen-innes");
-      await expect(glenInnesTab).toBeVisible();
-
-      const onehungaTab = page.getByTestId("location-tab-onehunga");
-      await expect(onehungaTab).toBeVisible();
-    });
-
-    test("should show login buttons for shift signup when not authenticated", async ({
-      page,
-    }) => {
-      // Look for shift cards
-      const shiftCards = page.locator('[data-testid^="shift-card-"]');
-      const shiftCount = await shiftCards.count();
-
-      if (shiftCount > 0) {
-        const firstShift = shiftCards.first();
-
-        // Should show login link for signup
-        const signupButton = firstShift.locator(
-          '[data-testid*="signup-login-button"]'
-        );
-        if (await signupButton.isVisible()) {
-          await expect(signupButton).toHaveAttribute(
-            "href",
-            /\/login.*callbackUrl.*shifts/
-          );
-        }
-
-        // Or waitlist login link
-        const waitlistButton = firstShift.locator(
-          '[data-testid*="waitlist-login-button"]'
-        );
-        if (await waitlistButton.isVisible()) {
-          await expect(waitlistButton).toHaveAttribute(
-            "href",
-            /\/login.*callbackUrl.*shifts/
-          );
-        }
-      }
+      // Should show back to locations button now
+      const backToLocationsButton = page.getByTestId("back-to-locations-button");
+      await expect(backToLocationsButton).toBeVisible();
     });
   });
 
   test.describe("Authenticated Access", () => {
     test.beforeEach(async ({ page }) => {
       await loginAsVolunteer(page);
-      await page.goto("/shifts");
-      await page.waitForLoadState("load");
 
       // Skip tests if login failed
       const currentUrl = page.url();
@@ -133,7 +133,10 @@ test.describe("Shifts Browse Page", () => {
       }
     });
 
-    test("should display page with authentication", async ({ page }) => {
+    test("should display location selection screen with authentication", async ({ page }) => {
+      await page.goto("/shifts");
+      await page.waitForLoadState("load");
+      
       // Check page loads successfully
       await expect(page).toHaveURL("/shifts");
 
@@ -141,9 +144,17 @@ test.describe("Shifts Browse Page", () => {
       const browsePage = page.getByTestId("shifts-browse-page");
       await expect(browsePage).toBeVisible();
 
-      // Check main elements are visible
+      // Should show location selection screen first
+      const selectionTitle = page.getByTestId("location-selection-title");
+      await expect(selectionTitle).toBeVisible();
+    });
+
+    test("should display shifts page after location selection", async ({ page }) => {
+      await navigateToShiftsWithLocation(page);
+
+      // Check main elements are visible after location selection (should show location name)
       const pageTitle = page.getByRole("heading", {
-        name: /volunteer shifts/i,
+        name: /wellington/i,
       });
       await expect(pageTitle).toBeVisible();
 
@@ -156,6 +167,8 @@ test.describe("Shifts Browse Page", () => {
     test("should display shift cards with all required information", async ({
       page,
     }) => {
+      await navigateToShiftsWithLocation(page);
+      
       // Look for shift cards using testids
       const shiftCards = page.locator('[data-testid^="shift-card-"]');
       const shiftCount = await shiftCards.count();
@@ -367,64 +380,43 @@ test.describe("Shifts Browse Page", () => {
     });
   });
 
-  test.describe("Location Filtering", () => {
-    test.beforeEach(async ({ page }) => {
-      await page.goto("/shifts");
-      await page.waitForLoadState("load");
-    });
-
-    test("should filter shifts by location when clicking location tabs", async ({
+  test.describe("Location Navigation", () => {
+    test("should show back to locations button after selecting a location", async ({
       page,
     }) => {
-      // Click on Wellington tab
-      const wellingtonTab = page.getByTestId("location-tab-wellington");
-      await wellingtonTab.click();
-      await page.waitForLoadState("load");
-
-      // Should navigate to filtered URL
-      await expect(page).toHaveURL("/shifts?location=Wellington");
-
-      // Page should show Wellington filter indication
-      const pageDescription = page.getByText(/in wellington/i);
-      await expect(pageDescription).toBeVisible();
-    });
-
-    test("should show all locations when clicking All tab", async ({
-      page,
-    }) => {
-      // First go to a filtered view
+      // Go to a specific location
       await page.goto("/shifts?location=Wellington");
       await page.waitForLoadState("load");
 
-      // Then click "All" tab
-      const allTab = page.getByTestId("location-tab-all");
-      await allTab.click();
-      await page.waitForLoadState("load");
-
-      // Should return to unfiltered URL
-      await expect(page).toHaveURL("/shifts?showAll=true");
+      // Should show back to locations button
+      const backButton = page.getByTestId("back-to-locations-button");
+      await expect(backButton).toBeVisible();
+      await expect(backButton).toHaveText("← Choose Different Location");
     });
 
-    test("should maintain active tab state for selected location", async ({
+    test("should return to location selection when clicking back button", async ({
       page,
     }) => {
-      // Navigate directly to filtered URL
-      await page.goto("/shifts?location=Glen%20Innes");
+      // Go to a specific location
+      await page.goto("/shifts?location=Wellington");
       await page.waitForLoadState("load");
 
-      // Glen Innes tab should be visually active
-      const glenInnesTab = page.getByTestId("location-tab-glen-innes");
+      // Click back to locations button
+      const backButton = page.getByTestId("back-to-locations-button");
+      await backButton.click();
+      await page.waitForLoadState("load");
 
-      // Check if it has active styling (Radix UI tabs use data-state="active")
-      await expect(glenInnesTab).toHaveAttribute("data-state", "active");
+      // Should return to location selection screen
+      await expect(page).toHaveURL("/shifts");
+      const selectionTitle = page.getByTestId("location-selection-title");
+      await expect(selectionTitle).toBeVisible();
     });
 
     test("should show user preference notification when applicable", async ({
       page,
     }) => {
       await loginAsVolunteer(page);
-      await page.goto("/shifts");
-      await page.waitForLoadState("load");
+      await navigateToShiftsWithLocation(page);
 
       // Look for preference notification
       const preferenceNotification = page.getByTestId(
@@ -627,7 +619,7 @@ test.describe("Shifts Browse Page", () => {
 
   test.describe("Responsive Design", () => {
     test("should be responsive on mobile viewport", async ({ page }) => {
-      await page.goto("/shifts");
+      await page.goto("/shifts?location=Wellington");
       await page.waitForLoadState("load");
 
       // Set mobile viewport
@@ -637,13 +629,13 @@ test.describe("Shifts Browse Page", () => {
 
       // Check main elements are still visible and accessible
       const pageTitle = page.getByRole("heading", {
-        name: /volunteer shifts/i,
+        name: /wellington/i,
       });
       await expect(pageTitle).toBeVisible();
 
-      // Check location filter is accessible on mobile
-      const locationTabs = page.locator('[role="tablist"]');
-      await expect(locationTabs).toBeVisible();
+      // Check back button is accessible on mobile
+      const backButton = page.getByTestId("back-to-locations-button");
+      await expect(backButton).toBeVisible();
 
       // Check shift cards adapt to mobile layout
       const shiftCards = page.locator('[data-testid^="shift-card-"]');
@@ -683,39 +675,44 @@ test.describe("Shifts Browse Page", () => {
     test("should handle page loading gracefully", async ({ page }) => {
       await page.goto("/shifts");
 
-      // Wait for main content to be visible
-      const pageTitle = page.getByRole("heading", {
-        name: /volunteer shifts/i,
-      });
-      await expect(pageTitle).toBeVisible({ timeout: 10000 });
+      // Wait for location selection screen to be visible
+      const selectionTitle = page.getByTestId("location-selection-title");
+      await expect(selectionTitle).toBeVisible({ timeout: 10000 });
 
       // Check that no error messages are displayed
       const errorMessage = page.getByText(/error|failed|something went wrong/i);
       await expect(errorMessage).not.toBeVisible();
     });
 
-    test("should handle navigation between filter states", async ({ page }) => {
+    test("should handle navigation between location selection and shifts", async ({ page }) => {
       await page.goto("/shifts");
       await page.waitForLoadState("load");
 
-      // Navigate through different location filters
-      const wellingtonTab = page.getByTestId("location-tab-wellington");
-      await wellingtonTab.click();
+      // Should start with location selection
+      const selectionTitle = page.getByTestId("location-selection-title");
+      await expect(selectionTitle).toBeVisible();
+
+      // Select Wellington
+      const wellingtonOption = page.getByTestId("location-option-wellington");
+      await wellingtonOption.click();
       await page.waitForLoadState("load");
 
       await expect(page).toHaveURL("/shifts?location=Wellington");
 
-      const allTab = page.getByTestId("location-tab-all");
-      await allTab.click();
-      await page.waitForLoadState("load");
-
-      await expect(page).toHaveURL("/shifts?showAll=true");
-
-      // Page should remain functional
+      // Should show shifts page with back button
       const pageTitle = page.getByRole("heading", {
-        name: /volunteer shifts/i,
+        name: /wellington/i,
       });
       await expect(pageTitle).toBeVisible();
+
+      // Click back button
+      const backButton = page.getByTestId("back-to-locations-button");
+      await backButton.click();
+      await page.waitForLoadState("load");
+
+      // Should return to location selection
+      await expect(page).toHaveURL("/shifts");
+      await expect(selectionTitle).toBeVisible();
     });
   });
 
@@ -1003,26 +1000,34 @@ test.describe("Shifts Browse Page", () => {
   });
 
   test.describe("Accessibility", () => {
-    test("should have proper accessibility attributes", async ({ page }) => {
+    test("should have proper accessibility attributes for location selection", async ({ page }) => {
       await page.goto("/shifts");
       await page.waitForLoadState("load");
 
-      // Check main heading structure
-      const mainHeading = page.getByRole("heading", {
-        name: /volunteer shifts/i,
-      });
+      // Check main heading structure  
+      const mainHeading = page.getByTestId("location-selection-title");
       await expect(mainHeading).toBeVisible();
 
-      // Check location filter has proper labels
-      const locationFilter = page.getByTestId("location-filter");
-      await expect(locationFilter).toBeVisible();
+      // Check location options have proper accessibility
+      const locationOptions = page.getByTestId("location-selection-options");
+      await expect(locationOptions).toBeVisible();
 
-      const filterLabel = page.getByText("Filter by location:");
-      await expect(filterLabel).toBeVisible();
+      // Check location links are accessible
+      const wellingtonOption = page.getByTestId("location-option-wellington");
+      await expect(wellingtonOption).toBeVisible();
+    });
 
-      // Check tab navigation
-      const locationTabs = page.getByTestId("location-tabs");
-      await expect(locationTabs).toBeVisible();
+    test("should have proper accessibility attributes for shifts page", async ({ page }) => {
+      await page.goto("/shifts?location=Wellington");
+      await page.waitForLoadState("load");
+
+      // Check main heading structure
+      const pageHeader = page.getByTestId("shifts-page-header");
+      await expect(pageHeader).toBeVisible();
+
+      // Check back button is accessible
+      const backButton = page.getByTestId("back-to-locations-button");
+      await expect(backButton).toBeVisible();
 
       // Check that buttons have accessible names
       const signupButton = page
@@ -1039,21 +1044,19 @@ test.describe("Shifts Browse Page", () => {
       await page.goto("/shifts");
       await page.waitForLoadState("load");
 
-      // Tab through location filters
-      const wellingtonTab = page.getByTestId("location-tab-wellington");
-      await wellingtonTab.focus();
-      await expect(wellingtonTab).toBeFocused();
+      // Check location options are keyboard accessible
+      const wellingtonOption = page.getByTestId("location-option-wellington");
+      await wellingtonOption.focus();
+      await expect(wellingtonOption).toBeFocused();
 
-      // Check shift cards are keyboard accessible
-      const signupButton = page
-        .locator(
-          '[data-testid*="signup-button"], [data-testid*="waitlist-button"]'
-        )
-        .first();
-      if (await signupButton.isVisible()) {
-        await signupButton.focus();
-        await expect(signupButton).toBeFocused();
-      }
+      // Navigate to shifts page
+      await wellingtonOption.click();
+      await page.waitForLoadState("load");
+
+      // Check back button is keyboard accessible
+      const backButton = page.getByTestId("back-to-locations-button");
+      await backButton.focus();
+      await expect(backButton).toBeFocused();
     });
   });
 });

@@ -400,17 +400,25 @@ export default async function ShiftDetailsPage({
     ? allShifts
     : allShifts.filter(shift => !shift.shiftType.name.includes("Anywhere I'm Needed"));
 
-  // Group shifts by location if no specific location filter
-  const shiftsByLocation = new Map<string, ShiftWithRelations[]>();
+  // Helper function to determine if a shift is AM or PM
+  const isAMShift = (shift: ShiftWithRelations) => {
+    const hour = shift.start.getHours();
+    return hour < 16; // Before 4pm (16:00) is considered "AM"
+  };
+
+  // Group shifts by location and then by AM/PM
+  const shiftsByLocationAndTime = new Map<string, { AM: ShiftWithRelations[]; PM: ShiftWithRelations[] }>();
   for (const shift of shifts) {
     const locationKey = shift.location || "TBD";
-    if (!shiftsByLocation.has(locationKey)) {
-      shiftsByLocation.set(locationKey, []);
+    const timeOfDay = isAMShift(shift) ? "AM" : "PM";
+    
+    if (!shiftsByLocationAndTime.has(locationKey)) {
+      shiftsByLocationAndTime.set(locationKey, { AM: [], PM: [] });
     }
-    shiftsByLocation.get(locationKey)!.push(shift);
+    shiftsByLocationAndTime.get(locationKey)![timeOfDay].push(shift);
   }
 
-  const sortedLocations = Array.from(shiftsByLocation.keys()).sort();
+  const sortedLocations = Array.from(shiftsByLocationAndTime.keys()).sort();
 
   return (
     <PageContainer testid="shifts-details-page">
@@ -425,7 +433,7 @@ export default async function ShiftDetailsPage({
       </div>
 
       <PageHeader
-        title={`Shifts for ${format(selectedDate, "EEEE, MMMM d, yyyy")}`}
+        title={`Shifts for ${format(selectedDate, "EEEE, MMMM d, yyyy")}${selectedLocation ? ` - ${selectedLocation}` : ""}`}
         description={`${selectedLocation ? `Available shifts in ${selectedLocation}` : "All available shifts"} for this date. Click on any shift to view details and sign up.`}
         className="mb-8"
         data-testid="shifts-details-page-header"
@@ -457,12 +465,17 @@ export default async function ShiftDetailsPage({
       ) : (
         <div className="space-y-8" data-testid="shifts-list">
           {sortedLocations.map((locationKey) => {
-            const locationShifts = shiftsByLocation.get(locationKey)!;
+            const locationTimeShifts = shiftsByLocationAndTime.get(locationKey)!;
+            const totalShifts = locationTimeShifts.AM.length + locationTimeShifts.PM.length;
+            const hasAMShifts = locationTimeShifts.AM.length > 0;
+            const hasPMShifts = locationTimeShifts.PM.length > 0;
+
+            if (!hasAMShifts && !hasPMShifts) return null;
 
             return (
               <section
                 key={locationKey}
-                className="space-y-4"
+                className="space-y-6"
                 data-testid={`shifts-location-section-${locationKey.toLowerCase().replace(/\s+/g, "-")}`}
               >
                 {/* Location Header (only show if multiple locations) */}
@@ -473,7 +486,7 @@ export default async function ShiftDetailsPage({
                       <div>
                         <h2 className="text-xl font-semibold">{locationKey}</h2>
                         <p className="text-sm text-muted-foreground">
-                          {locationShifts.length} shift{locationShifts.length !== 1 ? "s" : ""} available
+                          {totalShifts} shift{totalShifts !== 1 ? "s" : ""} available
                         </p>
                       </div>
                     </div>
@@ -481,7 +494,7 @@ export default async function ShiftDetailsPage({
                     {/* Group Booking Button at Location Level */}
                     {session && (
                       <GroupBookingDialogWrapper
-                        shifts={locationShifts}
+                        shifts={[...locationTimeShifts.AM, ...locationTimeShifts.PM]}
                         date={format(selectedDate, "EEEE, MMMM d, yyyy")}
                         location={locationKey}
                         testid={`group-booking-${locationKey.toLowerCase().replace(/\s+/g, "-")}`}
@@ -491,18 +504,61 @@ export default async function ShiftDetailsPage({
                   </div>
                 )}
 
-                {/* Shifts Grid */}
-                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                  {locationShifts.map((shift) => (
-                    <ShiftCard
-                      key={shift.id}
-                      shift={shift}
-                      currentUserId={currentUser?.id}
-                      session={session}
-                      userFriendIds={userFriendIds}
-                    />
-                  ))}
-                </div>
+                {/* AM Shifts Section */}
+                {hasAMShifts && (
+                  <div className="space-y-4" data-testid={`shifts-am-section-${locationKey.toLowerCase().replace(/\s+/g, "-")}`}>
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center text-lg">
+                        ☀️
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold">Day Shifts</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {locationTimeShifts.AM.length} shift{locationTimeShifts.AM.length !== 1 ? "s" : ""} available (before 4pm)
+                        </p>
+                      </div>
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                      {locationTimeShifts.AM.map((shift) => (
+                        <ShiftCard
+                          key={shift.id}
+                          shift={shift}
+                          currentUserId={currentUser?.id}
+                          session={session}
+                          userFriendIds={userFriendIds}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* PM Shifts Section */}
+                {hasPMShifts && (
+                  <div className="space-y-4" data-testid={`shifts-pm-section-${locationKey.toLowerCase().replace(/\s+/g, "-")}`}>
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center text-lg">
+                        🌙
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold">Evening Shifts</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {locationTimeShifts.PM.length} shift{locationTimeShifts.PM.length !== 1 ? "s" : ""} available (4pm onwards)
+                        </p>
+                      </div>
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                      {locationTimeShifts.PM.map((shift) => (
+                        <ShiftCard
+                          key={shift.id}
+                          shift={shift}
+                          currentUserId={currentUser?.id}
+                          session={session}
+                          userFriendIds={userFriendIds}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </section>
             );
           })}

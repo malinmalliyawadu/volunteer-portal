@@ -356,8 +356,16 @@ async function main() {
   const userDailySignups = new Map(); // userId -> Set of date strings
 
   // Helper function to check if user can sign up for a shift on a given date
+  // For today's shifts, allow multiple signups since we need to fill all shifts
   function canUserSignUpForDate(userId, shiftDate) {
     const dateKey = shiftDate.toISOString().split("T")[0]; // YYYY-MM-DD format
+    const today = new Date();
+    const todayStr = today.toISOString().split("T")[0];
+
+    // For today's shifts, allow multiple signups to ensure we can fill all shifts
+    if (dateKey === todayStr) {
+      return true; // Allow multiple signups for today
+    }
 
     if (!userDailySignups.has(userId)) {
       userDailySignups.set(userId, new Set());
@@ -461,7 +469,8 @@ async function main() {
   }
 
   // Create additional simple volunteers for testing capacity limits
-  for (let i = 1; i <= 12; i++) {
+  // Need enough volunteers to fill all daily shifts (83 total spots across all locations)
+  for (let i = 1; i <= 70; i++) {
     const email = `vol${i}@example.com`;
     const firstNames = [
       "Emma",
@@ -476,6 +485,74 @@ async function main() {
       "Lucas",
       "Mia",
       "Mason",
+      "Charlotte",
+      "William",
+      "Amelia",
+      "James",
+      "Harper",
+      "Benjamin",
+      "Evelyn",
+      "Alexander",
+      "Abigail",
+      "Michael",
+      "Emily",
+      "Daniel",
+      "Elizabeth",
+      "Matthew",
+      "Sofia",
+      "Jackson",
+      "Avery",
+      "Sebastian",
+      "Ella",
+      "Henry",
+      "Madison",
+      "Samuel",
+      "Scarlett",
+      "David",
+      "Victoria",
+      "Joseph",
+      "Aria",
+      "John",
+      "Grace",
+      "Wyatt",
+      "Chloe",
+      "Owen",
+      "Camila",
+      "Luke",
+      "Penelope",
+      "Gabriel",
+      "Riley",
+      "Isaac",
+      "Layla",
+      "Carter",
+      "Lillian",
+      "Julian",
+      "Nora",
+      "Jayden",
+      "Zoey",
+      "Mason",
+      "Mila",
+      "Anthony",
+      "Aubrey",
+      "Hudson",
+      "Hannah",
+      "Eli",
+      "Lily",
+      "Connor",
+      "Addison",
+      "Caleb",
+      "Eleanor",
+      "Ryan",
+      "Natalie",
+      "Nathan",
+      "Luna",
+      "Zachary",
+      "Savannah",
+      "Christian",
+      "Leah",
+      "Andrew",
+      "Bella",
+      "Joshua",
     ];
     const lastNames = [
       "Smith",
@@ -490,6 +567,74 @@ async function main() {
       "Young",
       "King",
       "Wright",
+      "Lopez",
+      "Hill",
+      "Scott",
+      "Green",
+      "Adams",
+      "Baker",
+      "Gonzalez",
+      "Nelson",
+      "Carter",
+      "Mitchell",
+      "Perez",
+      "Roberts",
+      "Turner",
+      "Phillips",
+      "Campbell",
+      "Parker",
+      "Evans",
+      "Edwards",
+      "Collins",
+      "Stewart",
+      "Sanchez",
+      "Morris",
+      "Rogers",
+      "Reed",
+      "Cook",
+      "Morgan",
+      "Bell",
+      "Murphy",
+      "Bailey",
+      "Rivera",
+      "Cooper",
+      "Richardson",
+      "Cox",
+      "Howard",
+      "Ward",
+      "Torres",
+      "Peterson",
+      "Gray",
+      "Ramirez",
+      "James",
+      "Watson",
+      "Brooks",
+      "Kelly",
+      "Sanders",
+      "Price",
+      "Bennett",
+      "Wood",
+      "Barnes",
+      "Ross",
+      "Henderson",
+      "Coleman",
+      "Jenkins",
+      "Perry",
+      "Powell",
+      "Long",
+      "Patterson",
+      "Hughes",
+      "Flores",
+      "Washington",
+      "Butler",
+      "Simmons",
+      "Foster",
+      "Gonzales",
+      "Bryant",
+      "Alexander",
+      "Russell",
+      "Griffin",
+      "Diaz",
     ];
 
     const firstName = firstNames[(i - 1) % firstNames.length];
@@ -760,16 +905,7 @@ async function main() {
     update: {},
     create: {
       name: "Kitchen Prep",
-      description: "Food preparation and ingredient prep (12:00pm-5:30pm)",
-    },
-  });
-
-  const kitchenPrepService = await prisma.shiftType.upsert({
-    where: { name: "Kitchen Prep & Service" },
-    update: {},
-    create: {
-      name: "Kitchen Prep & Service",
-      description: "Food prep and cooking service (12:00pm-9:00pm)",
+      description: "Food preparation and ingredient prep ending at 4:00pm",
     },
   });
 
@@ -847,24 +983,12 @@ async function main() {
       type: kitchenPrep,
       startHour: 12, // 12:00pm
       startMinute: 0,
-      endHour: 17, // 5:30pm
-      endMinute: 30,
+      endHour: 16, // 4:00pm
+      endMinute: 0,
       capacities: {
         Wellington: 7, // 7 kitchen prep
         "Glen Innes": 5, // 5 kitchen prep
         Onehunga: 6, // 6 kitchen prep
-      },
-    },
-    {
-      type: kitchenPrepService,
-      startHour: 12, // 12:00pm
-      startMinute: 0,
-      endHour: 21, // 9:00pm
-      endMinute: 0,
-      capacities: {
-        Wellington: 6, // 6 kitchen service
-        "Glen Innes": 4, // 4 kitchen service
-        Onehunga: 6, // 6 kitchen service
       },
     },
     {
@@ -1046,9 +1170,18 @@ async function main() {
     }
   }
 
-  // Create shifts for the next 7 days
-  for (let i = 0; i < 7; i++) {
-    const date = addDays(today, i + 1);
+  // Create shifts for the next 14 days, but only for operating days (Sunday-Thursday)
+  for (let i = 0; i < 14; i++) {
+    const date = addDays(today, i);
+    const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    
+    // Only create shifts for Sunday (0) through Thursday (4)
+    if (dayOfWeek === 5 || dayOfWeek === 6) {
+      // Skip Friday (5) and Saturday (6) - restaurant is closed
+      continue;
+    }
+
+    console.log(`📅 Creating shifts for ${date.toDateString()} (${['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][dayOfWeek]})`);
 
     // Create shifts for each location and shift type
     for (
@@ -1065,16 +1198,42 @@ async function main() {
       ) {
         const config = shiftConfigs[configIndex];
 
+        // For today's shifts, ensure they're set to future times so they show up in the calendar
+        let startHour = config.startHour;
+        let startMinute = config.startMinute;
+        let endHour = config.endHour;
+        let endMinute = config.endMinute;
+
+        // If this is the first day's shift and the time has already passed, set it to a future time
+        if (i === 0) {
+          // Today's shifts
+          const now = new Date();
+          const currentHour = now.getHours();
+          const currentMinute = now.getMinutes();
+
+          // If the shift time has already passed, set it to start in 1 hour
+          if (
+            startHour < currentHour ||
+            (startHour === currentHour && startMinute <= currentMinute)
+          ) {
+            startHour = currentHour + 1;
+            startMinute = 0;
+            // Adjust end time accordingly
+            endHour = startHour + (config.endHour - config.startHour);
+            endMinute = config.endMinute;
+          }
+        }
+
         const start = set(date, {
-          hours: config.startHour,
-          minutes: config.startMinute,
+          hours: startHour,
+          minutes: startMinute,
           seconds: 0,
           milliseconds: 0,
         });
 
         const end = set(date, {
-          hours: config.endHour,
-          minutes: config.endMinute,
+          hours: endHour,
+          minutes: endMinute,
           seconds: 0,
           milliseconds: 0,
         });
@@ -1123,14 +1282,86 @@ async function main() {
     recordUserSignup(signup.userId, signup.shift.start);
   }
 
+  // Find the next two operating days (Sunday-Thursday only)
+  const getNextOperatingDays = () => {
+    const operatingDays = [];
+    for (let i = 0; i < 14; i++) {
+      const date = addDays(today, i);
+      const dayOfWeek = date.getDay();
+      
+      // Only include Sunday (0) through Thursday (4)
+      if (dayOfWeek >= 0 && dayOfWeek <= 4) {
+        operatingDays.push(date.toISOString().split("T")[0]);
+        if (operatingDays.length === 2) break;
+      }
+    }
+    return operatingDays;
+  };
+
+  const [nextOperatingDay, secondOperatingDay] = getNextOperatingDays();
+  console.log(`🎯 Next operating day (fully booked): ${nextOperatingDay}`);
+  console.log(`🎯 Second operating day (nearly booked): ${secondOperatingDay}`);
+
+  // Track spots left for second operating day across all shifts
+  let secondDaySpotsLeft = 2; // Total spots to leave available for second operating day
+
   for (let i = 0; i < createdShifts.length; i++) {
     const s = createdShifts[i];
+    const shiftDate = new Date(s.start);
+    const today = new Date();
 
-    // Every 4th shift: fill to capacity and add one waitlisted
-    if (i % 4 === 0) {
-      const capacity = s.capacity;
+    // Use date-only comparison by comparing YYYY-MM-DD strings
+    const shiftDateStr = shiftDate.toISOString().split("T")[0];
+
+    const isNextOperatingDay = shiftDateStr === nextOperatingDay;
+    const isSecondOperatingDay = shiftDateStr === secondOperatingDay;
+
+    // Fill shifts based on day
+    let shouldFillShift = false;
+    let spotsToFill = 0;
+
+    if (isNextOperatingDay) {
+      // Next operating day: completely book out ALL shifts - no spots left
+      console.log(
+        `📅 COMPLETELY BOOKING NEXT OPERATING DAY's shift: ${
+          s.shiftType?.name || "Unknown"
+        } at ${s.location} (${s.capacity} spots - FULLY BOOKED)`
+      );
+      shouldFillShift = true;
+      spotsToFill = s.capacity;
+    } else if (isSecondOperatingDay) {
+      // Second operating day: leave only 1-2 spots TOTAL across all shifts
+      if (secondDaySpotsLeft > 0) {
+        const spotsToLeaveThisShift = Math.min(secondDaySpotsLeft, s.capacity);
+        spotsToFill = s.capacity - spotsToLeaveThisShift;
+        secondDaySpotsLeft -= spotsToLeaveThisShift;
+        
+        console.log(
+          `📅 Nearly booking SECOND OPERATING DAY's shift: ${
+            s.shiftType?.name || "Unknown"
+          } at ${s.location} (${spotsToFill}/${
+            s.capacity
+          } spots, leaving ${spotsToLeaveThisShift}, ${secondDaySpotsLeft} spots remaining for other shifts)`
+        );
+      } else {
+        // No more spots to leave - fully book this shift
+        spotsToFill = s.capacity;
+        console.log(
+          `📅 FULLY booking remaining SECOND OPERATING DAY shift: ${
+            s.shiftType?.name || "Unknown"
+          } at ${s.location} (${s.capacity}/${s.capacity} spots - no more spots to leave)`
+        );
+      }
+      shouldFillShift = true;
+    } else {
+      // Other days: every 4th shift gets filled (original logic)
+      shouldFillShift = i % 4 === 0;
+      spotsToFill = s.capacity;
+    }
+
+    if (shouldFillShift) {
       // Create confirmed signups to fill the shift
-      for (let c = 0; c < capacity; c++) {
+      for (let c = 0; c < spotsToFill; c++) {
         const user = extraVolunteers[(extraIndex + c) % extraVolunteers.length];
 
         // Check if user can sign up for this date
@@ -1143,17 +1374,29 @@ async function main() {
           recordUserSignup(user.id, s.start);
         }
       }
-      extraIndex = (extraIndex + capacity) % extraVolunteers.length;
+      extraIndex = (extraIndex + spotsToFill) % extraVolunteers.length;
 
-      // Add one waitlisted person as well
-      const waitlister = extraVolunteers[extraIndex % extraVolunteers.length];
-      // Waitlisted users don't count towards daily limit since they're not confirmed
-      await prisma.signup.upsert({
-        where: { userId_shiftId: { userId: waitlister.id, shiftId: s.id } },
-        update: { status: "WAITLISTED" },
-        create: { userId: waitlister.id, shiftId: s.id, status: "WAITLISTED" },
-      });
-      extraIndex = (extraIndex + 1) % extraVolunteers.length;
+      // Add waitlisted person only for next operating day's fully booked shifts (since it's completely full)
+      if (isNextOperatingDay && spotsToFill === s.capacity) {
+        const waitlister = extraVolunteers[extraIndex % extraVolunteers.length];
+        // Waitlisted users don't count towards daily limit since they're not confirmed
+        await prisma.signup.upsert({
+          where: { userId_shiftId: { userId: waitlister.id, shiftId: s.id } },
+          update: { status: "WAITLISTED" },
+          create: {
+            userId: waitlister.id,
+            shiftId: s.id,
+            status: "WAITLISTED",
+          },
+        });
+        extraIndex = (extraIndex + 1) % extraVolunteers.length;
+        console.log(
+          `⏳ Added waitlisted volunteer for fully booked NEXT OPERATING DAY shift: ${
+            s.shiftType?.name || "Unknown"
+          } at ${s.location}`
+        );
+      }
+      // Note: Tomorrow shifts don't get waitlisted since they still have 1-2 spots available
     }
 
     // Add friends to shifts where sample volunteer is signed up (to show social activity)
@@ -1802,18 +2045,9 @@ async function main() {
       location: "Wellington",
       shiftType: kitchenPrep,
       startTime: "12:00",
-      endTime: "17:30",
+      endTime: "16:00",
       capacity: 7,
       notes: "Food preparation and ingredient prep",
-    },
-    {
-      name: "Wellington Kitchen Service",
-      location: "Wellington",
-      shiftType: kitchenPrepService,
-      startTime: "12:00",
-      endTime: "21:00",
-      capacity: 6,
-      notes: "Food prep and cooking service",
     },
     {
       name: "Wellington Kitchen Service & Pack Down",
@@ -1868,18 +2102,9 @@ async function main() {
       location: "Glen Innes",
       shiftType: kitchenPrep,
       startTime: "12:00",
-      endTime: "17:30",
+      endTime: "16:00",
       capacity: 5,
       notes: "Food preparation and ingredient prep",
-    },
-    {
-      name: "Glen Innes Kitchen Service",
-      location: "Glen Innes",
-      shiftType: kitchenPrepService,
-      startTime: "12:00",
-      endTime: "21:00",
-      capacity: 4,
-      notes: "Food prep and cooking service",
     },
     {
       name: "Glen Innes Kitchen Service & Pack Down",
@@ -1934,18 +2159,9 @@ async function main() {
       location: "Onehunga",
       shiftType: kitchenPrep,
       startTime: "12:00",
-      endTime: "17:30",
+      endTime: "16:00",
       capacity: 6,
       notes: "Food preparation and ingredient prep",
-    },
-    {
-      name: "Onehunga Kitchen Service",
-      location: "Onehunga",
-      shiftType: kitchenPrepService,
-      startTime: "12:00",
-      endTime: "21:00",
-      capacity: 6,
-      notes: "Food prep and cooking service",
     },
     {
       name: "Onehunga Kitchen Service & Pack Down",
