@@ -144,27 +144,39 @@ export default async function ShiftsCalendarPage({
           },
         },
       },
-      // Include friend signups if user is logged in
-      signups: userFriendIds.length > 0 ? {
-        where: {
-          userId: { in: userFriendIds },
-          status: { in: ["CONFIRMED", "PENDING"] },
-        },
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              firstName: true,
-              lastName: true,
-              email: true,
-              profilePhotoUrl: true,
-            },
-          },
-        },
-      } : undefined,
     },
   });
+
+  // Separately fetch friend signups if needed
+  let friendSignupsMap: Record<string, any[]> = {};
+  if (userFriendIds.length > 0) {
+    const friendSignups = await prisma.signup.findMany({
+      where: {
+        shiftId: { in: shifts.map(s => s.id) },
+        userId: { in: userFriendIds },
+        status: { in: ["CONFIRMED", "PENDING"] },
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            profilePhotoUrl: true,
+          },
+        },
+      },
+    });
+
+    // Group by shift ID
+    friendSignupsMap = friendSignups.reduce((acc, signup) => {
+      if (!acc[signup.shiftId]) acc[signup.shiftId] = [];
+      acc[signup.shiftId].push(signup);
+      return acc;
+    }, {} as Record<string, any[]>);
+  }
 
   // Transform to ShiftSummary format for calendar
   const shiftSummaries: ShiftSummary[] = shifts.map((shift) => ({
@@ -179,7 +191,7 @@ export default async function ShiftsCalendarPage({
       name: shift.shiftType.name,
       description: shift.shiftType.description,
     },
-    friendSignups: shift.signups || [],
+    friendSignups: friendSignupsMap[shift.id] || [],
   }));
 
   // If no explicit location choice has been made, show location selection screen

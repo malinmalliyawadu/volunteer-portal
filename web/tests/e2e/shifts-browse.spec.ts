@@ -36,9 +36,18 @@ async function navigateToShiftsWithLocation(page: Page, location = "Wellington")
   const locationSelectionTitle = page.getByTestId("location-selection-title");
   
   if (await locationSelectionTitle.isVisible()) {
-    // Click on the specified location option
-    const locationOption = page.getByTestId(`location-option-${location.toLowerCase().replace(/\s+/g, "-")}`);
-    await locationOption.click();
+    const locationKey = location.toLowerCase().replace(/\s+/g, "-");
+    
+    // Try preferred location first (for authenticated users)
+    const preferredLocationOption = page.getByTestId(`preferred-location-${locationKey}`);
+    const regularLocationOption = page.getByTestId(`location-option-${locationKey}`);
+    
+    // Click whichever option is visible
+    if (await preferredLocationOption.isVisible()) {
+      await preferredLocationOption.click();
+    } else {
+      await regularLocationOption.click();
+    }
     await page.waitForLoadState("load");
   }
 }
