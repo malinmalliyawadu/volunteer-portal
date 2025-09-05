@@ -356,8 +356,16 @@ async function main() {
   const userDailySignups = new Map(); // userId -> Set of date strings
 
   // Helper function to check if user can sign up for a shift on a given date
+  // For today's shifts, allow multiple signups since we need to fill all shifts
   function canUserSignUpForDate(userId, shiftDate) {
     const dateKey = shiftDate.toISOString().split("T")[0]; // YYYY-MM-DD format
+    const today = new Date();
+    const todayStr = today.toISOString().split("T")[0];
+
+    // For today's shifts, allow multiple signups to ensure we can fill all shifts
+    if (dateKey === todayStr) {
+      return true; // Allow multiple signups for today
+    }
 
     if (!userDailySignups.has(userId)) {
       userDailySignups.set(userId, new Set());
@@ -461,7 +469,8 @@ async function main() {
   }
 
   // Create additional simple volunteers for testing capacity limits
-  for (let i = 1; i <= 12; i++) {
+  // Need enough volunteers to fill all daily shifts (83 total spots across all locations)
+  for (let i = 1; i <= 70; i++) {
     const email = `vol${i}@example.com`;
     const firstNames = [
       "Emma",
@@ -476,6 +485,74 @@ async function main() {
       "Lucas",
       "Mia",
       "Mason",
+      "Charlotte",
+      "William",
+      "Amelia",
+      "James",
+      "Harper",
+      "Benjamin",
+      "Evelyn",
+      "Alexander",
+      "Abigail",
+      "Michael",
+      "Emily",
+      "Daniel",
+      "Elizabeth",
+      "Matthew",
+      "Sofia",
+      "Jackson",
+      "Avery",
+      "Sebastian",
+      "Ella",
+      "Henry",
+      "Madison",
+      "Samuel",
+      "Scarlett",
+      "David",
+      "Victoria",
+      "Joseph",
+      "Aria",
+      "John",
+      "Grace",
+      "Wyatt",
+      "Chloe",
+      "Owen",
+      "Camila",
+      "Luke",
+      "Penelope",
+      "Gabriel",
+      "Riley",
+      "Isaac",
+      "Layla",
+      "Carter",
+      "Lillian",
+      "Julian",
+      "Nora",
+      "Jayden",
+      "Zoey",
+      "Mason",
+      "Mila",
+      "Anthony",
+      "Aubrey",
+      "Hudson",
+      "Hannah",
+      "Eli",
+      "Lily",
+      "Connor",
+      "Addison",
+      "Caleb",
+      "Eleanor",
+      "Ryan",
+      "Natalie",
+      "Nathan",
+      "Luna",
+      "Zachary",
+      "Savannah",
+      "Christian",
+      "Leah",
+      "Andrew",
+      "Bella",
+      "Joshua",
     ];
     const lastNames = [
       "Smith",
@@ -490,6 +567,74 @@ async function main() {
       "Young",
       "King",
       "Wright",
+      "Lopez",
+      "Hill",
+      "Scott",
+      "Green",
+      "Adams",
+      "Baker",
+      "Gonzalez",
+      "Nelson",
+      "Carter",
+      "Mitchell",
+      "Perez",
+      "Roberts",
+      "Turner",
+      "Phillips",
+      "Campbell",
+      "Parker",
+      "Evans",
+      "Edwards",
+      "Collins",
+      "Stewart",
+      "Sanchez",
+      "Morris",
+      "Rogers",
+      "Reed",
+      "Cook",
+      "Morgan",
+      "Bell",
+      "Murphy",
+      "Bailey",
+      "Rivera",
+      "Cooper",
+      "Richardson",
+      "Cox",
+      "Howard",
+      "Ward",
+      "Torres",
+      "Peterson",
+      "Gray",
+      "Ramirez",
+      "James",
+      "Watson",
+      "Brooks",
+      "Kelly",
+      "Sanders",
+      "Price",
+      "Bennett",
+      "Wood",
+      "Barnes",
+      "Ross",
+      "Henderson",
+      "Coleman",
+      "Jenkins",
+      "Perry",
+      "Powell",
+      "Long",
+      "Patterson",
+      "Hughes",
+      "Flores",
+      "Washington",
+      "Butler",
+      "Simmons",
+      "Foster",
+      "Gonzales",
+      "Bryant",
+      "Alexander",
+      "Russell",
+      "Griffin",
+      "Diaz",
     ];
 
     const firstName = firstNames[(i - 1) % firstNames.length];
@@ -1025,9 +1170,9 @@ async function main() {
     }
   }
 
-  // Create shifts for the next 7 days
+  // Create shifts for today and the next 6 days (7 days total)
   for (let i = 0; i < 7; i++) {
-    const date = addDays(today, i + 1);
+    const date = addDays(today, i);
 
     // Create shifts for each location and shift type
     for (
@@ -1044,16 +1189,42 @@ async function main() {
       ) {
         const config = shiftConfigs[configIndex];
 
+        // For today's shifts, ensure they're set to future times so they show up in the calendar
+        let startHour = config.startHour;
+        let startMinute = config.startMinute;
+        let endHour = config.endHour;
+        let endMinute = config.endMinute;
+
+        // If this is the first day's shift and the time has already passed, set it to a future time
+        if (i === 0) {
+          // Today's shifts
+          const now = new Date();
+          const currentHour = now.getHours();
+          const currentMinute = now.getMinutes();
+
+          // If the shift time has already passed, set it to start in 1 hour
+          if (
+            startHour < currentHour ||
+            (startHour === currentHour && startMinute <= currentMinute)
+          ) {
+            startHour = currentHour + 1;
+            startMinute = 0;
+            // Adjust end time accordingly
+            endHour = startHour + (config.endHour - config.startHour);
+            endMinute = config.endMinute;
+          }
+        }
+
         const start = set(date, {
-          hours: config.startHour,
-          minutes: config.startMinute,
+          hours: startHour,
+          minutes: startMinute,
           seconds: 0,
           milliseconds: 0,
         });
 
         const end = set(date, {
-          hours: config.endHour,
-          minutes: config.endMinute,
+          hours: endHour,
+          minutes: endMinute,
           seconds: 0,
           milliseconds: 0,
         });
@@ -1104,12 +1275,52 @@ async function main() {
 
   for (let i = 0; i < createdShifts.length; i++) {
     const s = createdShifts[i];
+    const shiftDate = new Date(s.start);
+    const today = new Date();
+    const tomorrow = addDays(today, 1);
 
-    // Every 4th shift: fill to capacity and add one waitlisted
-    if (i % 4 === 0) {
-      const capacity = s.capacity;
+    // Use date-only comparison by comparing YYYY-MM-DD strings
+    const shiftDateStr = shiftDate.toISOString().split("T")[0];
+    const todayStr = today.toISOString().split("T")[0];
+    const tomorrowStr = tomorrow.toISOString().split("T")[0];
+
+    const isToday = shiftDateStr === todayStr;
+    const isTomorrow = shiftDateStr === tomorrowStr;
+
+    // Fill shifts based on day
+    let shouldFillShift = false;
+    let spotsToFill = 0;
+
+    if (isToday) {
+      // Today (i=0): completely book out ALL shifts - no spots left
+      console.log(
+        `📅 COMPLETELY BOOKING TODAY's shift (i=0): ${
+          s.shiftType?.name || "Unknown"
+        } at ${s.location} (${s.capacity} spots - FULLY BOOKED)`
+      );
+      shouldFillShift = true;
+      spotsToFill = s.capacity;
+    } else if (isTomorrow) {
+      // Tomorrow (i=1): leave only 1-2 spots per shift
+      const spotsToLeave = Math.min(2, Math.floor(Math.random() * 2) + 1); // 1 or 2 spots
+      spotsToFill = Math.max(0, s.capacity - spotsToLeave);
+      console.log(
+        `📅 Nearly booking TOMORROW's shift (i=1): ${
+          s.shiftType?.name || "Unknown"
+        } at ${s.location} (${spotsToFill}/${
+          s.capacity
+        } spots, leaving ${spotsToLeave})`
+      );
+      shouldFillShift = true;
+    } else {
+      // Other days (i=2+): every 4th shift gets filled (original logic)
+      shouldFillShift = i % 4 === 0;
+      spotsToFill = s.capacity;
+    }
+
+    if (shouldFillShift) {
       // Create confirmed signups to fill the shift
-      for (let c = 0; c < capacity; c++) {
+      for (let c = 0; c < spotsToFill; c++) {
         const user = extraVolunteers[(extraIndex + c) % extraVolunteers.length];
 
         // Check if user can sign up for this date
@@ -1122,17 +1333,29 @@ async function main() {
           recordUserSignup(user.id, s.start);
         }
       }
-      extraIndex = (extraIndex + capacity) % extraVolunteers.length;
+      extraIndex = (extraIndex + spotsToFill) % extraVolunteers.length;
 
-      // Add one waitlisted person as well
-      const waitlister = extraVolunteers[extraIndex % extraVolunteers.length];
-      // Waitlisted users don't count towards daily limit since they're not confirmed
-      await prisma.signup.upsert({
-        where: { userId_shiftId: { userId: waitlister.id, shiftId: s.id } },
-        update: { status: "WAITLISTED" },
-        create: { userId: waitlister.id, shiftId: s.id, status: "WAITLISTED" },
-      });
-      extraIndex = (extraIndex + 1) % extraVolunteers.length;
+      // Add waitlisted person only for today's fully booked shifts (since today is completely full)
+      if (isToday && spotsToFill === s.capacity) {
+        const waitlister = extraVolunteers[extraIndex % extraVolunteers.length];
+        // Waitlisted users don't count towards daily limit since they're not confirmed
+        await prisma.signup.upsert({
+          where: { userId_shiftId: { userId: waitlister.id, shiftId: s.id } },
+          update: { status: "WAITLISTED" },
+          create: {
+            userId: waitlister.id,
+            shiftId: s.id,
+            status: "WAITLISTED",
+          },
+        });
+        extraIndex = (extraIndex + 1) % extraVolunteers.length;
+        console.log(
+          `⏳ Added waitlisted volunteer for fully booked TODAY shift: ${
+            s.shiftType?.name || "Unknown"
+          } at ${s.location}`
+        );
+      }
+      // Note: Tomorrow shifts don't get waitlisted since they still have 1-2 spots available
     }
 
     // Add friends to shifts where sample volunteer is signed up (to show social activity)
@@ -1775,7 +1998,7 @@ async function main() {
   console.log("📋 Seeding shift templates...");
 
   const templateConfigs = [
-    // Wellington templates  
+    // Wellington templates
     {
       name: "Wellington Kitchen Prep",
       location: "Wellington",

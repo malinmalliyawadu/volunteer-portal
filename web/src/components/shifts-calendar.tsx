@@ -7,6 +7,8 @@ import {
   eachDayOfInterval,
   isSameDay,
   isSameMonth,
+  startOfWeek,
+  endOfWeek,
 } from "date-fns";
 import { useState } from "react";
 import Link from "next/link";
@@ -58,7 +60,11 @@ export function ShiftsCalendar({
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
-  const monthDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
+  
+  // Create a proper calendar grid that starts with Sunday and includes padding days
+  const calendarStart = startOfWeek(monthStart);
+  const calendarEnd = endOfWeek(monthEnd);
+  const calendarDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
 
   // Group shifts by restaurant location
   const shiftsByLocation = shifts.reduce((acc, shift) => {
@@ -74,7 +80,7 @@ export function ShiftsCalendar({
   const getLocationDayShifts = (location: string): DayShifts[] => {
     const locationShifts = shiftsByLocation[location] || [];
 
-    return monthDays.map((date) => {
+    return calendarDays.map((date) => {
       const dayShifts = locationShifts.filter((shift) =>
         isSameDay(shift.start, date)
       );
@@ -251,9 +257,11 @@ export function ShiftsCalendar({
                       dayShifts.date,
                       currentMonth
                     );
-                    const isPastDate =
-                      dayShifts.date <
-                      new Date(new Date().setHours(0, 0, 0, 0));
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const dayStart = new Date(dayShifts.date);
+                    dayStart.setHours(0, 0, 0, 0);
+                    const isPastDate = dayStart < today;
 
                     const dayContent = (
                       <div
