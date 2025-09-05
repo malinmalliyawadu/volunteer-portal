@@ -11,7 +11,7 @@ import { Plus, Star as StarIcon, User as UserIcon } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AdminPageWrapper } from "@/components/admin-page-wrapper";
 
-const LOCATIONS = ["Wellington", "Glenn Innes", "Onehunga"] as const;
+const LOCATIONS = ["Wellington", "Glen Innes", "Onehunga"] as const;
 type LocationOption = (typeof LOCATIONS)[number];
 
 export default async function AdminDashboardPage({

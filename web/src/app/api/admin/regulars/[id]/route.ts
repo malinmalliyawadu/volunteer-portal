@@ -7,7 +7,7 @@ import { z } from "zod";
 // Validation schema for updating a regular volunteer
 const updateRegularVolunteerSchema = z.object({
   shiftTypeId: z.string().optional(),
-  location: z.enum(["Wellington", "Glenn Innes", "Onehunga"]).optional(),
+  location: z.enum(["Wellington", "Glen Innes", "Onehunga"]).optional(),
   frequency: z.enum(["WEEKLY", "FORTNIGHTLY", "MONTHLY"]).optional(),
   availableDays: z
     .array(

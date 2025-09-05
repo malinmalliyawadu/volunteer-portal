@@ -39,13 +39,46 @@ export async function createTestUser(
  * Delete test users
  */
 export async function deleteTestUsers(emails: string[]): Promise<void> {
-  await prisma.user.deleteMany({
+  // First get user IDs for the emails
+  const users = await prisma.user.findMany({
     where: {
       email: {
         in: emails,
       },
     },
+    select: { id: true }
   });
+  
+  const userIds = users.map(user => user.id);
+  
+  if (userIds.length > 0) {
+    // Delete any remaining signups for these users
+    await prisma.signup.deleteMany({
+      where: {
+        userId: {
+          in: userIds,
+        },
+      },
+    });
+    
+    // Delete any notifications for these users
+    await prisma.notification.deleteMany({
+      where: {
+        userId: {
+          in: userIds,
+        },
+      },
+    });
+    
+    // Finally delete the users
+    await prisma.user.deleteMany({
+      where: {
+        id: {
+          in: userIds,
+        },
+      },
+    });
+  }
 }
 
 /**

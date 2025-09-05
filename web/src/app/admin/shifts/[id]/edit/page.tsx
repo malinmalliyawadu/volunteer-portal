@@ -27,7 +27,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { DeleteShiftDialog } from "@/components/delete-shift-dialog";
 import { PageContainer } from "@/components/page-container";
 
-const LOCATIONS = ["Wellington", "Glenn Innes", "Onehunga"] as const;
+const LOCATIONS = ["Wellington", "Glen Innes", "Onehunga"] as const;
 
 type ShiftType = {
   id: string;
@@ -236,305 +236,309 @@ export default async function EditShiftPage({
   );
 
   return (
-    <AdminPageWrapper title="Edit shift" description={description} actions={headerActions}>
+    <AdminPageWrapper
+      title="Edit shift"
+      description={description}
+      actions={headerActions}
+    >
       <PageContainer testid="edit-shift-page">
+        {errorMessage && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertTriangleIcon className="h-4 w-4" />
+            <AlertDescription>{errorMessage}</AlertDescription>
+          </Alert>
+        )}
 
-      {errorMessage && (
-        <Alert variant="destructive" className="mb-6">
-          <AlertTriangleIcon className="h-4 w-4" />
-          <AlertDescription>{errorMessage}</AlertDescription>
-        </Alert>
-      )}
+        {isPastShift && (
+          <Alert className="mb-6">
+            <AlertTriangleIcon className="h-4 w-4" />
+            <AlertDescription>
+              You are editing a past shift. Changes may affect historical
+              records.
+            </AlertDescription>
+          </Alert>
+        )}
 
-      {isPastShift && (
-        <Alert className="mb-6">
-          <AlertTriangleIcon className="h-4 w-4" />
-          <AlertDescription>
-            You are editing a past shift. Changes may affect historical records.
-          </AlertDescription>
-        </Alert>
-      )}
+        {hasSignups && (
+          <Alert className="mb-6">
+            <AlertTriangleIcon className="h-4 w-4" />
+            <AlertDescription>
+              This shift has {activeSignups.length} active signup(s). Reducing
+              capacity below this number may affect volunteer assignments.
+            </AlertDescription>
+          </Alert>
+        )}
 
-      {hasSignups && (
-        <Alert className="mb-6">
-          <AlertTriangleIcon className="h-4 w-4" />
-          <AlertDescription>
-            This shift has {activeSignups.length} active signup(s). Reducing
-            capacity below this number may affect volunteer assignments.
-          </AlertDescription>
-        </Alert>
-      )}
-
-      <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50">
-        <CardHeader className="pb-6">
-          <CardTitle className="flex items-center gap-2 text-xl font-semibold">
-            <EditIcon className="h-5 w-5" />
-            Edit Shift Details
-          </CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Update the shift information below. Required fields are marked with
-            an asterisk (*).
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-8">
-          <form action={updateShift} className="space-y-8">
-            {/* Shift Type Section */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 mb-4">
-                <h3 className="font-medium text-gray-900 dark:text-gray-100">
-                  Shift Type
-                </h3>
-              </div>
-              <div>
-                <Label
-                  htmlFor="shiftTypeId"
-                  className="text-sm font-medium mb-2 block"
-                >
-                  Select shift type *
-                </Label>
-                <SelectField
-                  name="shiftTypeId"
-                  id="shiftTypeId"
-                  placeholder="Choose the type of volunteer work..."
-                  required
-                  defaultValue={defaultValues.shiftTypeId}
-                  options={shiftTypes.map((t: ShiftType) => ({
-                    value: t.id,
-                    label: t.name,
-                  }))}
-                  className="w-full"
-                  data-testid="edit-shift-type-select"
-                />
-              </div>
-            </div>
-
-            {/* Date & Time Section */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 mb-4">
-                <h3 className="font-medium text-gray-900 dark:text-gray-100">
-                  Schedule
-                </h3>
-              </div>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="date"
-                    className="text-sm font-medium flex items-center gap-2"
-                  >
-                    <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                    Date *
-                  </Label>
-                  <Input
-                    type="date"
-                    name="date"
-                    id="date"
-                    required
-                    defaultValue={defaultValues.date}
-                    className="h-11"
-                    data-testid="edit-shift-date-input"
-                  />
+        <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50">
+          <CardHeader className="pb-6">
+            <CardTitle className="flex items-center gap-2 text-xl font-semibold">
+              <EditIcon className="h-5 w-5" />
+              Edit Shift Details
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Update the shift information below. Required fields are marked
+              with an asterisk (*).
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-8">
+            <form action={updateShift} className="space-y-8">
+              {/* Shift Type Section */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 mb-4">
+                  <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                    Shift Type
+                  </h3>
                 </div>
-                <div className="space-y-2">
+                <div>
                   <Label
-                    htmlFor="startTime"
-                    className="text-sm font-medium flex items-center gap-2"
+                    htmlFor="shiftTypeId"
+                    className="text-sm font-medium mb-2 block"
                   >
-                    <ClockIcon className="h-4 w-4 text-muted-foreground" />
-                    Start time *
-                  </Label>
-                  <Input
-                    type="time"
-                    name="startTime"
-                    id="startTime"
-                    required
-                    defaultValue={defaultValues.startTime}
-                    className="h-11"
-                    data-testid="edit-shift-start-time-input"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="endTime"
-                    className="text-sm font-medium flex items-center gap-2"
-                  >
-                    <ClockIcon className="h-4 w-4 text-muted-foreground" />
-                    End time *
-                  </Label>
-                  <Input
-                    type="time"
-                    name="endTime"
-                    id="endTime"
-                    required
-                    defaultValue={defaultValues.endTime}
-                    className="h-11"
-                    data-testid="edit-shift-end-time-input"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Location & Capacity Section */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 mb-4">
-                <h3 className="font-medium text-gray-900 dark:text-gray-100">
-                  Location & Capacity
-                </h3>
-              </div>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="location"
-                    className="text-sm font-medium flex items-center gap-2"
-                  >
-                    <MapPinIcon className="h-4 w-4 text-muted-foreground" />
-                    Location *
+                    Select shift type *
                   </Label>
                   <SelectField
-                    name="location"
-                    id="location"
-                    placeholder="Choose a location..."
+                    name="shiftTypeId"
+                    id="shiftTypeId"
+                    placeholder="Choose the type of volunteer work..."
                     required
-                    defaultValue={defaultValues.location}
-                    options={LOCATIONS.map((loc) => ({
-                      value: loc,
-                      label: loc,
+                    defaultValue={defaultValues.shiftTypeId}
+                    options={shiftTypes.map((t: ShiftType) => ({
+                      value: t.id,
+                      label: t.name,
                     }))}
                     className="w-full"
-                    data-testid="edit-shift-location-select"
+                    data-testid="edit-shift-type-select"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="capacity"
-                    className="text-sm font-medium flex items-center gap-2"
-                  >
-                    <UsersIcon className="h-4 w-4 text-muted-foreground" />
-                    Volunteer capacity *
-                  </Label>
-                  <Input
-                    type="number"
-                    name="capacity"
-                    id="capacity"
-                    min={Math.max(1, activeSignups.length)}
-                    step={1}
-                    placeholder="e.g. 6"
-                    required
-                    defaultValue={defaultValues.capacity}
-                    className="h-11"
-                    data-testid="edit-shift-capacity-input"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    {hasSignups
-                      ? `Minimum capacity: ${activeSignups.length} (current active signups)`
-                      : "Maximum number of volunteers needed"}
-                  </p>
-                </div>
               </div>
-            </div>
 
-            {/* Notes Section */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 mb-4">
-                <h3 className="font-medium text-gray-900 dark:text-gray-100">
-                  Additional Information
-                </h3>
-              </div>
-              <div className="space-y-2">
-                <Label
-                  htmlFor="notes"
-                  className="text-sm font-medium flex items-center gap-2"
-                >
-                  <FileTextIcon className="h-4 w-4 text-muted-foreground" />
-                  Notes (optional)
-                </Label>
-                <Textarea
-                  name="notes"
-                  id="notes"
-                  rows={4}
-                  placeholder="Add any special instructions, requirements, or additional details for volunteers..."
-                  defaultValue={defaultValues.notes}
-                  className="resize-none"
-                />
-                <p className="text-xs text-muted-foreground">
-                  These notes will be visible to volunteers when they view the
-                  shift details.
-                </p>
-              </div>
-            </div>
-
-            {/* Signup Summary */}
-            {hasSignups && (
+              {/* Date & Time Section */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2 mb-4">
                   <h3 className="font-medium text-gray-900 dark:text-gray-100">
-                    Current Signups
+                    Schedule
                   </h3>
                 </div>
-                <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4">
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    <Badge
-                      variant="outline"
-                      className="bg-green-50 text-green-700 border-green-200"
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="date"
+                      className="text-sm font-medium flex items-center gap-2"
                     >
-                      {
-                        shift.signups.filter((s) => s.status === "CONFIRMED")
-                          .length
-                      }{" "}
-                      confirmed
-                    </Badge>
-                    <Badge
-                      variant="outline"
-                      className="bg-orange-50 text-orange-700 border-orange-200"
-                    >
-                      {
-                        shift.signups.filter((s) => s.status === "PENDING")
-                          .length
-                      }{" "}
-                      pending
-                    </Badge>
-                    <Badge
-                      variant="outline"
-                      className="bg-yellow-50 text-yellow-700 border-yellow-200"
-                    >
-                      {
-                        shift.signups.filter((s) => s.status === "WAITLISTED")
-                          .length
-                      }{" "}
-                      waitlisted
-                    </Badge>
+                      <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                      Date *
+                    </Label>
+                    <Input
+                      type="date"
+                      name="date"
+                      id="date"
+                      required
+                      defaultValue={defaultValues.date}
+                      className="h-11"
+                      data-testid="edit-shift-date-input"
+                    />
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Consider the impact of your changes on these volunteer
-                    signups.
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="startTime"
+                      className="text-sm font-medium flex items-center gap-2"
+                    >
+                      <ClockIcon className="h-4 w-4 text-muted-foreground" />
+                      Start time *
+                    </Label>
+                    <Input
+                      type="time"
+                      name="startTime"
+                      id="startTime"
+                      required
+                      defaultValue={defaultValues.startTime}
+                      className="h-11"
+                      data-testid="edit-shift-start-time-input"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="endTime"
+                      className="text-sm font-medium flex items-center gap-2"
+                    >
+                      <ClockIcon className="h-4 w-4 text-muted-foreground" />
+                      End time *
+                    </Label>
+                    <Input
+                      type="time"
+                      name="endTime"
+                      id="endTime"
+                      required
+                      defaultValue={defaultValues.endTime}
+                      className="h-11"
+                      data-testid="edit-shift-end-time-input"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Location & Capacity Section */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                    Location & Capacity
+                  </h3>
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="location"
+                      className="text-sm font-medium flex items-center gap-2"
+                    >
+                      <MapPinIcon className="h-4 w-4 text-muted-foreground" />
+                      Location *
+                    </Label>
+                    <SelectField
+                      name="location"
+                      id="location"
+                      placeholder="Choose a location..."
+                      required
+                      defaultValue={defaultValues.location}
+                      options={LOCATIONS.map((loc) => ({
+                        value: loc,
+                        label: loc,
+                      }))}
+                      className="w-full"
+                      data-testid="edit-shift-location-select"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="capacity"
+                      className="text-sm font-medium flex items-center gap-2"
+                    >
+                      <UsersIcon className="h-4 w-4 text-muted-foreground" />
+                      Volunteer capacity *
+                    </Label>
+                    <Input
+                      type="number"
+                      name="capacity"
+                      id="capacity"
+                      min={Math.max(1, activeSignups.length)}
+                      step={1}
+                      placeholder="e.g. 6"
+                      required
+                      defaultValue={defaultValues.capacity}
+                      className="h-11"
+                      data-testid="edit-shift-capacity-input"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      {hasSignups
+                        ? `Minimum capacity: ${activeSignups.length} (current active signups)`
+                        : "Maximum number of volunteers needed"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Notes Section */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                    Additional Information
+                  </h3>
+                </div>
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="notes"
+                    className="text-sm font-medium flex items-center gap-2"
+                  >
+                    <FileTextIcon className="h-4 w-4 text-muted-foreground" />
+                    Notes (optional)
+                  </Label>
+                  <Textarea
+                    name="notes"
+                    id="notes"
+                    rows={4}
+                    placeholder="Add any special instructions, requirements, or additional details for volunteers..."
+                    defaultValue={defaultValues.notes}
+                    className="resize-none"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    These notes will be visible to volunteers when they view the
+                    shift details.
                   </p>
                 </div>
               </div>
-            )}
 
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t">
-              <Button
-                asChild
-                variant="outline"
-                size="lg"
-                className="order-2 sm:order-1"
-                data-testid="cancel-edit-shift-button"
-              >
-                <Link href="/admin/shifts">Cancel</Link>
-              </Button>
-              <Button
-                type="submit"
-                size="lg"
-                className="order-1 sm:order-2 bg-primary hover:bg-primary/90"
-                data-testid="update-shift-button"
-              >
-                <EditIcon className="h-4 w-4 mr-2" />
-                Update shift
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+              {/* Signup Summary */}
+              {hasSignups && (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                      Current Signups
+                    </h3>
+                  </div>
+                  <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4">
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      <Badge
+                        variant="outline"
+                        className="bg-green-50 text-green-700 border-green-200"
+                      >
+                        {
+                          shift.signups.filter((s) => s.status === "CONFIRMED")
+                            .length
+                        }{" "}
+                        confirmed
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        className="bg-orange-50 text-orange-700 border-orange-200"
+                      >
+                        {
+                          shift.signups.filter((s) => s.status === "PENDING")
+                            .length
+                        }{" "}
+                        pending
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        className="bg-yellow-50 text-yellow-700 border-yellow-200"
+                      >
+                        {
+                          shift.signups.filter((s) => s.status === "WAITLISTED")
+                            .length
+                        }{" "}
+                        waitlisted
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Consider the impact of your changes on these volunteer
+                      signups.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t">
+                <Button
+                  asChild
+                  variant="outline"
+                  size="lg"
+                  className="order-2 sm:order-1"
+                  data-testid="cancel-edit-shift-button"
+                >
+                  <Link href="/admin/shifts">Cancel</Link>
+                </Button>
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="order-1 sm:order-2 bg-primary hover:bg-primary/90"
+                  data-testid="update-shift-button"
+                >
+                  <EditIcon className="h-4 w-4 mr-2" />
+                  Update shift
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
       </PageContainer>
     </AdminPageWrapper>
   );

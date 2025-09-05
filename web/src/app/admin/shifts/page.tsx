@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { format, parseISO, startOfDay, endOfDay } from "date-fns";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
+import { isFeatureEnabled } from "@/lib/posthog-server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -13,7 +14,7 @@ import { ShiftLocationSelector } from "@/components/shift-location-selector";
 import { ShiftCalendarWrapper } from "@/components/shift-calendar-wrapper";
 import { AnimatedShiftCardsWrapper } from "@/components/animated-shift-cards-wrapper";
 
-const LOCATIONS = ["Wellington", "Glenn Innes", "Onehunga"] as const;
+const LOCATIONS = ["Wellington", "Glen Innes", "Onehunga"] as const;
 type LocationOption = (typeof LOCATIONS)[number];
 
 interface AdminShiftsPageProps {
@@ -39,9 +40,14 @@ export default async function AdminShiftsPage({
   const today = format(new Date(), "yyyy-MM-dd");
   const isToday = dateString === today;
 
+  // Check feature flag for flexible placement
+  const isFlexiblePlacementEnabled = await isFeatureEnabled(
+    "flexible-placement",
+    session.user.id || "admin"
+  );
 
   // Fetch shifts for the selected date and location
-  const shifts = await prisma.shift.findMany({
+  const allShifts = await prisma.shift.findMany({
     where: {
       location: selectedLocation,
       start: {
@@ -96,8 +102,15 @@ export default async function AdminShiftsPage({
     },
   });
 
+  // Filter out flexible placement shifts if feature is disabled
+  const shifts = isFlexiblePlacementEnabled
+    ? allShifts
+    : allShifts.filter(
+        (shift) => !shift.shiftType.name.includes("Anywhere I'm Needed")
+      );
+
   // Get shift data for the calendar with location, capacity, and confirmed counts
-  const calendarShifts = await prisma.shift.findMany({
+  const allCalendarShifts = await prisma.shift.findMany({
     where: {
       start: {
         gte: new Date(),
@@ -107,6 +120,11 @@ export default async function AdminShiftsPage({
       start: true,
       location: true,
       capacity: true,
+      shiftType: {
+        select: {
+          name: true,
+        },
+      },
       signups: {
         where: {
           status: "CONFIRMED",
@@ -118,18 +136,28 @@ export default async function AdminShiftsPage({
     },
   });
 
+  // Filter calendar shifts based on feature flag
+  const calendarShifts = isFlexiblePlacementEnabled
+    ? allCalendarShifts
+    : allCalendarShifts.filter(
+        (shift) => !shift.shiftType.name.includes("Anywhere I'm Needed")
+      );
+
   // Process shifts into calendar-friendly format
-  const shiftSummariesMap = new Map<string, {
-    count: number;
-    totalCapacity: number;
-    totalConfirmed: number;
-    locations: string[];
-  }>();
+  const shiftSummariesMap = new Map<
+    string,
+    {
+      count: number;
+      totalCapacity: number;
+      totalConfirmed: number;
+      locations: string[];
+    }
+  >();
 
   calendarShifts.forEach((shift) => {
     const dateKey = format(shift.start, "yyyy-MM-dd");
     const location = shift.location || "Unknown";
-    
+
     if (!shiftSummariesMap.has(dateKey)) {
       shiftSummariesMap.set(dateKey, {
         count: 0,
@@ -143,16 +171,18 @@ export default async function AdminShiftsPage({
     summary.count++;
     summary.totalCapacity += shift.capacity;
     summary.totalConfirmed += shift.signups.length;
-    
+
     if (!summary.locations.includes(location)) {
       summary.locations.push(location);
     }
   });
 
-  const processedShiftSummaries = Array.from(shiftSummariesMap.entries()).map(([date, data]) => ({
-    date,
-    ...data,
-  }));
+  const processedShiftSummaries = Array.from(shiftSummariesMap.entries()).map(
+    ([date, data]) => ({
+      date,
+      ...data,
+    })
+  );
 
   return (
     <AdminPageWrapper
@@ -274,11 +304,13 @@ export default async function AdminShiftsPage({
             </Button>
           </div>
         ) : (
-          <AnimatedShiftCardsWrapper 
-            shifts={shifts}
-            dateString={dateString}
-            selectedLocation={selectedLocation}
-          />
+          <>
+            <AnimatedShiftCardsWrapper
+              shifts={shifts}
+              dateString={dateString}
+              selectedLocation={selectedLocation}
+            />
+          </>
         )}
       </PageContainer>
     </AdminPageWrapper>

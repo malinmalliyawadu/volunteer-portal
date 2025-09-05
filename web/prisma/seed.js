@@ -1,9 +1,9 @@
 const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcrypt");
 const { addDays, set, subYears, subMonths, subDays } = require("date-fns");
-const fs = require('fs');
-const path = require('path');
-const https = require('https');
+const fs = require("fs");
+const path = require("path");
+const https = require("https");
 
 const prisma = new PrismaClient();
 
@@ -11,40 +11,65 @@ const prisma = new PrismaClient();
 async function generateRandomProfileImagesForAllUsers() {
   // Get all users from database
   const allUsers = await prisma.user.findMany({
-    select: { email: true, pronouns: true, firstName: true }
+    select: { email: true, pronouns: true, firstName: true },
   });
 
   return allUsers.map(({ email, pronouns, firstName }) => {
     // Determine gender category based on pronouns, with fallback logic
-    let gender = 'women'; // Default
+    let gender = "women"; // Default
     if (pronouns) {
-      if (pronouns.includes('he/him')) {
-        gender = 'men';
-      } else if (pronouns.includes('she/her')) {
-        gender = 'women';
+      if (pronouns.includes("he/him")) {
+        gender = "men";
+      } else if (pronouns.includes("she/her")) {
+        gender = "women";
       } else {
         // For they/them or other pronouns, randomly assign or use name heuristics
-        gender = Math.random() > 0.5 ? 'men' : 'women';
+        gender = Math.random() > 0.5 ? "men" : "women";
       }
     } else {
       // Fallback: use email or firstName for gender guess, or random
-      const maleNames = ['james', 'mike', 'tom', 'david', 'john', 'alex', 'noah', 'ethan', 'lucas', 'mason', 'oliver', 'liam'];
-      const femaleNames = ['sarah', 'priya', 'maria', 'lucy', 'emma', 'olivia', 'ava', 'isabella', 'sophia', 'mia'];
-      
-      const nameToCheck = firstName?.toLowerCase() || email.split('@')[0].toLowerCase();
-      if (maleNames.some(name => nameToCheck.includes(name))) {
-        gender = 'men';
-      } else if (femaleNames.some(name => nameToCheck.includes(name))) {
-        gender = 'women';
+      const maleNames = [
+        "james",
+        "mike",
+        "tom",
+        "david",
+        "john",
+        "alex",
+        "noah",
+        "ethan",
+        "lucas",
+        "mason",
+        "oliver",
+        "liam",
+      ];
+      const femaleNames = [
+        "sarah",
+        "priya",
+        "maria",
+        "lucy",
+        "emma",
+        "olivia",
+        "ava",
+        "isabella",
+        "sophia",
+        "mia",
+      ];
+
+      const nameToCheck =
+        firstName?.toLowerCase() || email.split("@")[0].toLowerCase();
+      if (maleNames.some((name) => nameToCheck.includes(name))) {
+        gender = "men";
+      } else if (femaleNames.some((name) => nameToCheck.includes(name))) {
+        gender = "women";
       } else {
-        gender = Math.random() > 0.5 ? 'men' : 'women';
+        gender = Math.random() > 0.5 ? "men" : "women";
       }
     }
-    
+
     // Generate random number between 0-99 for profile diversity
     const randomId = Math.floor(Math.random() * 100);
-    const filename = `${email.split('@')[0].replace('.', '-')}-${randomId}.jpg`;
-    
+    const filename = `${email.split("@")[0].replace(".", "-")}-${randomId}.jpg`;
+
     return {
       url: `https://randomuser.me/api/portraits/${gender}/${randomId}.jpg`,
       filename,
@@ -53,68 +78,71 @@ async function generateRandomProfileImagesForAllUsers() {
   });
 }
 
-
 function downloadImageAsBase64(url) {
   return new Promise((resolve, reject) => {
-    https.get(url, (response) => {
-      if (response.statusCode !== 200) {
-        reject(new Error(`Failed to download image: ${response.statusCode}`));
-        return;
-      }
-      
-      const chunks = [];
-      response.on('data', chunk => chunks.push(chunk));
-      response.on('end', () => {
-        try {
-          const buffer = Buffer.concat(chunks);
-          const base64 = buffer.toString('base64');
-          const mimeType = 'image/jpeg';
-          resolve(`data:${mimeType};base64,${base64}`);
-        } catch (error) {
-          reject(error);
+    https
+      .get(url, (response) => {
+        if (response.statusCode !== 200) {
+          reject(new Error(`Failed to download image: ${response.statusCode}`));
+          return;
         }
-      });
-    }).on('error', reject);
+
+        const chunks = [];
+        response.on("data", (chunk) => chunks.push(chunk));
+        response.on("end", () => {
+          try {
+            const buffer = Buffer.concat(chunks);
+            const base64 = buffer.toString("base64");
+            const mimeType = "image/jpeg";
+            resolve(`data:${mimeType};base64,${base64}`);
+          } catch (error) {
+            reject(error);
+          }
+        });
+      })
+      .on("error", reject);
   });
 }
 
 async function downloadAndConvertProfileImages() {
-  console.log('🎲 Generating random profile photos from randomuser.me for all users...\n');
-  
+  console.log(
+    "🎲 Generating random profile photos from randomuser.me for all users...\n"
+  );
+
   // Generate profile images for all users dynamically
   const profileImages = await generateRandomProfileImagesForAllUsers();
   console.log(`📊 Found ${profileImages.length} users to process`);
-  
+
   for (const image of profileImages) {
     try {
       console.log(`📸 Processing ${image.email} with random photo...`);
-      
+
       // Download image directly as base64 (no file storage needed)
       const base64Data = await downloadImageAsBase64(image.url);
-      
+
       if (base64Data) {
         await prisma.user.updateMany({
           where: { email: image.email },
-          data: { profilePhotoUrl: base64Data }
+          data: { profilePhotoUrl: base64Data },
         });
         console.log(`✅ Updated random profile image for ${image.email}`);
       }
-      
+
       // Add a small delay to be respectful to the API
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise((resolve) => setTimeout(resolve, 300));
     } catch (error) {
       console.log(`⚠️ Failed to process ${image.email}: ${error.message}`);
       // Try a fallback image
       try {
         const fallbackId = Math.floor(Math.random() * 50); // Different random range for fallback
-        const gender = image.url.includes('/women/') ? 'women' : 'men';
+        const gender = image.url.includes("/women/") ? "women" : "men";
         const fallbackUrl = `https://randomuser.me/api/portraits/${gender}/${fallbackId}.jpg`;
         const fallbackBase64 = await downloadImageAsBase64(fallbackUrl);
-        
+
         if (fallbackBase64) {
           await prisma.user.updateMany({
             where: { email: image.email },
-            data: { profilePhotoUrl: fallbackBase64 }
+            data: { profilePhotoUrl: fallbackBase64 },
           });
           console.log(`✅ Updated ${image.email} with fallback random image`);
         }
@@ -123,8 +151,8 @@ async function downloadAndConvertProfileImages() {
       }
     }
   }
-  
-  console.log('✅ Random profile images processing completed\n');
+
+  console.log("✅ Random profile images processing completed\n");
 }
 
 // Realistic sample data
@@ -143,10 +171,10 @@ const REALISTIC_VOLUNTEERS = [
     willingToProvideReference: true,
     howDidYouHearAboutUs: "Instagram",
     availableDays: JSON.stringify(["Monday", "Wednesday", "Friday"]),
-    availableLocations: JSON.stringify(["Wellington", "Glenn Innes"]),
+    availableLocations: JSON.stringify(["Wellington", "Glen Innes"]),
     emailNewsletterSubscription: true,
     notificationPreference: "BOTH",
- // Empty array means all types
+    // Empty array means all types
     receiveShortageNotifications: true,
     excludedShortageNotificationTypes: [], // Empty array means all types
     volunteerAgreementAccepted: true,
@@ -169,7 +197,7 @@ const REALISTIC_VOLUNTEERS = [
     availableLocations: JSON.stringify(["Wellington"]),
     emailNewsletterSubscription: true,
     notificationPreference: "EMAIL",
- // Empty array means all types
+    // Empty array means all types
     receiveShortageNotifications: true,
     excludedShortageNotificationTypes: [], // Empty array means all types
     volunteerAgreementAccepted: true,
@@ -189,7 +217,7 @@ const REALISTIC_VOLUNTEERS = [
     willingToProvideReference: false,
     howDidYouHearAboutUs: "Facebook",
     availableDays: JSON.stringify(["Monday", "Tuesday", "Sunday"]),
-    availableLocations: JSON.stringify(["Glenn Innes", "Onehunga"]),
+    availableLocations: JSON.stringify(["Glen Innes", "Onehunga"]),
     emailNewsletterSubscription: false,
     notificationPreference: "SMS",
     receiveShortageNotifications: true,
@@ -214,7 +242,7 @@ const REALISTIC_VOLUNTEERS = [
     availableLocations: JSON.stringify(["Wellington", "Onehunga"]),
     emailNewsletterSubscription: true,
     notificationPreference: "EMAIL",
- // Empty array means all types
+    // Empty array means all types
     receiveShortageNotifications: true,
     excludedShortageNotificationTypes: [], // Empty array means all types
     volunteerAgreementAccepted: true,
@@ -234,10 +262,10 @@ const REALISTIC_VOLUNTEERS = [
     willingToProvideReference: false,
     howDidYouHearAboutUs: "University volunteer fair",
     availableDays: JSON.stringify(["Thursday", "Friday", "Sunday"]),
-    availableLocations: JSON.stringify(["Glenn Innes"]),
+    availableLocations: JSON.stringify(["Glen Innes"]),
     emailNewsletterSubscription: true,
     notificationPreference: "BOTH",
- // Empty array means all types
+    // Empty array means all types
     receiveShortageNotifications: true,
     excludedShortageNotificationTypes: [], // Empty array means all types
     volunteerAgreementAccepted: true,
@@ -260,7 +288,7 @@ const REALISTIC_VOLUNTEERS = [
     availableLocations: JSON.stringify(["Onehunga"]),
     emailNewsletterSubscription: true,
     notificationPreference: "EMAIL",
- // Empty array means all types
+    // Empty array means all types
     receiveShortageNotifications: true,
     excludedShortageNotificationTypes: [], // Empty array means all types
     volunteerAgreementAccepted: true,
@@ -282,12 +310,12 @@ const REALISTIC_VOLUNTEERS = [
     availableDays: JSON.stringify(["Tuesday", "Wednesday", "Saturday"]),
     availableLocations: JSON.stringify([
       "Wellington",
-      "Glenn Innes",
+      "Glen Innes",
       "Onehunga",
     ]),
     emailNewsletterSubscription: true,
     notificationPreference: "EMAIL",
- // Empty array means all types
+    // Empty array means all types
     receiveShortageNotifications: true,
     excludedShortageNotificationTypes: [], // Empty array means all types
     volunteerAgreementAccepted: true,
@@ -326,26 +354,26 @@ async function main() {
 
   // Track user signups by date to prevent multiple signups per day
   const userDailySignups = new Map(); // userId -> Set of date strings
-  
+
   // Helper function to check if user can sign up for a shift on a given date
   function canUserSignUpForDate(userId, shiftDate) {
-    const dateKey = shiftDate.toISOString().split('T')[0]; // YYYY-MM-DD format
-    
+    const dateKey = shiftDate.toISOString().split("T")[0]; // YYYY-MM-DD format
+
     if (!userDailySignups.has(userId)) {
       userDailySignups.set(userId, new Set());
     }
-    
+
     return !userDailySignups.get(userId).has(dateKey);
   }
-  
+
   // Helper function to record a user signup for a date
   function recordUserSignup(userId, shiftDate) {
-    const dateKey = shiftDate.toISOString().split('T')[0];
-    
+    const dateKey = shiftDate.toISOString().split("T")[0];
+
     if (!userDailySignups.has(userId)) {
       userDailySignups.set(userId, new Set());
     }
-    
+
     userDailySignups.get(userId).add(dateKey);
   }
 
@@ -386,12 +414,12 @@ async function main() {
       willingToProvideReference: true,
       howDidYouHearAboutUs: "Website",
       availableDays: JSON.stringify(["Monday", "Wednesday", "Friday"]),
-      availableLocations: JSON.stringify(["Wellington", "Glenn Innes"]),
+      availableLocations: JSON.stringify(["Wellington", "Glen Innes"]),
       emailNewsletterSubscription: true,
       notificationPreference: "EMAIL",
- // Empty array means all types
+      // Empty array means all types
       receiveShortageNotifications: true,
-    excludedShortageNotificationTypes: [], // Empty array means all types
+      excludedShortageNotificationTypes: [], // Empty array means all types
       volunteerAgreementAccepted: true,
       healthSafetyPolicyAccepted: true,
       hashedPassword: volunteerHash,
@@ -405,19 +433,19 @@ async function main() {
   const extraVolunteers = [];
   const gradeDistribution = [
     "YELLOW", // Sarah - experienced volunteer
-    "PINK",   // James - shift leader
-    "GREEN",  // Priya - newer volunteer  
+    "PINK", // James - shift leader
+    "GREEN", // Priya - newer volunteer
     "YELLOW", // Mike - experienced
-    "GREEN",  // Alex - student, newer
-    "PINK",   // Maria - shift leader
+    "GREEN", // Alex - student, newer
+    "PINK", // Maria - shift leader
     "YELLOW", // Tom - experienced older volunteer
-    "GREEN",  // Lucy - newer young volunteer
+    "GREEN", // Lucy - newer young volunteer
   ];
 
   for (let i = 0; i < REALISTIC_VOLUNTEERS.length; i++) {
     const volunteerData = REALISTIC_VOLUNTEERS[i];
     const volunteerGrade = gradeDistribution[i] || "GREEN"; // Default to GREEN if not specified
-    
+
     const u = await prisma.user.upsert({
       where: { email: volunteerData.email },
       update: {},
@@ -510,11 +538,11 @@ async function main() {
           ].slice(0, (i % 4) + 2)
         ),
         availableLocations: JSON.stringify(
-          ["Wellington", "Glenn Innes", "Onehunga"].slice(0, (i % 3) + 1)
+          ["Wellington", "Glen Innes", "Onehunga"].slice(0, (i % 3) + 1)
         ),
         emailNewsletterSubscription: i % 2 === 0,
         notificationPreference: ["EMAIL", "SMS", "BOTH", "NONE"][i % 4],
- // Empty array means all types
+        // Empty array means all types
         receiveShortageNotifications: true,
         excludedShortageNotificationTypes: [], // Empty array means all types
         volunteerAgreementAccepted: true,
@@ -529,14 +557,14 @@ async function main() {
 
   // Create friend relationships for sample volunteer
   console.log("👫 Seeding friend relationships...");
-  
+
   // Sample volunteer's existing friends (bidirectional friendships)
   const existingFriends = [
-    extraVolunteers.find(v => v.email === "sarah.chen@gmail.com"),
-    extraVolunteers.find(v => v.email === "james.williams@hotmail.com"),
-    extraVolunteers.find(v => v.email === "priya.patel@yahoo.com"),
-    extraVolunteers.find(v => v.email === "vol1@example.com"),
-    extraVolunteers.find(v => v.email === "vol3@example.com"),
+    extraVolunteers.find((v) => v.email === "sarah.chen@gmail.com"),
+    extraVolunteers.find((v) => v.email === "james.williams@hotmail.com"),
+    extraVolunteers.find((v) => v.email === "priya.patel@yahoo.com"),
+    extraVolunteers.find((v) => v.email === "vol1@example.com"),
+    extraVolunteers.find((v) => v.email === "vol3@example.com"),
   ].filter(Boolean);
 
   // Create bidirectional friendships
@@ -565,7 +593,7 @@ async function main() {
       });
     } catch (error) {
       // Skip if friendship already exists
-      if (!error.message.includes('Unique constraint')) {
+      if (!error.message.includes("Unique constraint")) {
         throw error;
       }
     }
@@ -573,9 +601,9 @@ async function main() {
 
   // Create pending friend requests TO the sample volunteer
   const pendingRequesters = [
-    extraVolunteers.find(v => v.email === "mike.johnson@outlook.com"),
-    extraVolunteers.find(v => v.email === "vol5@example.com"),
-    extraVolunteers.find(v => v.email === "vol7@example.com"),
+    extraVolunteers.find((v) => v.email === "mike.johnson@outlook.com"),
+    extraVolunteers.find((v) => v.email === "vol5@example.com"),
+    extraVolunteers.find((v) => v.email === "vol7@example.com"),
   ].filter(Boolean);
 
   for (const requester of pendingRequesters) {
@@ -596,17 +624,14 @@ async function main() {
       });
     } catch (error) {
       // Skip if request already exists
-      if (!error.message.includes('Unique constraint')) {
+      if (!error.message.includes("Unique constraint")) {
         throw error;
       }
     }
   }
 
   // Create some sent friend requests FROM the sample volunteer
-  const sentRequestTargets = [
-    "alex.taylor@gmail.com",
-    "vol9@example.com",
-  ];
+  const sentRequestTargets = ["alex.taylor@gmail.com", "vol9@example.com"];
 
   for (const targetEmail of sentRequestTargets) {
     try {
@@ -614,7 +639,8 @@ async function main() {
         data: {
           fromUserId: volunteer.id,
           toEmail: targetEmail,
-          message: "Hi! Would love to be friends and volunteer together sometime!",
+          message:
+            "Hi! Would love to be friends and volunteer together sometime!",
           status: "PENDING",
           expiresAt: addDays(new Date(), 30),
           createdAt: subDays(new Date(), Math.floor(Math.random() * 5) + 2), // 2-6 days ago
@@ -622,7 +648,7 @@ async function main() {
       });
     } catch (error) {
       // Skip if request already exists
-      if (!error.message.includes('Unique constraint')) {
+      if (!error.message.includes("Unique constraint")) {
         throw error;
       }
     }
@@ -638,9 +664,9 @@ async function main() {
   ];
 
   for (const [email1, email2] of friendPairs) {
-    const user1 = extraVolunteers.find(v => v.email === email1);
-    const user2 = extraVolunteers.find(v => v.email === email2);
-    
+    const user1 = extraVolunteers.find((v) => v.email === email1);
+    const user2 = extraVolunteers.find((v) => v.email === email2);
+
     if (user1 && user2) {
       try {
         // Create bidirectional friendship
@@ -650,7 +676,10 @@ async function main() {
             friendId: user2.id,
             status: "ACCEPTED",
             initiatedBy: user1.id,
-            createdAt: subDays(new Date(), Math.floor(Math.random() * 120) + 30),
+            createdAt: subDays(
+              new Date(),
+              Math.floor(Math.random() * 120) + 30
+            ),
           },
         });
 
@@ -660,12 +689,15 @@ async function main() {
             friendId: user1.id,
             status: "ACCEPTED",
             initiatedBy: user1.id,
-            createdAt: subDays(new Date(), Math.floor(Math.random() * 120) + 30),
+            createdAt: subDays(
+              new Date(),
+              Math.floor(Math.random() * 120) + 30
+            ),
           },
         });
       } catch (error) {
         // Skip if friendship already exists
-        if (!error.message.includes('Unique constraint')) {
+        if (!error.message.includes("Unique constraint")) {
           throw error;
         }
       }
@@ -688,7 +720,9 @@ async function main() {
     data: { allowFriendRequests: false },
   });
 
-  console.log(`✅ Created ${existingFriends.length} friendships for sample volunteer`);
+  console.log(
+    `✅ Created ${existingFriends.length} friendships for sample volunteer`
+  );
   console.log(`✅ Created ${pendingRequesters.length} pending friend requests`);
   console.log(`✅ Created ${sentRequestTargets.length} sent friend requests`);
   console.log(`✅ Created ${friendPairs.length} other volunteer friendships`);
@@ -753,7 +787,19 @@ async function main() {
     update: {},
     create: {
       name: "Media Role",
-      description: "Photography, social media content creation, and community engagement (5:00pm-7:00pm)",
+      description:
+        "Photography, social media content creation, and community engagement (5:00pm-7:00pm)",
+    },
+  });
+
+  // Special shift type for flexible PM placement
+  const anywhereNeeded = await prisma.shiftType.upsert({
+    where: { name: "Anywhere I'm Needed (PM)" },
+    update: {},
+    create: {
+      name: "Anywhere I'm Needed (PM)",
+      description:
+        "Flexible placement for PM shifts starting after 4:00pm - you'll be assigned to where help is most needed",
     },
   });
 
@@ -768,9 +814,9 @@ async function main() {
       endHour: 21, // 9:00pm
       endMinute: 0,
       capacities: {
-        "Wellington": 3, // 3 dishwasher
+        Wellington: 3, // 3 dishwasher
         "Glen Innes": 2, // 2 dishwasher
-        "Onehunga": 2, // 2 dishwasher
+        Onehunga: 2, // 2 dishwasher
       },
     },
     {
@@ -780,9 +826,9 @@ async function main() {
       endHour: 21, // 9:00pm
       endMinute: 0,
       capacities: {
-        "Wellington": 2, // 2 front of house + setup
+        Wellington: 2, // 2 front of house + setup
         "Glen Innes": 1, // 1 front of house + setup
-        "Onehunga": 2, // 2 front of house + setup
+        Onehunga: 2, // 2 front of house + setup
       },
     },
     {
@@ -792,9 +838,9 @@ async function main() {
       endHour: 21, // 9:00pm
       endMinute: 0,
       capacities: {
-        "Wellington": 8, // 8 front of house
+        Wellington: 8, // 8 front of house
         "Glen Innes": 8, // 8 front of house
-        "Onehunga": 10, // 10 front of house
+        Onehunga: 10, // 10 front of house
       },
     },
     {
@@ -804,9 +850,9 @@ async function main() {
       endHour: 17, // 5:30pm
       endMinute: 30,
       capacities: {
-        "Wellington": 7, // 7 kitchen prep
+        Wellington: 7, // 7 kitchen prep
         "Glen Innes": 5, // 5 kitchen prep
-        "Onehunga": 6, // 6 kitchen prep
+        Onehunga: 6, // 6 kitchen prep
       },
     },
     {
@@ -816,9 +862,9 @@ async function main() {
       endHour: 21, // 9:00pm
       endMinute: 0,
       capacities: {
-        "Wellington": 6, // 6 kitchen service
+        Wellington: 6, // 6 kitchen service
         "Glen Innes": 4, // 4 kitchen service
-        "Onehunga": 6, // 6 kitchen service
+        Onehunga: 6, // 6 kitchen service
       },
     },
     {
@@ -828,9 +874,9 @@ async function main() {
       endHour: 21, // 9:00pm
       endMinute: 0,
       capacities: {
-        "Wellington": 6, // 6 kitchen service
+        Wellington: 6, // 6 kitchen service
         "Glen Innes": 4, // 4 kitchen service
-        "Onehunga": 6, // 6 kitchen service
+        Onehunga: 6, // 6 kitchen service
       },
     },
     {
@@ -840,9 +886,21 @@ async function main() {
       endHour: 19, // 7:00pm
       endMinute: 0,
       capacities: {
-        "Wellington": 1, // 1 media role
+        Wellington: 1, // 1 media role
         "Glen Innes": 1, // 1 media role
-        "Onehunga": 1, // 1 media role
+        Onehunga: 1, // 1 media role
+      },
+    },
+    {
+      type: anywhereNeeded,
+      startHour: 16, // 4:00pm (flexible start for PM shifts)
+      startMinute: 0,
+      endHour: 21, // 9:00pm
+      endMinute: 0,
+      capacities: {
+        Wellington: 3, // Allow 3 flexible volunteers
+        "Glen Innes": 2, // Allow 2 flexible volunteers
+        Onehunga: 3, // Allow 3 flexible volunteers
       },
     },
   ];
@@ -1045,12 +1103,12 @@ async function main() {
   // Make some shifts full and add a waitlisted signup to demonstrate UI state
   // Also add friends to shifts to demonstrate social features
   let extraIndex = 0;
-  
+
   // Get sample volunteer's friends for social seeding
   const sampleVolunteerFriends = [
-    extraVolunteers.find(v => v.email === "sarah.chen@gmail.com"),
-    extraVolunteers.find(v => v.email === "james.williams@hotmail.com"),
-    extraVolunteers.find(v => v.email === "priya.patel@yahoo.com"),
+    extraVolunteers.find((v) => v.email === "sarah.chen@gmail.com"),
+    extraVolunteers.find((v) => v.email === "james.williams@hotmail.com"),
+    extraVolunteers.find((v) => v.email === "priya.patel@yahoo.com"),
   ].filter(Boolean);
 
   // Record existing historical signups to prevent conflicts
@@ -1060,21 +1118,21 @@ async function main() {
       shift: true,
     },
   });
-  
+
   for (const signup of existingSignups) {
     recordUserSignup(signup.userId, signup.shift.start);
   }
 
   for (let i = 0; i < createdShifts.length; i++) {
     const s = createdShifts[i];
-    
+
     // Every 4th shift: fill to capacity and add one waitlisted
     if (i % 4 === 0) {
       const capacity = s.capacity;
       // Create confirmed signups to fill the shift
       for (let c = 0; c < capacity; c++) {
         const user = extraVolunteers[(extraIndex + c) % extraVolunteers.length];
-        
+
         // Check if user can sign up for this date
         if (canUserSignUpForDate(user.id, s.start)) {
           await prisma.signup.upsert({
@@ -1097,18 +1155,19 @@ async function main() {
       });
       extraIndex = (extraIndex + 1) % extraVolunteers.length;
     }
-    
+
     // Add friends to shifts where sample volunteer is signed up (to show social activity)
     const shiftDay = s.start.getDate();
-    const shouldSignUp = (shiftDay % 3 === 0) && (i % 10 === 0); // Match sample volunteer's condition
-    
+    const shouldSignUp = shiftDay % 3 === 0 && i % 10 === 0; // Match sample volunteer's condition
+
     if (shouldSignUp && sampleVolunteerFriends.length > 0) {
       // Add 1-2 friends to this shift to create social activity
       const friendsToAdd = Math.min(2, Math.floor(Math.random() * 2) + 1);
-      
+
       for (let f = 0; f < friendsToAdd; f++) {
-        const friend = sampleVolunteerFriends[f % sampleVolunteerFriends.length];
-        
+        const friend =
+          sampleVolunteerFriends[f % sampleVolunteerFriends.length];
+
         // Check if friend can sign up for this date
         if (canUserSignUpForDate(friend.id, s.start)) {
           try {
@@ -1120,21 +1179,27 @@ async function main() {
               },
             });
             recordUserSignup(friend.id, s.start);
-            console.log(`✅ Signed up friend ${friend.email} for same shift as sample volunteer on ${s.start.toDateString()}`);
+            console.log(
+              `✅ Signed up friend ${
+                friend.email
+              } for same shift as sample volunteer on ${s.start.toDateString()}`
+            );
           } catch (error) {
             // Skip if signup already exists
-            if (!error.message.includes('Unique constraint')) {
-              console.log(`Could not add friend ${friend.email} to shift: ${error.message}`);
+            if (!error.message.includes("Unique constraint")) {
+              console.log(
+                `Could not add friend ${friend.email} to shift: ${error.message}`
+              );
             }
           }
         }
       }
     }
-    
+
     // Only sign up sample volunteer for very specific shifts to demonstrate filtering
     // This ensures most days are free, with only 2-3 days having signups
     // (shouldSignUp and shiftDay already declared above for friend signup logic)
-    
+
     if (shouldSignUp) {
       // Check if sample volunteer can sign up for this date
       if (canUserSignUpForDate(volunteer.id, s.start)) {
@@ -1147,11 +1212,15 @@ async function main() {
             },
           });
           recordUserSignup(volunteer.id, s.start);
-          console.log(`✅ Signed up sample volunteer for ${s.start.toDateString()}`);
+          console.log(
+            `✅ Signed up sample volunteer for ${s.start.toDateString()}`
+          );
         } catch (error) {
           // Skip if signup already exists
-          if (!error.message.includes('Unique constraint')) {
-            console.log(`Could not add sample volunteer to shift: ${error.message}`);
+          if (!error.message.includes("Unique constraint")) {
+            console.log(
+              `Could not add sample volunteer to shift: ${error.message}`
+            );
           }
         }
       }
@@ -1163,12 +1232,26 @@ async function main() {
   try {
     // Get some users for creating realistic notifications
     const allUsers = await prisma.user.findMany({
-      select: { id: true, name: true, firstName: true, lastName: true, email: true },
+      select: {
+        id: true,
+        name: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+      },
     });
 
-    const sampleUser = allUsers.find(u => u.email === 'volunteer@example.com');
-    const adminUser = allUsers.find(u => u.email === 'admin@everybodyeats.nz');
-    const otherUsers = allUsers.filter(u => u.email !== 'volunteer@example.com' && u.email !== 'admin@everybodyeats.nz');
+    const sampleUser = allUsers.find(
+      (u) => u.email === "volunteer@example.com"
+    );
+    const adminUser = allUsers.find(
+      (u) => u.email === "admin@everybodyeats.nz"
+    );
+    const otherUsers = allUsers.filter(
+      (u) =>
+        u.email !== "volunteer@example.com" &&
+        u.email !== "admin@everybodyeats.nz"
+    );
 
     if (sampleUser && otherUsers.length > 0) {
       // Create a variety of notifications for the sample user
@@ -1181,55 +1264,61 @@ async function main() {
         // Recent friend request
         {
           userId: sampleUser.id,
-          type: 'FRIEND_REQUEST_RECEIVED',
-          title: 'New friend request',
-          message: `${otherUsers[0].firstName || otherUsers[0].name || 'Someone'} sent you a friend request`,
-          actionUrl: '/friends',
-          relatedId: 'fake-friend-request-id',
+          type: "FRIEND_REQUEST_RECEIVED",
+          title: "New friend request",
+          message: `${
+            otherUsers[0].firstName || otherUsers[0].name || "Someone"
+          } sent you a friend request`,
+          actionUrl: "/friends",
+          relatedId: "fake-friend-request-id",
           isRead: false,
           createdAt: new Date(now.getTime() - 2 * 60 * 60 * 1000), // 2 hours ago
         },
         // Shift confirmed notification
         {
           userId: sampleUser.id,
-          type: 'SHIFT_CONFIRMED',
-          title: 'Shift confirmed',
-          message: 'Your Kitchen Prep shift on Saturday, August 24, 2025 has been confirmed',
-          actionUrl: '/shifts/mine',
-          relatedId: 'fake-shift-id',
+          type: "SHIFT_CONFIRMED",
+          title: "Shift confirmed",
+          message:
+            "Your Kitchen Prep shift on Saturday, August 24, 2025 has been confirmed",
+          actionUrl: "/shifts/mine",
+          relatedId: "fake-shift-id",
           isRead: false,
           createdAt: oneDayAgo,
         },
         // Friend request accepted (older, read)
         {
           userId: sampleUser.id,
-          type: 'FRIEND_REQUEST_ACCEPTED',
-          title: 'Friend request accepted',
-          message: `${otherUsers[1].firstName || otherUsers[1].name || 'Someone'} accepted your friend request`,
-          actionUrl: '/friends',
-          relatedId: 'fake-friendship-id',
+          type: "FRIEND_REQUEST_ACCEPTED",
+          title: "Friend request accepted",
+          message: `${
+            otherUsers[1].firstName || otherUsers[1].name || "Someone"
+          } accepted your friend request`,
+          actionUrl: "/friends",
+          relatedId: "fake-friendship-id",
           isRead: true,
           createdAt: twoDaysAgo,
         },
         // Waitlisted notification (older, read)
         {
           userId: sampleUser.id,
-          type: 'SHIFT_WAITLISTED',
-          title: 'Added to waitlist',
-          message: "You've been added to the waitlist for Food Service on Sunday, August 18, 2025",
-          actionUrl: '/shifts/mine',
-          relatedId: 'fake-shift-id-2',
+          type: "SHIFT_WAITLISTED",
+          title: "Added to waitlist",
+          message:
+            "You've been added to the waitlist for Food Service on Sunday, August 18, 2025",
+          actionUrl: "/shifts/mine",
+          relatedId: "fake-shift-id-2",
           isRead: true,
           createdAt: oneWeekAgo,
         },
         // Achievement unlocked (mix of read/unread)
         {
           userId: sampleUser.id,
-          type: 'ACHIEVEMENT_UNLOCKED',
-          title: 'Achievement unlocked!',
+          type: "ACHIEVEMENT_UNLOCKED",
+          title: "Achievement unlocked!",
           message: 'Congratulations! You earned the "First Steps" achievement',
-          actionUrl: '/dashboard',
-          relatedId: 'fake-achievement-id',
+          actionUrl: "/dashboard",
+          relatedId: "fake-achievement-id",
           isRead: Math.random() > 0.5, // Randomly read or unread
           createdAt: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
         },
@@ -1247,21 +1336,24 @@ async function main() {
         const additionalNotifications = [
           {
             userId: otherUsers[0].id,
-            type: 'FRIEND_REQUEST_RECEIVED',
-            title: 'New friend request',
-            message: `${sampleUser.firstName || sampleUser.name || 'Someone'} sent you a friend request`,
-            actionUrl: '/friends',
-            relatedId: 'fake-friend-request-id-2',
+            type: "FRIEND_REQUEST_RECEIVED",
+            title: "New friend request",
+            message: `${
+              sampleUser.firstName || sampleUser.name || "Someone"
+            } sent you a friend request`,
+            actionUrl: "/friends",
+            relatedId: "fake-friend-request-id-2",
             isRead: false,
             createdAt: new Date(now.getTime() - 30 * 60 * 1000), // 30 minutes ago
           },
           {
             userId: otherUsers[1].id,
-            type: 'SHIFT_CONFIRMED',
-            title: 'Shift confirmed',
-            message: 'Your Dishwashing shift on Friday, August 23, 2025 has been confirmed',
-            actionUrl: '/shifts/mine',
-            relatedId: 'fake-shift-id-3',
+            type: "SHIFT_CONFIRMED",
+            title: "Shift confirmed",
+            message:
+              "Your Dishwashing shift on Friday, August 23, 2025 has been confirmed",
+            actionUrl: "/shifts/mine",
+            relatedId: "fake-shift-id-3",
             isRead: true,
             createdAt: new Date(now.getTime() - 12 * 60 * 60 * 1000), // 12 hours ago
           },
@@ -1274,7 +1366,11 @@ async function main() {
         }
       }
 
-      console.log(`✅ Seeded ${notifications.length + (otherUsers.length >= 2 ? 2 : 0)} notifications`);
+      console.log(
+        `✅ Seeded ${
+          notifications.length + (otherUsers.length >= 2 ? 2 : 0)
+        } notifications`
+      );
     } else {
       console.log("⚠️ Could not find required users for notification seeding");
     }
@@ -1473,7 +1569,7 @@ async function main() {
   try {
     // Get admin user for creating rules
     const adminUser = await prisma.user.findFirst({
-      where: { role: "ADMIN" }
+      where: { role: "ADMIN" },
     });
 
     if (!adminUser) {
@@ -1483,7 +1579,8 @@ async function main() {
         // Rule 1: Auto-approve experienced volunteers (YELLOW grade) with good attendance
         {
           name: "Experienced Volunteer Fast Track",
-          description: "Automatically approve experienced volunteers (Yellow grade) with good attendance records",
+          description:
+            "Automatically approve experienced volunteers (Yellow grade) with good attendance records",
           enabled: true,
           priority: 10,
           global: true, // Apply to all shift types
@@ -1498,11 +1595,12 @@ async function main() {
           stopOnMatch: true,
           createdBy: adminUser.id,
         },
-        
+
         // Rule 2: Auto-approve shift leaders (PINK grade) immediately
         {
           name: "Shift Leader Priority Access",
-          description: "Automatically approve all shift leaders (Pink grade) - they have proven reliability",
+          description:
+            "Automatically approve all shift leaders (Pink grade) - they have proven reliability",
           enabled: true,
           priority: 20, // Higher priority than experienced volunteers
           global: true,
@@ -1521,7 +1619,8 @@ async function main() {
         // Rule 3: Auto-approve volunteers for Kitchen Prep shifts (easier entry point)
         {
           name: "Kitchen Prep Open Access",
-          description: "Auto-approve any volunteer with basic experience for Kitchen Prep shifts",
+          description:
+            "Auto-approve any volunteer with basic experience for Kitchen Prep shifts",
           enabled: true,
           priority: 5, // Lower priority than grade-based rules
           global: false,
@@ -1540,7 +1639,8 @@ async function main() {
         // Rule 4: Auto-approve for shifts happening soon (last-minute coverage)
         {
           name: "Last-Minute Coverage",
-          description: "Auto-approve reliable volunteers for shifts starting within 3 days",
+          description:
+            "Auto-approve reliable volunteers for shifts starting within 3 days",
           enabled: true,
           priority: 15,
           global: true,
@@ -1559,7 +1659,8 @@ async function main() {
         // Rule 5: Dishwasher experience required (specific skill rule)
         {
           name: "Dishwasher Veterans Only",
-          description: "Auto-approve volunteers with dishwashing experience for dishwasher shifts",
+          description:
+            "Auto-approve volunteers with dishwashing experience for dishwasher shifts",
           enabled: true,
           priority: 8,
           global: false,
@@ -1578,7 +1679,8 @@ async function main() {
         // Rule 6: High-volume volunteers (OR logic example)
         {
           name: "Super Volunteer Express",
-          description: "Auto-approve volunteers who are either very experienced OR have excellent attendance",
+          description:
+            "Auto-approve volunteers who are either very experienced OR have excellent attendance",
           enabled: true,
           priority: 12,
           global: true,
@@ -1592,7 +1694,7 @@ async function main() {
           criteriaLogic: "OR", // Either condition can be true
           stopOnMatch: true,
           createdBy: adminUser.id,
-        }
+        },
       ];
 
       // Create auto-accept rules
@@ -1606,26 +1708,33 @@ async function main() {
 
       // Display volunteer grade distribution
       console.log("🎖️ Checking volunteer grade distribution...");
-      
+
       const gradeStats = await prisma.user.groupBy({
-        by: ['volunteerGrade'],
-        where: { role: 'VOLUNTEER' },
+        by: ["volunteerGrade"],
+        where: { role: "VOLUNTEER" },
         _count: { volunteerGrade: true },
       });
-      
+
       for (const stat of gradeStats) {
         const gradeInfo = {
-          GREEN: { emoji: '🟢', name: 'Standard' },
-          YELLOW: { emoji: '🟡', name: 'Experienced' },
-          PINK: { emoji: '🩷', name: 'Shift Leader' }
+          GREEN: { emoji: "🟢", name: "Standard" },
+          YELLOW: { emoji: "🟡", name: "Experienced" },
+          PINK: { emoji: "🩷", name: "Shift Leader" },
         };
-        const info = gradeInfo[stat.volunteerGrade] || { emoji: '❓', name: 'Unknown' };
-        console.log(`   ${info.emoji} ${stat.volunteerGrade} (${info.name}): ${stat._count.volunteerGrade} volunteers`);
+        const info = gradeInfo[stat.volunteerGrade] || {
+          emoji: "❓",
+          name: "Unknown",
+        };
+        console.log(
+          `   ${info.emoji} ${stat.volunteerGrade} (${info.name}): ${stat._count.volunteerGrade} volunteers`
+        );
       }
 
       // Optional: Promote some volunteers based on their extensive shift history if they need it
-      console.log("🔄 Checking for any needed grade promotions based on shift history...");
-      
+      console.log(
+        "🔄 Checking for any needed grade promotions based on shift history..."
+      );
+
       const userShiftCounts = await prisma.user.findMany({
         where: { role: "VOLUNTEER" },
         include: {
@@ -1642,32 +1751,38 @@ async function main() {
       for (const user of userShiftCounts) {
         const shiftCount = user.signups.length;
         let recommendedGrade = "GREEN"; // Default
-        
+
         if (shiftCount >= 25) {
           recommendedGrade = "PINK"; // Shift leader after 25 shifts
         } else if (shiftCount >= 10) {
           recommendedGrade = "YELLOW"; // Experienced after 10 shifts
         }
-        
+
         // Only promote if they're below what their shift count suggests
         const gradePriority = { GREEN: 0, YELLOW: 1, PINK: 2 };
         const currentPriority = gradePriority[user.volunteerGrade];
         const recommendedPriority = gradePriority[recommendedGrade];
-        
+
         if (currentPriority < recommendedPriority) {
           await prisma.user.update({
             where: { id: user.id },
             data: { volunteerGrade: recommendedGrade },
           });
-          console.log(`   📈 Promoted ${user.email} from ${user.volunteerGrade} → ${recommendedGrade} (${shiftCount} completed shifts)`);
+          console.log(
+            `   📈 Promoted ${user.email} from ${user.volunteerGrade} → ${recommendedGrade} (${shiftCount} completed shifts)`
+          );
           promotions++;
         }
       }
 
       if (promotions === 0) {
-        console.log("   ✅ All volunteer grades are appropriate for their experience level");
+        console.log(
+          "   ✅ All volunteer grades are appropriate for their experience level"
+        );
       } else {
-        console.log(`   ✅ Applied ${promotions} promotions based on shift history`);
+        console.log(
+          `   ✅ Applied ${promotions} promotions based on shift history`
+        );
       }
 
       console.log("✅ Auto-accept rules seeding completed");
@@ -1679,7 +1794,7 @@ async function main() {
   // Download and convert profile images after all users are created
   // Create shift templates for location-specific capacities
   console.log("📋 Seeding shift templates...");
-  
+
   const templateConfigs = [
     // Wellington templates
     {
@@ -1743,9 +1858,10 @@ async function main() {
       startTime: "17:00",
       endTime: "19:00",
       capacity: 1,
-      notes: "Photography, social media content creation, and community engagement",
+      notes:
+        "Photography, social media content creation, and community engagement",
     },
-    
+
     // Glen Innes templates
     {
       name: "Glen Innes Kitchen Prep",
@@ -1808,9 +1924,10 @@ async function main() {
       startTime: "17:00",
       endTime: "19:00",
       capacity: 1,
-      notes: "Photography, social media content creation, and community engagement",
+      notes:
+        "Photography, social media content creation, and community engagement",
     },
-    
+
     // Onehunga templates
     {
       name: "Onehunga Kitchen Prep",
@@ -1873,7 +1990,8 @@ async function main() {
       startTime: "17:00",
       endTime: "19:00",
       capacity: 1,
-      notes: "Photography, social media content creation, and community engagement",
+      notes:
+        "Photography, social media content creation, and community engagement",
     },
   ];
 

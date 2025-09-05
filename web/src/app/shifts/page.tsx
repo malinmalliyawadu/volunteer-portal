@@ -9,7 +9,7 @@ import { PageContainer } from "@/components/page-container";
 import { safeParseAvailability } from "@/lib/parse-availability";
 import { ShiftsCalendar } from "@/components/shifts-calendar";
 
-const LOCATIONS = ["Wellington", "Glenn Innes", "Onehunga"] as const;
+const LOCATIONS = ["Wellington", "Glen Innes", "Onehunga"] as const;
 type LocationOption = (typeof LOCATIONS)[number];
 
 interface ShiftSummary {
@@ -26,7 +26,6 @@ interface ShiftSummary {
   };
 }
 
-
 export default async function ShiftsCalendarPage({
   searchParams,
 }: {
@@ -35,7 +34,7 @@ export default async function ShiftsCalendarPage({
   const session = await getServerSession(authOptions);
   const params = await searchParams;
 
-  // Get current user 
+  // Get current user
   let currentUser = null;
   if (session?.user?.email) {
     currentUser = await prisma.user.findUnique({
@@ -206,11 +205,10 @@ export default async function ShiftsCalendarPage({
       )}
 
       {/* Calendar View */}
-      <ShiftsCalendar 
-        shifts={shiftSummaries} 
+      <ShiftsCalendar
+        shifts={shiftSummaries}
         selectedLocation={selectedLocation}
       />
-
     </PageContainer>
   );
 }

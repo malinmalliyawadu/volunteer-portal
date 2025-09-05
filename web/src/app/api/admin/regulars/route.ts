@@ -8,7 +8,7 @@ import { z } from "zod";
 const createRegularVolunteerSchema = z.object({
   userId: z.string(),
   shiftTypeId: z.string(),
-  location: z.enum(["Wellington", "Glenn Innes", "Onehunga"]),
+  location: z.enum(["Wellington", "Glen Innes", "Onehunga"]),
   frequency: z.enum(["WEEKLY", "FORTNIGHTLY", "MONTHLY"]),
   availableDays: z.array(
     z.enum([

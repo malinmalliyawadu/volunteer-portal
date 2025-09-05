@@ -3,6 +3,7 @@ import { format, parseISO } from "date-fns";
 import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
+import { isFeatureEnabled } from "@/lib/posthog-server";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -108,6 +109,7 @@ function ShiftCard({
 
   return (
     <Card
+      data-testid={`shift-card-${shift.id}`}
       className={`group relative overflow-hidden border-0 shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 ${theme.bgColor} h-full`}
     >
       {/* Gradient accent bar */}
@@ -259,6 +261,7 @@ function ShiftCard({
                 currentUserId={currentUserId}
               >
                 <Button
+                  data-testid="shift-signup-button"
                   className={`w-full font-medium transition-all duration-200 ${
                     isFull
                       ? "bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 hover:border-orange-300"
@@ -354,8 +357,12 @@ export default async function ShiftDetailsPage({
     }
   }
 
+  // Check feature flag for flexible placement
+  const userId = currentUser?.id || "anonymous";
+  const isFlexiblePlacementEnabled = await isFeatureEnabled("flexible-placement", userId);
+
   // Fetch shifts for the specific date and optionally location
-  const shifts = (await prisma.shift.findMany({
+  const allShifts = (await prisma.shift.findMany({
     where: {
       start: {
         gte: new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()),
@@ -387,6 +394,11 @@ export default async function ShiftDetailsPage({
       },
     },
   })) as ShiftWithRelations[];
+
+  // Filter out flexible placement shifts if feature is disabled
+  const shifts = isFlexiblePlacementEnabled 
+    ? allShifts
+    : allShifts.filter(shift => !shift.shiftType.name.includes("Anywhere I'm Needed"));
 
   // Group shifts by location if no specific location filter
   const shiftsByLocation = new Map<string, ShiftWithRelations[]>();

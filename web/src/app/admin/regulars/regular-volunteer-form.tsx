@@ -40,7 +40,7 @@ type ShiftType = {
   name: string;
 };
 
-const LOCATIONS = ["Wellington", "Glenn Innes", "Onehunga"];
+const LOCATIONS = ["Wellington", "Glen Innes", "Onehunga"];
 const FREQUENCIES = [
   { value: "WEEKLY", label: "Weekly" },
   { value: "FORTNIGHTLY", label: "Fortnightly" },

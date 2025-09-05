@@ -381,6 +381,15 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
                                       signupId={signup.id}
                                       currentStatus={signup.status}
                                       testIdPrefix={`shift-${shift.id}-volunteer-${signup.id}`}
+                                      currentShift={{
+                                        id: shift.id,
+                                        start: shift.start,
+                                        location: shift.location,
+                                        shiftType: {
+                                          name: shift.shiftType.name,
+                                        },
+                                      }}
+                                      volunteerName={signup.user.name || `${signup.user.firstName} ${signup.user.lastName}`}
                                     />
                                   </div>
                                 </div>
