@@ -148,7 +148,17 @@ export default async function ShiftsCalendarPage({
   });
 
   // Separately fetch friend signups if needed
-  let friendSignupsMap: Record<string, any[]> = {};
+  type FriendSignup = {
+    user: {
+      id: string;
+      name: string | null;
+      firstName: string | null;
+      lastName: string | null;
+      email: string;
+      profilePhotoUrl: string | null;
+    };
+  };
+  let friendSignupsMap: Record<string, FriendSignup[]> = {};
   if (userFriendIds.length > 0) {
     const friendSignups = await prisma.signup.findMany({
       where: {
@@ -171,11 +181,11 @@ export default async function ShiftsCalendarPage({
     });
 
     // Group by shift ID
-    friendSignupsMap = friendSignups.reduce((acc, signup) => {
+    friendSignupsMap = friendSignups.reduce<Record<string, FriendSignup[]>>((acc, signup) => {
       if (!acc[signup.shiftId]) acc[signup.shiftId] = [];
       acc[signup.shiftId].push(signup);
       return acc;
-    }, {} as Record<string, any[]>);
+    }, {});
   }
 
   // Transform to ShiftSummary format for calendar

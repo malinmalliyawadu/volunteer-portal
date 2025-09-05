@@ -13,16 +13,13 @@ import {
 import { useState } from "react";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AvatarList } from "@/components/ui/avatar-list";
 import {
   ChevronLeft,
   ChevronRight,
   Calendar,
-  Users,
   MapPin,
-  CalendarPlus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -130,7 +127,7 @@ export function ShiftsCalendar({
           acc.push(...shift.friendSignups);
         }
         return acc;
-      }, [] as (typeof dayShifts)[0]["friendSignups"]);
+      }, [] as NonNullable<(typeof dayShifts)[0]["friendSignups"]>);
 
       return {
         date,
