@@ -1273,6 +1273,9 @@ async function main() {
     recordUserSignup(signup.userId, signup.shift.start);
   }
 
+  // Track spots left for tomorrow across all shifts
+  let tomorrowSpotsLeft = 2; // Total spots to leave available for tomorrow
+
   for (let i = 0; i < createdShifts.length; i++) {
     const s = createdShifts[i];
     const shiftDate = new Date(s.start);
@@ -1301,16 +1304,28 @@ async function main() {
       shouldFillShift = true;
       spotsToFill = s.capacity;
     } else if (isTomorrow) {
-      // Tomorrow (i=1): leave only 1-2 spots per shift
-      const spotsToLeave = Math.min(2, Math.floor(Math.random() * 2) + 1); // 1 or 2 spots
-      spotsToFill = Math.max(0, s.capacity - spotsToLeave);
-      console.log(
-        `📅 Nearly booking TOMORROW's shift (i=1): ${
-          s.shiftType?.name || "Unknown"
-        } at ${s.location} (${spotsToFill}/${
-          s.capacity
-        } spots, leaving ${spotsToLeave})`
-      );
+      // Tomorrow (i=1): leave only 1-2 spots TOTAL across all shifts
+      if (tomorrowSpotsLeft > 0) {
+        const spotsToLeaveThisShift = Math.min(tomorrowSpotsLeft, s.capacity);
+        spotsToFill = s.capacity - spotsToLeaveThisShift;
+        tomorrowSpotsLeft -= spotsToLeaveThisShift;
+        
+        console.log(
+          `📅 Nearly booking TOMORROW's shift (i=1): ${
+            s.shiftType?.name || "Unknown"
+          } at ${s.location} (${spotsToFill}/${
+            s.capacity
+          } spots, leaving ${spotsToLeaveThisShift}, ${tomorrowSpotsLeft} spots remaining for other shifts)`
+        );
+      } else {
+        // No more spots to leave - fully book this shift
+        spotsToFill = s.capacity;
+        console.log(
+          `📅 FULLY booking remaining TOMORROW shift: ${
+            s.shiftType?.name || "Unknown"
+          } at ${s.location} (${s.capacity}/${s.capacity} spots - no more spots to leave)`
+        );
+      }
       shouldFillShift = true;
     } else {
       // Other days (i=2+): every 4th shift gets filled (original logic)
