@@ -425,7 +425,7 @@ export default async function ShiftDetailsPage({
       </div>
 
       <PageHeader
-        title={`Shifts for ${format(selectedDate, "EEEE, MMMM d, yyyy")}`}
+        title={`Shifts for ${format(selectedDate, "EEEE, MMMM d, yyyy")}${selectedLocation ? ` - ${selectedLocation}` : ""}`}
         description={`${selectedLocation ? `Available shifts in ${selectedLocation}` : "All available shifts"} for this date. Click on any shift to view details and sign up.`}
         className="mb-8"
         data-testid="shifts-details-page-header"
