@@ -22,8 +22,7 @@ import { PageContainer } from "@/components/page-container";
 import { BulkDateRangeSection } from "@/components/shift-date-time-section";
 import { ShiftCreationClientForm } from "@/components/shift-creation-client-form";
 import { CollapsibleTemplateSelection } from "@/components/collapsible-template-selection";
-
-const LOCATIONS = ["Wellington", "Glen Innes", "Onehunga"] as const;
+import { LOCATIONS } from "@/lib/locations";
 
 // Templates are now stored in the database and fetched dynamically
 

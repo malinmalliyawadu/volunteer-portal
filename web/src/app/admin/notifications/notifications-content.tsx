@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { LOCATIONS, type Location } from "@/lib/locations";
 import { useSearchParams } from "next/navigation";
 import {
   Card,
@@ -101,7 +102,7 @@ export function NotificationsContent({
 
     if (
       locationParam &&
-      ["Wellington", "Glen Innes", "Onehunga"].includes(locationParam)
+      LOCATIONS.includes(locationParam as Location)
     ) {
       setFilterLocation(locationParam);
     }
@@ -505,9 +506,11 @@ export function NotificationsContent({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Locations</SelectItem>
-                    <SelectItem value="Wellington">Wellington</SelectItem>
-                    <SelectItem value="Glen Innes">Glen Innes</SelectItem>
-                    <SelectItem value="Onehunga">Onehunga</SelectItem>
+                    {LOCATIONS.map((location) => (
+                      <SelectItem key={location} value={location}>
+                        {location}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

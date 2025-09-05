@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { LOCATIONS } from "@/lib/locations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -244,9 +245,11 @@ export function ShiftTemplateManager({ initialTemplates, shiftTypes, onTemplateC
                       <SelectValue placeholder="Select location" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Wellington">Wellington</SelectItem>
-                      <SelectItem value="Glen Innes">Glen Innes</SelectItem>
-                      <SelectItem value="Onehunga">Onehunga</SelectItem>
+                      {LOCATIONS.map((location) => (
+                        <SelectItem key={location} value={location}>
+                          {location}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -427,9 +430,11 @@ export function ShiftTemplateManager({ initialTemplates, shiftTypes, onTemplateC
                       <SelectValue placeholder="Select location" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Wellington">Wellington</SelectItem>
-                      <SelectItem value="Glen Innes">Glen Innes</SelectItem>
-                      <SelectItem value="Onehunga">Onehunga</SelectItem>
+                      {LOCATIONS.map((location) => (
+                        <SelectItem key={location} value={location}>
+                          {location}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>

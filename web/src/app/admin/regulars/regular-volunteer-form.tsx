@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/collapsible";
 import { toast } from "sonner";
 import { PlusIcon, ChevronDownIcon } from "lucide-react";
+import { LOCATIONS } from "@/lib/locations";
 
 type Volunteer = {
   id: string;
@@ -39,8 +40,6 @@ type ShiftType = {
   id: string;
   name: string;
 };
-
-const LOCATIONS = ["Wellington", "Glen Innes", "Onehunga"];
 const FREQUENCIES = [
   { value: "WEEKLY", label: "Weekly" },
   { value: "FORTNIGHTLY", label: "Fortnightly" },

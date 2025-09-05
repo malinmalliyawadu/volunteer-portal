@@ -13,9 +13,7 @@ import { AdminPageWrapper } from "@/components/admin-page-wrapper";
 import { ShiftLocationSelector } from "@/components/shift-location-selector";
 import { ShiftCalendarWrapper } from "@/components/shift-calendar-wrapper";
 import { AnimatedShiftCardsWrapper } from "@/components/animated-shift-cards-wrapper";
-
-const LOCATIONS = ["Wellington", "Glen Innes", "Onehunga"] as const;
-type LocationOption = (typeof LOCATIONS)[number];
+import { LOCATIONS, LocationOption, DEFAULT_LOCATION } from "@/lib/locations";
 
 interface AdminShiftsPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -35,7 +33,7 @@ export default async function AdminShiftsPage({
   // Parse search parameters
   const dateString =
     (params.date as string) || format(new Date(), "yyyy-MM-dd");
-  const selectedLocation = (params.location as LocationOption) || "Wellington";
+  const selectedLocation = (params.location as LocationOption) || DEFAULT_LOCATION;
   const selectedDate = parseISO(dateString);
   const today = format(new Date(), "yyyy-MM-dd");
   const isToday = dateString === today;

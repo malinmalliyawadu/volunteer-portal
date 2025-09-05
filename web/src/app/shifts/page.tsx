@@ -7,9 +7,7 @@ import { MapPin } from "lucide-react";
 import { PageContainer } from "@/components/page-container";
 import { safeParseAvailability } from "@/lib/parse-availability";
 import { ShiftsCalendar } from "@/components/shifts-calendar";
-
-const LOCATIONS = ["Wellington", "Glen Innes", "Onehunga"] as const;
-type LocationOption = (typeof LOCATIONS)[number];
+import { LOCATIONS, LocationOption } from "@/lib/locations";
 
 interface ShiftSummary {
   id: string;

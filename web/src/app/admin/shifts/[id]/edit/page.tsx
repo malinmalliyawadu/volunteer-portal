@@ -26,8 +26,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { DeleteShiftDialog } from "@/components/delete-shift-dialog";
 import { PageContainer } from "@/components/page-container";
-
-const LOCATIONS = ["Wellington", "Glen Innes", "Onehunga"] as const;
+import { LOCATIONS } from "@/lib/locations";
 
 type ShiftType = {
   id: string;
