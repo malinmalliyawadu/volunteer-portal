@@ -94,7 +94,7 @@ test.describe("Admin Shifts Page", () => {
     await page.getByText("Glen Innes").click();
 
     // Check URL updated with new location
-    await expect(page).toHaveURL(/location=Glenn%20Innes/);
+    await expect(page).toHaveURL(/location=glen%20Innes/);
   });
 
   test("should navigate to today when clicking today button", async ({

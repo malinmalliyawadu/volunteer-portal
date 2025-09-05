@@ -506,7 +506,7 @@ test.describe("Admin Dashboard Page", () => {
       // Check for location tabs (Wellington, Glen Innes, Onehunga)
       const locationTabs = [
         page.getByTestId("location-filter-wellington"),
-        page.getByTestId("location-filter-glenn-innes"),
+        page.getByTestId("location-filter--innes"),
         page.getByTestId("location-filter-onehunga"),
       ];
       for (const tab of locationTabs) {

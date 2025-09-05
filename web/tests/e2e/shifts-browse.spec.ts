@@ -78,8 +78,8 @@ test.describe("Shifts Browse Page", () => {
       const wellingtonTab = page.getByTestId("location-tab-wellington");
       await expect(wellingtonTab).toBeVisible();
 
-      const glennInnesTab = page.getByTestId("location-tab-glenn-innes");
-      await expect(glennInnesTab).toBeVisible();
+      const glenInnesTab = page.getByTestId("location-tab-glen-innes");
+      await expect(glenInnesTab).toBeVisible();
 
       const onehungaTab = page.getByTestId("location-tab-onehunga");
       await expect(onehungaTab).toBeVisible();
@@ -409,14 +409,14 @@ test.describe("Shifts Browse Page", () => {
       page,
     }) => {
       // Navigate directly to filtered URL
-      await page.goto("/shifts?location=Glenn%20Innes");
+      await page.goto("/shifts?location=glen%20Innes");
       await page.waitForLoadState("load");
 
       // Glen Innes tab should be visually active
-      const glennInnesTab = page.getByTestId("location-tab-glenn-innes");
+      const glenInnesTab = page.getByTestId("location-tab-glen-innes");
 
       // Check if it has active styling (Radix UI tabs use data-state="active")
-      await expect(glennInnesTab).toHaveAttribute("data-state", "active");
+      await expect(glenInnesTab).toHaveAttribute("data-state", "active");
     });
 
     test("should show user preference notification when applicable", async ({

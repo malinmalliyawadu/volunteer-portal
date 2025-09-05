@@ -207,7 +207,7 @@ export default async function AdminVolunteerPage({
 
   const locationLabels: Record<string, string> = {
     wellington: "Wellington",
-    "glenn-innes": "Glen Innes",
+    "glen-innes": "Glen Innes",
     onehunga: "Onehunga",
     mobile: "Mobile/Outreach",
   };

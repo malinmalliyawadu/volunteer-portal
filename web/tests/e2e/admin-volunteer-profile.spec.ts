@@ -383,10 +383,10 @@ test.describe("Admin Volunteer Profile View", () => {
         const wellingtonFilter = page.getByRole("link", { name: "Wellington" });
         await expect(wellingtonFilter).toBeVisible();
 
-        const glennInnesFilter = page.getByRole("link", {
+        const glenInnesFilter = page.getByRole("link", {
           name: "Glen Innes",
         });
-        await expect(glennInnesFilter).toBeVisible();
+        await expect(glenInnesFilter).toBeVisible();
 
         const onehungaFilter = page.getByRole("link", { name: "Onehunga" });
         await expect(onehungaFilter).toBeVisible();
