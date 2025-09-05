@@ -760,16 +760,7 @@ async function main() {
     update: {},
     create: {
       name: "Kitchen Prep",
-      description: "Food preparation and ingredient prep (12:00pm-5:30pm)",
-    },
-  });
-
-  const kitchenPrepService = await prisma.shiftType.upsert({
-    where: { name: "Kitchen Prep & Service" },
-    update: {},
-    create: {
-      name: "Kitchen Prep & Service",
-      description: "Food prep and cooking service (12:00pm-9:00pm)",
+      description: "Food preparation and ingredient prep ending at 4:00pm",
     },
   });
 
@@ -847,24 +838,12 @@ async function main() {
       type: kitchenPrep,
       startHour: 12, // 12:00pm
       startMinute: 0,
-      endHour: 17, // 5:30pm
-      endMinute: 30,
+      endHour: 16, // 4:00pm
+      endMinute: 0,
       capacities: {
         Wellington: 7, // 7 kitchen prep
         "Glen Innes": 5, // 5 kitchen prep
         Onehunga: 6, // 6 kitchen prep
-      },
-    },
-    {
-      type: kitchenPrepService,
-      startHour: 12, // 12:00pm
-      startMinute: 0,
-      endHour: 21, // 9:00pm
-      endMinute: 0,
-      capacities: {
-        Wellington: 6, // 6 kitchen service
-        "Glen Innes": 4, // 4 kitchen service
-        Onehunga: 6, // 6 kitchen service
       },
     },
     {
@@ -1796,24 +1775,15 @@ async function main() {
   console.log("📋 Seeding shift templates...");
 
   const templateConfigs = [
-    // Wellington templates
+    // Wellington templates  
     {
       name: "Wellington Kitchen Prep",
       location: "Wellington",
       shiftType: kitchenPrep,
       startTime: "12:00",
-      endTime: "17:30",
+      endTime: "16:00",
       capacity: 7,
       notes: "Food preparation and ingredient prep",
-    },
-    {
-      name: "Wellington Kitchen Service",
-      location: "Wellington",
-      shiftType: kitchenPrepService,
-      startTime: "12:00",
-      endTime: "21:00",
-      capacity: 6,
-      notes: "Food prep and cooking service",
     },
     {
       name: "Wellington Kitchen Service & Pack Down",
@@ -1868,18 +1838,9 @@ async function main() {
       location: "Glen Innes",
       shiftType: kitchenPrep,
       startTime: "12:00",
-      endTime: "17:30",
+      endTime: "16:00",
       capacity: 5,
       notes: "Food preparation and ingredient prep",
-    },
-    {
-      name: "Glen Innes Kitchen Service",
-      location: "Glen Innes",
-      shiftType: kitchenPrepService,
-      startTime: "12:00",
-      endTime: "21:00",
-      capacity: 4,
-      notes: "Food prep and cooking service",
     },
     {
       name: "Glen Innes Kitchen Service & Pack Down",
@@ -1934,18 +1895,9 @@ async function main() {
       location: "Onehunga",
       shiftType: kitchenPrep,
       startTime: "12:00",
-      endTime: "17:30",
+      endTime: "16:00",
       capacity: 6,
       notes: "Food preparation and ingredient prep",
-    },
-    {
-      name: "Onehunga Kitchen Service",
-      location: "Onehunga",
-      shiftType: kitchenPrepService,
-      startTime: "12:00",
-      endTime: "21:00",
-      capacity: 6,
-      notes: "Food prep and cooking service",
     },
     {
       name: "Onehunga Kitchen Service & Pack Down",
