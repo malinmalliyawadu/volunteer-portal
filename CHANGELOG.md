@@ -1,3 +1,9 @@
+## [0.28.0] - 2025-09-05
+
+### Changes
+- feat: add flexible placement system and general volunteer movement ([#89](https://github.com/malinmalliyawadu/volunteer-portal/pull/89)) by @malinmalliyawadu
+
+
 ## [0.27.0] - 2025-09-04
 
 ### Changes
