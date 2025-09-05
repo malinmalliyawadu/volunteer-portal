@@ -23,6 +23,16 @@ interface ShiftSummary {
     name: string;
     description: string | null;
   };
+  friendSignups?: Array<{
+    user: {
+      id: string;
+      name: string | null;
+      firstName: string | null;
+      lastName: string | null;
+      email: string;
+      profilePhotoUrl: string | null;
+    };
+  }>;
 }
 
 export default async function ShiftsCalendarPage({
@@ -35,11 +45,36 @@ export default async function ShiftsCalendarPage({
 
   // Get current user
   let currentUser = null;
+  let userFriendIds: string[] = [];
   if (session?.user?.email) {
     currentUser = await prisma.user.findUnique({
       where: { email: session.user.email },
       select: { id: true, availableLocations: true },
     });
+    
+    // Get user's friend IDs if logged in
+    if (currentUser?.id) {
+      userFriendIds = await prisma.friendship
+        .findMany({
+          where: {
+            AND: [
+              {
+                OR: [{ userId: currentUser.id }, { friendId: currentUser.id }],
+              },
+              { status: "ACCEPTED" },
+            ],
+          },
+          select: {
+            userId: true,
+            friendId: true,
+          },
+        })
+        .then((friendships) =>
+          friendships.map((friendship) =>
+            friendship.userId === currentUser!.id ? friendship.friendId : friendship.userId
+          )
+        );
+    }
   }
 
   // Parse user's preferred locations
@@ -109,6 +144,25 @@ export default async function ShiftsCalendarPage({
           },
         },
       },
+      // Include friend signups if user is logged in
+      signups: userFriendIds.length > 0 ? {
+        where: {
+          userId: { in: userFriendIds },
+          status: { in: ["CONFIRMED", "PENDING"] },
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              profilePhotoUrl: true,
+            },
+          },
+        },
+      } : undefined,
     },
   });
 
@@ -125,6 +179,7 @@ export default async function ShiftsCalendarPage({
       name: shift.shiftType.name,
       description: shift.shiftType.description,
     },
+    friendSignups: shift.signups || [],
   }));
 
   // If no explicit location choice has been made, show location selection screen

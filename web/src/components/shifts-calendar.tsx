@@ -15,12 +15,14 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { AvatarList } from "@/components/ui/avatar-list";
 import {
   ChevronLeft,
   ChevronRight,
   Calendar,
   Users,
   MapPin,
+  CalendarPlus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -36,6 +38,16 @@ interface ShiftSummary {
     name: string;
     description: string | null;
   };
+  friendSignups?: Array<{
+    user: {
+      id: string;
+      name: string | null;
+      firstName: string | null;
+      lastName: string | null;
+      email: string;
+      profilePhotoUrl: string | null;
+    };
+  }>;
 }
 
 interface ShiftsCalendarProps {
@@ -50,6 +62,16 @@ interface DayShifts {
   totalConfirmed: number;
   totalPending: number;
   spotsAvailable: number;
+  allFriendSignups: Array<{
+    user: {
+      id: string;
+      name: string | null;
+      firstName: string | null;
+      lastName: string | null;
+      email: string;
+      profilePhotoUrl: string | null;
+    };
+  }>;
 }
 
 export function ShiftsCalendar({
@@ -99,6 +121,14 @@ export function ShiftsCalendar({
         totalCapacity - totalConfirmed - totalPending
       );
 
+      // Collect all friend signups for this day
+      const allFriendSignups = dayShifts.reduce((acc, shift) => {
+        if (shift.friendSignups) {
+          acc.push(...shift.friendSignups);
+        }
+        return acc;
+      }, [] as typeof dayShifts[0]['friendSignups']);
+
       return {
         date,
         shifts: dayShifts,
@@ -106,6 +136,7 @@ export function ShiftsCalendar({
         totalConfirmed,
         totalPending,
         spotsAvailable,
+        allFriendSignups: allFriendSignups || [],
       };
     });
   };
@@ -269,6 +300,7 @@ export function ShiftsCalendar({
                     const dayStart = new Date(dayShifts.date);
                     dayStart.setHours(0, 0, 0, 0);
                     const isPastDate = dayStart < today;
+                    const isToday = isSameDay(dayShifts.date, today);
 
                     const dayContent = (
                       <div
@@ -277,6 +309,8 @@ export function ShiftsCalendar({
                           isCurrentMonth
                             ? isPastDate
                               ? "border-gray-300 dark:border-gray-600 bg-gray-200 dark:bg-gray-800 opacity-50"
+                              : isToday
+                              ? "bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-indigo-950/40 border-blue-300 dark:border-blue-700 shadow-md ring-2 ring-blue-200/40 dark:ring-blue-800/40"
                               : status === "none"
                               ? "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30"
                               : `border-transparent ${getStatusColor(
@@ -294,18 +328,26 @@ export function ShiftsCalendar({
                         )}`}
                       >
                         {/* Date number */}
-                        <div className="absolute top-2 left-2">
+                        <div className="absolute top-2 left-2 right-2 flex items-center justify-between">
                           <span
                             className={cn(
-                              "text-sm font-medium",
+                              "text-sm font-medium w-6 h-6 rounded-full flex items-center justify-center",
                               !isCurrentMonth && "text-muted-foreground/50",
                               isPastDate &&
                                 isCurrentMonth &&
-                                "text-muted-foreground"
+                                "text-muted-foreground",
+                              isToday &&
+                                isCurrentMonth &&
+                                "text-white bg-blue-500 shadow-md font-bold"
                             )}
                           >
                             {format(dayShifts.date, "d")}
                           </span>
+                          {isToday && (
+                            <div className="text-[10px] font-medium text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/50 px-2 py-0.5 rounded-full">
+                              Today
+                            </div>
+                          )}
                         </div>
 
                         {/* Shift indicators */}
@@ -314,7 +356,7 @@ export function ShiftsCalendar({
                           !isPastDate && (
                             <div className="absolute inset-2 flex flex-col justify-center">
                               {/* Center - availability info */}
-                              <div className="text-center">
+                              <div className="text-center space-y-2">
                                 {status === "full" ? (
                                   <div className="text-xs font-semibold text-orange-500">
                                     WAITLIST
@@ -325,7 +367,18 @@ export function ShiftsCalendar({
                                   </div>
                                 ) : (
                                   <div className="text-xs font-semibold text-green-500">
-                                    {dayShifts.spotsAvailable} OPEN
+                                    {dayShifts.spotsAvailable} available
+                                  </div>
+                                )}
+                                
+                                {/* Friend avatars */}
+                                {dayShifts.allFriendSignups.length > 0 && (
+                                  <div className="flex justify-center">
+                                    <AvatarList
+                                      users={dayShifts.allFriendSignups.map(signup => signup.user)}
+                                      size="sm"
+                                      maxDisplay={3}
+                                    />
                                   </div>
                                 )}
                               </div>
