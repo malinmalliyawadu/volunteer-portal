@@ -27,7 +27,6 @@ const LOCATIONS = ["Wellington", "Glen Innes", "Onehunga"] as const;
 
 // Templates are now stored in the database and fetched dynamically
 
-
 type RecentShift = {
   id: string;
   start: Date;
@@ -422,7 +421,11 @@ export default async function NewShiftPage() {
 
     const schema = z.object({
       name: z.string().min(1, "Name is required").max(100, "Name too long"),
-      description: z.string().optional().nullable().transform((v) => (v && v.length > 0 ? v : null)),
+      description: z
+        .string()
+        .optional()
+        .nullable()
+        .transform((v) => (v && v.length > 0 ? v : null)),
     });
 
     const parsed = schema.safeParse({
@@ -484,7 +487,7 @@ export default async function NewShiftPage() {
         shiftTypeId: template.shiftTypeId,
         location: template.location || undefined, // Convert null to undefined to match interface
         id: template.id, // Include database ID for editing/deleting
-      }
+      },
     ])
   );
 
@@ -509,8 +512,8 @@ export default async function NewShiftPage() {
   });
 
   return (
-    <AdminPageWrapper 
-      title="Create shifts" 
+    <AdminPageWrapper
+      title="Create shifts"
       description="Schedule new volunteer shifts efficiently with single or bulk creation options."
       actions={
         <Button asChild variant="outline" size="sm">
@@ -519,302 +522,310 @@ export default async function NewShiftPage() {
       }
     >
       <PageContainer testid="create-shift-page">
+        <Tabs defaultValue="single" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="single" className="flex items-center gap-2">
+              <PlusIcon className="h-4 w-4" />
+              Single Shift
+            </TabsTrigger>
+            <TabsTrigger value="bulk" className="flex items-center gap-2">
+              <CalendarDaysIcon className="h-4 w-4" />
+              Weekly Schedule
+            </TabsTrigger>
+            <TabsTrigger value="copy" className="flex items-center gap-2">
+              <CopyIcon className="h-4 w-4" />
+              Copy Previous
+            </TabsTrigger>
+          </TabsList>
 
-      <Tabs defaultValue="single" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="single" className="flex items-center gap-2">
-            <PlusIcon className="h-4 w-4" />
-            Single Shift
-          </TabsTrigger>
-          <TabsTrigger value="bulk" className="flex items-center gap-2">
-            <CalendarDaysIcon className="h-4 w-4" />
-            Weekly Schedule
-          </TabsTrigger>
-          <TabsTrigger value="copy" className="flex items-center gap-2">
-            <CopyIcon className="h-4 w-4" />
-            Copy Previous
-          </TabsTrigger>
-        </TabsList>
-
-        {/* Single Shift Creation */}
-        <TabsContent value="single">
-          <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50">
-            <CardHeader className="pb-6">
-              <CardTitle className="flex items-center gap-2 text-xl font-semibold">
-                <PlusIcon className="h-5 w-5" />
-                Create Single Shift
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Create a single volunteer shift with specific details.
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-8">
-              <form action={createShift} className="space-y-8">
-                <ShiftCreationClientForm
-                  shiftTypes={shiftTypes}
-                  initialTemplates={templatesWithShiftTypes}
-                  locations={LOCATIONS}
-                  createShiftTypeAction={createShiftType}
-                />
-
-                {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t">
-                  <Button
-                    asChild
-                    variant="outline"
-                    size="lg"
-                    className="order-2 sm:order-1"
-                    data-testid="cancel-shift-creation-button"
-                  >
-                    <Link href="/admin/shifts">Cancel</Link>
-                  </Button>
-                  <Button
-                    type="submit"
-                    size="lg"
-                    className="order-1 sm:order-2 bg-primary hover:bg-primary/90"
-                    data-testid="create-shift-button"
-                  >
-                    <PlusIcon className="h-4 w-4 mr-2" />
-                    Create shift
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Bulk Creation */}
-        <TabsContent value="bulk">
-          <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50">
-            <CardHeader className="pb-6">
-              <CardTitle className="flex items-center gap-2 text-xl font-semibold">
-                <CalendarDaysIcon className="h-5 w-5" />
-                Create Weekly Schedule
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Create multiple shifts across several days using templates for
-                efficient weekly planning.
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-8">
-              <form action={createBulkShifts} className="space-y-8">
-                {/* Date Range */}
-                <div className="space-y-4">
-                  <h3 className="font-medium text-gray-900 dark:text-gray-100">
-                    Date Range
-                  </h3>
-                  <BulkDateRangeSection />
-                </div>
-
-                {/* Days Selection */}
-                <div className="space-y-4">
-                  <h3 className="font-medium text-gray-900 dark:text-gray-100">
-                    Days of Week
-                  </h3>
-                  <div className="grid grid-cols-3 lg:grid-cols-7 gap-3">
-                    {[
-                      "Monday",
-                      "Tuesday",
-                      "Wednesday",
-                      "Thursday",
-                      "Friday",
-                      "Saturday",
-                      "Sunday",
-                    ].map((day) => (
-                      <div key={day} className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          name={`day_${day}`}
-                          id={`day_${day}`}
-                          className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                          data-testid={`day-${day.toLowerCase()}-checkbox`}
-                        />
-                        <Label htmlFor={`day_${day}`} className="text-sm">
-                          {day.slice(0, 3)}
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Template Selection - Grouped by Location */}
-                <div className="space-y-4">
-                  <h3 className="font-medium text-gray-900 dark:text-gray-100">
-                    Shift Templates
-                  </h3>
-                  {(() => {
-                    // Group templates by location
-                    const templatesByLocation = Object.entries(templatesWithShiftTypes).reduce((acc, [name, template]) => {
-                      const location = template.location || "General";
-                      if (!acc[location]) acc[location] = [];
-                      acc[location].push([name, template]);
-                      return acc;
-                    }, {} as Record<string, [string, typeof templatesWithShiftTypes[string]][]>);
-
-                    // Sort locations with specific order: Wellington, Glen Innes, Onehunga, then others
-                    const locationOrder = ["Wellington", "Glen Innes", "Onehunga"];
-                    const sortedLocations = Object.keys(templatesByLocation).sort((a, b) => {
-                      const indexA = locationOrder.indexOf(a);
-                      const indexB = locationOrder.indexOf(b);
-                      if (indexA !== -1 && indexB !== -1) return indexA - indexB;
-                      if (indexA !== -1) return -1;
-                      if (indexB !== -1) return 1;
-                      return a.localeCompare(b);
-                    });
-
-                    return (
-                      <CollapsibleTemplateSelection
-                        templatesByLocation={templatesByLocation}
-                        sortedLocations={sortedLocations}
-                        shiftTypes={shiftTypes}
-                      />
-                    );
-                  })()}
-                </div>
-
-                {/* Location and Overrides */}
-                <div className="space-y-4">
-                  <h3 className="font-medium text-gray-900 dark:text-gray-100">
-                    Location & Overrides
-                  </h3>
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="location">Location *</Label>
-                      <SelectField
-                        name="location"
-                        placeholder="Choose a location..."
-                        required
-                        options={LOCATIONS.map((loc) => ({
-                          value: loc,
-                          label: loc,
-                        }))}
-                        className="w-full"
-                        data-testid="bulk-location-select"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="customCapacity">
-                        Override Capacity (optional)
-                      </Label>
-                      <Input
-                        type="number"
-                        name="customCapacity"
-                        id="customCapacity"
-                        min={1}
-                        step={1}
-                        placeholder="Leave empty to use template defaults"
-                        className="h-11"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Common Notes */}
-                <div className="space-y-4">
-                  <h3 className="font-medium text-gray-900 dark:text-gray-100">
-                    Common Notes (optional)
-                  </h3>
-                  <Textarea
-                    name="notes"
-                    rows={3}
-                    placeholder="Add notes that will apply to all created shifts..."
-                    className="resize-none"
+          {/* Single Shift Creation */}
+          <TabsContent value="single">
+            <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50">
+              <CardHeader className="pb-6">
+                <CardTitle className="flex items-center gap-2 text-xl font-semibold">
+                  <PlusIcon className="h-5 w-5" />
+                  Create Single Shift
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Create a single volunteer shift with specific details.
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-8">
+                <form action={createShift} className="space-y-8">
+                  <ShiftCreationClientForm
+                    shiftTypes={shiftTypes}
+                    initialTemplates={templatesWithShiftTypes}
+                    locations={LOCATIONS}
+                    createShiftTypeAction={createShiftType}
                   />
-                </div>
 
-                {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t">
-                  <Button
-                    asChild
-                    variant="outline"
-                    size="lg"
-                    className="order-2 sm:order-1"
-                  >
-                    <Link href="/admin/shifts">Cancel</Link>
-                  </Button>
-                  <Button
-                    type="submit"
-                    size="lg"
-                    className="order-1 sm:order-2 bg-primary hover:bg-primary/90"
-                  >
-                    <CalendarDaysIcon className="h-4 w-4 mr-2" />
-                    Create Schedule
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-        </TabsContent>
+                  {/* Action Buttons */}
+                  <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t">
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="lg"
+                      className="order-2 sm:order-1"
+                      data-testid="cancel-shift-creation-button"
+                    >
+                      <Link href="/admin/shifts">Cancel</Link>
+                    </Button>
+                    <Button
+                      type="submit"
+                      size="lg"
+                      className="order-1 sm:order-2 bg-primary hover:bg-primary/90"
+                      data-testid="create-shift-button"
+                    >
+                      <PlusIcon className="h-4 w-4 mr-2" />
+                      Create shift
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        {/* Copy Previous Shifts */}
-        <TabsContent value="copy">
-          <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50">
-            <CardHeader className="pb-6">
-              <CardTitle className="flex items-center gap-2 text-xl font-semibold">
-                <CopyIcon className="h-5 w-5" />
-                Copy from Previous Week
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Duplicate shifts from previous weeks to maintain consistent
-                scheduling.
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {recentShifts.length > 0 ? (
-                <div className="space-y-4">
-                  <h3 className="font-medium text-gray-900 dark:text-gray-100">
-                    Recent Shifts (Last 2 Weeks)
-                  </h3>
-                  <div className="space-y-3">
-                    {recentShifts.map((shift: RecentShift) => (
-                      <div
-                        key={shift.id}
-                        className="flex items-center justify-between p-4 border rounded-lg"
-                      >
-                        <div className="space-y-1">
-                          <div className="font-medium">
-                            {shift.shiftType.name}
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            {shift.start.toLocaleDateString()} •{" "}
-                            {shift.start.toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}{" "}
-                            -{" "}
-                            {shift.end.toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            {shift.location} • {shift.capacity} volunteers
-                          </div>
+          {/* Bulk Creation */}
+          <TabsContent value="bulk">
+            <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50">
+              <CardHeader className="pb-6">
+                <CardTitle className="flex items-center gap-2 text-xl font-semibold">
+                  <CalendarDaysIcon className="h-5 w-5" />
+                  Create Weekly Schedule
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Create multiple shifts across several days using templates for
+                  efficient weekly planning.
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-8">
+                <form action={createBulkShifts} className="space-y-8">
+                  {/* Date Range */}
+                  <div className="space-y-4">
+                    <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                      Date Range
+                    </h3>
+                    <BulkDateRangeSection />
+                  </div>
+
+                  {/* Days Selection */}
+                  <div className="space-y-4">
+                    <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                      Days of Week
+                    </h3>
+                    <div className="grid grid-cols-3 lg:grid-cols-7 gap-3">
+                      {[
+                        "Monday",
+                        "Tuesday",
+                        "Wednesday",
+                        "Thursday",
+                        "Friday",
+                        "Saturday",
+                        "Sunday",
+                      ].map((day) => (
+                        <div key={day} className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            name={`day_${day}`}
+                            id={`day_${day}`}
+                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                            data-testid={`day-${day.toLowerCase()}-checkbox`}
+                          />
+                          <Label htmlFor={`day_${day}`} className="text-sm">
+                            {day.slice(0, 3)}
+                          </Label>
                         </div>
-                        <Button variant="outline" size="sm">
-                          <RefreshCwIcon className="h-4 w-4 mr-2" />
-                          Copy for Next Week
-                        </Button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Template Selection - Grouped by Location */}
+                  <div className="space-y-4">
+                    <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                      Shift Templates
+                    </h3>
+                    {(() => {
+                      // Group templates by location
+                      const templatesByLocation = Object.entries(
+                        templatesWithShiftTypes
+                      ).reduce((acc, [name, template]) => {
+                        const location = template.location || "General";
+                        if (!acc[location]) acc[location] = [];
+                        acc[location].push([name, template]);
+                        return acc;
+                      }, {} as Record<string, [string, (typeof templatesWithShiftTypes)[string]][]>);
+
+                      // Sort locations with specific order: Wellington, Glen Innes, Onehunga, then others
+                      const locationOrder = [
+                        "Wellington",
+                        "Glen Innes",
+                        "Onehunga",
+                      ];
+                      const sortedLocations = Object.keys(
+                        templatesByLocation
+                      ).sort((a, b) => {
+                        const indexA = locationOrder.indexOf(a);
+                        const indexB = locationOrder.indexOf(b);
+                        if (indexA !== -1 && indexB !== -1)
+                          return indexA - indexB;
+                        if (indexA !== -1) return -1;
+                        if (indexB !== -1) return 1;
+                        return a.localeCompare(b);
+                      });
+
+                      return (
+                        <CollapsibleTemplateSelection
+                          templatesByLocation={templatesByLocation}
+                          sortedLocations={sortedLocations}
+                          shiftTypes={shiftTypes}
+                        />
+                      );
+                    })()}
+                  </div>
+
+                  {/* Location and Overrides */}
+                  <div className="space-y-4">
+                    <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                      Location & Overrides
+                    </h3>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="location">Location *</Label>
+                        <SelectField
+                          name="location"
+                          placeholder="Choose a location..."
+                          required
+                          options={LOCATIONS.map((loc) => ({
+                            value: loc,
+                            label: loc,
+                          }))}
+                          className="w-full"
+                          data-testid="bulk-location-select"
+                        />
                       </div>
-                    ))}
+                      <div className="space-y-2">
+                        <Label htmlFor="customCapacity">
+                          Override Capacity (optional)
+                        </Label>
+                        <Input
+                          type="number"
+                          name="customCapacity"
+                          id="customCapacity"
+                          min={1}
+                          step={1}
+                          placeholder="Leave empty to use template defaults"
+                          className="h-11"
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <div className="text-muted-foreground mb-4">
-                    No recent shifts found to copy from.
+
+                  {/* Common Notes */}
+                  <div className="space-y-4">
+                    <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                      Common Notes (optional)
+                    </h3>
+                    <Textarea
+                      name="notes"
+                      rows={3}
+                      placeholder="Add notes that will apply to all created shifts..."
+                      className="resize-none"
+                    />
                   </div>
-                  <Button asChild variant="outline">
-                    <Link href="/admin/shifts/new">
-                      Create Weekly Schedule Instead
-                    </Link>
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+
+                  {/* Action Buttons */}
+                  <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t">
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="lg"
+                      className="order-2 sm:order-1"
+                    >
+                      <Link href="/admin/shifts">Cancel</Link>
+                    </Button>
+                    <Button
+                      type="submit"
+                      size="lg"
+                      className="order-1 sm:order-2 bg-primary hover:bg-primary/90"
+                    >
+                      <CalendarDaysIcon className="h-4 w-4 mr-2" />
+                      Create Schedule
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Copy Previous Shifts */}
+          <TabsContent value="copy">
+            <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50">
+              <CardHeader className="pb-6">
+                <CardTitle className="flex items-center gap-2 text-xl font-semibold">
+                  <CopyIcon className="h-5 w-5" />
+                  Copy from Previous Week
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Duplicate shifts from previous weeks to maintain consistent
+                  scheduling.
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {recentShifts.length > 0 ? (
+                  <div className="space-y-4">
+                    <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                      Recent Shifts (Last 2 Weeks)
+                    </h3>
+                    <div className="space-y-3">
+                      {recentShifts.map((shift: RecentShift) => (
+                        <div
+                          key={shift.id}
+                          className="flex items-center justify-between p-4 border rounded-lg"
+                        >
+                          <div className="space-y-1">
+                            <div className="font-medium">
+                              {shift.shiftType.name}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {shift.start.toLocaleDateString()} •{" "}
+                              {shift.start.toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}{" "}
+                              -{" "}
+                              {shift.end.toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {shift.location} • {shift.capacity} volunteers
+                            </div>
+                          </div>
+                          <Button variant="outline" size="sm">
+                            <RefreshCwIcon className="h-4 w-4 mr-2" />
+                            Copy for Next Week
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <div className="text-muted-foreground mb-4">
+                      No recent shifts found to copy from.
+                    </div>
+                    <Button asChild variant="outline">
+                      <Link href="/admin/shifts/new">
+                        Create Weekly Schedule Instead
+                      </Link>
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </PageContainer>
     </AdminPageWrapper>
   );

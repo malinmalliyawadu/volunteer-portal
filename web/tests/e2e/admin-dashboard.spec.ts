@@ -503,7 +503,7 @@ test.describe("Admin Dashboard Page", () => {
       const allTab = page.getByTestId("location-filter-all");
       await expect(allTab).toBeVisible();
 
-      // Check for location tabs (Wellington, Glenn Innes, Onehunga)
+      // Check for location tabs (Wellington, Glen Innes, Onehunga)
       const locationTabs = [
         page.getByTestId("location-filter-wellington"),
         page.getByTestId("location-filter-glenn-innes"),

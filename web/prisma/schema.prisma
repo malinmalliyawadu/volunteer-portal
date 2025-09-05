@@ -383,7 +383,7 @@ model RegularVolunteer {
   user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   shiftTypeId     String
   shiftType       ShiftType       @relation(fields: [shiftTypeId], references: [id])
-  location        String          // Wellington, Glenn Innes, Onehunga
+  location        String          // Wellington, Glen Innes, Onehunga
   frequency       Frequency       @default(WEEKLY)
   availableDays   String[]        // Array of day names: ["Monday", "Wednesday", "Friday"]
   isActive        Boolean         @default(true)

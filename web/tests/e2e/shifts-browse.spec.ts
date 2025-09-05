@@ -34,7 +34,9 @@ test.describe("Shifts Browse Page", () => {
       await page.waitForLoadState("load");
     });
 
-    test("should display shifts page without authentication", async ({ page }) => {
+    test("should display shifts page without authentication", async ({
+      page,
+    }) => {
       // Check page loads successfully
       await expect(page).toHaveURL("/shifts");
 
@@ -43,11 +45,15 @@ test.describe("Shifts Browse Page", () => {
       await expect(browsePage).toBeVisible();
 
       // Check main page title
-      const pageTitle = page.getByRole("heading", { name: /volunteer shifts/i });
+      const pageTitle = page.getByRole("heading", {
+        name: /volunteer shifts/i,
+      });
       await expect(pageTitle).toBeVisible();
 
       // Check page description
-      const pageDescription = page.getByText(/find and sign up for upcoming volunteer opportunities/i);
+      const pageDescription = page.getByText(
+        /find and sign up for upcoming volunteer opportunities/i
+      );
       await expect(pageDescription).toBeVisible();
     });
 
@@ -79,24 +85,36 @@ test.describe("Shifts Browse Page", () => {
       await expect(onehungaTab).toBeVisible();
     });
 
-    test("should show login buttons for shift signup when not authenticated", async ({ page }) => {
+    test("should show login buttons for shift signup when not authenticated", async ({
+      page,
+    }) => {
       // Look for shift cards
       const shiftCards = page.locator('[data-testid^="shift-card-"]');
       const shiftCount = await shiftCards.count();
 
       if (shiftCount > 0) {
         const firstShift = shiftCards.first();
-        
+
         // Should show login link for signup
-        const signupButton = firstShift.locator('[data-testid*="signup-login-button"]');
+        const signupButton = firstShift.locator(
+          '[data-testid*="signup-login-button"]'
+        );
         if (await signupButton.isVisible()) {
-          await expect(signupButton).toHaveAttribute("href", /\/login.*callbackUrl.*shifts/);
+          await expect(signupButton).toHaveAttribute(
+            "href",
+            /\/login.*callbackUrl.*shifts/
+          );
         }
 
         // Or waitlist login link
-        const waitlistButton = firstShift.locator('[data-testid*="waitlist-login-button"]');
+        const waitlistButton = firstShift.locator(
+          '[data-testid*="waitlist-login-button"]'
+        );
         if (await waitlistButton.isVisible()) {
-          await expect(waitlistButton).toHaveAttribute("href", /\/login.*callbackUrl.*shifts/);
+          await expect(waitlistButton).toHaveAttribute(
+            "href",
+            /\/login.*callbackUrl.*shifts/
+          );
         }
       }
     });
@@ -124,22 +142,28 @@ test.describe("Shifts Browse Page", () => {
       await expect(browsePage).toBeVisible();
 
       // Check main elements are visible
-      const pageTitle = page.getByRole("heading", { name: /volunteer shifts/i });
+      const pageTitle = page.getByRole("heading", {
+        name: /volunteer shifts/i,
+      });
       await expect(pageTitle).toBeVisible();
 
-      const pageDescription = page.getByText(/find and sign up for upcoming volunteer opportunities/i);
+      const pageDescription = page.getByText(
+        /find and sign up for upcoming volunteer opportunities/i
+      );
       await expect(pageDescription).toBeVisible();
     });
 
-    test("should display shift cards with all required information", async ({ page }) => {
+    test("should display shift cards with all required information", async ({
+      page,
+    }) => {
       // Look for shift cards using testids
       const shiftCards = page.locator('[data-testid^="shift-card-"]');
       const shiftCount = await shiftCards.count();
 
       if (shiftCount > 0) {
         const firstShift = shiftCards.first();
-        const shiftId = await firstShift.getAttribute('data-testid');
-        const id = shiftId?.replace('shift-card-', '') || '';
+        const shiftId = await firstShift.getAttribute("data-testid");
+        const id = shiftId?.replace("shift-card-", "") || "";
 
         // Check shift type name
         const shiftName = firstShift.getByTestId(`shift-name-${id}`);
@@ -172,10 +196,10 @@ test.describe("Shifts Browse Page", () => {
         // Check that calendar shows locations with proper theming
         const firstCalendar = calendarCards.first();
         await expect(firstCalendar).toBeVisible();
-        
+
         // Check for location header with icon
-        const locationIcon = firstCalendar.locator('.h-5.w-5.text-primary');
-        if (await locationIcon.count() > 0) {
+        const locationIcon = firstCalendar.locator(".h-5.w-5.text-primary");
+        if ((await locationIcon.count()) > 0) {
           await expect(locationIcon.first()).toBeVisible();
         }
       } else {
@@ -185,18 +209,18 @@ test.describe("Shifts Browse Page", () => {
 
         if (shiftCount > 0) {
           const firstShift = shiftCards.first();
-          const shiftId = await firstShift.getAttribute('data-testid');
-          const id = shiftId?.replace('shift-card-', '') || '';
+          const shiftId = await firstShift.getAttribute("data-testid");
+          const id = shiftId?.replace("shift-card-", "") || "";
 
           // Check for category badge (Kitchen, Service, etc.)
           const categoryBadge = firstShift.getByTestId(`shift-category-${id}`);
-          if (await categoryBadge.count() > 0) {
+          if ((await categoryBadge.count()) > 0) {
             await expect(categoryBadge).toBeVisible();
           }
 
           // Check for gradient icon
-          const iconContainer = firstShift.locator('.bg-gradient-to-br');
-          if (await iconContainer.count() > 0) {
+          const iconContainer = firstShift.locator(".bg-gradient-to-br");
+          if ((await iconContainer.count()) > 0) {
             await expect(iconContainer).toBeVisible();
           }
         }
@@ -209,8 +233,8 @@ test.describe("Shifts Browse Page", () => {
 
       if (shiftCount > 0) {
         const firstShift = shiftCards.first();
-        const shiftId = await firstShift.getAttribute('data-testid');
-        const id = shiftId?.replace('shift-card-', '') || '';
+        const shiftId = await firstShift.getAttribute("data-testid");
+        const id = shiftId?.replace("shift-card-", "") || "";
 
         // Check for duration badge (format like "4h" or "3h 30m")
         const durationBadge = firstShift.getByTestId(`shift-duration-${id}`);
@@ -224,13 +248,17 @@ test.describe("Shifts Browse Page", () => {
 
       if (shiftCount > 0) {
         const firstShift = shiftCards.first();
-        const shiftId = await firstShift.getAttribute('data-testid');
-        const id = shiftId?.replace('shift-card-', '') || '';
+        const shiftId = await firstShift.getAttribute("data-testid");
+        const id = shiftId?.replace("shift-card-", "") || "";
 
         // Check for spots remaining or waitlist indicator
-        const spotsIndicator = firstShift.getByTestId(`shift-spots-badge-${id}`);
-        const waitlistIndicator = firstShift.getByTestId(`shift-waitlist-badge-${id}`);
-        
+        const spotsIndicator = firstShift.getByTestId(
+          `shift-spots-badge-${id}`
+        );
+        const waitlistIndicator = firstShift.getByTestId(
+          `shift-waitlist-badge-${id}`
+        );
+
         // At least one should be visible
         if (await spotsIndicator.isVisible()) {
           await expect(spotsIndicator).toBeVisible();
@@ -240,14 +268,18 @@ test.describe("Shifts Browse Page", () => {
       }
     });
 
-    test("should open signup dialog when clicking signup button", async ({ page }) => {
+    test("should open signup dialog when clicking signup button", async ({
+      page,
+    }) => {
       const shiftCards = page.locator('[data-testid^="shift-card-"]');
       const shiftCount = await shiftCards.count();
 
       if (shiftCount > 0) {
         // Find a shift with an available signup button
-        const signupButton = page.locator('[data-testid*="signup-button"]').first();
-        
+        const signupButton = page
+          .locator('[data-testid*="signup-button"]')
+          .first();
+
         if (await signupButton.isVisible()) {
           await signupButton.click();
 
@@ -276,8 +308,10 @@ test.describe("Shifts Browse Page", () => {
 
     test("should open waitlist dialog for full shifts", async ({ page }) => {
       // Look for waitlist buttons
-      const waitlistButton = page.locator('[data-testid*="join-waitlist-button"]').first();
-      
+      const waitlistButton = page
+        .locator('[data-testid*="join-waitlist-button"]')
+        .first();
+
       if (await waitlistButton.isVisible()) {
         await waitlistButton.click();
 
@@ -291,9 +325,13 @@ test.describe("Shifts Browse Page", () => {
         await expect(dialogTitle).toContainText("Join Waitlist");
 
         // Check waitlist-specific content
-        const waitlistDescription = page.getByTestId("shift-signup-dialog-description");
+        const waitlistDescription = page.getByTestId(
+          "shift-signup-dialog-description"
+        );
         await expect(waitlistDescription).toBeVisible();
-        await expect(waitlistDescription).toContainText("notified if a spot becomes available");
+        await expect(waitlistDescription).toContainText(
+          "notified if a spot becomes available"
+        );
 
         // Close dialog
         const cancelButton = page.getByTestId("shift-signup-cancel-button");
@@ -302,20 +340,26 @@ test.describe("Shifts Browse Page", () => {
       }
     });
 
-    test("should show user signup status for registered shifts", async ({ page }) => {
+    test("should show user signup status for registered shifts", async ({
+      page,
+    }) => {
       const shiftCards = page.locator('[data-testid^="shift-card-"]');
       const shiftCount = await shiftCards.count();
 
       if (shiftCount > 0) {
         // Look for any shift with user status
-        const statusBadge = page.locator('[data-testid*="signup-status"]').first();
-        
+        const statusBadge = page
+          .locator('[data-testid*="signup-status"]')
+          .first();
+
         if (await statusBadge.isVisible()) {
           await expect(statusBadge).toBeVisible();
-          
+
           // Should also show "You're signed up!" message
-          const signupMessage = page.locator('[data-testid*="signed-up-message"]');
-          if (await signupMessage.count() > 0) {
+          const signupMessage = page.locator(
+            '[data-testid*="signed-up-message"]'
+          );
+          if ((await signupMessage.count()) > 0) {
             await expect(signupMessage.first()).toBeVisible();
           }
         }
@@ -329,7 +373,9 @@ test.describe("Shifts Browse Page", () => {
       await page.waitForLoadState("load");
     });
 
-    test("should filter shifts by location when clicking location tabs", async ({ page }) => {
+    test("should filter shifts by location when clicking location tabs", async ({
+      page,
+    }) => {
       // Click on Wellington tab
       const wellingtonTab = page.getByTestId("location-tab-wellington");
       await wellingtonTab.click();
@@ -343,7 +389,9 @@ test.describe("Shifts Browse Page", () => {
       await expect(pageDescription).toBeVisible();
     });
 
-    test("should show all locations when clicking All tab", async ({ page }) => {
+    test("should show all locations when clicking All tab", async ({
+      page,
+    }) => {
       // First go to a filtered view
       await page.goto("/shifts?location=Wellington");
       await page.waitForLoadState("load");
@@ -357,32 +405,40 @@ test.describe("Shifts Browse Page", () => {
       await expect(page).toHaveURL("/shifts?showAll=true");
     });
 
-    test("should maintain active tab state for selected location", async ({ page }) => {
+    test("should maintain active tab state for selected location", async ({
+      page,
+    }) => {
       // Navigate directly to filtered URL
       await page.goto("/shifts?location=Glenn%20Innes");
       await page.waitForLoadState("load");
 
-      // Glenn Innes tab should be visually active
+      // Glen Innes tab should be visually active
       const glennInnesTab = page.getByTestId("location-tab-glenn-innes");
-      
+
       // Check if it has active styling (Radix UI tabs use data-state="active")
       await expect(glennInnesTab).toHaveAttribute("data-state", "active");
     });
 
-    test("should show user preference notification when applicable", async ({ page }) => {
+    test("should show user preference notification when applicable", async ({
+      page,
+    }) => {
       await loginAsVolunteer(page);
       await page.goto("/shifts");
       await page.waitForLoadState("load");
 
       // Look for preference notification
-      const preferenceNotification = page.getByTestId("profile-filter-notification");
-      
+      const preferenceNotification = page.getByTestId(
+        "profile-filter-notification"
+      );
+
       // This may or may not be visible depending on user's profile
       if (await preferenceNotification.isVisible()) {
         await expect(preferenceNotification).toBeVisible();
-        
+
         // Should have link to update preferences
-        const updateLink = page.getByRole("link", { name: /update your preferences/i });
+        const updateLink = page.getByRole("link", {
+          name: /update your preferences/i,
+        });
         await expect(updateLink).toBeVisible();
         await expect(updateLink).toHaveAttribute("href", "/profile/edit");
       }
@@ -390,43 +446,56 @@ test.describe("Shifts Browse Page", () => {
   });
 
   test.describe("Empty States", () => {
-    test("should display empty state when no shifts available", async ({ page }) => {
+    test("should display empty state when no shifts available", async ({
+      page,
+    }) => {
       // Try to trigger empty state by filtering to a location that might not have shifts
       await page.goto("/shifts?location=NonExistentLocation");
       await page.waitForLoadState("load");
 
       // Look for empty state content
       const emptyState = page.getByTestId("empty-state");
-      
+
       if (await emptyState.isVisible()) {
         await expect(emptyState).toBeVisible();
-        
+
         const emptyStateTitle = page.getByTestId("empty-state-title");
         await expect(emptyStateTitle).toBeVisible();
-        
-        const emptyStateDescription = page.getByTestId("empty-state-description");
+
+        const emptyStateDescription = page.getByTestId(
+          "empty-state-description"
+        );
         await expect(emptyStateDescription).toBeVisible();
       }
     });
 
-    test("should provide helpful links in empty state for filtered locations", async ({ page }) => {
+    test("should provide helpful links in empty state for filtered locations", async ({
+      page,
+    }) => {
       await page.goto("/shifts?location=Wellington");
       await page.waitForLoadState("load");
 
       // Check if empty state is visible first
       const emptyState = page.getByTestId("empty-state");
-      
+
       if (await emptyState.isVisible()) {
         // Look for empty state with helpful links
-        const viewAllLink = page.getByRole("link", { name: /viewing all locations/i });
-        const updatePreferencesLink = page.getByRole("link", { name: /updating your location preferences/i });
+        const viewAllLink = page.getByRole("link", {
+          name: /viewing all locations/i,
+        });
+        const updatePreferencesLink = page.getByRole("link", {
+          name: /updating your location preferences/i,
+        });
 
         // These links might be present in empty state
         if (await viewAllLink.isVisible()) {
           await expect(viewAllLink).toHaveAttribute("href", "/shifts");
         }
         if (await updatePreferencesLink.isVisible()) {
-          await expect(updatePreferencesLink).toHaveAttribute("href", "/profile/edit");
+          await expect(updatePreferencesLink).toHaveAttribute(
+            "href",
+            "/profile/edit"
+          );
         }
       }
     });
@@ -441,10 +510,12 @@ test.describe("Shifts Browse Page", () => {
     test("should group shifts by date", async ({ page }) => {
       // Look for shift list container
       const shiftsList = page.getByTestId("shifts-list");
-      
+
       if (await shiftsList.isVisible()) {
         // Look for date sections
-        const dateSections = page.locator('[data-testid^="shifts-day-section-"]');
+        const dateSections = page.locator(
+          '[data-testid^="shifts-day-section-"]'
+        );
         const sectionCount = await dateSections.count();
 
         if (sectionCount > 0) {
@@ -452,12 +523,12 @@ test.describe("Shifts Browse Page", () => {
           await expect(firstSection).toBeVisible();
 
           // Get the section ID to check heading and count
-          const sectionId = await firstSection.getAttribute('data-testid');
-          const dateKey = sectionId?.replace('shifts-day-section-', '') || '';
-          
+          const sectionId = await firstSection.getAttribute("data-testid");
+          const dateKey = sectionId?.replace("shifts-day-section-", "") || "";
+
           const heading = page.getByTestId(`shifts-day-heading-${dateKey}`);
           await expect(heading).toBeVisible();
-          
+
           const countBadge = page.getByTestId(`shifts-day-count-${dateKey}`);
           await expect(countBadge).toBeVisible();
         }
@@ -470,11 +541,17 @@ test.describe("Shifts Browse Page", () => {
 
       if (sectionCount > 1) {
         // Get date keys from testids (format: yyyy-MM-dd)
-        const firstSectionId = await dateSections.nth(0).getAttribute('data-testid');
-        const secondSectionId = await dateSections.nth(1).getAttribute('data-testid');
-        
-        const firstDateKey = firstSectionId?.replace('shifts-day-section-', '') || '';
-        const secondDateKey = secondSectionId?.replace('shifts-day-section-', '') || '';
+        const firstSectionId = await dateSections
+          .nth(0)
+          .getAttribute("data-testid");
+        const secondSectionId = await dateSections
+          .nth(1)
+          .getAttribute("data-testid");
+
+        const firstDateKey =
+          firstSectionId?.replace("shifts-day-section-", "") || "";
+        const secondDateKey =
+          secondSectionId?.replace("shifts-day-section-", "") || "";
 
         // Compare date keys (they should be in chronological order)
         expect(firstDateKey <= secondDateKey).toBe(true);
@@ -487,12 +564,12 @@ test.describe("Shifts Browse Page", () => {
 
       if (sectionCount > 0) {
         const firstSection = dateSections.first();
-        const sectionId = await firstSection.getAttribute('data-testid');
-        const dateKey = sectionId?.replace('shifts-day-section-', '') || '';
-        
+        const sectionId = await firstSection.getAttribute("data-testid");
+        const dateKey = sectionId?.replace("shifts-day-section-", "") || "";
+
         const countBadge = page.getByTestId(`shifts-day-count-${dateKey}`);
         await expect(countBadge).toBeVisible();
-        
+
         const badgeText = await countBadge.textContent();
         expect(badgeText).toMatch(/\d+\s+shifts?/);
       }
@@ -511,11 +588,13 @@ test.describe("Shifts Browse Page", () => {
 
       if (shiftCount > 0) {
         const firstShift = shiftCards.first();
-        const shiftId = await firstShift.getAttribute('data-testid');
-        const id = shiftId?.replace('shift-card-', '') || '';
+        const shiftId = await firstShift.getAttribute("data-testid");
+        const id = shiftId?.replace("shift-card-", "") || "";
 
         // Look for capacity display (format like "2/5")
-        const capacityDisplay = firstShift.getByTestId(`shift-capacity-count-${id}`);
+        const capacityDisplay = firstShift.getByTestId(
+          `shift-capacity-count-${id}`
+        );
         await expect(capacityDisplay).toBeVisible();
 
         // Look for progress bar
@@ -524,20 +603,22 @@ test.describe("Shifts Browse Page", () => {
       }
     });
 
-    test("should show pending and waitlist counts when applicable", async ({ page }) => {
+    test("should show pending and waitlist counts when applicable", async ({
+      page,
+    }) => {
       const shiftCards = page.locator('[data-testid^="shift-card-"]');
       const shiftCount = await shiftCards.count();
 
       if (shiftCount > 0) {
         // Look for pending approval text in any shift
         const pendingText = page.getByText(/pending approval/i);
-        if (await pendingText.count() > 0) {
+        if ((await pendingText.count()) > 0) {
           await expect(pendingText.first()).toBeVisible();
         }
 
         // Look for waitlist text in any shift
         const waitlistText = page.getByText(/on waitlist/i);
-        if (await waitlistText.count() > 0) {
+        if ((await waitlistText.count()) > 0) {
           await expect(waitlistText.first()).toBeVisible();
         }
       }
@@ -555,7 +636,9 @@ test.describe("Shifts Browse Page", () => {
       await page.waitForLoadState("load");
 
       // Check main elements are still visible and accessible
-      const pageTitle = page.getByRole("heading", { name: /volunteer shifts/i });
+      const pageTitle = page.getByRole("heading", {
+        name: /volunteer shifts/i,
+      });
       await expect(pageTitle).toBeVisible();
 
       // Check location filter is accessible on mobile
@@ -589,7 +672,7 @@ test.describe("Shifts Browse Page", () => {
         // On tablet, should have grid layout (multiple cards per row)
         const firstShift = shiftCards.first();
         const secondShift = shiftCards.nth(1);
-        
+
         await expect(firstShift).toBeVisible();
         await expect(secondShift).toBeVisible();
       }
@@ -601,7 +684,9 @@ test.describe("Shifts Browse Page", () => {
       await page.goto("/shifts");
 
       // Wait for main content to be visible
-      const pageTitle = page.getByRole("heading", { name: /volunteer shifts/i });
+      const pageTitle = page.getByRole("heading", {
+        name: /volunteer shifts/i,
+      });
       await expect(pageTitle).toBeVisible({ timeout: 10000 });
 
       // Check that no error messages are displayed
@@ -627,7 +712,9 @@ test.describe("Shifts Browse Page", () => {
       await expect(page).toHaveURL("/shifts?showAll=true");
 
       // Page should remain functional
-      const pageTitle = page.getByRole("heading", { name: /volunteer shifts/i });
+      const pageTitle = page.getByRole("heading", {
+        name: /volunteer shifts/i,
+      });
       await expect(pageTitle).toBeVisible();
     });
   });
@@ -641,28 +728,44 @@ test.describe("Shifts Browse Page", () => {
       // Skip tests if login failed
       const currentUrl = page.url();
       if (currentUrl.includes("/login")) {
-        test.skip(true, "Login failed - skipping daily signup validation tests");
+        test.skip(
+          true,
+          "Login failed - skipping daily signup validation tests"
+        );
       }
     });
 
-    test("should prevent multiple shift signups on the same day", async ({ page }) => {
+    test("should prevent multiple shift signups on the same day", async ({
+      page,
+    }) => {
       // Find shifts on the same day (get first date section)
-      const firstDateSection = page.locator('[data-testid^="shifts-date-section-"]').first();
-      
+      const firstDateSection = page
+        .locator('[data-testid^="shifts-date-section-"]')
+        .first();
+
       if (await firstDateSection.isVisible()) {
         // Get all shift cards in this date section
-        const shiftCards = firstDateSection.locator('[data-testid^="shift-card-"], .grid > div');
+        const shiftCards = firstDateSection.locator(
+          '[data-testid^="shift-card-"], .grid > div'
+        );
         const shiftCount = await shiftCards.count();
 
         if (shiftCount >= 2) {
           // Try to sign up for the first available shift
-          const firstShiftSignupButton = shiftCards.first().locator('[data-testid*="signup-button"], button:has-text("Sign Up"), button:has-text("✨ Sign Up Now")').first();
-          
+          const firstShiftSignupButton = shiftCards
+            .first()
+            .locator(
+              '[data-testid*="signup-button"], button:has-text("Sign Up"), button:has-text("✨ Sign Up Now")'
+            )
+            .first();
+
           if (await firstShiftSignupButton.isVisible()) {
             await firstShiftSignupButton.click();
 
             // Confirm signup in dialog
-            const confirmButton = page.getByTestId("shift-signup-confirm-button");
+            const confirmButton = page.getByTestId(
+              "shift-signup-confirm-button"
+            );
             if (await confirmButton.isVisible()) {
               await confirmButton.click();
               await page.waitForLoadState("load");
@@ -671,36 +774,52 @@ test.describe("Shifts Browse Page", () => {
               await page.waitForTimeout(2000);
 
               // Now try to sign up for the second shift on the same day
-              const secondShiftSignupButton = shiftCards.nth(1).locator('[data-testid*="signup-button"], button:has-text("Sign Up"), button:has-text("✨ Sign Up Now")').first();
-              
+              const secondShiftSignupButton = shiftCards
+                .nth(1)
+                .locator(
+                  '[data-testid*="signup-button"], button:has-text("Sign Up"), button:has-text("✨ Sign Up Now")'
+                )
+                .first();
+
               if (await secondShiftSignupButton.isVisible()) {
                 await secondShiftSignupButton.click();
 
                 // Should show validation error dialog or message
                 const errorDialog = page.getByTestId("shift-signup-dialog");
                 if (await errorDialog.isVisible()) {
-                  const confirmSecondButton = page.getByTestId("shift-signup-confirm-button");
+                  const confirmSecondButton = page.getByTestId(
+                    "shift-signup-confirm-button"
+                  );
                   await confirmSecondButton.click();
                 }
 
                 // Check for error message about daily limit
-                const errorMessage = page.getByText(/you already have a confirmed shift on this day/i);
-                const duplicateErrorMessage = page.getByText(/you can only sign up for one shift per day/i);
-                const existingShiftError = page.getByText(/already have.*shift.*day/i);
+                const errorMessage = page.getByText(
+                  /you already have a confirmed shift on this day/i
+                );
+                const duplicateErrorMessage = page.getByText(
+                  /you can only sign up for one shift per day/i
+                );
+                const existingShiftError = page.getByText(
+                  /already have.*shift.*day/i
+                );
 
                 // At least one of these error patterns should be visible
-                const hasError = await errorMessage.isVisible() || 
-                                await duplicateErrorMessage.isVisible() || 
-                                await existingShiftError.isVisible();
+                const hasError =
+                  (await errorMessage.isVisible()) ||
+                  (await duplicateErrorMessage.isVisible()) ||
+                  (await existingShiftError.isVisible());
 
                 expect(hasError).toBe(true);
 
                 // Alternatively, check for toast notification with error
-                const toastError = page.locator('[data-testid*="toast"], .toast, [role="alert"]').filter({
-                  hasText: /shift.*day|daily.*limit|one shift per day/i
-                });
+                const toastError = page
+                  .locator('[data-testid*="toast"], .toast, [role="alert"]')
+                  .filter({
+                    hasText: /shift.*day|daily.*limit|one shift per day/i,
+                  });
 
-                if (await toastError.count() > 0) {
+                if ((await toastError.count()) > 0) {
                   await expect(toastError.first()).toBeVisible();
                 }
               }
@@ -708,7 +827,10 @@ test.describe("Shifts Browse Page", () => {
           }
         } else {
           // Skip test if not enough shifts on the same day
-          test.skip(true, "Not enough shifts on the same day to test daily validation");
+          test.skip(
+            true,
+            "Not enough shifts on the same day to test daily validation"
+          );
         }
       } else {
         // Skip test if no shifts available
@@ -718,13 +840,22 @@ test.describe("Shifts Browse Page", () => {
 
     test("should allow signup on different days", async ({ page }) => {
       // Find shifts on different days
-      const dateSections = page.locator('[data-testid^="shifts-date-section-"]');
+      const dateSections = page.locator(
+        '[data-testid^="shifts-date-section-"]'
+      );
       const sectionCount = await dateSections.count();
 
       if (sectionCount >= 2) {
         // Sign up for a shift on the first day
-        const firstDayShifts = dateSections.first().locator('[data-testid^="shift-card-"], .grid > div');
-        const firstShiftSignupButton = firstDayShifts.first().locator('[data-testid*="signup-button"], button:has-text("Sign Up"), button:has-text("✨ Sign Up Now")').first();
+        const firstDayShifts = dateSections
+          .first()
+          .locator('[data-testid^="shift-card-"], .grid > div');
+        const firstShiftSignupButton = firstDayShifts
+          .first()
+          .locator(
+            '[data-testid*="signup-button"], button:has-text("Sign Up"), button:has-text("✨ Sign Up Now")'
+          )
+          .first();
 
         if (await firstShiftSignupButton.isVisible()) {
           await firstShiftSignupButton.click();
@@ -738,31 +869,46 @@ test.describe("Shifts Browse Page", () => {
           }
 
           // Now try to sign up for a shift on the second day
-          const secondDayShifts = dateSections.nth(1).locator('[data-testid^="shift-card-"], .grid > div');
-          const secondShiftSignupButton = secondDayShifts.first().locator('[data-testid*="signup-button"], button:has-text("Sign Up"), button:has-text("✨ Sign Up Now")').first();
+          const secondDayShifts = dateSections
+            .nth(1)
+            .locator('[data-testid^="shift-card-"], .grid > div');
+          const secondShiftSignupButton = secondDayShifts
+            .first()
+            .locator(
+              '[data-testid*="signup-button"], button:has-text("Sign Up"), button:has-text("✨ Sign Up Now")'
+            )
+            .first();
 
           if (await secondShiftSignupButton.isVisible()) {
             await secondShiftSignupButton.click();
 
             // Should be able to confirm second signup on different day
-            const confirmSecondButton = page.getByTestId("shift-signup-confirm-button");
+            const confirmSecondButton = page.getByTestId(
+              "shift-signup-confirm-button"
+            );
             if (await confirmSecondButton.isVisible()) {
               await confirmSecondButton.click();
               await page.waitForLoadState("load");
 
               // Should NOT show daily validation error
-              const errorMessage = page.getByText(/you already have a confirmed shift on this day/i);
-              const duplicateErrorMessage = page.getByText(/you can only sign up for one shift per day/i);
+              const errorMessage = page.getByText(
+                /you already have a confirmed shift on this day/i
+              );
+              const duplicateErrorMessage = page.getByText(
+                /you can only sign up for one shift per day/i
+              );
 
               await expect(errorMessage).not.toBeVisible();
               await expect(duplicateErrorMessage).not.toBeVisible();
 
               // Should show success indicator instead
-              const successToast = page.locator('[data-testid*="toast"], .toast, [role="alert"]').filter({
-                hasText: /success|signed up|confirmed/i
-              });
+              const successToast = page
+                .locator('[data-testid*="toast"], .toast, [role="alert"]')
+                .filter({
+                  hasText: /success|signed up|confirmed/i,
+                });
 
-              if (await successToast.count() > 0) {
+              if ((await successToast.count()) > 0) {
                 await expect(successToast.first()).toBeVisible();
               }
             }
@@ -770,54 +916,78 @@ test.describe("Shifts Browse Page", () => {
         }
       } else {
         // Skip test if not enough different days available
-        test.skip(true, "Not enough shifts on different days to test cross-day validation");
+        test.skip(
+          true,
+          "Not enough shifts on different days to test cross-day validation"
+        );
       }
     });
 
-    test("should show clear error message with existing shift details", async ({ page }) => {
+    test("should show clear error message with existing shift details", async ({
+      page,
+    }) => {
       // This test verifies the error message includes details about the existing shift
-      const firstDateSection = page.locator('[data-testid^="shifts-date-section-"]').first();
-      
+      const firstDateSection = page
+        .locator('[data-testid^="shifts-date-section-"]')
+        .first();
+
       if (await firstDateSection.isVisible()) {
-        const shiftCards = firstDateSection.locator('[data-testid^="shift-card-"], .grid > div');
+        const shiftCards = firstDateSection.locator(
+          '[data-testid^="shift-card-"], .grid > div'
+        );
         const shiftCount = await shiftCards.count();
 
         if (shiftCount >= 2) {
           // Get the first shift details
           const firstShiftCard = shiftCards.first();
-          const firstShiftName = await firstShiftCard.locator('h3, [data-testid*="shift-name"]').first().textContent();
+          const firstShiftName = await firstShiftCard
+            .locator('h3, [data-testid*="shift-name"]')
+            .first()
+            .textContent();
 
           // Sign up for first shift
-          const firstShiftSignupButton = firstShiftCard.locator('[data-testid*="signup-button"], button:has-text("Sign Up"), button:has-text("✨ Sign Up Now")').first();
-          
+          const firstShiftSignupButton = firstShiftCard
+            .locator(
+              '[data-testid*="signup-button"], button:has-text("Sign Up"), button:has-text("✨ Sign Up Now")'
+            )
+            .first();
+
           if (await firstShiftSignupButton.isVisible()) {
             await firstShiftSignupButton.click();
 
-            const confirmButton = page.getByTestId("shift-signup-confirm-button");
+            const confirmButton = page.getByTestId(
+              "shift-signup-confirm-button"
+            );
             if (await confirmButton.isVisible()) {
               await confirmButton.click();
               await page.waitForLoadState("load");
               await page.waitForTimeout(2000);
 
               // Try to sign up for second shift
-              const secondShiftSignupButton = shiftCards.nth(1).locator('[data-testid*="signup-button"], button:has-text("Sign Up"), button:has-text("✨ Sign Up Now")').first();
-              
+              const secondShiftSignupButton = shiftCards
+                .nth(1)
+                .locator(
+                  '[data-testid*="signup-button"], button:has-text("Sign Up"), button:has-text("✨ Sign Up Now")'
+                )
+                .first();
+
               if (await secondShiftSignupButton.isVisible()) {
                 await secondShiftSignupButton.click();
 
-                const confirmSecondButton = page.getByTestId("shift-signup-confirm-button");
+                const confirmSecondButton = page.getByTestId(
+                  "shift-signup-confirm-button"
+                );
                 if (await confirmSecondButton.isVisible()) {
                   await confirmSecondButton.click();
                 }
 
                 // Check that error message includes the first shift name or time
-                const detailedErrorMessage = page.locator('text*=' + (firstShiftName || '')).or(
-                  page.getByText(/at \d+:\d+/i)
-                ).or(
-                  page.getByText(/you already have.*shift/i)
-                );
+                const detailedErrorMessage = page
+                  .locator("text*=" + (firstShiftName || ""))
+                  .or(page.getByText(/at \d+:\d+/i))
+                  .or(page.getByText(/you already have.*shift/i));
 
-                if (await detailedErrorMessage.count() > 0) {
+                if ((await detailedErrorMessage.count()) > 0) {
                   await expect(detailedErrorMessage.first()).toBeVisible();
                 }
               }
@@ -838,13 +1008,15 @@ test.describe("Shifts Browse Page", () => {
       await page.waitForLoadState("load");
 
       // Check main heading structure
-      const mainHeading = page.getByRole("heading", { name: /volunteer shifts/i });
+      const mainHeading = page.getByRole("heading", {
+        name: /volunteer shifts/i,
+      });
       await expect(mainHeading).toBeVisible();
 
       // Check location filter has proper labels
       const locationFilter = page.getByTestId("location-filter");
       await expect(locationFilter).toBeVisible();
-      
+
       const filterLabel = page.getByText("Filter by location:");
       await expect(filterLabel).toBeVisible();
 
@@ -853,7 +1025,11 @@ test.describe("Shifts Browse Page", () => {
       await expect(locationTabs).toBeVisible();
 
       // Check that buttons have accessible names
-      const signupButton = page.locator('[data-testid*="signup-button"], [data-testid*="waitlist-button"]').first();
+      const signupButton = page
+        .locator(
+          '[data-testid*="signup-button"], [data-testid*="waitlist-button"]'
+        )
+        .first();
       if (await signupButton.isVisible()) {
         await expect(signupButton).toBeVisible();
       }
@@ -869,7 +1045,11 @@ test.describe("Shifts Browse Page", () => {
       await expect(wellingtonTab).toBeFocused();
 
       // Check shift cards are keyboard accessible
-      const signupButton = page.locator('[data-testid*="signup-button"], [data-testid*="waitlist-button"]').first();
+      const signupButton = page
+        .locator(
+          '[data-testid*="signup-button"], [data-testid*="waitlist-button"]'
+        )
+        .first();
       if (await signupButton.isVisible()) {
         await signupButton.focus();
         await expect(signupButton).toBeFocused();

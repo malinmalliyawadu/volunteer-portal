@@ -384,7 +384,7 @@ test.describe("Admin Volunteer Profile View", () => {
         await expect(wellingtonFilter).toBeVisible();
 
         const glennInnesFilter = page.getByRole("link", {
-          name: "Glenn Innes",
+          name: "Glen Innes",
         });
         await expect(glennInnesFilter).toBeVisible();
 
@@ -506,7 +506,7 @@ test.describe("Admin Volunteer Profile View", () => {
             const statusText = await statusBadges.first().textContent();
             if (statusText) {
               expect(statusText).toMatch(
-                /(Confirmed|Waitlisted|Canceled|Past|Wellington|Glenn Innes|Onehunga)/
+                /(Confirmed|Waitlisted|Canceled|Past|Wellington|Glen Innes|Onehunga)/
               );
             }
           }

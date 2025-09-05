@@ -1,16 +1,19 @@
 import { test, expect } from "./base";
 import { loginAsAdmin, loginAsVolunteer } from "./helpers/auth";
-import { 
-  createTestUser, 
-  deleteTestUsers, 
-  createShift, 
-  deleteTestShifts 
+import {
+  createTestUser,
+  deleteTestUsers,
+  createShift,
+  deleteTestShifts,
 } from "./helpers/test-helpers";
 import { randomUUID } from "crypto";
 
 test.describe("Admin Shifts Page", () => {
   const testId = randomUUID().slice(0, 8);
-  const testEmails = [`admin-shifts-test-${testId}@example.com`, `volunteer-shifts-test-${testId}@example.com`];
+  const testEmails = [
+    `admin-shifts-test-${testId}@example.com`,
+    `volunteer-shifts-test-${testId}@example.com`,
+  ];
   const testShiftIds: string[] = [];
 
   test.beforeAll(async () => {
@@ -29,20 +32,26 @@ test.describe("Admin Shifts Page", () => {
     await loginAsAdmin(page);
   });
 
-  test("should display admin shifts page with correct title and elements", async ({ page }) => {
+  test("should display admin shifts page with correct title and elements", async ({
+    page,
+  }) => {
     await page.goto("/admin/shifts");
     await page.waitForLoadState("load");
 
     // Check page title and description
-    await expect(page.getByTestId("admin-page-header")).toContainText("Restaurant Schedule");
-    
+    await expect(page.getByTestId("admin-page-header")).toContainText(
+      "Restaurant Schedule"
+    );
+
     // Check navigation controls are present (location selector without label)
     await expect(page.getByTestId("location-selector")).toBeVisible();
     await expect(page.getByTestId("today-button")).toBeVisible();
     await expect(page.getByTestId("create-shift-button")).toBeVisible();
   });
 
-  test("should show calendar date picker instead of prev/next buttons", async ({ page }) => {
+  test("should show calendar date picker instead of prev/next buttons", async ({
+    page,
+  }) => {
     await page.goto("/admin/shifts");
     await page.waitForLoadState("load");
 
@@ -51,16 +60,18 @@ test.describe("Admin Shifts Page", () => {
     await expect(page.getByTestId("next-date-button")).not.toBeVisible();
 
     // Check that calendar button is present
-    const calendarButton = page.locator('button').filter({ hasText: /\d{4}/ }); // Button with year
+    const calendarButton = page.locator("button").filter({ hasText: /\d{4}/ }); // Button with year
     await expect(calendarButton).toBeVisible();
   });
 
-  test("should open calendar popup when clicking date button", async ({ page }) => {
+  test("should open calendar popup when clicking date button", async ({
+    page,
+  }) => {
     await page.goto("/admin/shifts");
     await page.waitForLoadState("load");
 
     // Click the calendar button
-    const calendarButton = page.locator('button').filter({ hasText: /\d{4}/ });
+    const calendarButton = page.locator("button").filter({ hasText: /\d{4}/ });
     await calendarButton.click();
 
     // Check that calendar popup is visible
@@ -80,13 +91,15 @@ test.describe("Admin Shifts Page", () => {
 
     // Change to a different location
     await locationSelector.click();
-    await page.getByText("Glenn Innes").click();
+    await page.getByText("Glen Innes").click();
 
     // Check URL updated with new location
     await expect(page).toHaveURL(/location=Glenn%20Innes/);
   });
 
-  test("should navigate to today when clicking today button", async ({ page }) => {
+  test("should navigate to today when clicking today button", async ({
+    page,
+  }) => {
     // Go to a specific date first
     await page.goto("/admin/shifts?date=2024-01-01");
     await page.waitForLoadState("load");
@@ -95,11 +108,13 @@ test.describe("Admin Shifts Page", () => {
     await page.getByTestId("today-button").click();
 
     // Check that we're now on today's date
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split("T")[0];
     await expect(page).toHaveURL(new RegExp(`date=${today}`));
   });
 
-  test("should navigate to create shift page when clicking Add Shift", async ({ page }) => {
+  test("should navigate to create shift page when clicking Add Shift", async ({
+    page,
+  }) => {
     await page.goto("/admin/shifts");
     await page.waitForLoadState("load");
 
@@ -107,12 +122,14 @@ test.describe("Admin Shifts Page", () => {
     await expect(page).toHaveURL("/admin/shifts/new");
   });
 
-  test("should display no shifts message when no shifts exist", async ({ page }) => {
+  test("should display no shifts message when no shifts exist", async ({
+    page,
+  }) => {
     // Navigate to a date with no shifts
     const futureDate = new Date();
     futureDate.setFullYear(futureDate.getFullYear() + 1);
-    const futureDateStr = futureDate.toISOString().split('T')[0];
-    
+    const futureDateStr = futureDate.toISOString().split("T")[0];
+
     await page.goto(`/admin/shifts?date=${futureDateStr}`);
     await page.waitForLoadState("load");
 
@@ -123,9 +140,9 @@ test.describe("Admin Shifts Page", () => {
 
   test("should restrict access to volunteers", async ({ page }) => {
     await loginAsVolunteer(page);
-    
+
     await page.goto("/admin/shifts");
-    
+
     // Should be redirected to volunteer dashboard page
     await expect(page).toHaveURL("/dashboard");
   });
@@ -134,28 +151,34 @@ test.describe("Admin Shifts Page", () => {
     test.beforeEach(async () => {
       // Create test shifts for different scenarios
       const today = new Date();
-      const shiftDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
-      
+      const shiftDate = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate() + 1
+      );
+
       const shift1 = await createShift({
         location: "Wellington",
         start: new Date(shiftDate.setHours(10, 0)),
-        capacity: 4
+        capacity: 4,
       });
       testShiftIds.push(shift1.id);
 
       const shift2 = await createShift({
-        location: "Wellington", 
+        location: "Wellington",
         start: new Date(shiftDate.setHours(14, 0)),
-        capacity: 2
+        capacity: 2,
       });
       testShiftIds.push(shift2.id);
     });
 
-    test("should display shift cards with correct information", async ({ page }) => {
+    test("should display shift cards with correct information", async ({
+      page,
+    }) => {
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      const tomorrowStr = tomorrow.toISOString().split('T')[0];
-      
+      const tomorrowStr = tomorrow.toISOString().split("T")[0];
+
       await page.goto(`/admin/shifts?date=${tomorrowStr}&location=Wellington`);
       await page.waitForLoadState("load");
 
@@ -172,25 +195,29 @@ test.describe("Admin Shifts Page", () => {
     test("should show volunteer grade information", async ({ page }) => {
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      const tomorrowStr = tomorrow.toISOString().split('T')[0];
-      
+      const tomorrowStr = tomorrow.toISOString().split("T")[0];
+
       await page.goto(`/admin/shifts?date=${tomorrowStr}&location=Wellington`);
       await page.waitForLoadState("load");
 
       // Check for "No volunteers yet" message in empty shift using testid
-      await expect(page.locator('[data-testid^="no-volunteers-"]').first()).toBeVisible();
+      await expect(
+        page.locator('[data-testid^="no-volunteers-"]').first()
+      ).toBeVisible();
     });
 
     test("should display staffing status correctly", async ({ page }) => {
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      const tomorrowStr = tomorrow.toISOString().split('T')[0];
-      
+      const tomorrowStr = tomorrow.toISOString().split("T")[0];
+
       await page.goto(`/admin/shifts?date=${tomorrowStr}&location=Wellington`);
       await page.waitForLoadState("load");
 
       // Check staffing badges
-      const staffingBadges = page.locator('.bg-red-500, .bg-orange-500, .bg-yellow-500, .bg-green-400, .bg-green-500');
+      const staffingBadges = page.locator(
+        ".bg-red-500, .bg-orange-500, .bg-yellow-500, .bg-green-400, .bg-green-500"
+      );
       await expect(staffingBadges.first()).toBeVisible();
 
       // Check capacity display (0/4, 0/2, etc.) - use first instance to avoid strict mode violation
@@ -198,11 +225,13 @@ test.describe("Admin Shifts Page", () => {
       await expect(page.getByText("0/2").first()).toBeVisible();
     });
 
-    test("should show status indicators for different volunteer statuses", async ({ page }) => {
+    test("should show status indicators for different volunteer statuses", async ({
+      page,
+    }) => {
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      const tomorrowStr = tomorrow.toISOString().split('T')[0];
-      
+      const tomorrowStr = tomorrow.toISOString().split("T")[0];
+
       await page.goto(`/admin/shifts?date=${tomorrowStr}&location=Wellington`);
       await page.waitForLoadState("load");
 
@@ -217,24 +246,30 @@ test.describe("Admin Shifts Page", () => {
       await page.waitForLoadState("load");
 
       // Open calendar
-      const calendarButton = page.locator('button').filter({ hasText: /\d{4}/ });
+      const calendarButton = page
+        .locator("button")
+        .filter({ hasText: /\d{4}/ });
       await calendarButton.click();
 
       // Check calendar is visible
       await expect(page.getByRole("dialog")).toBeVisible();
-      
+
       // Days without shifts should be disabled
-      const disabledDays = page.locator('[disabled]').filter({ hasText: /^\d+$/ });
+      const disabledDays = page
+        .locator("[disabled]")
+        .filter({ hasText: /^\d+$/ });
       await expect(disabledDays.first()).toBeVisible();
     });
 
-    test.skip("should close calendar when selecting a date with shifts", async ({ page }) => {
+    test.skip("should close calendar when selecting a date with shifts", async ({
+      page,
+    }) => {
       // First create a shift for today
       const today = new Date();
       const shift = await createShift({
         location: "Wellington",
         start: new Date(today.setHours(15, 0)),
-        capacity: 3
+        capacity: 3,
       });
       testShiftIds.push(shift.id);
 
@@ -242,11 +277,15 @@ test.describe("Admin Shifts Page", () => {
       await page.waitForLoadState("load");
 
       // Open calendar
-      const calendarButton = page.locator('button').filter({ hasText: /\d{4}/ });
+      const calendarButton = page
+        .locator("button")
+        .filter({ hasText: /\d{4}/ });
       await calendarButton.click();
 
       // Click on today (which should have a shift)
-      const todayButton = page.locator('[role="button"]').filter({ hasText: new RegExp(`^${today.getDate()}$`) });
+      const todayButton = page
+        .locator('[role="button"]')
+        .filter({ hasText: new RegExp(`^${today.getDate()}$`) });
       await todayButton.click();
 
       // Calendar should close
@@ -258,7 +297,9 @@ test.describe("Admin Shifts Page", () => {
       await page.waitForLoadState("load");
 
       // Open calendar
-      const calendarButton = page.locator('button').filter({ hasText: /\d{4}/ });
+      const calendarButton = page
+        .locator("button")
+        .filter({ hasText: /\d{4}/ });
       await calendarButton.click();
 
       // Check legend items
@@ -304,19 +345,23 @@ test.describe("Admin Shifts Page", () => {
       // Check that key elements are still visible on mobile
       await expect(page.getByTestId("create-shift-button")).toBeVisible();
       await expect(page.getByTestId("location-selector")).toBeVisible();
-      
+
       // Calendar button should still be clickable
-      const calendarButton = page.locator('button').filter({ hasText: /\d{4}/ });
+      const calendarButton = page
+        .locator("button")
+        .filter({ hasText: /\d{4}/ });
       await expect(calendarButton).toBeVisible();
     });
 
-    test("should stack elements properly on tablet viewport", async ({ page }) => {
+    test("should stack elements properly on tablet viewport", async ({
+      page,
+    }) => {
       await page.setViewportSize({ width: 768, height: 1024 });
       await page.goto("/admin/shifts");
       await page.waitForLoadState("load");
 
       // Navigation should stack vertically on tablet
-      const navigationControls = page.locator('.flex-col');
+      const navigationControls = page.locator(".flex-col");
       await expect(navigationControls.first()).toBeVisible();
     });
   });
@@ -329,31 +374,33 @@ test.describe("Admin Shifts Page", () => {
       // Create a test shift and signup for testing volunteer actions
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      
+
       const shift = await createShift({
         location: "Wellington",
         start: new Date(tomorrow.setHours(10, 0)),
-        capacity: 2
+        capacity: 2,
       });
       shiftId = shift.id;
       testShiftIds.push(shift.id);
 
       // Create a signup through the API
       await page.request.post("/api/shifts/signup", {
-        data: { shiftId: shift.id }
+        data: { shiftId: shift.id },
       });
 
       // We'll get the signup ID from the DOM instead since signups endpoint doesn't exist
       const tomorrowDate = new Date();
       tomorrowDate.setDate(tomorrowDate.getDate() + 1);
-      const tomorrowStr = tomorrowDate.toISOString().split('T')[0];
-      
+      const tomorrowStr = tomorrowDate.toISOString().split("T")[0];
+
       await page.goto(`/admin/shifts?date=${tomorrowStr}&location=Wellington`);
       await page.waitForLoadState("load");
-      
+
       // Extract signup ID from the DOM test ID (if any signups exist)
-      const firstCancelButton = page.locator('[data-testid*="cancel-button"]').first();
-      const testId = await firstCancelButton.getAttribute('data-testid');
+      const firstCancelButton = page
+        .locator('[data-testid*="cancel-button"]')
+        .first();
+      const testId = await firstCancelButton.getAttribute("data-testid");
       if (testId) {
         // Extract signup ID from testid format like "shift-xxx-volunteer-xxx-cancel-button"
         const matches = testId.match(/volunteer-([^-]+)-cancel-button/);
@@ -361,19 +408,25 @@ test.describe("Admin Shifts Page", () => {
       }
     });
 
-    test.skip("should show cancel dialog for confirmed volunteers", async ({ page }) => {
+    test.skip("should show cancel dialog for confirmed volunteers", async ({
+      page,
+    }) => {
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      const tomorrowStr = tomorrow.toISOString().split('T')[0];
-      
+      const tomorrowStr = tomorrow.toISOString().split("T")[0];
+
       await page.goto(`/admin/shifts?date=${tomorrowStr}&location=Wellington`);
       await page.waitForLoadState("load");
 
       // Wait for volunteer actions to load
-      await page.waitForSelector('[data-testid*="confirmed-actions"]', { timeout: 10000 });
+      await page.waitForSelector('[data-testid*="confirmed-actions"]', {
+        timeout: 10000,
+      });
 
       // Click the cancel button
-      const cancelButton = page.locator('[data-testid*="cancel-button"]').first();
+      const cancelButton = page
+        .locator('[data-testid*="cancel-button"]')
+        .first();
       await cancelButton.click();
 
       // Check that the cancel dialog appears
@@ -381,24 +434,36 @@ test.describe("Admin Shifts Page", () => {
       await expect(cancelDialog).toBeVisible();
 
       // Check dialog content
-      await expect(page.locator('[data-testid*="cancel-dialog-title"]')).toContainText("Cancel Volunteer Shift");
-      await expect(page.locator('[data-testid*="cancel-dialog-description"]')).toContainText("They will be notified by email");
+      await expect(
+        page.locator('[data-testid*="cancel-dialog-title"]')
+      ).toContainText("Cancel Volunteer Shift");
+      await expect(
+        page.locator('[data-testid*="cancel-dialog-description"]')
+      ).toContainText("They will be notified by email");
 
       // Check dialog has both Cancel and Confirm buttons
-      await expect(page.locator('[data-testid*="cancel-dialog-cancel"]')).toBeVisible();
-      await expect(page.locator('[data-testid*="cancel-dialog-confirm"]')).toBeVisible();
+      await expect(
+        page.locator('[data-testid*="cancel-dialog-cancel"]')
+      ).toBeVisible();
+      await expect(
+        page.locator('[data-testid*="cancel-dialog-confirm"]')
+      ).toBeVisible();
     });
 
-    test.skip("should close cancel dialog when clicking cancel", async ({ page }) => {
+    test.skip("should close cancel dialog when clicking cancel", async ({
+      page,
+    }) => {
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      const tomorrowStr = tomorrow.toISOString().split('T')[0];
-      
+      const tomorrowStr = tomorrow.toISOString().split("T")[0];
+
       await page.goto(`/admin/shifts?date=${tomorrowStr}&location=Wellington`);
       await page.waitForLoadState("load");
 
       // Open cancel dialog
-      const cancelButton = page.locator('[data-testid*="cancel-button"]').first();
+      const cancelButton = page
+        .locator('[data-testid*="cancel-button"]')
+        .first();
       await cancelButton.click();
 
       // Click cancel in dialog
@@ -409,99 +474,136 @@ test.describe("Admin Shifts Page", () => {
       await expect(cancelDialog).not.toBeVisible();
     });
 
-    test.skip("should show confirm dialog for waitlisted volunteers", async ({ page }) => {
+    test.skip("should show confirm dialog for waitlisted volunteers", async ({
+      page,
+    }) => {
       // First, move the volunteer to waitlisted status via API
       await page.request.patch(`/api/admin/signups/${signupId}`, {
-        data: { action: "reject" }
+        data: { action: "reject" },
       });
-      
+
       // Then create another signup to put them on waitlist
       await page.request.post("/api/shifts/signup", {
-        data: { shiftId }
+        data: { shiftId },
       });
 
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      const tomorrowStr = tomorrow.toISOString().split('T')[0];
-      
+      const tomorrowStr = tomorrow.toISOString().split("T")[0];
+
       await page.goto(`/admin/shifts?date=${tomorrowStr}&location=Wellington`);
       await page.waitForLoadState("load");
 
       // Look for waitlisted actions
-      const waitlistedActions = page.locator('[data-testid*="waitlisted-actions"]');
-      if (await waitlistedActions.count() > 0) {
+      const waitlistedActions = page.locator(
+        '[data-testid*="waitlisted-actions"]'
+      );
+      if ((await waitlistedActions.count()) > 0) {
         // Click the confirm button
-        const confirmButton = page.locator('[data-testid*="confirm-button"]').first();
+        const confirmButton = page
+          .locator('[data-testid*="confirm-button"]')
+          .first();
         await confirmButton.click();
 
         // Check that the confirm dialog appears
-        await expect(page.locator('[data-testid*="confirm-dialog"]')).toBeVisible();
-        await expect(page.locator('[data-testid*="confirm-dialog-title"]')).toContainText("Confirm Waitlisted Volunteer");
-        await expect(page.locator('[data-testid*="confirm-dialog-description"]')).toContainText("over the shift capacity");
+        await expect(
+          page.locator('[data-testid*="confirm-dialog"]')
+        ).toBeVisible();
+        await expect(
+          page.locator('[data-testid*="confirm-dialog-title"]')
+        ).toContainText("Confirm Waitlisted Volunteer");
+        await expect(
+          page.locator('[data-testid*="confirm-dialog-description"]')
+        ).toContainText("over the shift capacity");
       }
     });
 
-    test.skip("should show reject dialog for pending volunteers", async ({ page }) => {
+    test.skip("should show reject dialog for pending volunteers", async ({
+      page,
+    }) => {
       // Create a new pending signup
-      const testVolunteerEmail = `pending-test-${randomUUID().slice(0, 8)}@example.com`;
+      const testVolunteerEmail = `pending-test-${randomUUID().slice(
+        0,
+        8
+      )}@example.com`;
       await createTestUser(testVolunteerEmail, "VOLUNTEER");
       testEmails.push(testVolunteerEmail);
 
       // Login as the new volunteer and create signup
       await page.goto("/login");
       await page.fill('[name="email"]', testVolunteerEmail);
-      await page.fill('[name="password"]', 'testpassword123');
+      await page.fill('[name="password"]', "testpassword123");
       await page.click('button[type="submit"]');
 
       await page.request.post("/api/shifts/signup", {
-        data: { shiftId }
+        data: { shiftId },
       });
 
       // Back to admin view
       await loginAsAdmin(page);
-      
+
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      const tomorrowStr = tomorrow.toISOString().split('T')[0];
-      
+      const tomorrowStr = tomorrow.toISOString().split("T")[0];
+
       await page.goto(`/admin/shifts?date=${tomorrowStr}&location=Wellington`);
       await page.waitForLoadState("load");
 
       // Look for pending actions and reject button
-      const rejectButton = page.locator('[data-testid*="reject-button"]').first();
+      const rejectButton = page
+        .locator('[data-testid*="reject-button"]')
+        .first();
       if (await rejectButton.isVisible()) {
         await rejectButton.click();
 
         // Check that the reject dialog appears
-        await expect(page.locator('[data-testid*="reject-dialog"]')).toBeVisible();
-        await expect(page.locator('[data-testid*="reject-dialog-title"]')).toContainText("Reject Volunteer Signup");
-        await expect(page.locator('[data-testid*="reject-dialog-description"]')).toContainText("cannot be undone");
+        await expect(
+          page.locator('[data-testid*="reject-dialog"]')
+        ).toBeVisible();
+        await expect(
+          page.locator('[data-testid*="reject-dialog-title"]')
+        ).toContainText("Reject Volunteer Signup");
+        await expect(
+          page.locator('[data-testid*="reject-dialog-description"]')
+        ).toContainText("cannot be undone");
       }
     });
   });
 
   test.describe("Profile Photos", () => {
-    test.skip("should display volunteer avatar components", async ({ page }) => {
+    test.skip("should display volunteer avatar components", async ({
+      page,
+    }) => {
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      const tomorrowStr = tomorrow.toISOString().split('T')[0];
-      
+      const tomorrowStr = tomorrow.toISOString().split("T")[0];
+
       await page.goto(`/admin/shifts?date=${tomorrowStr}&location=Wellington`);
       await page.waitForLoadState("load");
 
       // Look for shifts with volunteers
       const volunteerListItems = page.locator('[data-testid^="volunteers-"]');
-      
-      if (await volunteerListItems.count() > 0) {
+
+      if ((await volunteerListItems.count()) > 0) {
         // Check that avatar components are present
-        await expect(page.locator('[data-testid*="volunteer-avatar-"]').first()).toBeVisible();
-        
+        await expect(
+          page.locator('[data-testid*="volunteer-avatar-"]').first()
+        ).toBeVisible();
+
         // Check that avatar link is present
-        await expect(page.locator('[data-testid*="volunteer-avatar-link-"]').first()).toBeVisible();
-        
+        await expect(
+          page.locator('[data-testid*="volunteer-avatar-link-"]').first()
+        ).toBeVisible();
+
         // Check that either image or fallback is used (volunteers may have profile photos)
-        const hasImage = await page.locator('[data-testid*="volunteer-avatar-image-"]').first().isVisible();
-        const hasFallback = await page.locator('[data-testid*="volunteer-avatar-fallback-"]').first().isVisible();
+        const hasImage = await page
+          .locator('[data-testid*="volunteer-avatar-image-"]')
+          .first()
+          .isVisible();
+        const hasFallback = await page
+          .locator('[data-testid*="volunteer-avatar-fallback-"]')
+          .first()
+          .isVisible();
         expect(hasImage || hasFallback).toBeTruthy();
       }
     });
@@ -509,35 +611,37 @@ test.describe("Admin Shifts Page", () => {
     test("should link to volunteer profile page", async ({ page }) => {
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      const tomorrowStr = tomorrow.toISOString().split('T')[0];
-      
+      const tomorrowStr = tomorrow.toISOString().split("T")[0];
+
       await page.goto(`/admin/shifts?date=${tomorrowStr}&location=Wellington`);
       await page.waitForLoadState("load");
 
       // Look for volunteer name links
-      const volunteerNameLink = page.locator('[data-testid*="volunteer-name-link-"]').first();
-      
-      if (await volunteerNameLink.count() > 0) {
+      const volunteerNameLink = page
+        .locator('[data-testid*="volunteer-name-link-"]')
+        .first();
+
+      if ((await volunteerNameLink.count()) > 0) {
         // Check that clicking leads to volunteer profile
-        const href = await volunteerNameLink.getAttribute('href');
+        const href = await volunteerNameLink.getAttribute("href");
         expect(href).toMatch(/\/admin\/volunteers\/[a-f0-9-]+/);
       }
     });
 
     test("should display volunteer grade badges", async ({ page }) => {
       const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);  
-      const tomorrowStr = tomorrow.toISOString().split('T')[0];
-      
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const tomorrowStr = tomorrow.toISOString().split("T")[0];
+
       await page.goto(`/admin/shifts?date=${tomorrowStr}&location=Wellington`);
       await page.waitForLoadState("load");
 
       // Look for grade badges
       const gradeBadges = page.locator('[data-testid*="volunteer-grade-"]');
-      
-      if (await gradeBadges.count() > 0) {
+
+      if ((await gradeBadges.count()) > 0) {
         await expect(gradeBadges.first()).toBeVisible();
-        
+
         // Should contain grade text like "New", "Standard", "Experienced", etc.
         const badgeText = await gradeBadges.first().textContent();
         expect(badgeText).toMatch(/(New|Standard|Experienced|Shift Leader)/);
@@ -552,13 +656,13 @@ test.describe("Admin Shifts Page", () => {
 
       // Check that shift cards have animation classes/attributes
       const shiftCards = page.locator('[data-testid^="shift-card-"]');
-      
-      if (await shiftCards.count() > 0) {
+
+      if ((await shiftCards.count()) > 0) {
         // Cards should be visible after animations complete
         await expect(shiftCards.first()).toBeVisible();
-        
+
         // Check that the animated wrapper is present
-        const animatedWrapper = page.locator('.grid');
+        const animatedWrapper = page.locator(".grid");
         await expect(animatedWrapper).toBeVisible();
       }
     });
@@ -570,8 +674,8 @@ test.describe("Admin Shifts Page", () => {
       // Navigate to tomorrow
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      const tomorrowStr = tomorrow.toISOString().split('T')[0];
-      
+      const tomorrowStr = tomorrow.toISOString().split("T")[0];
+
       await page.goto(`/admin/shifts?date=${tomorrowStr}`);
       await page.waitForLoadState("load");
 
@@ -586,15 +690,19 @@ test.describe("Admin Shifts Page", () => {
       await page.waitForLoadState("load");
 
       // Check dialog accessibility
-      const volunteerActions = page.locator('[data-testid*="volunteer-actions-"]').first();
-      
-      if (await volunteerActions.count() > 0) {
+      const volunteerActions = page
+        .locator('[data-testid*="volunteer-actions-"]')
+        .first();
+
+      if ((await volunteerActions.count()) > 0) {
         // Buttons should have proper titles/labels
-        const actionButtons = page.locator('button', { has: page.locator('svg') });
-        
-        if (await actionButtons.count() > 0) {
+        const actionButtons = page.locator("button", {
+          has: page.locator("svg"),
+        });
+
+        if ((await actionButtons.count()) > 0) {
           const firstButton = actionButtons.first();
-          const title = await firstButton.getAttribute('title');
+          const title = await firstButton.getAttribute("title");
           expect(title).toBeTruthy();
         }
       }
@@ -605,11 +713,11 @@ test.describe("Admin Shifts Page", () => {
       await page.waitForLoadState("load");
 
       // Tab through interactive elements
-      await page.keyboard.press('Tab'); // Should focus first focusable element
-      await page.keyboard.press('Tab'); // Navigate to next element
-      
+      await page.keyboard.press("Tab"); // Should focus first focusable element
+      await page.keyboard.press("Tab"); // Navigate to next element
+
       // Should not throw errors and maintain focus visibility
-      const focusedElement = await page.locator(':focus').count();
+      const focusedElement = await page.locator(":focus").count();
       expect(focusedElement).toBeGreaterThanOrEqual(0);
     });
   });

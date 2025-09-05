@@ -92,32 +92,37 @@ export function NotificationsContent({
 
   // Check for URL parameters to pre-select shift type and location
   useEffect(() => {
-    const shiftTypeParam = searchParams.get('shiftType');
-    const locationParam = searchParams.get('location');
-    
-    if (shiftTypeParam && shiftTypes.some(st => st.id === shiftTypeParam)) {
+    const shiftTypeParam = searchParams.get("shiftType");
+    const locationParam = searchParams.get("location");
+
+    if (shiftTypeParam && shiftTypes.some((st) => st.id === shiftTypeParam)) {
       setFilterShiftType(shiftTypeParam);
     }
-    
-    if (locationParam && ['Wellington', 'Glenn Innes', 'Onehunga'].includes(locationParam)) {
+
+    if (
+      locationParam &&
+      ["Wellington", "Glen Innes", "Onehunga"].includes(locationParam)
+    ) {
       setFilterLocation(locationParam);
     }
   }, [searchParams, shiftTypes]);
 
   // Auto-select specific shift once shifts are loaded
   useEffect(() => {
-    const shiftIdParam = searchParams.get('shiftId');
-    const shiftTypeParam = searchParams.get('shiftType');
-    
+    const shiftIdParam = searchParams.get("shiftId");
+    const shiftTypeParam = searchParams.get("shiftType");
+
     if (shifts.length > 0 && shiftIdParam) {
-      const targetShift = shifts.find(shift => shift.id === shiftIdParam);
+      const targetShift = shifts.find((shift) => shift.id === shiftIdParam);
       if (targetShift) {
         setSelectedShift(shiftIdParam);
       } else {
-        // If the specific shift isn't in shortage list, but we have shifts of the same type, 
+        // If the specific shift isn't in shortage list, but we have shifts of the same type,
         // let's select the first one of that type
         if (shiftTypeParam) {
-          const firstMatchingTypeShift = shifts.find(shift => shift.shiftType.id === shiftTypeParam);
+          const firstMatchingTypeShift = shifts.find(
+            (shift) => shift.shiftType.id === shiftTypeParam
+          );
           if (firstMatchingTypeShift) {
             setSelectedShift(firstMatchingTypeShift.id);
           }
@@ -125,7 +130,6 @@ export function NotificationsContent({
       }
     }
   }, [shifts, searchParams]);
-
 
   // Group saving
   const [groupName, setGroupName] = useState<string>("");
@@ -502,7 +506,7 @@ export function NotificationsContent({
                   <SelectContent>
                     <SelectItem value="all">All Locations</SelectItem>
                     <SelectItem value="Wellington">Wellington</SelectItem>
-                    <SelectItem value="Glenn Innes">Glenn Innes</SelectItem>
+                    <SelectItem value="Glen Innes">Glen Innes</SelectItem>
                     <SelectItem value="Onehunga">Onehunga</SelectItem>
                   </SelectContent>
                 </Select>
@@ -574,7 +578,10 @@ export function NotificationsContent({
             </div>
 
             <div className="flex items-center justify-between">
-              <div className="text-sm text-muted-foreground" data-testid="volunteer-count">
+              <div
+                className="text-sm text-muted-foreground"
+                data-testid="volunteer-count"
+              >
                 {filteredVolunteers.length} volunteers match filters
               </div>
 
@@ -636,7 +643,6 @@ export function NotificationsContent({
             />
           </CardContent>
         </Card>
-
 
         {/* Send Button */}
         <div className="flex justify-between items-center">
