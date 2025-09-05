@@ -1170,9 +1170,18 @@ async function main() {
     }
   }
 
-  // Create shifts for today and the next 6 days (7 days total)
-  for (let i = 0; i < 7; i++) {
+  // Create shifts for the next 14 days, but only for operating days (Sunday-Thursday)
+  for (let i = 0; i < 14; i++) {
     const date = addDays(today, i);
+    const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    
+    // Only create shifts for Sunday (0) through Thursday (4)
+    if (dayOfWeek === 5 || dayOfWeek === 6) {
+      // Skip Friday (5) and Saturday (6) - restaurant is closed
+      continue;
+    }
+
+    console.log(`📅 Creating shifts for ${date.toDateString()} (${['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][dayOfWeek]})`);
 
     // Create shifts for each location and shift type
     for (
@@ -1273,62 +1282,79 @@ async function main() {
     recordUserSignup(signup.userId, signup.shift.start);
   }
 
-  // Track spots left for tomorrow across all shifts
-  let tomorrowSpotsLeft = 2; // Total spots to leave available for tomorrow
+  // Find the next two operating days (Sunday-Thursday only)
+  const getNextOperatingDays = () => {
+    const operatingDays = [];
+    for (let i = 0; i < 14; i++) {
+      const date = addDays(today, i);
+      const dayOfWeek = date.getDay();
+      
+      // Only include Sunday (0) through Thursday (4)
+      if (dayOfWeek >= 0 && dayOfWeek <= 4) {
+        operatingDays.push(date.toISOString().split("T")[0]);
+        if (operatingDays.length === 2) break;
+      }
+    }
+    return operatingDays;
+  };
+
+  const [nextOperatingDay, secondOperatingDay] = getNextOperatingDays();
+  console.log(`🎯 Next operating day (fully booked): ${nextOperatingDay}`);
+  console.log(`🎯 Second operating day (nearly booked): ${secondOperatingDay}`);
+
+  // Track spots left for second operating day across all shifts
+  let secondDaySpotsLeft = 2; // Total spots to leave available for second operating day
 
   for (let i = 0; i < createdShifts.length; i++) {
     const s = createdShifts[i];
     const shiftDate = new Date(s.start);
     const today = new Date();
-    const tomorrow = addDays(today, 1);
 
     // Use date-only comparison by comparing YYYY-MM-DD strings
     const shiftDateStr = shiftDate.toISOString().split("T")[0];
-    const todayStr = today.toISOString().split("T")[0];
-    const tomorrowStr = tomorrow.toISOString().split("T")[0];
 
-    const isToday = shiftDateStr === todayStr;
-    const isTomorrow = shiftDateStr === tomorrowStr;
+    const isNextOperatingDay = shiftDateStr === nextOperatingDay;
+    const isSecondOperatingDay = shiftDateStr === secondOperatingDay;
 
     // Fill shifts based on day
     let shouldFillShift = false;
     let spotsToFill = 0;
 
-    if (isToday) {
-      // Today (i=0): completely book out ALL shifts - no spots left
+    if (isNextOperatingDay) {
+      // Next operating day: completely book out ALL shifts - no spots left
       console.log(
-        `📅 COMPLETELY BOOKING TODAY's shift (i=0): ${
+        `📅 COMPLETELY BOOKING NEXT OPERATING DAY's shift: ${
           s.shiftType?.name || "Unknown"
         } at ${s.location} (${s.capacity} spots - FULLY BOOKED)`
       );
       shouldFillShift = true;
       spotsToFill = s.capacity;
-    } else if (isTomorrow) {
-      // Tomorrow (i=1): leave only 1-2 spots TOTAL across all shifts
-      if (tomorrowSpotsLeft > 0) {
-        const spotsToLeaveThisShift = Math.min(tomorrowSpotsLeft, s.capacity);
+    } else if (isSecondOperatingDay) {
+      // Second operating day: leave only 1-2 spots TOTAL across all shifts
+      if (secondDaySpotsLeft > 0) {
+        const spotsToLeaveThisShift = Math.min(secondDaySpotsLeft, s.capacity);
         spotsToFill = s.capacity - spotsToLeaveThisShift;
-        tomorrowSpotsLeft -= spotsToLeaveThisShift;
+        secondDaySpotsLeft -= spotsToLeaveThisShift;
         
         console.log(
-          `📅 Nearly booking TOMORROW's shift (i=1): ${
+          `📅 Nearly booking SECOND OPERATING DAY's shift: ${
             s.shiftType?.name || "Unknown"
           } at ${s.location} (${spotsToFill}/${
             s.capacity
-          } spots, leaving ${spotsToLeaveThisShift}, ${tomorrowSpotsLeft} spots remaining for other shifts)`
+          } spots, leaving ${spotsToLeaveThisShift}, ${secondDaySpotsLeft} spots remaining for other shifts)`
         );
       } else {
         // No more spots to leave - fully book this shift
         spotsToFill = s.capacity;
         console.log(
-          `📅 FULLY booking remaining TOMORROW shift: ${
+          `📅 FULLY booking remaining SECOND OPERATING DAY shift: ${
             s.shiftType?.name || "Unknown"
           } at ${s.location} (${s.capacity}/${s.capacity} spots - no more spots to leave)`
         );
       }
       shouldFillShift = true;
     } else {
-      // Other days (i=2+): every 4th shift gets filled (original logic)
+      // Other days: every 4th shift gets filled (original logic)
       shouldFillShift = i % 4 === 0;
       spotsToFill = s.capacity;
     }
@@ -1350,8 +1376,8 @@ async function main() {
       }
       extraIndex = (extraIndex + spotsToFill) % extraVolunteers.length;
 
-      // Add waitlisted person only for today's fully booked shifts (since today is completely full)
-      if (isToday && spotsToFill === s.capacity) {
+      // Add waitlisted person only for next operating day's fully booked shifts (since it's completely full)
+      if (isNextOperatingDay && spotsToFill === s.capacity) {
         const waitlister = extraVolunteers[extraIndex % extraVolunteers.length];
         // Waitlisted users don't count towards daily limit since they're not confirmed
         await prisma.signup.upsert({
@@ -1365,7 +1391,7 @@ async function main() {
         });
         extraIndex = (extraIndex + 1) % extraVolunteers.length;
         console.log(
-          `⏳ Added waitlisted volunteer for fully booked TODAY shift: ${
+          `⏳ Added waitlisted volunteer for fully booked NEXT OPERATING DAY shift: ${
             s.shiftType?.name || "Unknown"
           } at ${s.location}`
         );
