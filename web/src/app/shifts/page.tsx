@@ -177,10 +177,14 @@ export default async function ShiftsCalendarPage({
             {/* All locations */}
             <div className="space-y-3">
               {userPreferredLocations.length > 1 && (
-                <p className="text-sm font-medium text-muted-foreground">All locations:</p>
+                <p className="text-sm font-medium text-muted-foreground">Other locations:</p>
               )}
               <div className="grid gap-3">
-                {LOCATIONS.map((loc) => (
+                {LOCATIONS.filter((loc) => 
+                  userPreferredLocations.length > 1 
+                    ? !userPreferredLocations.includes(loc) 
+                    : true
+                ).map((loc) => (
                   <Link
                     key={loc}
                     href={`/shifts?location=${loc}`}

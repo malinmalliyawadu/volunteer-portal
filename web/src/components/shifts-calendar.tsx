@@ -147,6 +147,12 @@ export function ShiftsCalendar({
     ? locations.filter((loc) => loc === selectedLocation)
     : locations;
 
+  // Check if any display locations have shifts in the current month
+  const hasAnyShiftsInMonth = displayLocations.some((location) => {
+    const locationDayShifts = getLocationDayShifts(location);
+    return locationDayShifts.some((day) => day.shifts.length > 0);
+  });
+
   return (
     <div className="space-y-6">
       {/* Calendar Header */}
@@ -170,6 +176,7 @@ export function ShiftsCalendar({
             variant="outline"
             size="sm"
             onClick={previousMonth}
+            disabled={format(currentMonth, "yyyy-MM") <= format(new Date(), "yyyy-MM")}
             data-testid="calendar-prev-month"
           >
             <ChevronLeft className="h-4 w-4" />
@@ -268,7 +275,9 @@ export function ShiftsCalendar({
                         className={cn(
                           "relative aspect-square rounded-lg border-2 transition-all duration-200 group",
                           isCurrentMonth
-                            ? status === "none" || isPastDate
+                            ? isPastDate
+                              ? "border-gray-300 dark:border-gray-600 bg-gray-200 dark:bg-gray-800 opacity-50"
+                              : status === "none"
                               ? "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30"
                               : `border-transparent ${getStatusColor(
                                   status
@@ -303,21 +312,21 @@ export function ShiftsCalendar({
                         {dayShifts.shifts.length > 0 &&
                           isCurrentMonth &&
                           !isPastDate && (
-                            <div className="absolute bottom-2 left-2 right-2">
-                              <div className="flex items-center justify-between text-xs">
-                                <div className="flex items-center gap-1">
-                                  <Users className="h-3 w-3" />
-                                  <span className="font-medium">
-                                    {dayShifts.shifts.length}
-                                  </span>
-                                </div>
-                                {dayShifts.spotsAvailable > 0 && (
-                                  <Badge
-                                    variant="secondary"
-                                    className="text-xs px-1 py-0 h-5"
-                                  >
-                                    {dayShifts.spotsAvailable} left
-                                  </Badge>
+                            <div className="absolute inset-2 flex flex-col justify-center">
+                              {/* Center - availability info */}
+                              <div className="text-center">
+                                {status === "full" ? (
+                                  <div className="text-xs font-semibold text-orange-500">
+                                    WAITLIST
+                                  </div>
+                                ) : status === "limited" ? (
+                                  <div className="text-xs font-semibold text-yellow-500">
+                                    {dayShifts.spotsAvailable} LEFT
+                                  </div>
+                                ) : (
+                                  <div className="text-xs font-semibold text-green-500">
+                                    {dayShifts.spotsAvailable} OPEN
+                                  </div>
                                 )}
                               </div>
                             </div>
@@ -352,17 +361,24 @@ export function ShiftsCalendar({
         })}
       </div>
 
-      {displayLocations.length === 0 && (
+      {!hasAnyShiftsInMonth && (
         <Card>
           <CardContent className="py-12 text-center" data-testid="empty-state">
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
               <Calendar className="w-8 h-8 text-muted-foreground" />
             </div>
             <h3 className="text-lg font-semibold mb-2" data-testid="empty-state-title">No shifts scheduled</h3>
-            <p className="text-muted-foreground" data-testid="empty-state-description">
+            <p className="text-muted-foreground mb-4" data-testid="empty-state-description">
               {selectedLocation
-                ? `No shifts found for ${selectedLocation} this month.`
-                : "No shifts are currently scheduled for this month."}
+                ? `No shifts found for ${selectedLocation} in ${format(currentMonth, "MMMM yyyy")}.`
+                : `No shifts are currently scheduled for ${format(currentMonth, "MMMM yyyy")}.`}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {format(currentMonth, "yyyy-MM") > format(new Date(), "yyyy-MM")
+                ? "Shifts are usually published closer to the date."
+                : format(currentMonth, "yyyy-MM") < format(new Date(), "yyyy-MM")
+                ? "This month has passed. Try viewing current or future months."
+                : "Check back soon for upcoming shifts, or try a different location."}
             </p>
           </CardContent>
         </Card>
