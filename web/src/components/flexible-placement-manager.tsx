@@ -56,10 +56,11 @@ type AvailableShift = {
 interface FlexiblePlacementManagerProps {
   selectedDate: string;
   selectedLocation: string;
+  flexibleSignups: FlexibleSignup[];
 }
 
-export function FlexiblePlacementManager({ selectedDate, selectedLocation }: FlexiblePlacementManagerProps) {
-  const [flexibleSignups, setFlexibleSignups] = useState<FlexibleSignup[]>([]);
+export function FlexiblePlacementManager({ selectedDate, selectedLocation, flexibleSignups: initialFlexibleSignups }: FlexiblePlacementManagerProps) {
+  const [flexibleSignups, setFlexibleSignups] = useState<FlexibleSignup[]>(initialFlexibleSignups);
   const [availableShifts, setAvailableShifts] = useState<AvailableShift[]>([]);
   const [loading, setLoading] = useState(true);
   const [placementDialogOpen, setPlacementDialogOpen] = useState(false);
@@ -68,22 +69,10 @@ export function FlexiblePlacementManager({ selectedDate, selectedLocation }: Fle
   const [placementNotes, setPlacementNotes] = useState("");
   const [placing, setPlacing] = useState(false);
 
-  const fetchFlexibleSignups = useCallback(async () => {
-    try {
-      const response = await fetch("/api/admin/flexible-placements");
-      if (response.ok) {
-        const data = await response.json();
-        // Filter by selected date and location for the original flexible shifts
-        const filtered = data.filter((signup: FlexibleSignup) => {
-          const shiftDate = format(new Date(signup.shift.start), "yyyy-MM-dd");
-          return shiftDate === selectedDate && signup.shift.location === selectedLocation;
-        });
-        setFlexibleSignups(filtered);
-      }
-    } catch (error) {
-      console.error("Error fetching flexible signups:", error);
-    }
-  }, [selectedDate, selectedLocation]);
+  // Update flexible signups when props change
+  useEffect(() => {
+    setFlexibleSignups(initialFlexibleSignups);
+  }, [initialFlexibleSignups]);
 
   const fetchAvailableShifts = useCallback(async () => {
     try {
@@ -106,9 +95,8 @@ export function FlexiblePlacementManager({ selectedDate, selectedLocation }: Fle
   }, [selectedDate, selectedLocation]);
 
   useEffect(() => {
-    fetchFlexibleSignups();
     fetchAvailableShifts();
-  }, [fetchFlexibleSignups, fetchAvailableShifts]);
+  }, [fetchAvailableShifts]);
 
   const handlePlaceVolunteer = async () => {
     if (!selectedSignup || !selectedTargetShift) return;
@@ -133,7 +121,9 @@ export function FlexiblePlacementManager({ selectedDate, selectedLocation }: Fle
         setSelectedSignup(null);
         setSelectedTargetShift("");
         setPlacementNotes("");
-        fetchFlexibleSignups();
+        
+        // Remove the placed volunteer from the local state
+        setFlexibleSignups(prev => prev.filter(signup => signup.id !== selectedSignup.id));
         fetchAvailableShifts();
       } else {
         const error = await response.json();
@@ -192,7 +182,7 @@ export function FlexiblePlacementManager({ selectedDate, selectedLocation }: Fle
       <CardHeader className="pb-4">
         <CardTitle className="flex items-center gap-2 text-orange-800">
           <ArrowRight className="h-5 w-5" />
-          Flexible Placements Needed
+          {flexibleSignups[0]?.shift.shiftType.name}
         </CardTitle>
         <p className="text-sm text-orange-600">
           {flexibleSignups.length} volunteer{flexibleSignups.length !== 1 ? 's' : ''} signed up for &quot;Anywhere I&apos;m Needed&quot; and need to be placed

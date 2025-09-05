@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth-options";
 import { checkAndUnlockAchievements } from "@/lib/achievements";
 import { getNotificationService } from "@/lib/notification-service";
 import { processAutoApproval } from "@/lib/auto-accept-rules";
+import { isFeatureEnabled } from "@/lib/posthog-server";
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
@@ -28,6 +29,18 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   });
   if (!shift)
     return NextResponse.json({ error: "Shift not found" }, { status: 404 });
+
+  // Check if this is a flexible placement shift and if the feature is enabled
+  const isFlexibleShift = shift.shiftType.name.includes("Anywhere I'm Needed");
+  if (isFlexibleShift) {
+    const isFlexiblePlacementEnabled = await isFeatureEnabled("flexible-placement", user.id);
+    if (!isFlexiblePlacementEnabled) {
+      return NextResponse.json(
+        { error: "This shift type is currently unavailable" }, 
+        { status: 403 }
+      );
+    }
+  }
 
   let confirmedCount = 0;
   for (const signup of shift.signups) {
