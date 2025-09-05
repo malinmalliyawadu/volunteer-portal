@@ -22,7 +22,8 @@ export async function isFeatureEnabled(
 ): Promise<boolean> {
   try {
     const client = getPostHogClient();
-    return await client.isFeatureEnabled(flag, distinctId);
+    const result = await client.isFeatureEnabled(flag, distinctId);
+    return result ?? false; // Return false if undefined
   } catch (error) {
     console.error("Error checking feature flag:", error);
     // Return false by default if there's an error
