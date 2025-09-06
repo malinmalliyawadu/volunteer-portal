@@ -1,3 +1,9 @@
+## [0.31.0] - 2025-09-06
+
+### Changes
+- feat: add admin notes system for volunteer management ([#92](https://github.com/malinmalliyawadu/volunteer-portal/pull/92)) by @malinmalliyawadu
+
+
 ## [0.30.0] - 2025-09-05
 
 ### Changes
