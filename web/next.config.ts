@@ -5,6 +5,25 @@ const nextConfig: NextConfig = {
   // Optimize for Vercel serverless functions
   serverExternalPackages: ["@prisma/client", "bcrypt"],
 
+  // Configure external image domains
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "platform-lookaside.fbsbx.com",
+        port: "",
+        pathname: "/platform/profilepic/**",
+      },
+    ],
+  },
+
+
   // Ensure Prisma client works in serverless environment
   webpack: (config, { isServer }) => {
     if (isServer) {

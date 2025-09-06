@@ -122,7 +122,7 @@ export default function LoginPage() {
 
     try {
       await signIn(providerId, {
-        callbackUrl: "/",
+        callbackUrl: "/dashboard",
       });
     } catch (error) {
       console.error("OAuth sign in error:", error);

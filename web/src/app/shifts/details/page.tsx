@@ -22,6 +22,9 @@ import {
 import { GroupBookingDialogWrapper } from "@/components/group-booking-dialog-wrapper";
 import { PageContainer } from "@/components/page-container";
 import { getShiftTheme } from "@/lib/shift-themes";
+import { ShiftsProfileCompletionBanner } from "@/components/shifts-profile-completion-banner";
+import { Suspense } from "react";
+import { checkProfileCompletion } from "@/lib/profile-completion";
 
 function getDurationInHours(start: Date, end: Date): string {
   const durationMs = end.getTime() - start.getTime();
@@ -73,11 +76,13 @@ function ShiftCard({
   currentUserId,
   session,
   userFriendIds = [],
+  profileComplete = true,
 }: {
   shift: ShiftWithRelations;
   currentUserId?: string;
   session: unknown;
   userFriendIds?: string[];
+  profileComplete?: boolean;
 }) {
   const theme = getShiftTheme(shift.shiftType.name);
   const duration = getDurationInHours(shift.start, shift.end);
@@ -244,36 +249,47 @@ function ShiftCard({
                 className="w-full"
               />
             ) : session ? (
-              <ShiftSignupDialog
-                shift={{
-                  id: shift.id,
-                  start: shift.start,
-                  end: shift.end,
-                  location: shift.location,
-                  capacity: shift.capacity,
-                  shiftType: {
-                    name: shift.shiftType.name,
-                    description: shift.shiftType.description,
-                  },
-                }}
-                confirmedCount={confirmedCount}
-                isWaitlist={isFull}
-                currentUserId={currentUserId}
-              >
-                <Button
-                  data-testid="shift-signup-button"
-                  className={`w-full font-medium transition-all duration-200 ${
-                    isFull
-                      ? "bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 hover:border-orange-300"
-                      : "bg-gradient-to-r " +
-                        theme.fullGradient +
-                        " hover:shadow-lg transform hover:scale-[1.02] text-white"
-                  }`}
-                  variant={isFull ? "outline" : "default"}
+              profileComplete ? (
+                <ShiftSignupDialog
+                  shift={{
+                    id: shift.id,
+                    start: shift.start,
+                    end: shift.end,
+                    location: shift.location,
+                    capacity: shift.capacity,
+                    shiftType: {
+                      name: shift.shiftType.name,
+                      description: shift.shiftType.description,
+                    },
+                  }}
+                  confirmedCount={confirmedCount}
+                  isWaitlist={isFull}
+                  currentUserId={currentUserId}
                 >
-                  {isFull ? "🎯 Join Waitlist" : "✨ Sign Up Now"}
+                  <Button
+                    data-testid="shift-signup-button"
+                    className={`w-full font-medium transition-all duration-200 ${
+                      isFull
+                        ? "bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 hover:border-orange-300"
+                        : "bg-gradient-to-r " +
+                          theme.fullGradient +
+                          " hover:shadow-lg transform hover:scale-[1.02] text-white"
+                    }`}
+                    variant={isFull ? "outline" : "default"}
+                  >
+                    {isFull ? "🎯 Join Waitlist" : "✨ Sign Up Now"}
+                  </Button>
+                </ShiftSignupDialog>
+              ) : (
+                <Button
+                  disabled
+                  data-testid="shift-signup-button-disabled"
+                  className="w-full font-medium bg-gray-100 text-gray-400 cursor-not-allowed"
+                  variant="outline"
+                >
+                  {isFull ? "Complete Profile to Join Waitlist" : "Complete Profile to Sign Up"}
                 </Button>
-              </ShiftSignupDialog>
+              )
             ) : (
               <Button
                 asChild
@@ -357,6 +373,14 @@ export default async function ShiftDetailsPage({
     }
   }
 
+  // Check profile completion status for button state
+  let profileComplete = true;
+  if (currentUser?.id) {
+    const profileStatus = await checkProfileCompletion(currentUser.id);
+    profileComplete = profileStatus.isComplete;
+  }
+
+
   // Check feature flag for flexible placement
   const userId = currentUser?.id || "anonymous";
   const isFlexiblePlacementEnabled = await isFeatureEnabled("flexible-placement", userId);
@@ -438,6 +462,11 @@ export default async function ShiftDetailsPage({
         className="mb-8"
         data-testid="shifts-details-page-header"
       />
+
+      {/* Profile completion banner - shows if profile incomplete */}
+      <Suspense fallback={null}>
+        <ShiftsProfileCompletionBanner />
+      </Suspense>
 
       {shifts.length === 0 ? (
         <div className="text-center py-20" data-testid="empty-state">
@@ -526,6 +555,7 @@ export default async function ShiftDetailsPage({
                           currentUserId={currentUser?.id}
                           session={session}
                           userFriendIds={userFriendIds}
+                          profileComplete={profileComplete}
                         />
                       ))}
                     </div>
@@ -554,6 +584,7 @@ export default async function ShiftDetailsPage({
                           currentUserId={currentUser?.id}
                           session={session}
                           userFriendIds={userFriendIds}
+                          profileComplete={profileComplete}
                         />
                       ))}
                     </div>

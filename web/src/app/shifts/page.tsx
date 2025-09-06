@@ -8,6 +8,8 @@ import { PageContainer } from "@/components/page-container";
 import { safeParseAvailability } from "@/lib/parse-availability";
 import { ShiftsCalendar } from "@/components/shifts-calendar";
 import { LOCATIONS, LocationOption } from "@/lib/locations";
+import { ShiftsProfileCompletionBanner } from "@/components/shifts-profile-completion-banner";
+import { Suspense } from "react";
 
 interface ShiftSummary {
   id: string;
@@ -342,6 +344,11 @@ export default async function ShiftsCalendarPage({
           </Link>
         </div>
       </div>
+
+      {/* Profile completion banner - shows if profile incomplete */}
+      <Suspense fallback={null}>
+        <ShiftsProfileCompletionBanner />
+      </Suspense>
 
       {/* Profile filter notification */}
       {isUsingProfileFilter && (

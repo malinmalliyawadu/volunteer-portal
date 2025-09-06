@@ -50,10 +50,30 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      profile(profile) {
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          // Request higher quality image (400x400 instead of default ~96x96)
+          image: profile.picture?.replace(/=s\d+-c$/, '=s400-c') || profile.picture,
+        };
+      },
     }),
     FacebookProvider({
       clientId: process.env.FACEBOOK_CLIENT_ID!,
       clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
+      // Request highest quality profile picture (800x800)
+      profileUrl: "https://graph.facebook.com/me?fields=id,name,email,picture.width(800).height(800)",
+      profile(profile: any) {
+        return {
+          id: profile.id,
+          name: profile.name,
+          email: profile.email,
+          // Facebook returns nested picture object with URL
+          image: profile.picture?.data?.url || null,
+        };
+      },
     }),
     AppleProvider({
       clientId: process.env.APPLE_ID!,

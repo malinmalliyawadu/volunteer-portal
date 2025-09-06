@@ -13,6 +13,7 @@ import { DashboardStatsSkeleton } from "@/components/dashboard-stats-skeleton";
 import { DashboardContentSkeleton } from "@/components/dashboard-content-skeleton";
 import { DashboardImpactStats } from "@/components/dashboard-impact-stats";
 import { DashboardQuickActions } from "@/components/dashboard-quick-actions";
+import { DashboardProfileCompletionBanner } from "@/components/dashboard-profile-completion-banner";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -30,6 +31,11 @@ export default async function DashboardPage() {
         title={`Welcome back${userName ? `, ${userName}` : ""}!`}
         description="Here's what's happening with your volunteer journey"
       />
+
+      {/* Profile completion banner - shows if profile incomplete */}
+      <Suspense fallback={null}>
+        <DashboardProfileCompletionBanner />
+      </Suspense>
 
       {/* Stats Overview - streams in when ready */}
       <Suspense fallback={<DashboardStatsSkeleton />}>
