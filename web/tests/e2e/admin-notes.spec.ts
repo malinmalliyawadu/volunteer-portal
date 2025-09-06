@@ -52,22 +52,42 @@ async function navigateToVolunteerProfile(page: Page, volunteerId: string) {
 }
 
 test.describe("Admin Notes Management", () => {
-  let testVolunteerId: string | null = null;
-
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);
-    
-    // Get a volunteer ID dynamically
-    if (!testVolunteerId) {
-      testVolunteerId = await getVolunteerIdFromUsersList(page);
-    }
   });
 
+  // Helper function to create a fresh test volunteer and return their ID
+  async function createTestVolunteer(page: Page): Promise<string> {
+    const testEmail = `test-volunteer-${Date.now()}@example.com`;
+    await createTestUser(testEmail, "VOLUNTEER");
+    
+    // Get the new user's ID by finding them in the users list
+    await page.goto("/admin/users");
+    await waitForPageLoad(page);
+    
+    // Look for the specific test user we just created
+    const testUserLink = page.locator(`a[href*="/admin/volunteers/"]:has-text("${testEmail}")`);
+    const href = await testUserLink.getAttribute("href");
+    
+    if (!href) {
+      throw new Error("Could not find test user");
+    }
+    
+    const match = href.match(/\/admin\/volunteers\/(.+)/);
+    const volunteerId = match ? match[1] : null;
+    
+    if (!volunteerId) {
+      throw new Error("Could not extract volunteer ID");
+    }
+    
+    return volunteerId;
+  }
+
   test("should display admin notes section on volunteer profile", async ({ page }) => {
-    test.skip(!testVolunteerId, "No volunteer found in database");
+    const testVolunteerId = await createTestVolunteer(page);
     
     // Navigate to volunteer profile
-    await navigateToVolunteerProfile(page, testVolunteerId!);
+    await navigateToVolunteerProfile(page, testVolunteerId);
     
     // Check that the admin notes card is visible
     const adminNotesCard = page.getByTestId("admin-notes-card");
@@ -79,18 +99,19 @@ test.describe("Admin Notes Management", () => {
   });
 
   test("should create a new admin note", async ({ page }) => {
-    test.skip(!testVolunteerId, "No volunteer found in database");
+    const testVolunteerId = await createTestVolunteer(page);
     
-    await navigateToVolunteerProfile(page, testVolunteerId!);
+    await navigateToVolunteerProfile(page, testVolunteerId);
     
     // Click the "Add Admin Note" button
     const addNoteButton = page.getByTestId("add-note-button");
     await addNoteButton.click();
     
     // Enter note content
+    const noteContent = "This is a test admin note for e2e testing";
     const noteTextarea = page.getByTestId("new-note-textarea");
     await expect(noteTextarea).toBeVisible();
-    await noteTextarea.fill("This is a test admin note for e2e testing");
+    await noteTextarea.fill(noteContent);
     
     // Save the note
     const saveButton = page.getByTestId("save-note-button");
@@ -104,13 +125,13 @@ test.describe("Admin Notes Management", () => {
     await expect(notesList).toBeVisible();
     
     // The note content should be visible
-    await expect(page.getByText("This is a test admin note for e2e testing")).toBeVisible();
+    await expect(page.getByText(noteContent)).toBeVisible();
   });
 
   test("should edit an existing admin note", async ({ page }) => {
-    test.skip(!testVolunteerId, "No volunteer found in database");
+    const testVolunteerId = await createTestVolunteer(page);
     
-    await navigateToVolunteerProfile(page, testVolunteerId!);
+    await navigateToVolunteerProfile(page, testVolunteerId);
     
     // First create a note to edit
     const addNoteButton = page.getByTestId("add-note-button");
@@ -144,9 +165,9 @@ test.describe("Admin Notes Management", () => {
   });
 
   test("should delete an admin note with confirmation dialog", async ({ page }) => {
-    test.skip(!testVolunteerId, "No volunteer found in database");
+    const testVolunteerId = await createTestVolunteer(page);
     
-    await navigateToVolunteerProfile(page, testVolunteerId!);
+    await navigateToVolunteerProfile(page, testVolunteerId);
     
     // First create a note to delete
     const addNoteButton = page.getByTestId("add-note-button");
@@ -179,9 +200,9 @@ test.describe("Admin Notes Management", () => {
   });
 
   test("should cancel note deletion when clicking cancel", async ({ page }) => {
-    test.skip(!testVolunteerId, "No volunteer found in database");
+    const testVolunteerId = await createTestVolunteer(page);
     
-    await navigateToVolunteerProfile(page, testVolunteerId!);
+    await navigateToVolunteerProfile(page, testVolunteerId);
     
     // First create a note
     const addNoteButton = page.getByTestId("add-note-button");
@@ -209,9 +230,9 @@ test.describe("Admin Notes Management", () => {
   });
 
   test("should cancel adding a new note", async ({ page }) => {
-    test.skip(!testVolunteerId, "No volunteer found in database");
+    const testVolunteerId = await createTestVolunteer(page);
     
-    await navigateToVolunteerProfile(page, testVolunteerId!);
+    await navigateToVolunteerProfile(page, testVolunteerId);
     
     // Click add note button
     const addNoteButton = page.getByTestId("add-note-button");
@@ -233,11 +254,11 @@ test.describe("Admin Notes Management", () => {
   });
 
   test("should display no notes message when volunteer has no notes", async ({ page }) => {
-    test.skip(!testVolunteerId, "No volunteer found in database");
+    const testVolunteerId = await createTestVolunteer(page);
     
-    await navigateToVolunteerProfile(page, testVolunteerId!);
+    await navigateToVolunteerProfile(page, testVolunteerId);
     
-    // Check for the no notes message (should show initially before any notes are created)
+    // Check for the no notes message (should show for fresh user with no notes)
     const noNotesMessage = page.getByTestId("no-notes-message");
     await expect(noNotesMessage).toBeVisible();
     await expect(page.getByText("No admin notes yet")).toBeVisible();
