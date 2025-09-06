@@ -9,9 +9,6 @@ import { SelectField } from "@/components/ui/select-field";
 import {
   ResponsiveDialog,
   ResponsiveDialogContent,
-  ResponsiveDialogDescription,
-  ResponsiveDialogHeader,
-  ResponsiveDialogTitle,
   ResponsiveDialogTrigger,
 } from "@/components/ui/responsive-dialog";
 import { Button } from "@/components/ui/button";
@@ -24,12 +21,13 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-  UserPlus,
   Shield,
   FileText,
   ExternalLink,
   Bell,
   CalendarIcon,
+  Check,
+  X,
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -143,25 +141,6 @@ export function AccountStep({
 }) {
   return (
     <div className="space-y-6" data-testid="account-step">
-      {!hideEmail && (
-        <div
-          className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6"
-          data-testid="welcome-message"
-        >
-          <div className="flex items-start space-x-3">
-            <UserPlus className="h-5 w-5 text-blue-600 mt-0.5" />
-            <div>
-              <h4 className="text-sm font-medium text-blue-800">
-                Welcome to Everybody Eats!
-              </h4>
-              <p className="text-sm text-blue-700">
-                Create your volunteer account to start making a difference in
-                your community.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
 
       {!hideEmail && (
         <div className="space-y-2" data-testid="email-field">
@@ -175,7 +154,7 @@ export function AccountStep({
             onChange={(e) => onInputChange("email", e.target.value)}
             placeholder="your.email@example.com"
             disabled={loading}
-            data-testid="pronouns-select"
+            className="h-11"
             required
             data-testid="email-input"
           />
@@ -197,12 +176,55 @@ export function AccountStep({
           required
           data-testid="password-input"
         />
-        <p
-          className="text-xs text-muted-foreground"
-          data-testid="password-hint"
-        >
-          Password must be at least 6 characters long
-        </p>
+        {formData.password && (
+          <div className="space-y-1" data-testid="password-requirements">
+            <div className="flex items-center gap-2 text-xs">
+              {(formData.password || "").length >= 6 ? (
+                <Check className="h-3 w-3 text-green-600" />
+              ) : (
+                <X className="h-3 w-3 text-red-500" />
+              )}
+              <span className={(formData.password || "").length >= 6 ? "text-green-600" : "text-red-500"}>
+                At least 6 characters
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-xs">
+              {/[A-Z]/.test(formData.password || "") ? (
+                <Check className="h-3 w-3 text-green-600" />
+              ) : (
+                <X className="h-3 w-3 text-red-500" />
+              )}
+              <span className={/[A-Z]/.test(formData.password || "") ? "text-green-600" : "text-red-500"}>
+                Contains uppercase letter
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-xs">
+              {/[a-z]/.test(formData.password || "") ? (
+                <Check className="h-3 w-3 text-green-600" />
+              ) : (
+                <X className="h-3 w-3 text-red-500" />
+              )}
+              <span className={/[a-z]/.test(formData.password || "") ? "text-green-600" : "text-red-500"}>
+                Contains lowercase letter
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-xs">
+              {/[0-9]/.test(formData.password || "") ? (
+                <Check className="h-3 w-3 text-green-600" />
+              ) : (
+                <X className="h-3 w-3 text-red-500" />
+              )}
+              <span className={/[0-9]/.test(formData.password || "") ? "text-green-600" : "text-red-500"}>
+                Contains number
+              </span>
+            </div>
+          </div>
+        )}
+        {!formData.password && (
+          <p className="text-xs text-muted-foreground" data-testid="password-hint">
+            Password must be at least 6 characters long and contain uppercase, lowercase, and number
+          </p>
+        )}
       </div>
 
       <div className="space-y-2" data-testid="confirm-password-field">
@@ -220,6 +242,18 @@ export function AccountStep({
           required
           data-testid="confirm-password-input"
         />
+        {formData.confirmPassword && formData.password && (
+          <div className="flex items-center gap-2 text-xs" data-testid="password-match-check">
+            {formData.password === formData.confirmPassword ? (
+              <Check className="h-3 w-3 text-green-600" />
+            ) : (
+              <X className="h-3 w-3 text-red-500" />
+            )}
+            <span className={formData.password === formData.confirmPassword ? "text-green-600" : "text-red-500"}>
+              {formData.password === formData.confirmPassword ? "Passwords match" : "Passwords do not match"}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -263,7 +297,6 @@ export function PersonalInfoStep({
             onChange={(e) => onInputChange("firstName", e.target.value)}
             placeholder="Your first name"
             disabled={loading}
-            data-testid="pronouns-select"
             required
           />
         </div>
@@ -278,7 +311,6 @@ export function PersonalInfoStep({
             onChange={(e) => onInputChange("lastName", e.target.value)}
             placeholder="Your last name"
             disabled={loading}
-            data-testid="pronouns-select"
             required
           />
         </div>
@@ -387,7 +419,6 @@ export function PersonalInfoStep({
                 }
                 placeholder="Please specify your pronouns"
                 disabled={loading}
-                data-testid="pronouns-select"
                 data-testid="custom-pronouns-input"
               />
             </div>

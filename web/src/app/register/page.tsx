@@ -368,13 +368,13 @@ export default function RegisterPage() {
   const getProviderButtonStyle = (providerId: string) => {
     switch (providerId) {
       case "google":
-        return "bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600";
+        return "bg-background hover:bg-accent/50 text-foreground border border-border";
       case "facebook":
-        return "bg-[#1877F2] hover:bg-[#166FE5] text-white";
+        return "bg-[#1877F2] hover:bg-[#1565C0] text-white hover:text-white border border-[#1877F2]";
       case "apple":
-        return "bg-black dark:bg-white hover:bg-gray-900 dark:hover:bg-gray-100 text-white dark:text-black";
+        return "bg-black hover:bg-gray-900 text-white hover:text-white border border-black";
       default:
-        return "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100";
+        return "bg-muted hover:bg-muted/80 text-foreground border border-border";
     }
   };
 
@@ -403,8 +403,32 @@ export default function RegisterPage() {
         }
         if (formData.password.length < 6) {
           toast({
-            title: "Password too short",
+            title: "Password too weak",
             description: "Password must be at least 6 characters long",
+            variant: "destructive",
+          });
+          return false;
+        }
+        if (!/[A-Z]/.test(formData.password)) {
+          toast({
+            title: "Password too weak",
+            description: "Password must contain at least one uppercase letter",
+            variant: "destructive",
+          });
+          return false;
+        }
+        if (!/[a-z]/.test(formData.password)) {
+          toast({
+            title: "Password too weak",
+            description: "Password must contain at least one lowercase letter",
+            variant: "destructive",
+          });
+          return false;
+        }
+        if (!/[0-9]/.test(formData.password)) {
+          toast({
+            title: "Password too weak",
+            description: "Password must contain at least one number",
             variant: "destructive",
           });
           return false;
@@ -480,16 +504,34 @@ export default function RegisterPage() {
       case 0:
         return (
           <div className="space-y-6">
-            {/* OAuth Providers */}
-            {oauthProviders.length > 0 && (
-              <div className="space-y-4" data-testid="oauth-providers">
-                <div className="text-center">
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Quick registration with your existing account
+            {/* Welcome Message */}
+            <div
+              className="bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 rounded-lg p-4"
+              data-testid="welcome-message"
+            >
+              <div className="flex items-start space-x-3">
+                <UserPlus className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+                <div>
+                  <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                    Welcome to Everybody Eats!
+                  </h4>
+                  <p className="text-sm text-blue-700 dark:text-blue-300">
+                    Create your volunteer account to start making a difference in
+                    your community.
                   </p>
                 </div>
-                <div className="grid gap-3">
-                  {oauthProviders.map((provider) => (
+              </div>
+            </div>
+
+            {/* OAuth Providers */}
+            <div className="space-y-4" data-testid="oauth-providers">
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground mb-4">
+                  Quick registration with your existing account
+                </p>
+              </div>
+              <div className="grid gap-3">
+                {oauthProviders.length > 0 ? oauthProviders.map((provider) => (
                     <Button
                       key={provider.id}
                       onClick={() => handleOAuthSignIn(provider.id)}
@@ -512,21 +554,27 @@ export default function RegisterPage() {
                         </>
                       )}
                     </Button>
-                  ))}
-                </div>
+                  )) : (
+                  // Loading skeleton for OAuth buttons
+                  <>
+                    <div className="h-11 bg-border animate-pulse rounded-md"></div>
+                    <div className="h-11 bg-border animate-pulse rounded-md"></div>
+                    <div className="h-11 bg-border animate-pulse rounded-md"></div>
+                  </>
+                )}
+              </div>
 
-                <div className="relative my-6" data-testid="oauth-divider">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t border-border" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">
-                      Or create account with email
-                    </span>
-                  </div>
+              <div className="relative my-6" data-testid="oauth-divider">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-border" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">
+                    Or create account with email
+                  </span>
                 </div>
               </div>
-            )}
+            </div>
 
             <AccountStep
               formData={formData}
