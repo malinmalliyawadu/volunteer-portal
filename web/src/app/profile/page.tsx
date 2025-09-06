@@ -130,6 +130,7 @@ export default async function ProfilePage() {
                       </Badge>
                     )}
                   </div>
+
                 </div>
 
                 <div className="flex gap-2">
