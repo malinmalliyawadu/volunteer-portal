@@ -1,11 +1,50 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { Button } from "@/components/ui/button";
 
 interface PolicyContentProps {
   content: string;
   className?: string;
+  onAgree?: () => void;
+  showAgreeButton?: boolean;
 }
 
-export function PolicyContent({ content, className = "" }: PolicyContentProps) {
+export function PolicyContent({ 
+  content, 
+  className = "", 
+  onAgree,
+  showAgreeButton = false
+}: PolicyContentProps) {
+  const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Reset scroll state when component mounts or when dialog opens
+  useEffect(() => {
+    if (showAgreeButton) {
+      setHasScrolledToBottom(false);
+      // Reset scroll position to top
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollTop = 0;
+      }
+    }
+  }, [showAgreeButton]);
+
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    if (!scrollContainer || !showAgreeButton) return;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
+      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 10; // 10px threshold
+      setHasScrolledToBottom(isAtBottom);
+    };
+
+    scrollContainer.addEventListener('scroll', handleScroll);
+    // Check initial state
+    handleScroll();
+
+    return () => scrollContainer.removeEventListener('scroll', handleScroll);
+  }, [showAgreeButton]);
+
   // Simple function to convert basic markdown to JSX
   const formatContent = (text: string) => {
     const lines = text.split("\n");
@@ -79,6 +118,30 @@ export function PolicyContent({ content, className = "" }: PolicyContentProps) {
   };
 
   return (
-    <div className={`max-w-none ${className}`}>{formatContent(content)}</div>
+    <div className={`max-w-none ${className}`}>
+      <div 
+        ref={scrollContainerRef}
+        className={showAgreeButton ? "max-h-96 overflow-y-auto pr-2" : ""}
+      >
+        {formatContent(content)}
+      </div>
+      {showAgreeButton && (
+        <div className="mt-4 pt-4 border-t border-border">
+          <Button
+            onClick={onAgree}
+            disabled={!hasScrolledToBottom}
+            className="w-full"
+            variant="default"
+          >
+            {hasScrolledToBottom ? "I agree to these terms" : "Please scroll to the bottom to continue"}
+          </Button>
+          {!hasScrolledToBottom && (
+            <p className="text-xs text-muted-foreground mt-2 text-center">
+              You must scroll to the bottom to read the complete policy before agreeing
+            </p>
+          )}
+        </div>
+      )}
+    </div>
   );
 }

@@ -17,7 +17,22 @@ import {
 import { Button } from "@/components/ui/button";
 import { PolicyContent } from "@/components/markdown-content";
 import { ProfileImageUpload } from "@/components/ui/profile-image-upload";
-import { UserPlus, Shield, FileText, ExternalLink, Bell } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  UserPlus,
+  Shield,
+  FileText,
+  ExternalLink,
+  Bell,
+  CalendarIcon,
+} from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 // Shared constants
 export const daysOfWeek = [
@@ -68,6 +83,7 @@ export interface UserProfileFormData {
   phone: string;
   dateOfBirth: string;
   pronouns: string;
+  customPronouns?: string;
   profilePhotoUrl?: string;
 
   // Emergency contact
@@ -159,7 +175,7 @@ export function AccountStep({
             onChange={(e) => onInputChange("email", e.target.value)}
             placeholder="your.email@example.com"
             disabled={loading}
-            className="h-11"
+            data-testid="pronouns-select"
             required
             data-testid="email-input"
           />
@@ -229,6 +245,10 @@ export function PersonalInfoStep({
     variant?: "default" | "destructive";
   }) => void;
 }) {
+  const dateOfBirth = formData.dateOfBirth
+    ? new Date(formData.dateOfBirth)
+    : undefined;
+  const [dobOpen, setDobOpen] = React.useState(false);
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -243,7 +263,7 @@ export function PersonalInfoStep({
             onChange={(e) => onInputChange("firstName", e.target.value)}
             placeholder="Your first name"
             disabled={loading}
-            className="h-11"
+            data-testid="pronouns-select"
             required
           />
         </div>
@@ -258,7 +278,7 @@ export function PersonalInfoStep({
             onChange={(e) => onInputChange("lastName", e.target.value)}
             placeholder="Your last name"
             disabled={loading}
-            className="h-11"
+            data-testid="pronouns-select"
             required
           />
         </div>
@@ -276,14 +296,14 @@ export function PersonalInfoStep({
             onChange={(e) => onInputChange("email", e.target.value)}
             placeholder="your.email@example.com"
             disabled={loading}
-            className="h-11"
+            data-testid="pronouns-select"
           />
         </div>
       )}
 
       <div className="space-y-2">
         <Label htmlFor="phone" className="text-sm font-medium">
-          Phone Number
+          Mobile Number *
         </Label>
         <Input
           id="phone"
@@ -291,7 +311,7 @@ export function PersonalInfoStep({
           type="tel"
           value={formData.phone}
           onChange={(e) => onInputChange("phone", e.target.value)}
-          placeholder="(123) 456-7890"
+          placeholder="0211234567"
           disabled={loading}
           className="h-11"
         />
@@ -300,16 +320,50 @@ export function PersonalInfoStep({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
           <Label htmlFor="dateOfBirth" className="text-sm font-medium">
-            Date of Birth
+            Date of Birth *
           </Label>
-          <Input
-            id="dateOfBirth"
-            type="date"
-            value={formData.dateOfBirth}
-            onChange={(e) => onInputChange("dateOfBirth", e.target.value)}
-            disabled={loading}
-            className="h-11"
-          />
+          <Popover open={dobOpen} onOpenChange={setDobOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-full justify-start text-left font-normal h-11",
+                  !dateOfBirth && "text-muted-foreground"
+                )}
+                disabled={loading}
+                data-testid="date-of-birth-input"
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {dateOfBirth ? (
+                  format(dateOfBirth, "PPP")
+                ) : (
+                  <span>Select your date of birth</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={dateOfBirth}
+                onSelect={(date) => {
+                  onInputChange(
+                    "dateOfBirth",
+                    date ? format(date, "yyyy-MM-dd") : ""
+                  );
+                  setDobOpen(false);
+                }}
+                disabled={(date) => {
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  return date >= today || loading;
+                }}
+                captionLayout="dropdown"
+                fromYear={1900}
+                toYear={new Date().getFullYear()}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
         </div>
         <div className="space-y-2">
           <Label htmlFor="pronouns" className="text-sm font-medium">
@@ -323,6 +377,21 @@ export function PersonalInfoStep({
             disabled={loading}
             data-testid="pronouns-select"
           />
+          {formData.pronouns === "other" && (
+            <div className="mt-2">
+              <Input
+                id="customPronouns"
+                value={formData.customPronouns || ""}
+                onChange={(e) =>
+                  onInputChange("customPronouns", e.target.value)
+                }
+                placeholder="Please specify your pronouns"
+                disabled={loading}
+                data-testid="pronouns-select"
+                data-testid="custom-pronouns-input"
+              />
+            </div>
+          )}
         </div>
       </div>
 
@@ -415,7 +484,7 @@ export function EmergencyContactStep({
 
       <div className="space-y-2">
         <Label htmlFor="emergencyContactPhone" className="text-sm font-medium">
-          Emergency Contact Phone
+          Emergency Contact Mobile
         </Label>
         <Input
           id="emergencyContactPhone"
@@ -425,7 +494,7 @@ export function EmergencyContactStep({
           onChange={(e) =>
             onInputChange("emergencyContactPhone", e.target.value)
           }
-          placeholder="(123) 456-7890"
+          placeholder="0211234567"
           disabled={loading}
           className="h-11"
         />
@@ -492,7 +561,7 @@ export function MedicalInfoStep({
 
       <div className="space-y-2">
         <Label htmlFor="howDidYouHearAboutUs" className="text-sm font-medium">
-          How did you hear about us?
+          How did you hear about us? *
         </Label>
         <SelectField
           name="howDidYouHearAboutUs"
@@ -500,6 +569,7 @@ export function MedicalInfoStep({
           options={hearAboutUsOptions}
           defaultValue={formData.howDidYouHearAboutUs}
           disabled={loading}
+          className="h-11"
           data-testid="how-did-you-hear-select"
         />
       </div>
@@ -634,45 +704,6 @@ export function CommunicationStep({
   return (
     <div className="space-y-6" data-testid="notification-preferences-form">
       <div className="space-y-4">
-        <div className="p-4 rounded-lg border border-border bg-muted/20">
-          <Label className="flex items-start space-x-3 text-sm font-medium cursor-pointer">
-            <Checkbox
-              checked={formData.emailNewsletterSubscription}
-              onCheckedChange={(checked) =>
-                onInputChange("emailNewsletterSubscription", checked)
-              }
-              disabled={loading}
-              className="mt-1"
-            />
-            <div>
-              <span>Subscribe to email newsletter</span>
-              <p className="text-xs text-muted-foreground mt-1 font-normal">
-                Stay updated with news, events, and volunteer opportunities.
-              </p>
-            </div>
-          </Label>
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="notificationPreference" className="text-sm font-medium">
-          Receive shift notifications by
-        </Label>
-        <SelectField
-          name="notificationPreference"
-          id="notificationPreference"
-          options={notificationOptions}
-          defaultValue={formData.notificationPreference}
-          disabled={loading}
-          data-testid="notification-preference-select"
-        />
-        <p className="text-xs text-muted-foreground">
-          Choose how you&apos;d like to receive notifications about shift
-          updates and reminders.
-        </p>
-      </div>
-
-      <div className="space-y-4 pt-6 border-t border-border">
         <h3 className="text-sm font-medium flex items-center gap-2">
           <Bell className="h-4 w-4" />
           Shortage Notifications
@@ -764,106 +795,94 @@ export function CommunicationStep({
           Required Agreements
         </h3>
         <div className="space-y-4">
-          <div className="p-4 rounded-lg border border-border bg-muted/20">
-            <div className="flex items-start space-x-3">
-              <Checkbox
-                data-testid="volunteer-agreement-checkbox"
-                checked={formData.volunteerAgreementAccepted}
-                onCheckedChange={(checked) =>
-                  onInputChange("volunteerAgreementAccepted", checked)
-                }
-                disabled={loading}
-                className="mt-1"
-              />
-              <div className="flex-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-sm font-medium">
-                    I have read and agree with the *
-                  </span>
-                  <ResponsiveDialog
-                    open={volunteerAgreementOpen}
-                    onOpenChange={setVolunteerAgreementOpen}
-                  >
-                    <ResponsiveDialogTrigger asChild>
-                      <Button
-                        variant="link"
-                        className="p-0 h-auto text-sm font-medium text-primary underline"
-                      >
-                        Volunteer Agreement
-                        <ExternalLink className="h-3 w-3 ml-1" />
-                      </Button>
-                    </ResponsiveDialogTrigger>
-                    <ResponsiveDialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                      <ResponsiveDialogHeader>
-                        <ResponsiveDialogTitle>
-                          Volunteer Agreement
-                        </ResponsiveDialogTitle>
-                        <ResponsiveDialogDescription>
-                          Please read the complete volunteer agreement below.
-                        </ResponsiveDialogDescription>
-                      </ResponsiveDialogHeader>
-                      <PolicyContent content={volunteerAgreementContent} />
-                    </ResponsiveDialogContent>
-                  </ResponsiveDialog>
+          <ResponsiveDialog
+            open={volunteerAgreementOpen}
+            onOpenChange={setVolunteerAgreementOpen}
+          >
+            <ResponsiveDialogTrigger asChild>
+              <div className="p-4 rounded-lg border border-border bg-muted/20 hover:bg-muted/30 cursor-pointer transition-colors">
+                <div className="flex items-start space-x-3">
+                  <Checkbox
+                    data-testid="volunteer-agreement-checkbox"
+                    checked={formData.volunteerAgreementAccepted}
+                    disabled={true}
+                    className="mt-1 pointer-events-none"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-medium">
+                        I have read and agree with the Volunteer Agreement *
+                      </span>
+                      <ExternalLink className="h-3 w-3" />
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {formData.volunteerAgreementAccepted
+                        ? "You have read and agreed to this agreement"
+                        : "Click here to read and agree to the agreement"}
+                    </p>
+                  </div>
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                This agreement outlines your responsibilities and expectations
-                as a volunteer.
-              </p>
-            </div>
-          </div>
+            </ResponsiveDialogTrigger>
+            <ResponsiveDialogContent className="max-w-2xl">
+              <PolicyContent
+                content={volunteerAgreementContent}
+                showAgreeButton={true}
+                onAgree={() => {
+                  onInputChange("volunteerAgreementAccepted", true);
+                  // Use setTimeout to ensure dialog closes after state update
+                  setTimeout(() => {
+                    setVolunteerAgreementOpen(false);
+                  }, 0);
+                }}
+              />
+            </ResponsiveDialogContent>
+          </ResponsiveDialog>
 
-          <div className="p-4 rounded-lg border border-border bg-muted/20">
-            <div className="flex items-start space-x-3">
-              <Checkbox
-                data-testid="health-safety-policy-checkbox"
-                checked={formData.healthSafetyPolicyAccepted}
-                onCheckedChange={(checked) =>
-                  onInputChange("healthSafetyPolicyAccepted", checked)
-                }
-                disabled={loading}
-                className="mt-1"
-              />
-              <div className="flex-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-sm font-medium">
-                    I have read and agree with the *
-                  </span>
-                  <ResponsiveDialog
-                    open={healthSafetyPolicyOpen}
-                    onOpenChange={setHealthSafetyPolicyOpen}
-                  >
-                    <ResponsiveDialogTrigger asChild>
-                      <Button
-                        variant="link"
-                        className="p-0 h-auto text-sm font-medium text-primary underline"
-                      >
-                        Health and Safety Policy
-                        <ExternalLink className="h-3 w-3 ml-1" />
-                      </Button>
-                    </ResponsiveDialogTrigger>
-                    <ResponsiveDialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                      <ResponsiveDialogHeader>
-                        <ResponsiveDialogTitle>
-                          Health and Safety Policy
-                        </ResponsiveDialogTitle>
-                        <ResponsiveDialogDescription>
-                          Please read the complete health and safety policy
-                          below.
-                        </ResponsiveDialogDescription>
-                      </ResponsiveDialogHeader>
-                      <PolicyContent content={healthSafetyPolicyContent} />
-                    </ResponsiveDialogContent>
-                  </ResponsiveDialog>
+          <ResponsiveDialog
+            open={healthSafetyPolicyOpen}
+            onOpenChange={setHealthSafetyPolicyOpen}
+          >
+            <ResponsiveDialogTrigger asChild>
+              <div className="p-4 rounded-lg border border-border bg-muted/20 hover:bg-muted/30 cursor-pointer transition-colors">
+                <div className="flex items-start space-x-3">
+                  <Checkbox
+                    data-testid="health-safety-policy-checkbox"
+                    checked={formData.healthSafetyPolicyAccepted}
+                    disabled={true}
+                    className="mt-1 pointer-events-none"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-medium">
+                        I have read and agree with the Health and Safety Policy
+                        *
+                      </span>
+                      <ExternalLink className="h-3 w-3" />
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {formData.healthSafetyPolicyAccepted
+                        ? "You have read and agreed to this policy"
+                        : "Click here to read and agree to the policy"}
+                    </p>
+                  </div>
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                This policy ensures the safety and well-being of all volunteers
-                and participants.
-              </p>
-            </div>
-          </div>
+            </ResponsiveDialogTrigger>
+            <ResponsiveDialogContent className="max-w-2xl">
+              <PolicyContent
+                content={healthSafetyPolicyContent}
+                showAgreeButton={true}
+                onAgree={() => {
+                  onInputChange("healthSafetyPolicyAccepted", true);
+                  // Use setTimeout to ensure dialog closes after state update
+                  setTimeout(() => {
+                    setHealthSafetyPolicyOpen(false);
+                  }, 0);
+                }}
+              />
+            </ResponsiveDialogContent>
+          </ResponsiveDialog>
         </div>
       </div>
     </div>

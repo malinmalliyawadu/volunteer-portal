@@ -153,6 +153,7 @@ export default function RegisterPage() {
     phone: "",
     dateOfBirth: "",
     pronouns: "none",
+    customPronouns: "",
 
     // Emergency contact
     emergencyContactName: "",
@@ -258,7 +259,9 @@ export default function RegisterPage() {
       // Process form data
       const processedData = {
         ...formData,
-        pronouns: formData.pronouns === "none" ? null : formData.pronouns,
+        pronouns: formData.pronouns === "none" ? null : 
+                 formData.pronouns === "other" ? formData.customPronouns || null : 
+                 formData.pronouns,
         howDidYouHearAboutUs:
           formData.howDidYouHearAboutUs === "not_specified"
             ? null
@@ -408,10 +411,20 @@ export default function RegisterPage() {
         }
         break;
       case 1: // Personal
-        if (!formData.firstName || !formData.lastName) {
+        if (!formData.firstName || !formData.lastName || !formData.dateOfBirth || !formData.phone) {
           toast({
             title: "Required fields missing",
-            description: "Please provide your first and last name",
+            description: "Please provide your first name, last name, date of birth, and mobile number",
+            variant: "destructive",
+          });
+          return false;
+        }
+        break;
+      case 3: // Medical & Background
+        if (!formData.howDidYouHearAboutUs || formData.howDidYouHearAboutUs === "not_specified") {
+          toast({
+            title: "Required field missing",
+            description: "Please tell us how you heard about us",
             variant: "destructive",
           });
           return false;
