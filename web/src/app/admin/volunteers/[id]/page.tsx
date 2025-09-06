@@ -22,6 +22,7 @@ import {
   Star,
   PauseCircle,
   CheckCircle,
+  FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AdminPageWrapper } from "@/components/admin-page-wrapper";
@@ -30,6 +31,7 @@ import { safeParseAvailability } from "@/lib/parse-availability";
 import { VolunteerGradeToggle } from "@/components/volunteer-grade-toggle";
 import { VolunteerGradeBadge } from "@/components/volunteer-grade-badge";
 import { UserRoleToggle } from "@/components/user-role-toggle";
+import { AdminNotesManager } from "@/components/admin-notes-manager";
 import { type VolunteerGrade } from "@prisma/client";
 import { LOCATIONS, LocationOption } from "@/lib/locations";
 
@@ -456,6 +458,19 @@ export default async function AdminVolunteerPage({
                     </p>
                   </div>
                 )}
+              </CardContent>
+            </Card>
+
+            {/* Admin Notes */}
+            <Card data-testid="admin-notes-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-orange-600" />
+                  Admin Notes
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <AdminNotesManager volunteerId={volunteer.id} />
               </CardContent>
             </Card>
 

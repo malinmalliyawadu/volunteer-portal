@@ -2241,6 +2241,77 @@ async function main() {
 
   console.log(`✅ Seeded ${templateConfigs.length} shift templates`);
 
+  // Seed admin notes for demonstration
+  console.log("🗒️  Seeding admin notes...");
+  
+  const adminUser = await prisma.user.findUnique({
+    where: { email: adminEmail },
+  });
+
+  // Get a few volunteers to add notes for
+  const volunteersForNotes = await prisma.user.findMany({
+    where: {
+      role: "VOLUNTEER",
+      email: { in: ["volunteer@example.com", "sarah.chen@gmail.com", "james.williams@hotmail.com", "priya.patel@yahoo.com", "mike.johnson@outlook.com"] }
+    },
+    take: 5,
+  });
+
+  const adminNotesSeedData = [
+    {
+      volunteerId: volunteersForNotes[0]?.id, // Main volunteer
+      content: "Excellent volunteer with great attitude. Always shows up early and helps with setup. Has kitchen experience and is very reliable.",
+      createdAt: subDays(new Date(), 15),
+    },
+    {
+      volunteerId: volunteersForNotes[0]?.id, // Second note for same volunteer
+      content: "Update: Now comfortable with leading food prep tasks. Consider for shift leader role in future.",
+      createdAt: subDays(new Date(), 3),
+    },
+    {
+      volunteerId: volunteersForNotes[1]?.id, // Sarah Chen
+      content: "New volunteer, very enthusiastic but needs guidance on food safety procedures. Paired well with experienced volunteers.",
+      createdAt: subDays(new Date(), 20),
+    },
+    {
+      volunteerId: volunteersForNotes[2]?.id, // James Williams
+      content: "Strong leadership skills. Great at organizing other volunteers and managing kitchen workflow. Excellent communication.",
+      createdAt: subDays(new Date(), 8),
+    },
+    {
+      volunteerId: volunteersForNotes[3]?.id, // Priya Patel
+      content: "Has dietary restrictions knowledge and is great with special dietary requests from clients. Very patient and kind.",
+      createdAt: subDays(new Date(), 12),
+    },
+    {
+      volunteerId: volunteersForNotes[4]?.id, // Mike Johnson
+      content: "Missed last two shifts without notice. Follow up needed on commitment level.",
+      createdAt: subDays(new Date(), 5),
+    },
+    {
+      volunteerId: volunteersForNotes[4]?.id, // Mike Johnson - follow up note
+      content: "Spoke with Mike about attendance. Had family emergency but didn't know how to notify us. Added to communications training list.",
+      createdAt: subDays(new Date(), 1),
+    },
+  ];
+
+  let createdNotesCount = 0;
+  for (const noteData of adminNotesSeedData) {
+    if (noteData.volunteerId && adminUser) {
+      await prisma.adminNote.create({
+        data: {
+          volunteerId: noteData.volunteerId,
+          content: noteData.content,
+          createdBy: adminUser.id,
+          createdAt: noteData.createdAt,
+        },
+      });
+      createdNotesCount++;
+    }
+  }
+
+  console.log(`✅ Seeded ${createdNotesCount} admin notes`);
+
   await downloadAndConvertProfileImages();
 }
 
