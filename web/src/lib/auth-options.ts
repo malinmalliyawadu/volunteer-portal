@@ -3,7 +3,6 @@ import type { JWT } from "next-auth/jwt";
 import Credentials from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import FacebookProvider from "next-auth/providers/facebook";
-import AppleProvider from "next-auth/providers/apple";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcrypt";
 
@@ -74,10 +73,6 @@ export const authOptions: NextAuthOptions = {
           image: profile.picture?.data?.url || null,
         };
       },
-    }),
-    AppleProvider({
-      clientId: process.env.APPLE_ID!,
-      clientSecret: process.env.APPLE_SECRET!,
     }),
     // Credentials Provider
     Credentials({
