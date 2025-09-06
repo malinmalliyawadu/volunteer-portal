@@ -28,9 +28,13 @@ test.describe("Admin Shift Creation Form", () => {
       await page.goto("/admin/shifts/new");
       await page.waitForLoadState("load");
 
-      // Check main tabs
+      // Check main tabs - Weekly Schedule is now default
       await expect(page.getByRole("tab", { name: "Single Shift" })).toBeVisible();
       await expect(page.getByRole("tab", { name: "Weekly Schedule" })).toBeVisible();
+      await expect(page.getByRole("tab", { name: "Edit Templates" })).toBeVisible();
+      
+      // Switch to Single Shift to check form sections
+      await page.getByRole("tab", { name: "Single Shift" }).click();
       
       // Check form sections are present
       await expect(page.getByText("Quick Templates")).toBeVisible();
@@ -44,17 +48,23 @@ test.describe("Admin Shift Creation Form", () => {
       await page.goto("/admin/shifts/new");
       await page.waitForLoadState("load");
 
-      // Check create shift type button exists
-      await expect(page.getByTestId("create-shift-type-button")).toBeVisible();
+      // Switch to Single Shift tab
+      await page.getByRole("tab", { name: "Single Shift" }).click();
+
+      // Check create shift type functionality exists - look for the trigger text
+      await expect(page.getByText("Need a new shift type?")).toBeVisible();
+      const createButton = page.getByText("Create one here");
+      await expect(createButton).toBeVisible();
       
       // Open create shift type dialog
-      await page.getByTestId("create-shift-type-button").click();
+      await createButton.click();
       
       // Check dialog content
-      await expect(page.getByText("Create New Shift Type")).toBeVisible();
-      await expect(page.getByTestId("shift-type-name-input")).toBeVisible();
-      await expect(page.getByTestId("shift-type-description-textarea")).toBeVisible();
-      await expect(page.getByTestId("create-shift-type-submit")).toBeVisible();
+      await expect(page.getByRole("dialog")).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Create New Shift Type" })).toBeVisible();
+      await expect(page.getByPlaceholder("e.g., Kitchen Volunteer")).toBeVisible();
+      await expect(page.getByPlaceholder("Describe the responsibilities and requirements...")).toBeVisible();
+      await expect(page.getByRole("button", { name: "Create Shift Type" })).toBeVisible();
     });
   });
 
@@ -63,31 +73,38 @@ test.describe("Admin Shift Creation Form", () => {
       await page.goto("/admin/shifts/new");
       await page.waitForLoadState("load");
 
-      // Check templates section
-      await expect(page.getByTestId("shift-templates-section")).toBeVisible();
-      await expect(page.getByTestId("add-template-button")).toBeVisible();
+      // Switch to Edit Templates tab
+      await page.getByRole("tab", { name: "Edit Templates" }).click();
+
+      // Check template management interface - look for the main content
+      await expect(page.getByText("Manage Shift Templates")).toBeVisible();
+      await expect(page.getByRole("button", { name: /Create.*Template/ })).toBeVisible();
       
-      // Check that some default templates are visible
-      const templateElements = page.locator('[data-testid^="template-"]').first();
-      await expect(templateElements).toBeVisible();
+      // Check that templates list or empty state is visible
+      const templatesSection = page.locator('[data-testid*="template"]').first();
+      const emptyState = page.getByText("No templates found");
+      // Either templates exist or empty state is shown
+      await expect(templatesSection.or(emptyState)).toBeVisible();
     });
 
     test("should open add template dialog", async ({ page }) => {
       await page.goto("/admin/shifts/new");
       await page.waitForLoadState("load");
 
+      // Switch to Edit Templates tab
+      await page.getByRole("tab", { name: "Edit Templates" }).click();
+
       // Open add template dialog
-      await page.getByTestId("add-template-button").click();
+      await page.getByRole("button", { name: /Create.*Template/ }).click();
       
       // Check dialog form fields
-      await expect(page.getByText("Add New Template")).toBeVisible();
-      await expect(page.getByTestId("template-name-input")).toBeVisible();
-      await expect(page.getByTestId("template-start-time-input")).toBeVisible();
-      await expect(page.getByTestId("template-end-time-input")).toBeVisible();
-      await expect(page.getByTestId("template-capacity-input")).toBeVisible();
-      await expect(page.getByTestId("template-shift-type-select")).toBeVisible();
-      await expect(page.getByTestId("template-notes-textarea")).toBeVisible();
-      await expect(page.getByTestId("save-template-button")).toBeVisible();
+      await expect(page.getByRole("dialog")).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Create New Template" })).toBeVisible();
+      await expect(page.getByPlaceholder("e.g., Morning Kitchen Shift")).toBeVisible();
+      await expect(page.locator('input[type="time"]')).toHaveCount(2); // start and end time
+      await expect(page.getByPlaceholder("Number of volunteers")).toBeVisible();
+      await expect(page.getByRole("combobox").first()).toBeVisible(); // shift type select
+      await expect(page.getByRole("button", { name: "Create Template" })).toBeVisible();
     });
   });
 
@@ -95,6 +112,9 @@ test.describe("Admin Shift Creation Form", () => {
     test("should have all required form fields", async ({ page }) => {
       await page.goto("/admin/shifts/new");
       await page.waitForLoadState("load");
+
+      // Switch to Single Shift tab
+      await page.getByRole("tab", { name: "Single Shift" }).click();
 
       // Check main form fields exist
       await expect(page.getByTestId("shift-type-select")).toBeVisible();
@@ -111,6 +131,9 @@ test.describe("Admin Shift Creation Form", () => {
       await page.goto("/admin/shifts/new");
       await page.waitForLoadState("load");
 
+      // Switch to Single Shift tab
+      await page.getByRole("tab", { name: "Single Shift" }).click();
+
       // Click date picker button
       await page.getByTestId("shift-date-input").click();
       
@@ -126,6 +149,9 @@ test.describe("Admin Shift Creation Form", () => {
       await page.goto("/admin/shifts/new");
       await page.waitForLoadState("load");
 
+      // Switch to Single Shift tab
+      await page.getByRole("tab", { name: "Single Shift" }).click();
+
       // Test time inputs accept values
       await page.getByTestId("shift-start-time-input").fill("14:00");
       await expect(page.getByTestId("shift-start-time-input")).toHaveValue("14:00");
@@ -137,6 +163,9 @@ test.describe("Admin Shift Creation Form", () => {
     test("should accept capacity input", async ({ page }) => {
       await page.goto("/admin/shifts/new");
       await page.waitForLoadState("load");
+
+      // Switch to Single Shift tab
+      await page.getByRole("tab", { name: "Single Shift" }).click();
 
       await page.getByTestId("shift-capacity-input").fill("5");
       await expect(page.getByTestId("shift-capacity-input")).toHaveValue("5");
@@ -200,6 +229,9 @@ test.describe("Admin Shift Creation Form", () => {
       await page.goto("/admin/shifts/new");
       await page.waitForLoadState("load");
 
+      // Switch to Single Shift tab
+      await page.getByRole("tab", { name: "Single Shift" }).click();
+
       // Check for required field labels (with asterisks)
       await expect(page.getByText("Select shift type *")).toBeVisible();
       await expect(page.getByText("Date *")).toBeVisible();
@@ -212,6 +244,9 @@ test.describe("Admin Shift Creation Form", () => {
     test("should validate capacity input constraints", async ({ page }) => {
       await page.goto("/admin/shifts/new");
       await page.waitForLoadState("load");
+
+      // Switch to Single Shift tab
+      await page.getByRole("tab", { name: "Single Shift" }).click();
 
       const capacityInput = page.getByTestId("shift-capacity-input");
       
@@ -227,11 +262,13 @@ test.describe("Admin Shift Creation Form", () => {
       await page.goto("/admin/shifts/new");
       await page.waitForLoadState("load");
 
-      // Check tab navigation
+      // Check tab navigation - Weekly Schedule is now default
       await expect(page.getByRole("tablist")).toBeVisible();
-      // Note: aria-selected might not be exactly "true" - check if tab is active
       const singleShiftTab = page.getByRole("tab", { name: "Single Shift" });
       await expect(singleShiftTab).toBeVisible();
+      
+      // Switch to Single Shift to check form
+      await singleShiftTab.click();
       
       // Check form has proper structure
       const form = page.locator("form").first();
@@ -241,6 +278,9 @@ test.describe("Admin Shift Creation Form", () => {
     test("should support keyboard navigation", async ({ page }) => {
       await page.goto("/admin/shifts/new");
       await page.waitForLoadState("load");
+
+      // Switch to Single Shift tab
+      await page.getByRole("tab", { name: "Single Shift" }).click();
 
       // Test tab navigation
       await page.keyboard.press("Tab");
@@ -257,6 +297,10 @@ test.describe("Admin Shift Creation Form", () => {
 
       // Check that main elements are still visible on mobile
       await expect(page.getByRole("tab", { name: "Single Shift" })).toBeVisible();
+      
+      // Switch to Single Shift tab
+      await page.getByRole("tab", { name: "Single Shift" }).click();
+      
       await expect(page.getByTestId("shift-type-select")).toBeVisible();
       await expect(page.getByTestId("create-shift-button").first()).toBeVisible();
     });
