@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,6 +28,8 @@ import {
   CalendarIcon,
   Check,
   X,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -139,6 +141,8 @@ export function AccountStep({
   loading: boolean;
   hideEmail?: boolean;
 }) {
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   return (
     <div className="space-y-6" data-testid="account-step">
 
@@ -165,17 +169,27 @@ export function AccountStep({
         <Label htmlFor="password" className="text-sm font-medium">
           Password *
         </Label>
-        <Input
-          id="password"
-          type="password"
-          value={formData.password || ""}
-          onChange={(e) => onInputChange("password", e.target.value)}
-          placeholder="Create a secure password"
-          disabled={loading}
-          className="h-11"
-          required
-          data-testid="password-input"
-        />
+        <div className="relative">
+          <Input
+            id="password"
+            type={showPassword ? "text" : "password"}
+            value={formData.password || ""}
+            onChange={(e) => onInputChange("password", e.target.value)}
+            placeholder="Create a secure password"
+            disabled={loading}
+            className="h-11 pr-10"
+            required
+            data-testid="password-input"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+            data-testid="toggle-password-visibility"
+          >
+            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+        </div>
         {formData.password && (
           <div className="space-y-1" data-testid="password-requirements">
             <div className="flex items-center gap-2 text-xs">
@@ -231,17 +245,27 @@ export function AccountStep({
         <Label htmlFor="confirmPassword" className="text-sm font-medium">
           Confirm Password *
         </Label>
-        <Input
-          id="confirmPassword"
-          type="password"
-          value={formData.confirmPassword || ""}
-          onChange={(e) => onInputChange("confirmPassword", e.target.value)}
-          placeholder="Confirm your password"
-          disabled={loading}
-          className="h-11"
-          required
-          data-testid="confirm-password-input"
-        />
+        <div className="relative">
+          <Input
+            id="confirmPassword"
+            type={showConfirmPassword ? "text" : "password"}
+            value={formData.confirmPassword || ""}
+            onChange={(e) => onInputChange("confirmPassword", e.target.value)}
+            placeholder="Confirm your password"
+            disabled={loading}
+            className="h-11 pr-10"
+            required
+            data-testid="confirm-password-input"
+          />
+          <button
+            type="button"
+            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+            data-testid="toggle-confirm-password-visibility"
+          >
+            {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+        </div>
         {formData.confirmPassword && formData.password && (
           <div className="flex items-center gap-2 text-xs" data-testid="password-match-check">
             {formData.password === formData.confirmPassword ? (
