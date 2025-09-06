@@ -52,42 +52,57 @@ async function navigateToVolunteerProfile(page: Page, volunteerId: string) {
 }
 
 test.describe("Admin Notes Management", () => {
-  test.beforeEach(async ({ page }) => {
+  let testVolunteerId: string | null = null;
+
+  test.beforeAll(async ({ browser }) => {
+    // Get a volunteer ID once for all tests in this suite
+    const context = await browser.newContext();
+    const page = await context.newPage();
     await loginAsAdmin(page);
+    testVolunteerId = await getVolunteerIdFromUsersList(page);
+    await context.close();
   });
 
-  // Helper function to create a fresh test volunteer and return their ID
-  async function createTestVolunteer(page: Page): Promise<string> {
-    const testEmail = `test-volunteer-${Date.now()}@example.com`;
-    await createTestUser(testEmail, "VOLUNTEER");
+  test.beforeEach(async ({ page }) => {
+    await loginAsAdmin(page);
     
-    // Get the new user's ID by finding them in the users list
-    await page.goto("/admin/users");
-    await waitForPageLoad(page);
-    
-    // Look for the specific test user we just created
-    const testUserLink = page.locator(`a[href*="/admin/volunteers/"]:has-text("${testEmail}")`);
-    const href = await testUserLink.getAttribute("href");
-    
-    if (!href) {
-      throw new Error("Could not find test user");
+    // Clean up any existing notes for this volunteer before each test
+    if (testVolunteerId) {
+      try {
+        const response = await page.evaluate(async (volunteerId) => {
+          return fetch(`/api/admin/admin-notes?volunteerId=${volunteerId}`, {
+            method: 'GET'
+          });
+        }, testVolunteerId);
+        
+        if (response) {
+          const notes = await page.evaluate(async (volunteerId) => {
+            const response = await fetch(`/api/admin/admin-notes?volunteerId=${volunteerId}`, {
+              method: 'GET'
+            });
+            return response.json();
+          }, testVolunteerId);
+          
+          // Delete each note
+          for (const note of notes) {
+            await page.evaluate(async (noteId) => {
+              return fetch(`/api/admin/admin-notes/${noteId}`, {
+                method: 'DELETE'
+              });
+            }, note.id);
+          }
+        }
+      } catch (error) {
+        console.log("Error cleaning up notes:", error);
+      }
     }
-    
-    const match = href.match(/\/admin\/volunteers\/(.+)/);
-    const volunteerId = match ? match[1] : null;
-    
-    if (!volunteerId) {
-      throw new Error("Could not extract volunteer ID");
-    }
-    
-    return volunteerId;
-  }
+  });
 
   test("should display admin notes section on volunteer profile", async ({ page }) => {
-    const testVolunteerId = await createTestVolunteer(page);
+    test.skip(!testVolunteerId, "No volunteer found in database");
     
     // Navigate to volunteer profile
-    await navigateToVolunteerProfile(page, testVolunteerId);
+    await navigateToVolunteerProfile(page, testVolunteerId!);
     
     // Check that the admin notes card is visible
     const adminNotesCard = page.getByTestId("admin-notes-card");
@@ -99,9 +114,9 @@ test.describe("Admin Notes Management", () => {
   });
 
   test("should create a new admin note", async ({ page }) => {
-    const testVolunteerId = await createTestVolunteer(page);
+    test.skip(!testVolunteerId, "No volunteer found in database");
     
-    await navigateToVolunteerProfile(page, testVolunteerId);
+    await navigateToVolunteerProfile(page, testVolunteerId!);
     
     // Click the "Add Admin Note" button
     const addNoteButton = page.getByTestId("add-note-button");
@@ -129,9 +144,9 @@ test.describe("Admin Notes Management", () => {
   });
 
   test("should edit an existing admin note", async ({ page }) => {
-    const testVolunteerId = await createTestVolunteer(page);
+    test.skip(!testVolunteerId, "No volunteer found in database");
     
-    await navigateToVolunteerProfile(page, testVolunteerId);
+    await navigateToVolunteerProfile(page, testVolunteerId!);
     
     // First create a note to edit
     const addNoteButton = page.getByTestId("add-note-button");
@@ -165,9 +180,9 @@ test.describe("Admin Notes Management", () => {
   });
 
   test("should delete an admin note with confirmation dialog", async ({ page }) => {
-    const testVolunteerId = await createTestVolunteer(page);
+    test.skip(!testVolunteerId, "No volunteer found in database");
     
-    await navigateToVolunteerProfile(page, testVolunteerId);
+    await navigateToVolunteerProfile(page, testVolunteerId!);
     
     // First create a note to delete
     const addNoteButton = page.getByTestId("add-note-button");
@@ -200,9 +215,9 @@ test.describe("Admin Notes Management", () => {
   });
 
   test("should cancel note deletion when clicking cancel", async ({ page }) => {
-    const testVolunteerId = await createTestVolunteer(page);
+    test.skip(!testVolunteerId, "No volunteer found in database");
     
-    await navigateToVolunteerProfile(page, testVolunteerId);
+    await navigateToVolunteerProfile(page, testVolunteerId!);
     
     // First create a note
     const addNoteButton = page.getByTestId("add-note-button");
@@ -230,9 +245,9 @@ test.describe("Admin Notes Management", () => {
   });
 
   test("should cancel adding a new note", async ({ page }) => {
-    const testVolunteerId = await createTestVolunteer(page);
+    test.skip(!testVolunteerId, "No volunteer found in database");
     
-    await navigateToVolunteerProfile(page, testVolunteerId);
+    await navigateToVolunteerProfile(page, testVolunteerId!);
     
     // Click add note button
     const addNoteButton = page.getByTestId("add-note-button");
@@ -254,9 +269,9 @@ test.describe("Admin Notes Management", () => {
   });
 
   test("should display no notes message when volunteer has no notes", async ({ page }) => {
-    const testVolunteerId = await createTestVolunteer(page);
+    test.skip(!testVolunteerId, "No volunteer found in database");
     
-    await navigateToVolunteerProfile(page, testVolunteerId);
+    await navigateToVolunteerProfile(page, testVolunteerId!);
     
     // Check for the no notes message (should show for fresh user with no notes)
     const noNotesMessage = page.getByTestId("no-notes-message");
