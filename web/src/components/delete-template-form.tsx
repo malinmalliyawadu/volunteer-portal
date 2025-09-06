@@ -38,7 +38,7 @@ export function DeleteTemplateForm({ templateId, templateName, deleteAction }: D
         <DialogHeader>
           <DialogTitle>Delete Template</DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete the template "{templateName}"? This action cannot be undone.
+            Are you sure you want to delete the template &ldquo;{templateName}&rdquo;? This action cannot be undone.
           </DialogDescription>
         </DialogHeader>
         <form action={handleSubmit}>
