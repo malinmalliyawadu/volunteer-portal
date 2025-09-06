@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { format } from "date-fns";
 import {
   Dialog,
@@ -51,7 +51,7 @@ export function AdminNotesDialog({
   const [open, setOpen] = useState(false);
 
   // Fetch notes when dialog opens
-  const fetchNotes = async () => {
+  const fetchNotes = useCallback(async () => {
     if (!open) return; // Don't fetch if dialog isn't open
     
     setLoading(true);
@@ -70,13 +70,13 @@ export function AdminNotesDialog({
     } finally {
       setLoading(false);
     }
-  };
+  }, [open, volunteerId]);
 
   useEffect(() => {
     if (open) {
       fetchNotes();
     }
-  }, [open, volunteerId]);
+  }, [open, volunteerId, fetchNotes]);
 
   // Get creator name
   const getCreatorName = (creator: AdminNote['creator']) => {

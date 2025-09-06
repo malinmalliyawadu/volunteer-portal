@@ -361,6 +361,6 @@ test.describe("Admin Notes Permissions", () => {
     // This test would require setting up a volunteer user and testing access
     // For now, we can test that the admin notes sections are not visible to non-admins
     // This would require a separate test setup or login as volunteer functionality
-    test.skip("Volunteer permission test - requires volunteer login setup");
+    test.skip(true, "Volunteer permission test - requires volunteer login setup");
   });
 });
