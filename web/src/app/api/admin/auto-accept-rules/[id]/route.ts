@@ -12,6 +12,7 @@ const updateRuleSchema = z.object({
   priority: z.number().int().min(0).optional(),
   global: z.boolean().optional(),
   shiftTypeId: z.string().optional().nullable(),
+  location: z.string().optional().nullable(),
   minVolunteerGrade: z.enum(["GREEN", "YELLOW", "PINK"]).optional().nullable(),
   minCompletedShifts: z.number().int().min(0).optional().nullable(),
   minAttendanceRate: z.number().min(0).max(100).optional().nullable(),

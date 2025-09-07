@@ -35,6 +35,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { VOLUNTEER_GRADE_OPTIONS } from "@/lib/volunteer-grades";
+import { LOCATIONS } from "@/lib/locations";
 
 const ruleFormSchema = z.object({
   name: z.string().min(1, "Name is required").max(100),
@@ -43,6 +44,7 @@ const ruleFormSchema = z.object({
   priority: z.number().int().min(0),
   global: z.boolean(),
   shiftTypeId: z.string().optional(),
+  location: z.string().optional(),
   minVolunteerGrade: z.enum(["GREEN", "YELLOW", "PINK", "NONE"]).optional(),
   minCompletedShifts: z.union([z.number().int().min(0), z.literal("")]).optional(),
   minAttendanceRate: z.union([z.number().min(0).max(100), z.literal("")]).optional(),
@@ -66,6 +68,7 @@ interface RuleFormDialogProps {
     priority: number;
     global: boolean;
     shiftTypeId: string | null;
+    location: string | null;
     minVolunteerGrade: string | null;
     minCompletedShifts: number | null;
     minAttendanceRate: number | null;
@@ -97,6 +100,7 @@ export function RuleFormDialog({
       priority: 0,
       global: false,
       shiftTypeId: "",
+      location: "ALL",
       minVolunteerGrade: "NONE" as const,
       minCompletedShifts: "" as number | "",
       minAttendanceRate: "" as number | "",
@@ -119,6 +123,7 @@ export function RuleFormDialog({
           priority: rule.priority,
           global: rule.global,
           shiftTypeId: rule.shiftTypeId || "",
+          location: rule.location || "ALL",
           minVolunteerGrade: rule.minVolunteerGrade ? (rule.minVolunteerGrade as "GREEN" | "YELLOW" | "PINK") : "NONE",
           minCompletedShifts: rule.minCompletedShifts ?? "",
           minAttendanceRate: rule.minAttendanceRate ?? "",
@@ -136,6 +141,7 @@ export function RuleFormDialog({
           priority: 0,
           global: false,
           shiftTypeId: "",
+          location: "ALL",
           minVolunteerGrade: "NONE" as const,
           minCompletedShifts: "" as number | "",
           minAttendanceRate: "" as number | "",
@@ -169,6 +175,7 @@ export function RuleFormDialog({
         ...values,
         description: values.description || null,
         shiftTypeId: values.global ? null : values.shiftTypeId || null,
+        location: values.location === "ALL" || !values.location ? null : values.location,
         minVolunteerGrade: values.minVolunteerGrade === "NONE" ? null : values.minVolunteerGrade || null,
         minCompletedShifts: values.minCompletedShifts === "" ? null : 
           typeof values.minCompletedShifts === "number" ? values.minCompletedShifts : null,
@@ -323,6 +330,33 @@ export function RuleFormDialog({
                   )}
                 />
               )}
+
+              <FormField
+                control={form.control}
+                name="location"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Location (Optional)</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="All locations" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="ALL">All locations</SelectItem>
+                        {LOCATIONS.map((location) => (
+                          <SelectItem key={location} value={location}>
+                            {location}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>Leave empty to apply to all locations</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
 
             <div className="space-y-4 border rounded-lg p-4">
