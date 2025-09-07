@@ -1,3 +1,9 @@
+## [0.34.0] - 2025-09-07
+
+### Changes
+- feat: add location-based auto accept rules ([#95](https://github.com/malinmalliyawadu/volunteer-portal/pull/95)) by @malinmalliyawadu
+
+
 ## [0.33.0] - 2025-09-07
 
 ### Changes
