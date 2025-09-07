@@ -2,7 +2,9 @@ import type { NextAuthOptions, Session } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 import Credentials from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
-import FacebookProvider from "next-auth/providers/facebook";
+import FacebookProvider, {
+  FacebookProfile,
+} from "next-auth/providers/facebook";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcrypt";
 
@@ -55,7 +57,8 @@ export const authOptions: NextAuthOptions = {
           name: profile.name,
           email: profile.email,
           // Request higher quality image (400x400 instead of default ~96x96)
-          image: profile.picture?.replace(/=s\d+-c$/, '=s400-c') || profile.picture,
+          image:
+            profile.picture?.replace(/=s\d+-c$/, "=s400-c") || profile.picture,
         };
       },
     }),
@@ -63,14 +66,14 @@ export const authOptions: NextAuthOptions = {
       clientId: process.env.FACEBOOK_CLIENT_ID!,
       clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
       // Request highest quality profile picture (800x800)
-      profileUrl: "https://graph.facebook.com/me?fields=id,name,email,picture.width(800).height(800)",
-      profile(profile: Record<string, unknown>) {
+      profileUrl:
+        "https://graph.facebook.com/me?fields=id,name,email,picture.width(800).height(800)",
+      profile(profile: FacebookProfile) {
         return {
-          id: profile.id as string,
-          name: profile.name as string,
-          email: profile.email as string,
-          // Facebook returns nested picture object with URL
-          image: (profile.picture as { data?: { url: string } })?.data?.url || null,
+          id: profile.id,
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture?.data?.url,
         };
       },
     }),
@@ -192,7 +195,7 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       const t = token as TokenWithProfile & { sub?: string };
-      const s = session as Session;
+      const s = session;
       if (s.user) {
         const u = s.user as SessionUserWithProfile;
         u.id = t.sub;
