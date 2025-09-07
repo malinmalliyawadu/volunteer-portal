@@ -1,3 +1,9 @@
+## [0.35.0] - 2025-09-07
+
+### Changes
+- feat: separate admin shifts by day and evening periods ([#96](https://github.com/malinmalliyawadu/volunteer-portal/pull/96)) by @malinmalliyawadu
+
+
 ## [0.34.0] - 2025-09-07
 
 ### Changes
