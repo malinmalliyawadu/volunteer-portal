@@ -64,13 +64,13 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
       // Request highest quality profile picture (800x800)
       profileUrl: "https://graph.facebook.com/me?fields=id,name,email,picture.width(800).height(800)",
-      profile(profile: any) {
+      profile(profile: Record<string, unknown>) {
         return {
-          id: profile.id,
-          name: profile.name,
-          email: profile.email,
+          id: profile.id as string,
+          name: profile.name as string,
+          email: profile.email as string,
           // Facebook returns nested picture object with URL
-          image: profile.picture?.data?.url || null,
+          image: (profile.picture as { data?: { url: string } })?.data?.url || null,
         };
       },
     }),

@@ -76,9 +76,12 @@ test.describe("Admin Shifts Page", () => {
 
     // Check that calendar popup is visible
     await expect(page.getByRole("dialog")).toBeVisible();
-    await expect(page.getByText("Legend:")).toBeVisible();
-    await expect(page.getByText("Fully Staffed")).toBeVisible();
-    await expect(page.getByText("Critical")).toBeVisible();
+    
+    // Check legend elements within the calendar dialog
+    const calendarDialog = page.getByRole("dialog");
+    await expect(calendarDialog.getByText("Legend:")).toBeVisible();
+    await expect(calendarDialog.getByText("Fully Staffed (100%+)")).toBeVisible();
+    await expect(calendarDialog.getByText("Critical (<25%)")).toBeVisible();
   });
 
   test("should change location using location selector", async ({ page }) => {
@@ -302,11 +305,12 @@ test.describe("Admin Shifts Page", () => {
         .filter({ hasText: /\d{4}/ });
       await calendarButton.click();
 
-      // Check legend items
-      await expect(page.getByText("Legend:")).toBeVisible();
-      await expect(page.getByText("Fully Staffed (100%+)")).toBeVisible();
-      await expect(page.getByText("Needs More (50-74%)")).toBeVisible();
-      await expect(page.getByText("Critical (<25%)")).toBeVisible();
+      // Check legend items within the calendar dialog
+      const calendarDialog = page.getByRole("dialog");
+      await expect(calendarDialog.getByText("Legend:")).toBeVisible();
+      await expect(calendarDialog.getByText("Fully Staffed (100%+)")).toBeVisible();
+      await expect(calendarDialog.getByText("Needs More (50-74%)")).toBeVisible();
+      await expect(calendarDialog.getByText("Critical (<25%)")).toBeVisible();
     });
   });
 
