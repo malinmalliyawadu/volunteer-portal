@@ -462,6 +462,7 @@ model AutoAcceptRule {
   priority          Int                 @default(0) // Higher priority evaluated first
   global            Boolean             @default(false) // Apply to all shift types
   shiftTypeId       String?             // Specific shift type (if not global)
+  location          String?             // Specific location (if null, applies to all locations)
   
   // Criteria - all optional, evaluated based on what's set
   minVolunteerGrade VolunteerGrade?     // Minimum grade required

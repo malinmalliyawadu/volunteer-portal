@@ -37,6 +37,7 @@ interface AutoAcceptRule {
   priority: number;
   global: boolean;
   shiftTypeId: string | null;
+  location: string | null;
   shiftType: { id: string; name: string } | null;
   minVolunteerGrade: string | null;
   minCompletedShifts: number | null;
@@ -219,6 +220,7 @@ export default function AutoAcceptRulesPage() {
                     <TableHead className="w-16">Enabled</TableHead>
                     <TableHead className="min-w-48">Name</TableHead>
                     <TableHead className="w-20">Scope</TableHead>
+                    <TableHead className="w-24">Location</TableHead>
                     <TableHead className="w-16">Priority</TableHead>
                     <TableHead className="min-w-48">Criteria</TableHead>
                     <TableHead className="w-24">Logic</TableHead>
@@ -257,6 +259,13 @@ export default function AutoAcceptRulesPage() {
                           <Badge variant="outline">
                             {rule.shiftType?.name || "Unknown"}
                           </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {rule.location ? (
+                          <Badge variant="outline">{rule.location}</Badge>
+                        ) : (
+                          <span className="text-muted-foreground text-xs">All</span>
                         )}
                       </TableCell>
                       <TableCell>

@@ -153,13 +153,15 @@ export async function evaluateAutoAcceptRules(
     // Get user statistics
     const userStats = await getUserWithStats(userId, shift.shiftTypeId);
     
-    // Get applicable rules (global + shift type specific)
+    // Get applicable rules (global + shift type specific + location specific)
     const rules = await prisma.autoAcceptRule.findMany({
       where: {
         enabled: true,
         OR: [
-          { global: true },
-          { shiftTypeId: shift.shiftTypeId },
+          { global: true, location: null }, // Global rules that apply to all locations
+          { shiftTypeId: shift.shiftTypeId, location: null }, // Shift type specific, all locations
+          { location: shift.location }, // Location specific (any shift type)
+          { shiftTypeId: shift.shiftTypeId, location: shift.location }, // Both shift type and location specific
         ],
       },
       orderBy: { priority: "desc" }, // Higher priority first
