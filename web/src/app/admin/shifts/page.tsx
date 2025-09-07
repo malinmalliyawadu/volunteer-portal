@@ -12,7 +12,7 @@ import { PageContainer } from "@/components/page-container";
 import { AdminPageWrapper } from "@/components/admin-page-wrapper";
 import { ShiftLocationSelector } from "@/components/shift-location-selector";
 import { ShiftCalendarWrapper } from "@/components/shift-calendar-wrapper";
-import { AnimatedShiftCardsWrapper } from "@/components/animated-shift-cards-wrapper";
+import { ShiftsByTimeOfDay } from "@/components/shifts-by-time-of-day";
 import { LOCATIONS, LocationOption, DEFAULT_LOCATION } from "@/lib/locations";
 
 interface AdminShiftsPageProps {
@@ -323,13 +323,7 @@ export default async function AdminShiftsPage({
             </Button>
           </div>
         ) : (
-          <>
-            <AnimatedShiftCardsWrapper
-              shifts={shifts}
-              dateString={dateString}
-              selectedLocation={selectedLocation}
-            />
-          </>
+          <ShiftsByTimeOfDay shifts={shifts} />
         )}
       </PageContainer>
     </AdminPageWrapper>
