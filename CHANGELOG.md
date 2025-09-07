@@ -1,3 +1,9 @@
+## [0.32.0] - 2025-09-06
+
+### Changes
+- feat: enhance shift creation with professional dialog-based template management ([#93](https://github.com/malinmalliyawadu/volunteer-portal/pull/93)) by @malinmalliyawadu
+
+
 ## [0.31.0] - 2025-09-06
 
 ### Changes
