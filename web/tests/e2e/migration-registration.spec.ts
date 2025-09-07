@@ -22,6 +22,41 @@ async function uploadTestImage(page: any) {
   await page.waitForTimeout(2000);
 }
 
+// Helper function to accept agreements through dialogs
+async function acceptAgreements(page: any) {
+  // Handle Volunteer Agreement
+  await page.click('text=I have read and agree with the Volunteer Agreement');
+  
+  // Wait for dialog to open and scroll to bottom
+  await page.waitForSelector('div[role="dialog"]', { state: 'visible' });
+  await page.evaluate(() => {
+    const scrollContainer = document.querySelector('div[role="dialog"] .overflow-y-auto');
+    if (scrollContainer) {
+      scrollContainer.scrollTo(0, scrollContainer.scrollHeight);
+    }
+  });
+  
+  // Wait for button to be enabled and click it
+  await page.waitForSelector('button:has-text("I agree to these terms"):not([disabled])', { timeout: 10000 });
+  await page.click('button:has-text("I agree to these terms")');
+  
+  // Handle Health Safety Policy
+  await page.click('text=I have read and agree with the Health and Safety Policy');
+  
+  // Wait for dialog to open and scroll to bottom
+  await page.waitForSelector('div[role="dialog"]', { state: 'visible' });
+  await page.evaluate(() => {
+    const scrollContainer = document.querySelector('div[role="dialog"] .overflow-y-auto');
+    if (scrollContainer) {
+      scrollContainer.scrollTo(0, scrollContainer.scrollHeight);
+    }
+  });
+  
+  // Wait for button to be enabled and click it
+  await page.waitForSelector('button:has-text("I agree to these terms"):not([disabled])', { timeout: 10000 });
+  await page.click('button:has-text("I agree to these terms")');
+}
+
 // Utility function to create isolated test user and token
 async function createTestUserWithToken(emailPrefix: string) {
   const timestamp = Date.now();
@@ -666,13 +701,8 @@ test.describe("Migration Registration Flow", () => {
         "Agreements required"
       );
 
-      // Accept agreements
-      await page
-        .locator('[data-testid="volunteer-agreement-checkbox"]')
-        .check({ force: true });
-      await page
-        .locator('[data-testid="health-safety-policy-checkbox"]')
-        .check({ force: true });
+      // Accept agreements through dialogs
+      await acceptAgreements(page);
 
       // Complete registration
       await page.click('[data-testid="next-step-button"]');
@@ -779,12 +809,7 @@ test.describe("Migration Registration Flow", () => {
       );
       await page.click('[data-testid="next-step-button"]');
       // Step 6: Final agreements
-      await page
-        .locator('[data-testid="volunteer-agreement-checkbox"]')
-        .check({ force: true });
-      await page
-        .locator('[data-testid="health-safety-policy-checkbox"]')
-        .check({ force: true });
+      await acceptAgreements(page);
       await page.click('[data-testid="next-step-button"]');
 
       // Check user is logged in and redirected to dashboard
@@ -835,12 +860,7 @@ test.describe("Migration Registration Flow", () => {
       );
       await page.click('[data-testid="next-step-button"]');
       // Step 6: Final agreements
-      await page
-        .locator('[data-testid="volunteer-agreement-checkbox"]')
-        .check({ force: true });
-      await page
-        .locator('[data-testid="health-safety-policy-checkbox"]')
-        .check({ force: true });
+      await acceptAgreements(page);
       await page.click('[data-testid="next-step-button"]');
 
       // Check user is logged in and redirected to dashboard

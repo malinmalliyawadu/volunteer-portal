@@ -179,11 +179,11 @@ test.describe("Profile Edit Page", () => {
       await expect(emailField).toBeVisible();
 
       // Check phone field
-      const phoneField = page.getByRole("textbox", { name: /phone/i });
+      const phoneField = page.getByRole("textbox", { name: /mobile number/i });
       await expect(phoneField).toBeVisible();
 
-      // Check date of birth field
-      const dobField = page.getByLabel(/date of birth/i);
+      // Check date of birth field (it's a button, not an input)
+      const dobField = page.getByTestId("date-of-birth-input");
       await expect(dobField).toBeVisible();
     });
 
@@ -232,7 +232,7 @@ test.describe("Profile Edit Page", () => {
       await expect(relationshipField).toBeVisible();
 
       // Check emergency contact phone field
-      const contactPhoneField = page.getByRole("textbox", { name: /emergency contact phone/i });
+      const contactPhoneField = page.getByRole("textbox", { name: /emergency contact mobile/i });
       await expect(contactPhoneField).toBeVisible();
     });
 

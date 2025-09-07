@@ -43,11 +43,18 @@ export function UserMenu({
         >
           <div data-testid="user-menu" className="flex items-center gap-2">
             <Avatar className="w-7 h-7 border border-white/20">
-              <AvatarImage
-                src={profilePhotoUrl || undefined}
-                alt="Profile"
-                className="object-cover"
-              />
+              {profilePhotoUrl ? (
+                <AvatarImage
+                  src={profilePhotoUrl}
+                  alt="Profile"
+                  className="object-cover"
+                  onError={(e) => {
+                    console.error('Avatar image failed to load:', profilePhotoUrl);
+                    // Hide the image on error so fallback shows
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+              ) : null}
               <AvatarFallback className="text-sm font-semibold bg-white/20 text-white backdrop-blur-sm">
                 {initials}
               </AvatarFallback>

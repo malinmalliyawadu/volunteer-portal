@@ -2,8 +2,9 @@ import type { NextAuthOptions, Session } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 import Credentials from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
-import FacebookProvider from "next-auth/providers/facebook";
-import AppleProvider from "next-auth/providers/apple";
+import FacebookProvider, {
+  FacebookProfile,
+} from "next-auth/providers/facebook";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcrypt";
 
@@ -50,14 +51,31 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      profile(profile) {
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          // Request higher quality image (400x400 instead of default ~96x96)
+          image:
+            profile.picture?.replace(/=s\d+-c$/, "=s400-c") || profile.picture,
+        };
+      },
     }),
     FacebookProvider({
       clientId: process.env.FACEBOOK_CLIENT_ID!,
       clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
-    }),
-    AppleProvider({
-      clientId: process.env.APPLE_ID!,
-      clientSecret: process.env.APPLE_SECRET!,
+      // Request highest quality profile picture (800x800)
+      profileUrl:
+        "https://graph.facebook.com/me?fields=id,name,email,picture.width(800).height(800)",
+      profile(profile: FacebookProfile) {
+        return {
+          id: profile.id,
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture?.data?.url,
+        };
+      },
     }),
     // Credentials Provider
     Credentials({
@@ -177,7 +195,7 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       const t = token as TokenWithProfile & { sub?: string };
-      const s = session as Session;
+      const s = session;
       if (s.user) {
         const u = s.user as SessionUserWithProfile;
         u.id = t.sub;
