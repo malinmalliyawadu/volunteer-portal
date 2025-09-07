@@ -1,3 +1,9 @@
+## [0.33.0] - 2025-09-07
+
+### Changes
+- feat: enhance volunteer registration form with improved UX and validation ([#94](https://github.com/malinmalliyawadu/volunteer-portal/pull/94)) by @malinmalliyawadu
+
+
 ## [0.32.0] - 2025-09-06
 
 ### Changes
