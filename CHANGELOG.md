@@ -1,3 +1,9 @@
+## [0.36.0] - 2025-09-08
+
+### Changes
+- feat: add searchable combobox for volunteer selection ([#97](https://github.com/malinmalliyawadu/volunteer-portal/pull/97)) by @malinmalliyawadu
+
+
 ## [0.35.0] - 2025-09-07
 
 ### Changes
