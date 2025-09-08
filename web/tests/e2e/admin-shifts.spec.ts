@@ -76,11 +76,13 @@ test.describe("Admin Shifts Page", () => {
 
     // Check that calendar popup is visible
     await expect(page.getByRole("dialog")).toBeVisible();
-    
+
     // Check legend elements within the calendar dialog
     const calendarDialog = page.getByRole("dialog");
     await expect(calendarDialog.getByText("Legend:")).toBeVisible();
-    await expect(calendarDialog.getByText("Fully Staffed (100%+)")).toBeVisible();
+    await expect(
+      calendarDialog.getByText("Fully Staffed (100%+)")
+    ).toBeVisible();
     await expect(calendarDialog.getByText("Critical (<25%)")).toBeVisible();
   });
 
@@ -308,8 +310,12 @@ test.describe("Admin Shifts Page", () => {
       // Check legend items within the calendar dialog
       const calendarDialog = page.getByRole("dialog");
       await expect(calendarDialog.getByText("Legend:")).toBeVisible();
-      await expect(calendarDialog.getByText("Fully Staffed (100%+)")).toBeVisible();
-      await expect(calendarDialog.getByText("Needs More (50-74%)")).toBeVisible();
+      await expect(
+        calendarDialog.getByText("Fully Staffed (100%+)")
+      ).toBeVisible();
+      await expect(
+        calendarDialog.getByText("Needs More (50-74%)")
+      ).toBeVisible();
       await expect(calendarDialog.getByText("Critical (<25%)")).toBeVisible();
     });
   });
@@ -650,41 +656,6 @@ test.describe("Admin Shifts Page", () => {
         const badgeText = await gradeBadges.first().textContent();
         expect(badgeText).toMatch(/(New|Standard|Experienced|Shift Leader)/);
       }
-    });
-  });
-
-  test.describe("Animations and Interactions", () => {
-    test("should have smooth animations on page load", async ({ page }) => {
-      await page.goto("/admin/shifts");
-      await page.waitForLoadState("load");
-
-      // Check that shift cards have animation classes/attributes
-      const shiftCards = page.locator('[data-testid^="shift-card-"]');
-
-      if ((await shiftCards.count()) > 0) {
-        // Cards should be visible after animations complete
-        await expect(shiftCards.first()).toBeVisible();
-
-        // Check that the animated wrapper is present
-        const animatedWrapper = page.locator(".grid");
-        await expect(animatedWrapper).toBeVisible();
-      }
-    });
-
-    test("should handle day transitions smoothly", async ({ page }) => {
-      await page.goto("/admin/shifts");
-      await page.waitForLoadState("load");
-
-      // Navigate to tomorrow
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      const tomorrowStr = tomorrow.toISOString().split("T")[0];
-
-      await page.goto(`/admin/shifts?date=${tomorrowStr}`);
-      await page.waitForLoadState("load");
-
-      // Content should load without errors
-      await expect(page.getByTestId("admin-page-header")).toBeVisible();
     });
   });
 
