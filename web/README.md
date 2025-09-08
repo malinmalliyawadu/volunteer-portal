@@ -27,8 +27,8 @@ A modern Next.js application for managing volunteers at Everybody Eats, an innov
 
 ### 📋 Prerequisites
 
-- 📦 Node.js 18+
-- 📦 npm, yarn, pnpm, or bun
+- 📦 Node.js 20+
+- 🐳 Docker
 
 ### 🔧 Installation
 
@@ -36,13 +36,17 @@ A modern Next.js application for managing volunteers at Everybody Eats, an innov
 
 ```bash
 npm install
-# or
-yarn install
-# or
-pnpm install
 ```
 
-2. **🗄️ Set up the database:**
+2. **🗄️ Set up PostgreSQL database:**
+
+   If you don't have PostgreSQL installed, you can run it with Docker:
+
+```bash
+docker run --name postgres -e POSTGRES_PASSWORD=password -p 5432:5432 -d postgres
+```
+
+3. **🗄️ Run database setup:**
 
 ```bash
 # Run database migrations
@@ -52,25 +56,25 @@ npm run prisma:migrate
 npm run prisma:seed
 ```
 
-3. **⚙️ Set up environment variables:**
-   Create a `.env.local` file in the root directory. See the [Environment Variables](#-environment-variables) section below for detailed configuration.
+4. **⚙️ Set up environment variables:**
 
-4. **🔒 Generate auth secret:**
+```bash
+# Copy the example environment file
+cp .env.example .env.local
+```
+
+   Then edit `.env.local` as needed. See the [Environment Variables](#-environment-variables) section below for detailed configuration.
+
+5. **🔒 Generate auth secret:**
 
 ```bash
 npx auth secret
 ```
 
-4. **🏃‍♂️ Run the development server:**
+6. **🏃‍♂️ Run the development server:**
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to see the volunteer portal. 🌐

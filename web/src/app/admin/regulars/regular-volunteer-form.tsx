@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Combobox } from "@/components/ui/combobox";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
@@ -65,6 +66,20 @@ export function RegularVolunteerForm({
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Transform volunteers into combobox options
+  const volunteerOptions = volunteers.map((v) => {
+    const displayName =
+      v.firstName && v.lastName
+        ? `${v.firstName} ${v.lastName}`
+        : v.name
+        ? v.name
+        : v.email;
+    return {
+      value: v.id,
+      label: `${displayName} (${v.email})`,
+    };
+  });
 
   const [formData, setFormData] = useState({
     userId: "",
@@ -190,31 +205,16 @@ export function RegularVolunteerForm({
                 {/* Volunteer Selection */}
                 <div className="space-y-2">
                   <Label htmlFor="userId">Volunteer *</Label>
-                  <Select
+                  <Combobox
+                    options={volunteerOptions}
                     value={formData.userId}
                     onValueChange={(value) => {
                       setFormData((prev) => ({ ...prev, userId: value }));
                     }}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select a volunteer..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {volunteers.map((v) => {
-                        const displayName =
-                          v.firstName && v.lastName
-                            ? `${v.firstName} ${v.lastName}`
-                            : v.name
-                            ? v.name
-                            : v.email;
-                        return (
-                          <SelectItem key={v.id} value={v.id}>
-                            {displayName} ({v.email})
-                          </SelectItem>
-                        );
-                      })}
-                    </SelectContent>
-                  </Select>
+                    placeholder="Select a volunteer..."
+                    searchPlaceholder="Search volunteers..."
+                    emptyText="No volunteers found."
+                  />
                 </div>
 
                 {/* Shift Type */}
