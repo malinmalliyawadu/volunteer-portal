@@ -27,8 +27,8 @@ A modern Next.js application for managing volunteers at Everybody Eats, an innov
 
 ### 📋 Prerequisites
 
-- 📦 Node.js 18+
-- 📦 npm, yarn, pnpm, or bun
+- 📦 Node.js 20+
+- 🐳 Docker
 
 ### 🔧 Installation
 
@@ -36,10 +36,6 @@ A modern Next.js application for managing volunteers at Everybody Eats, an innov
 
 ```bash
 npm install
-# or
-yarn install
-# or
-pnpm install
 ```
 
 2. **🗄️ Set up PostgreSQL database:**
@@ -47,11 +43,7 @@ pnpm install
    If you don't have PostgreSQL installed, you can run it with Docker:
 
 ```bash
-# Start PostgreSQL with Docker
 docker run --name postgres -e POSTGRES_PASSWORD=password -p 5432:5432 -d postgres
-
-# This will automatically download PostgreSQL if not present
-# Connection details: localhost:5432, username: postgres, password: password
 ```
 
 3. **🗄️ Run database setup:**
@@ -77,12 +69,6 @@ npx auth secret
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to see the volunteer portal. 🌐
