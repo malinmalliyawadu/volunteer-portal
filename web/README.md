@@ -42,7 +42,19 @@ yarn install
 pnpm install
 ```
 
-2. **🗄️ Set up the database:**
+2. **🗄️ Set up PostgreSQL database:**
+
+   If you don't have PostgreSQL installed, you can run it with Docker:
+
+```bash
+# Start PostgreSQL with Docker
+docker run --name postgres -e POSTGRES_PASSWORD=password -p 5432:5432 -d postgres
+
+# This will automatically download PostgreSQL if not present
+# Connection details: localhost:5432, username: postgres, password: password
+```
+
+3. **🗄️ Run database setup:**
 
 ```bash
 # Run database migrations
@@ -52,16 +64,16 @@ npm run prisma:migrate
 npm run prisma:seed
 ```
 
-3. **⚙️ Set up environment variables:**
+4. **⚙️ Set up environment variables:**
    Create a `.env.local` file in the root directory. See the [Environment Variables](#-environment-variables) section below for detailed configuration.
 
-4. **🔒 Generate auth secret:**
+5. **🔒 Generate auth secret:**
 
 ```bash
 npx auth secret
 ```
 
-4. **🏃‍♂️ Run the development server:**
+6. **🏃‍♂️ Run the development server:**
 
 ```bash
 npm run dev
