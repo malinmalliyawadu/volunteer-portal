@@ -57,7 +57,13 @@ npm run prisma:seed
 ```
 
 4. **⚙️ Set up environment variables:**
-   Create a `.env.local` file in the root directory. See the [Environment Variables](#-environment-variables) section below for detailed configuration.
+
+```bash
+# Copy the example environment file
+cp .env.example .env.local
+```
+
+   Then edit `.env.local` as needed. See the [Environment Variables](#-environment-variables) section below for detailed configuration.
 
 5. **🔒 Generate auth secret:**
 
