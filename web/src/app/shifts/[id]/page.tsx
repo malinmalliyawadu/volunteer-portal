@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { DashboardProfileCompletionBanner } from "@/components/dashboard-profile-completion-banner";
 
 // Shift type theming configuration (same as shifts page)
 const SHIFT_THEMES = {
@@ -135,8 +136,9 @@ export default async function ShiftDetailPage({
   // Check if the shift is in the past
   const isPastShift = new Date(shift.end) < new Date();
 
-  // Check if user is already signed up (if logged in)
+  // Check if user is already signed up (if logged in) and get parental consent info
   let userSignup = null;
+  let currentUser = null;
   if (userId) {
     userSignup = await prisma.signup.findFirst({
       where: {
@@ -147,12 +149,46 @@ export default async function ShiftDetailPage({
         },
       },
     });
+
+    // Get user info including parental consent status
+    currentUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        requiresParentalConsent: true,
+        parentalConsentReceived: true,
+        phone: true,
+        dateOfBirth: true,
+        emergencyContactName: true,
+        emergencyContactPhone: true,
+        volunteerAgreementAccepted: true,
+        healthSafetyPolicyAccepted: true,
+      },
+    });
   }
 
   const confirmedCount = shift._count.signups;
   const isWaitlist = confirmedCount >= shift.capacity;
   const spotsRemaining = Math.max(0, shift.capacity - confirmedCount);
   const theme = SHIFT_THEMES[shift.shiftType.name as keyof typeof SHIFT_THEMES] || DEFAULT_THEME;
+
+  // Check if user needs parental consent approval
+  const needsParentalConsent = currentUser && 
+    currentUser.requiresParentalConsent && 
+    !currentUser.parentalConsentReceived;
+
+  // Check if profile is incomplete
+  const missingFields = [];
+  if (currentUser) {
+    if (!currentUser.phone) missingFields.push("Mobile number");
+    if (!currentUser.dateOfBirth) missingFields.push("Date of birth");
+    if (!currentUser.emergencyContactName) missingFields.push("Emergency contact name");
+    if (!currentUser.emergencyContactPhone) missingFields.push("Emergency contact phone");
+    if (!currentUser.volunteerAgreementAccepted) missingFields.push("Volunteer agreement");
+    if (!currentUser.healthSafetyPolicyAccepted) missingFields.push("Health & safety policy");
+  }
+
+  const hasIncompleteProfile = missingFields.length > 0;
 
   // Format date and time
   const shiftDate = format(new Date(shift.start), "EEEE, MMMM d, yyyy");
@@ -270,6 +306,13 @@ export default async function ShiftDetailPage({
             </div>
           )}
 
+          {/* Profile Completion / Parental Consent Banner */}
+          {session && (needsParentalConsent || hasIncompleteProfile) && (
+            <div className="py-2">
+              <DashboardProfileCompletionBanner />
+            </div>
+          )}
+
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-3 pt-4">
             {!session ? (
@@ -298,6 +341,26 @@ export default async function ShiftDetailPage({
                   shiftName={shift.shiftType.name}
                 />
               </>
+            ) : needsParentalConsent ? (
+              // Needs parental consent - show disabled button with message
+              <div className="w-full space-y-2">
+                <Button disabled variant="secondary" className="w-full sm:w-auto">
+                  Parental Consent Required
+                </Button>
+                <p className="text-sm text-muted-foreground">
+                  You need parental consent approval before you can sign up for shifts.
+                </p>
+              </div>
+            ) : hasIncompleteProfile ? (
+              // Profile incomplete - show disabled button with message
+              <div className="w-full space-y-2">
+                <Button disabled variant="secondary" className="w-full sm:w-auto">
+                  Complete Profile Required
+                </Button>
+                <p className="text-sm text-muted-foreground">
+                  Please complete your profile to sign up for shifts.
+                </p>
+              </div>
             ) : (
               // Not signed up - show signup options
               <>
@@ -314,7 +377,6 @@ export default async function ShiftDetailPage({
                     {isWaitlist ? "Join Waitlist" : "Sign Up"}
                   </Button>
                 </ShiftSignupDialog>
-
               </>
             )}
           </div>

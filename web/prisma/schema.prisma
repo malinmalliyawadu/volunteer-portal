@@ -35,6 +35,12 @@ model User {
   healthSafetyPolicyAccepted   Boolean                @default(false)
   profileCompleted             Boolean                @default(false)
   
+  // Parental consent for minors (under 18)
+  requiresParentalConsent      Boolean                @default(false) // Calculated based on age
+  parentalConsentReceived      Boolean                @default(false) // Admin manually sets after receiving signed PDF
+  parentalConsentReceivedAt    DateTime?              // When admin approved parental consent
+  parentalConsentApprovedBy    String?                // Admin who approved the consent
+  
   // Shift shortage notification preferences
   receiveShortageNotifications Boolean                @default(true)
   excludedShortageNotificationTypes String[]          @default([]) // Array of shift type IDs they DON'T want notifications for (opt-out list), empty means get all types

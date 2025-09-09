@@ -16,6 +16,7 @@ import {
   ExternalLink,
   Bell,
   Settings,
+  FileText,
 } from "lucide-react";
 import {
   Sidebar,
@@ -75,6 +76,11 @@ const adminNavCategories = [
         title: "Restaurant Managers",
         href: "/admin/restaurant-managers",
         icon: ChefHat,
+      },
+      {
+        title: "Parental Consent",
+        href: "/admin/parental-consent",
+        icon: FileText,
       },
     ],
   },

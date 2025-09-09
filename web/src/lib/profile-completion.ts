@@ -5,6 +5,8 @@
 export interface ProfileCompletionStatus {
   isComplete: boolean;
   missingFields: string[];
+  needsParentalConsent?: boolean;
+  canSignUpForShifts: boolean;
 }
 
 export async function checkProfileCompletion(userId: string): Promise<ProfileCompletionStatus> {
@@ -20,6 +22,8 @@ export async function checkProfileCompletion(userId: string): Promise<ProfileCom
         emergencyContactPhone: true,
         volunteerAgreementAccepted: true,
         healthSafetyPolicyAccepted: true,
+        requiresParentalConsent: true,
+        parentalConsentReceived: true,
       },
     });
 
@@ -27,6 +31,7 @@ export async function checkProfileCompletion(userId: string): Promise<ProfileCom
       return {
         isComplete: false,
         missingFields: ["User profile not found"],
+        canSignUpForShifts: false,
       };
     }
 
@@ -39,15 +44,22 @@ export async function checkProfileCompletion(userId: string): Promise<ProfileCom
     if (!user.volunteerAgreementAccepted) missingFields.push("Volunteer agreement");
     if (!user.healthSafetyPolicyAccepted) missingFields.push("Health & safety policy");
 
+    const isProfileComplete = missingFields.length === 0;
+    const needsParentalConsent = user.requiresParentalConsent && !user.parentalConsentReceived;
+    const canSignUpForShifts = isProfileComplete && !needsParentalConsent;
+
     return {
-      isComplete: missingFields.length === 0,
+      isComplete: isProfileComplete,
       missingFields,
+      needsParentalConsent,
+      canSignUpForShifts,
     };
   } catch (error) {
     console.error("Error checking profile completion:", error);
     return {
       isComplete: false,
       missingFields: ["Error checking profile"],
+      canSignUpForShifts: false,
     };
   }
 }
