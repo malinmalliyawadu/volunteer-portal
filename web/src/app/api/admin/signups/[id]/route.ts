@@ -27,9 +27,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
   try {
     const body = await req.json();
-    const { action } = body; // "approve", "reject", "cancel", or "confirm"
+    const { action } = body; // "approve", "reject", "cancel", "confirm", "mark_present", or "mark_absent"
 
-    if (!["approve", "reject", "cancel", "confirm"].includes(action)) {
+    if (!["approve", "reject", "cancel", "confirm", "mark_present", "mark_absent"].includes(action)) {
       return NextResponse.json({ error: "Invalid action" }, { status: 400 });
     }
 
@@ -273,6 +273,62 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       return NextResponse.json({
         ...updatedSignup,
         message: "Signup confirmed and volunteer notified",
+      });
+    }
+
+    if (action === "mark_absent") {
+      // Mark volunteer as no-show for a past shift
+      if (signup.status !== "CONFIRMED") {
+        return NextResponse.json(
+          { error: "Only confirmed signups can be marked as absent" },
+          { status: 400 }
+        );
+      }
+
+      // Check if shift has ended
+      if (new Date() < signup.shift.end) {
+        return NextResponse.json(
+          { error: "Can only mark attendance for past shifts" },
+          { status: 400 }
+        );
+      }
+
+      const updatedSignup = await prisma.signup.update({
+        where: { id: signupId },
+        data: { status: "NO_SHOW" },
+      });
+
+      return NextResponse.json({
+        ...updatedSignup,
+        message: "Volunteer marked as no show",
+      });
+    }
+
+    if (action === "mark_present") {
+      // Mark volunteer as present (confirm attendance for a past shift)
+      if (signup.status !== "NO_SHOW" && signup.status !== "CONFIRMED") {
+        return NextResponse.json(
+          { error: "Only confirmed or no-show signups can have attendance marked" },
+          { status: 400 }
+        );
+      }
+
+      // Check if shift has ended
+      if (new Date() < signup.shift.end) {
+        return NextResponse.json(
+          { error: "Can only mark attendance for past shifts" },
+          { status: 400 }
+        );
+      }
+
+      const updatedSignup = await prisma.signup.update({
+        where: { id: signupId },
+        data: { status: "CONFIRMED" },
+      });
+
+      return NextResponse.json({
+        ...updatedSignup,
+        message: "Volunteer attendance confirmed",
       });
     }
   } catch (error) {

@@ -58,7 +58,7 @@ export default async function AdminShiftsPage({
       signups: {
         where: {
           status: {
-            in: ["CONFIRMED", "PENDING", "WAITLISTED", "REGULAR_PENDING"],
+            in: ["CONFIRMED", "PENDING", "WAITLISTED", "REGULAR_PENDING", "NO_SHOW"],
           },
         },
         include: {
@@ -100,7 +100,7 @@ export default async function AdminShiftsPage({
           signups: {
             where: {
               status: {
-                in: ["CONFIRMED", "PENDING", "WAITLISTED", "REGULAR_PENDING"],
+                in: ["CONFIRMED", "PENDING", "WAITLISTED", "REGULAR_PENDING", "NO_SHOW"],
               },
             },
           },
@@ -129,10 +129,14 @@ export default async function AdminShiftsPage({
       );
 
   // Get shift data for the calendar with location, capacity, and confirmed counts
+  // Include past shifts for attendance tracking - show last 30 days + future shifts
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  
   const allCalendarShifts = await prisma.shift.findMany({
     where: {
       start: {
-        gte: new Date(),
+        gte: thirtyDaysAgo,
       },
     },
     select: {
