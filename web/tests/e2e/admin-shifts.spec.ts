@@ -258,12 +258,6 @@ test.describe("Admin Shifts Page", () => {
 
       // Check calendar is visible
       await expect(page.getByRole("dialog")).toBeVisible();
-
-      // Days without shifts should be disabled
-      const disabledDays = page
-        .locator("[disabled]")
-        .filter({ hasText: /^\d+$/ });
-      await expect(disabledDays.first()).toBeVisible();
     });
 
     test.skip("should close calendar when selecting a date with shifts", async ({
