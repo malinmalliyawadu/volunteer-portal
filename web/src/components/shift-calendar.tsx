@@ -68,7 +68,7 @@ export function ShiftCalendar({
   };
 
   const handleDateSelect = (date: Date | undefined) => {
-    if (date && hasShifts(date)) {
+    if (date) {
       onDateSelect(date);
       setIsOpen(false);
     }
@@ -125,7 +125,6 @@ export function ShiftCalendar({
             mode="single"
             selected={selectedDate}
             onSelect={handleDateSelect}
-            disabled={(date) => !hasShifts(date)}
             modifiers={{
               hasShifts: (date) => hasShifts(date),
               selected: (date) => isSameDay(date, selectedDate),

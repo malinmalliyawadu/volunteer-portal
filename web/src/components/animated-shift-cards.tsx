@@ -70,6 +70,7 @@ import {
   Edit,
   Trash2,
   Info,
+  UserX,
 } from "lucide-react";
 import { VolunteerActions } from "@/components/volunteer-actions";
 import { getShiftTheme } from "@/lib/shift-themes";
@@ -181,6 +182,9 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
           ).length;
           const waitlisted = shift.signups.filter(
             (s) => s.status === "WAITLISTED"
+          ).length;
+          const noShow = shift.signups.filter(
+            (s) => s.status === "NO_SHOW"
           ).length;
           const staffingStatus = getStaffingStatus(confirmed, shift.capacity);
 
@@ -307,6 +311,15 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
                         >
                           <Users className="h-3 w-3" />
                           {waitlisted} waitlisted
+                        </div>
+                      )}
+                      {noShow > 0 && (
+                        <div
+                          data-testid={`no-show-badge-${shift.id}`}
+                          className="flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-medium"
+                        >
+                          <UserX className="h-3 w-3" />
+                          {noShow} no show
                         </div>
                       )}
                     </div>
