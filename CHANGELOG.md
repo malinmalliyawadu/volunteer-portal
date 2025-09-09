@@ -1,3 +1,9 @@
+## [0.37.0] - 2025-09-09
+
+### Changes
+- feat: add volunteer attendance tracking for past shifts ([#98](https://github.com/malinmalliyawadu/volunteer-portal/pull/98)) by @malinmalliyawadu
+
+
 ## [0.36.0] - 2025-09-08
 
 ### Changes
