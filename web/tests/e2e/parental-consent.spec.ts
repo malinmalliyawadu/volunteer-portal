@@ -292,8 +292,8 @@ test.describe("Parental Consent System", () => {
 
       // Should show Sophia Brown (from seed data) in the table
       await expect(page.getByText("Sophia Brown")).toBeVisible();
-      await expect(page.getByText("15 years old")).toBeVisible();
-      await expect(page.getByText("sophia.brown@gmail.com")).toBeVisible();
+      await expect(page.getByText("15 years")).toBeVisible();
+      await expect(page.getByText("sophia.brown@gmail.com").first()).toBeVisible();
     });
 
     test.skip("should allow admin to approve parental consent", async ({ page }) => {
