@@ -1,3 +1,9 @@
+## [0.37.1] - 2025-09-10
+
+### Changes
+- feat: implement parental consent system for volunteers under 18 ([#99](https://github.com/malinmalliyawadu/volunteer-portal/pull/99)) by @malinmalliyawadu
+
+
 ## [0.37.0] - 2025-09-09
 
 ### Changes
