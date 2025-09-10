@@ -490,12 +490,13 @@ export function PersonalInfoStep({
                   </Button>
                 </div>
                 <div className="text-sm text-orange-700 dark:text-orange-300">
-                  <p className="font-medium">Next steps:</p>
-                  <ol className="list-decimal list-inside mt-2 space-y-1 text-xs">
+                  <p className="font-medium mb-2">You can continue registering now - parental consent can be submitted separately:</p>
+                  <ol className="list-decimal list-inside space-y-1 text-xs">
+                    <li>Complete your registration below</li>
                     <li>Download the parental consent form above</li>
-                    <li>Print and complete the form with a parent/guardian</li>
+                    <li>Print and have your parent/guardian complete and sign it</li>
                     <li>Email the signed form to: <strong>volunteers@everybodyeats.nz</strong></li>
-                    <li>Complete your registration - your profile will be approved once we receive the consent form</li>
+                    <li>We'll approve your profile once we receive the consent form</li>
                   </ol>
                 </div>
               </div>
