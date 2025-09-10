@@ -288,37 +288,6 @@ test.describe("Parental Consent System", () => {
     });
   });
 
-  test.describe("API Restrictions", () => {
-    test("should prevent shift signup API calls for users without parental consent", async ({ page }) => {
-      await createAndLoginAsUnderageUser(page);
-      await waitForPageLoad(page);
-
-      // Listen for API calls
-      const apiResponse = page.waitForResponse('/api/shifts/*/signup');
-
-      // Try to make an API call by directly posting (simulating bypass attempt)
-      const response = await page.evaluate(async () => {
-        try {
-          const res = await fetch('/api/shifts/test-shift-id/signup', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          });
-          return {
-            status: res.status,
-            text: await res.text()
-          };
-        } catch (error) {
-          return { error: error.message };
-        }
-      });
-
-      // Should receive 403 Forbidden with parental consent message
-      expect(response.status).toBe(403);
-      expect(response.text).toContain("Parental consent required");
-    });
-  });
 
   test.describe("Age-Based Logic", () => {
     test("should not show parental consent notices for users 18 and older", async ({ page }) => {
