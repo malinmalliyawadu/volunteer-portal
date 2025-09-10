@@ -348,7 +348,7 @@ export default async function ShiftDetailPage({
                   Parental Consent Required
                 </Button>
                 <p className="text-sm text-muted-foreground">
-                  You need parental consent approval before you can sign up for shifts.
+                  Please download the consent form from your dashboard, have your parent/guardian sign it, and email it to <strong>volunteers@everybodyeats.nz</strong> for approval.
                 </p>
               </div>
             ) : hasIncompleteProfile ? (

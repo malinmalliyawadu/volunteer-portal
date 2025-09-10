@@ -75,9 +75,15 @@ export function DashboardProfileCompletionBanner() {
               <p className="mb-2">
                 Since you&apos;re under 18, we need parental consent before you can participate in shifts.
               </p>
-              <p className="text-xs mb-3">
-                We&apos;ve sent your registration details to our team. You&apos;ll be able to sign up for shifts once an admin approves your consent form.
-              </p>
+              <div className="text-xs mb-3 space-y-1">
+                <p className="font-medium">Next steps:</p>
+                <ol className="list-decimal list-inside space-y-0.5 ml-2">
+                  <li>Download the consent form below</li>
+                  <li>Print and have your parent/guardian complete and sign it</li>
+                  <li>Email the signed form to: <strong>volunteers@everybodyeats.nz</strong></li>
+                  <li>We&apos;ll approve your profile once we receive the form</li>
+                </ol>
+              </div>
               <div className="flex items-center gap-2">
                 <Button 
                   size="sm" 
