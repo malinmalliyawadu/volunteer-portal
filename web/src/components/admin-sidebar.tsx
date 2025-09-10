@@ -184,6 +184,7 @@ export function AdminSidebar({
                   const testIdMap: Record<string, string> = {
                     "/admin/shifts": "manage-shifts-button",
                     "/admin/users": "manage-users-button",
+                    "/admin/parental-consent": "sidebar-parental-consent",
                   };
 
                   const testId =
