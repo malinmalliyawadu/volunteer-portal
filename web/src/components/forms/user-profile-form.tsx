@@ -496,7 +496,7 @@ export function PersonalInfoStep({
                     <li>Download the parental consent form above</li>
                     <li>Print and have your parent/guardian complete and sign it</li>
                     <li>Email the signed form to: <strong>volunteers@everybodyeats.nz</strong></li>
-                    <li>We'll approve your profile once we receive the consent form</li>
+                    <li>We&apos;ll approve your profile once we receive the consent form</li>
                   </ol>
                 </div>
               </div>
