@@ -450,6 +450,62 @@ export function PersonalInfoStep({
         </div>
       </div>
 
+      {/* Parental Consent for Minors */}
+      {isRegistration && dateOfBirth && (() => {
+        const today = new Date();
+        const age = today.getFullYear() - dateOfBirth.getFullYear();
+        const hasHadBirthdayThisYear = 
+          today.getMonth() > dateOfBirth.getMonth() ||
+          (today.getMonth() === dateOfBirth.getMonth() && today.getDate() >= dateOfBirth.getDate());
+        const actualAge = hasHadBirthdayThisYear ? age : age - 1;
+        
+        if (actualAge < 18) {
+          return (
+            <div className="space-y-4 bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4" data-testid="parental-consent-notice">
+              <div className="flex items-start space-x-3">
+                <FileText className="h-5 w-5 text-orange-600 dark:text-orange-400 mt-0.5" />
+                <div>
+                  <h4 className="text-sm font-medium text-orange-800 dark:text-orange-200">
+                    Parental Consent Required
+                  </h4>
+                  <p className="text-sm text-orange-700 dark:text-orange-300 mt-1">
+                    Since you are under 18, we require a signed parental consent form before you can volunteer.
+                  </p>
+                </div>
+              </div>
+              <div className="ml-8 space-y-3">
+                <div>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm" 
+                    className="text-orange-700 dark:text-orange-300 border-orange-300 dark:border-orange-700 hover:bg-orange-100 dark:hover:bg-orange-900/30"
+                    onClick={() => {
+                      window.open('/parental-consent-form.pdf', '_blank');
+                    }}
+                    data-testid="download-consent-form-button"
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
+                    Download Consent Form
+                  </Button>
+                </div>
+                <div className="text-sm text-orange-700 dark:text-orange-300">
+                  <p className="font-medium mb-2">You can continue registering now - parental consent can be submitted separately:</p>
+                  <ol className="list-decimal list-inside space-y-1 text-xs">
+                    <li>Complete your registration below</li>
+                    <li>Download the parental consent form above</li>
+                    <li>Print and have your parent/guardian complete and sign it</li>
+                    <li>Email the signed form to: <strong>volunteers@everybodyeats.nz</strong></li>
+                    <li>We&apos;ll approve your profile once we receive the consent form</li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+          );
+        }
+        return null;
+      })()}
+
       {!isRegistration && (
         <div className="space-y-2">
           <ProfileImageUpload

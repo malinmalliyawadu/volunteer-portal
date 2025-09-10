@@ -143,6 +143,19 @@ export async function POST(req: Request) {
     // Hash password
     const hashedPassword = await bcrypt.hash(validatedData.password, 10);
 
+    // Calculate age and parental consent requirements
+    let requiresParentalConsent = false;
+    if (validatedData.dateOfBirth) {
+      const birthDate = new Date(validatedData.dateOfBirth);
+      const today = new Date();
+      const age = today.getFullYear() - birthDate.getFullYear();
+      const hasHadBirthdayThisYear = 
+        today.getMonth() > birthDate.getMonth() ||
+        (today.getMonth() === birthDate.getMonth() && today.getDate() >= birthDate.getDate());
+      const actualAge = hasHadBirthdayThisYear ? age : age - 1;
+      requiresParentalConsent = actualAge < 18;
+    }
+
     // Prepare data for database insertion
     const userData = {
       email: validatedData.email,
@@ -185,6 +198,10 @@ export async function POST(req: Request) {
       notificationPreference: validatedData.notificationPreference || "EMAIL",
       volunteerAgreementAccepted: validatedData.volunteerAgreementAccepted,
       healthSafetyPolicyAccepted: validatedData.healthSafetyPolicyAccepted,
+      
+      // Parental consent fields
+      requiresParentalConsent,
+      parentalConsentReceived: false, // Always false initially
       
       // Profile image
       profilePhotoUrl: validatedData.profilePhotoUrl || null,

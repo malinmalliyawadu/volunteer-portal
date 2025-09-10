@@ -76,13 +76,15 @@ function ShiftCard({
   currentUserId,
   session,
   userFriendIds = [],
-  profileComplete = true,
+  canSignUp = true,
+  needsParentalConsent = false,
 }: {
   shift: ShiftWithRelations;
   currentUserId?: string;
   session: unknown;
   userFriendIds?: string[];
-  profileComplete?: boolean;
+  canSignUp?: boolean;
+  needsParentalConsent?: boolean;
 }) {
   const theme = getShiftTheme(shift.shiftType.name);
   const duration = getDurationInHours(shift.start, shift.end);
@@ -249,7 +251,7 @@ function ShiftCard({
                 className="w-full"
               />
             ) : session ? (
-              profileComplete ? (
+              canSignUp ? (
                 <ShiftSignupDialog
                   shift={{
                     id: shift.id,
@@ -287,7 +289,11 @@ function ShiftCard({
                   className="w-full font-medium bg-gray-100 text-gray-400 cursor-not-allowed"
                   variant="outline"
                 >
-                  {isFull ? "Complete Profile to Join Waitlist" : "Complete Profile to Sign Up"}
+                  {needsParentalConsent
+                    ? "Parental Consent Required"
+                    : isFull
+                    ? "Complete Profile to Join Waitlist"
+                    : "Complete Profile to Sign Up"}
                 </Button>
               )
             ) : (
@@ -374,10 +380,12 @@ export default async function ShiftDetailsPage({
   }
 
   // Check profile completion status for button state
-  let profileComplete = true;
+  let canSignUpForShifts = true;
+  let needsParentalConsent = false;
   if (currentUser?.id) {
     const profileStatus = await checkProfileCompletion(currentUser.id);
-    profileComplete = profileStatus.isComplete;
+    canSignUpForShifts = profileStatus.canSignUpForShifts;
+    needsParentalConsent = profileStatus.needsParentalConsent || false;
   }
 
 
@@ -555,7 +563,8 @@ export default async function ShiftDetailsPage({
                           currentUserId={currentUser?.id}
                           session={session}
                           userFriendIds={userFriendIds}
-                          profileComplete={profileComplete}
+                          canSignUp={canSignUpForShifts}
+                          needsParentalConsent={needsParentalConsent}
                         />
                       ))}
                     </div>
@@ -584,7 +593,8 @@ export default async function ShiftDetailsPage({
                           currentUserId={currentUser?.id}
                           session={session}
                           userFriendIds={userFriendIds}
-                          profileComplete={profileComplete}
+                          canSignUp={canSignUpForShifts}
+                          needsParentalConsent={needsParentalConsent}
                         />
                       ))}
                     </div>

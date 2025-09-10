@@ -64,6 +64,8 @@ export async function GET() {
       excludedShortageNotificationTypes: true,
       volunteerAgreementAccepted: true,
       healthSafetyPolicyAccepted: true,
+      requiresParentalConsent: true,
+      parentalConsentReceived: true,
       createdAt: true,
     },
   });
@@ -212,6 +214,8 @@ export async function PUT(req: Request) {
         excludedShortageNotificationTypes: true,
         volunteerAgreementAccepted: true,
         healthSafetyPolicyAccepted: true,
+        requiresParentalConsent: true,
+        parentalConsentReceived: true,
       },
     });
 

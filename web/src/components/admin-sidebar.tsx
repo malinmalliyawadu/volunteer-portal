@@ -16,6 +16,7 @@ import {
   ExternalLink,
   Bell,
   Settings,
+  FileText,
 } from "lucide-react";
 import {
   Sidebar,
@@ -75,6 +76,11 @@ const adminNavCategories = [
         title: "Restaurant Managers",
         href: "/admin/restaurant-managers",
         icon: ChefHat,
+      },
+      {
+        title: "Parental Consent",
+        href: "/admin/parental-consent",
+        icon: FileText,
       },
     ],
   },
@@ -178,6 +184,7 @@ export function AdminSidebar({
                   const testIdMap: Record<string, string> = {
                     "/admin/shifts": "manage-shifts-button",
                     "/admin/users": "manage-users-button",
+                    "/admin/parental-consent": "sidebar-parental-consent",
                   };
 
                   const testId =

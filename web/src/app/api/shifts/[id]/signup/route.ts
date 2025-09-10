@@ -14,9 +14,29 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   }
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
+    select: {
+      id: true,
+      email: true,
+      requiresParentalConsent: true,
+      parentalConsentReceived: true,
+      firstName: true,
+      lastName: true,
+      role: true,
+    },
   });
   if (!user)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  // Check parental consent for minors
+  if (user.requiresParentalConsent && !user.parentalConsentReceived) {
+    return NextResponse.json(
+      { 
+        error: "Parental consent required", 
+        message: "Since you are under 18, we need parental consent before you can sign up for shifts. Please ensure your parent/guardian has submitted the signed consent form to our team."
+      }, 
+      { status: 403 }
+    );
+  }
 
   const { id } = await params;
 
