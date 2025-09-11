@@ -270,6 +270,8 @@ export async function processAutoApproval(
           shiftTime: shiftTime,
           location: shift.location || 'TBD',
           shiftId: shiftId,
+          shiftStart: shift.start,
+          shiftEnd: shift.end,
         });
         
         console.log("Auto-approval confirmation email sent successfully to:", user.email);

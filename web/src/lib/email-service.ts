@@ -1,4 +1,5 @@
 import createsend from "createsend-node";
+import { generateGoogleCalendarLink, generateGoogleMapsLink } from "./calendar-utils";
 
 interface EmailData {
   firstName: string;
@@ -66,6 +67,8 @@ interface ShiftConfirmationEmailData {
   shiftTime: string;
   location: string;
   linkToShift: string;
+  addToCalendarLink: string;
+  locationMapLink: string;
 }
 
 interface SendShiftConfirmationParams {
@@ -76,6 +79,8 @@ interface SendShiftConfirmationParams {
   shiftTime: string;
   location: string;
   shiftId: string;
+  shiftStart?: Date;
+  shiftEnd?: Date;
 }
 
 interface VolunteerCancellationEmailData {
@@ -355,6 +360,25 @@ class EmailService {
     // Extract first name from volunteer name
     const firstName = params.volunteerName.split(' ')[0] || params.volunteerName;
 
+    // Generate calendar and maps links
+    const locationMapLink = generateGoogleMapsLink(params.location);
+    
+    // Generate calendar link if we have the start/end dates
+    let addToCalendarLink = '';
+    if (params.shiftStart && params.shiftEnd) {
+      const shiftData = {
+        id: params.shiftId,
+        start: params.shiftStart,
+        end: params.shiftEnd,
+        location: params.location,
+        shiftType: {
+          name: params.shiftName,
+          description: null,
+        },
+      };
+      addToCalendarLink = generateGoogleCalendarLink(shiftData);
+    }
+
     const details = {
       smartEmailID: this.shiftConfirmationSmartEmailID,
       to: `${params.volunteerName} <${params.to}>`,
@@ -365,6 +389,8 @@ class EmailService {
         shiftTime: params.shiftTime,
         location: params.location,
         linkToShift: shiftLink,
+        addToCalendarLink: addToCalendarLink,
+        locationMapLink: locationMapLink,
       } as ShiftConfirmationEmailData,
     };
 

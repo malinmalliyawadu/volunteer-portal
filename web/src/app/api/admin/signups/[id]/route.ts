@@ -149,6 +149,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
           shiftTime: shiftTime,
           location: signup.shift.location || 'TBD',
           shiftId: signup.shift.id,
+          shiftStart: signup.shift.start,
+          shiftEnd: signup.shift.end,
         });
       } catch (emailError) {
         console.error("Error sending confirmation email:", emailError);
@@ -245,6 +247,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
           shiftTime: shiftTime,
           location: signup.shift.location || 'TBD',
           shiftId: signup.shift.id,
+          shiftStart: signup.shift.start,
+          shiftEnd: signup.shift.end,
         });
       } catch (emailError) {
         console.error("Error sending confirmation email:", emailError);
