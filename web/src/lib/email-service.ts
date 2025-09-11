@@ -100,6 +100,16 @@ interface SendVolunteerCancellationParams {
   location: string;
 }
 
+interface ParentalConsentApprovalEmailData {
+  firstName: string;
+  linkToDashboard: string;
+}
+
+interface SendParentalConsentApprovalParams {
+  to: string;
+  volunteerName: string;
+}
+
 interface CampaignMonitorAPI {
   transactional: {
     sendSmartEmail: (
@@ -116,6 +126,7 @@ class EmailService {
   private shiftShortageSmartEmailID: string;
   private shiftConfirmationSmartEmailID: string;
   private volunteerCancellationSmartEmailID: string;
+  private parentalConsentApprovalSmartEmailID: string;
 
   constructor() {
     const apiKey = process.env.CAMPAIGN_MONITOR_API_KEY;
@@ -195,6 +206,19 @@ class EmailService {
       }
     } else {
       this.volunteerCancellationSmartEmailID = volunteerCancellationEmailId;
+    }
+
+    // Smart email ID for parental consent approval notifications
+    const parentalConsentApprovalEmailId = process.env.CAMPAIGN_MONITOR_PARENTAL_CONSENT_APPROVAL_EMAIL_ID;
+    if (!parentalConsentApprovalEmailId) {
+      if (isDevelopment) {
+        console.warn("[EMAIL SERVICE] CAMPAIGN_MONITOR_PARENTAL_CONSENT_APPROVAL_EMAIL_ID is not configured - parental consent approval emails will not be sent");
+        this.parentalConsentApprovalSmartEmailID = 'dummy-parental-consent-approval-id';
+      } else {
+        throw new Error("CAMPAIGN_MONITOR_PARENTAL_CONSENT_APPROVAL_EMAIL_ID is not configured");
+      }
+    } else {
+      this.parentalConsentApprovalSmartEmailID = parentalConsentApprovalEmailId;
     }
   }
 
@@ -453,6 +477,46 @@ class EmailService {
       });
     });
   }
+
+  async sendParentalConsentApprovalNotification(params: SendParentalConsentApprovalParams): Promise<void> {
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    
+    // In development, skip email sending if configuration is missing
+    if (isDevelopment && this.parentalConsentApprovalSmartEmailID === 'dummy-parental-consent-approval-id') {
+      console.log(`[EMAIL SERVICE] Would send parental consent approval email to ${params.to} (skipped in dev - no config)`);
+      return Promise.resolve();
+    }
+    
+    // Extract first name from volunteer name
+    const firstName = params.volunteerName.split(' ')[0] || params.volunteerName;
+    const dashboardLink = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard`;
+
+    const details = {
+      smartEmailID: this.parentalConsentApprovalSmartEmailID,
+      to: `${params.volunteerName} <${params.to}>`,
+      data: {
+        firstName: firstName,
+        linkToDashboard: dashboardLink,
+      } as ParentalConsentApprovalEmailData,
+    };
+
+    return new Promise<void>((resolve, reject) => {
+      this.api.transactional.sendSmartEmail(details, (err: Error | null) => {
+        if (err) {
+          if (isDevelopment) {
+            console.warn("[EMAIL SERVICE] Error sending parental consent approval email (development):", err.message);
+            resolve(); // Don't fail in development
+          } else {
+            console.error("Error sending parental consent approval email:", err);
+            reject(err);
+          }
+        } else {
+          console.log("Parental consent approval email sent successfully to:", params.to);
+          resolve();
+        }
+      });
+    });
+  }
 }
 
 // Export singleton instance
@@ -474,5 +538,7 @@ export type {
   SendShiftConfirmationParams,
   ShiftConfirmationEmailData,
   SendVolunteerCancellationParams,
-  VolunteerCancellationEmailData
+  VolunteerCancellationEmailData,
+  SendParentalConsentApprovalParams,
+  ParentalConsentApprovalEmailData
 };

@@ -126,6 +126,7 @@ CAMPAIGN_MONITOR_SHIFT_CANCELLATION_EMAIL_ID="your-shift-cancellation-template-i
 CAMPAIGN_MONITOR_SHIFT_SHORTAGE_EMAIL_ID="your-shift-shortage-template-id"
 CAMPAIGN_MONITOR_SHIFT_CONFIRMATION_EMAIL_ID="your-shift-confirmation-template-id"
 CAMPAIGN_MONITOR_VOLUNTEER_CANCELLATION_EMAIL_ID="your-volunteer-cancellation-template-id"
+CAMPAIGN_MONITOR_PARENTAL_CONSENT_APPROVAL_EMAIL_ID="your-parental-consent-approval-template-id"
 ```
 
 ### Optional OAuth Providers
@@ -173,6 +174,10 @@ The application uses Campaign Monitor for sending various transactional emails:
 **Shift Shortage (`CAMPAIGN_MONITOR_SHIFT_SHORTAGE_EMAIL_ID`)**
 - Variables: `{firstName}`, `{shiftType}`, `{shiftDate}`, `{restarauntLocation}`, `{linkToEvent}`
 - Sent to notify volunteers about shifts needing more volunteers
+
+**Parental Consent Approval (`CAMPAIGN_MONITOR_PARENTAL_CONSENT_APPROVAL_EMAIL_ID`)**
+- Variables: `{firstName}`, `{linkToDashboard}`
+- Sent to volunteers under 18 when their parental consent is approved by an admin
 
 ## 🤝 Contributing
 
