@@ -1,3 +1,9 @@
+## [0.37.2] - 2025-09-11
+
+### Changes
+- Fix calendar alignment in shifts/mine page ([#101](https://github.com/malinmalliyawadu/volunteer-portal/pull/101)) by @malinmalliyawadu
+
+
 ## [0.37.1] - 2025-09-10
 
 ### Changes
