@@ -9,14 +9,14 @@ Manage volunteers and shifts across multiple restaurant locations with location-
 Complete multi-location management guide in development.
 :::
 
-## Locations
+## Locations :badge[Draft]{variant="danger"}
 
 - Wellington restaurant
 - Glen Innes restaurant  
 - Onehunga restaurant
 - Combined "All locations" view
 
-## Features
+## Features :badge[Draft]{variant="danger"}
 
 - Location-specific dashboard filtering
 - Per-location volunteer management

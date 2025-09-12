@@ -9,7 +9,7 @@ Analyze shift performance, capacity utilization, and volunteer allocation patter
 Comprehensive shift analytics guide in development.
 :::
 
-## Analytics Features
+## Analytics Features :badge[Draft]{variant="danger"}
 
 - Shift capacity analysis
 - Volunteer allocation patterns

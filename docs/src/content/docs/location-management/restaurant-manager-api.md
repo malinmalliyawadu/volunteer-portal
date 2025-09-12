@@ -9,7 +9,7 @@ Integration capabilities with external restaurant management and notification sy
 API integration documentation in development.
 :::
 
-## Features
+## Features :badge[Draft]{variant="danger"}
 
 - External system integration
 - Notification system connections

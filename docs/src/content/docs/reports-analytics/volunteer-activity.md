@@ -9,7 +9,7 @@ Monitor volunteer engagement, activity patterns, and performance metrics.
 Detailed volunteer analytics guide in development.
 :::
 
-## Activity Tracking
+## Activity Tracking :badge[Draft]{variant="danger"}
 
 - Individual volunteer performance
 - Engagement patterns and trends
