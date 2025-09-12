@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence, Variants } from "motion/react";
+import { useEffect, useRef, useState, createContext, useContext } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 // Enhanced stagger container with day-level transition handling
@@ -52,7 +53,7 @@ const createStaggerItemVariants = (index: number): Variants => ({
     },
   },
 });
-import { format } from "date-fns";
+import { formatInNZT } from "@/lib/timezone";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -77,6 +78,14 @@ import { getShiftTheme } from "@/lib/shift-themes";
 import { DeleteShiftDialog } from "@/components/delete-shift-dialog";
 import { CustomLabelBadge } from "@/components/custom-label-badge";
 import { AdminNotesDialog } from "@/components/admin-notes-dialog";
+
+// Layout update context for triggering masonry recalculation
+const LayoutUpdateContext = createContext<(() => void) | null>(null);
+
+export const useLayoutUpdate = () => {
+  const updateLayout = useContext(LayoutUpdateContext);
+  return updateLayout || (() => {});
+};
 
 interface Shift {
   id: string;
@@ -172,16 +181,118 @@ function getGradeInfo(grade: string | null | undefined) {
   }
 }
 
+// Masonry layout hook
+function useMasonry(itemCount: number, columnCount: number, shifts: Shift[]) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const updateLayoutRef = useRef<(() => void) | null>(null);
+  
+  useEffect(() => {
+    const updateLayout = () => {
+      if (!containerRef.current) return;
+      
+      const container = containerRef.current;
+      const items = Array.from(container.children) as HTMLElement[];
+      const gap = 24; // 6 * 4px (gap-6)
+      
+      // Reset heights for each column
+      const columnHeights = new Array(columnCount).fill(0);
+      
+      items.forEach((item, index) => {
+        if (index < columnCount) {
+          // First row - just position at top
+          item.style.position = 'absolute';
+          item.style.left = `${(index * 100) / columnCount}%`;
+          item.style.top = '0px';
+          item.style.width = `calc(${100 / columnCount}% - ${((columnCount - 1) * gap) / columnCount}px)`;
+          columnHeights[index] = item.offsetHeight + gap;
+        } else {
+          // Find shortest column
+          const shortestColumn = columnHeights.indexOf(Math.min(...columnHeights));
+          
+          item.style.position = 'absolute';
+          item.style.left = `${(shortestColumn * 100) / columnCount}%`;
+          item.style.top = `${columnHeights[shortestColumn]}px`;
+          item.style.width = `calc(${100 / columnCount}% - ${((columnCount - 1) * gap) / columnCount}px)`;
+          
+          columnHeights[shortestColumn] += item.offsetHeight + gap;
+        }
+      });
+      
+      // Set container height to the tallest column
+      const maxHeight = Math.max(...columnHeights);
+      container.style.height = `${maxHeight}px`;
+    };
+    
+    updateLayoutRef.current = updateLayout;
+    
+    // Update layout on mount and resize
+    updateLayout();
+    
+    const observer = new ResizeObserver(updateLayout);
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+    
+    window.addEventListener('resize', updateLayout);
+    
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', updateLayout);
+    };
+  }, [itemCount, columnCount]);
+  
+  // Update layout when shifts data changes (signups added/removed)
+  useEffect(() => {
+    // Use a timeout to allow DOM updates to complete first
+    const timeoutId = setTimeout(() => {
+      if (updateLayoutRef.current) {
+        updateLayoutRef.current();
+      }
+    }, 100);
+    
+    return () => clearTimeout(timeoutId);
+  }, [shifts]);
+  
+  // Expose updateLayout function for manual triggers
+  const triggerLayoutUpdate = () => {
+    if (updateLayoutRef.current) {
+      setTimeout(updateLayoutRef.current, 50);
+    }
+  };
+  
+  return { containerRef, triggerLayoutUpdate };
+}
+
 export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
+  // Determine column count based on screen size (we'll use a simple approach)
+  const [columnCount, setColumnCount] = useState(1);
+  
+  useEffect(() => {
+    const updateColumnCount = () => {
+      if (window.innerWidth >= 1280) setColumnCount(3); // xl
+      else if (window.innerWidth >= 768) setColumnCount(2); // md
+      else setColumnCount(1);
+    };
+    
+    updateColumnCount();
+    window.addEventListener('resize', updateColumnCount);
+    return () => window.removeEventListener('resize', updateColumnCount);
+  }, []);
+  
+  const { containerRef, triggerLayoutUpdate } = useMasonry(shifts.length, columnCount, shifts);
+
   return (
-    <motion.div
-      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6 items-start"
-      initial="hidden"
-      animate="visible"
-      exit="exit"
-      variants={enhancedStaggerContainer}
-    >
-      <AnimatePresence mode="popLayout">
+    <LayoutUpdateContext.Provider value={triggerLayoutUpdate}>
+      <motion.div
+        ref={containerRef}
+        className="relative"
+        style={{ minHeight: '200px' }}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+        variants={enhancedStaggerContainer}
+      >
+        <AnimatePresence mode="popLayout">
         {shifts.map((shift, index) => {
           const confirmed = shift.signups.filter(
             (s) => s.status === "CONFIRMED"
@@ -224,7 +335,7 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
             >
               <Card
                 data-testid={`shift-card-${shift.id}`}
-                className={`border-2 ${shiftTheme.borderColor} w-full relative overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300`}
+                className={`border-2 ${shiftTheme.borderColor} w-full relative overflow-hidden shadow-md`}
               >
                 {/* Background gradient */}
                 <div
@@ -245,8 +356,8 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
                       </div>
                       <p className="text-sm text-slate-700 font-medium flex items-center gap-1">
                         <Clock className="h-3.5 w-3.5" />
-                        {format(shift.start, "h:mm a")} -{" "}
-                        {format(shift.end, "h:mm a")}
+                        {formatInNZT(shift.start, "h:mm a")} -{" "}
+                        {formatInNZT(shift.end, "h:mm a")}
                       </p>
                     </div>
                     <div className="text-right">
@@ -369,7 +480,10 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
                                 className="flex-shrink-0"
                                 data-testid={`volunteer-avatar-link-${signup.id}`}
                               >
-                                <Avatar className="h-9 w-9 border-2 border-white shadow-md hover:shadow-lg transition-shadow" data-testid={`volunteer-avatar-${signup.id}`}>
+                                <Avatar
+                                  className="h-9 w-9 border-2 border-white shadow-md hover:shadow-lg transition-shadow"
+                                  data-testid={`volunteer-avatar-${signup.id}`}
+                                >
                                   <AvatarImage
                                     src={
                                       signup.user.profilePhotoUrl || undefined
@@ -381,7 +495,10 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
                                     }
                                     data-testid={`volunteer-avatar-image-${signup.id}`}
                                   />
-                                  <AvatarFallback className="bg-gradient-to-br from-blue-400 to-blue-600 text-white font-bold text-xs" data-testid={`volunteer-avatar-fallback-${signup.id}`}>
+                                  <AvatarFallback
+                                    className="bg-gradient-to-br from-blue-400 to-blue-600 text-white font-bold text-xs"
+                                    data-testid={`volunteer-avatar-fallback-${signup.id}`}
+                                  >
                                     {(signup.user.name ||
                                       signup.user
                                         .firstName)?.[0]?.toUpperCase() || "V"}
@@ -404,9 +521,13 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
                                   {signup.user.adminNotes.length > 0 && (
                                     <AdminNotesDialog
                                       volunteerId={signup.user.id}
-                                      volunteerName={signup.user.name ||
-                                        `${signup.user.firstName || ""} ${signup.user.lastName || ""}`.trim() ||
-                                        "Volunteer"}
+                                      volunteerName={
+                                        signup.user.name ||
+                                        `${signup.user.firstName || ""} ${
+                                          signup.user.lastName || ""
+                                        }`.trim() ||
+                                        "Volunteer"
+                                      }
                                       trigger={
                                         <Button
                                           variant="ghost"
@@ -416,9 +537,9 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
                                         >
                                           <Info className="h-3.5 w-3.5 mr-0.5" />
                                           <span className="text-xs">
-                                            {signup.user.adminNotes.length > 1 
-                                              ? `${signup.user.adminNotes.length} notes` 
-                                              : 'Note'}
+                                            {signup.user.adminNotes.length > 1
+                                              ? `${signup.user.adminNotes.length} notes`
+                                              : "Note"}
                                           </span>
                                         </Button>
                                       }
@@ -436,25 +557,28 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
                                       )}
                                       {gradeInfo.label}
                                     </div>
-                                    {signup.user.customLabels.map((userLabel) => (
-                                      <CustomLabelBadge
-                                        key={userLabel.label.id}
-                                        label={{
-                                          ...userLabel.label,
-                                          isActive: true,
-                                          createdAt: new Date(),
-                                          updatedAt: new Date(),
-                                        }}
-                                        size="sm"
-                                        className="flex-shrink-0"
-                                        data-testid={`volunteer-label-${signup.id}-${userLabel.label.id}`}
-                                      />
-                                    ))}
+                                    {signup.user.customLabels.map(
+                                      (userLabel) => (
+                                        <CustomLabelBadge
+                                          key={userLabel.label.id}
+                                          label={{
+                                            ...userLabel.label,
+                                            isActive: true,
+                                            createdAt: new Date(),
+                                            updatedAt: new Date(),
+                                          }}
+                                          size="sm"
+                                          className="flex-shrink-0"
+                                          data-testid={`volunteer-label-${signup.id}-${userLabel.label.id}`}
+                                        />
+                                      )
+                                    )}
                                   </div>
                                   <div className="flex-shrink-0">
                                     <VolunteerActions
                                       signupId={signup.id}
                                       currentStatus={signup.status}
+                                      onUpdate={triggerLayoutUpdate}
                                       testIdPrefix={`shift-${shift.id}-volunteer-${signup.id}`}
                                       currentShift={{
                                         id: shift.id,
@@ -464,7 +588,10 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
                                           name: shift.shiftType.name,
                                         },
                                       }}
-                                      volunteerName={signup.user.name || `${signup.user.firstName} ${signup.user.lastName}`}
+                                      volunteerName={
+                                        signup.user.name ||
+                                        `${signup.user.firstName} ${signup.user.lastName}`
+                                      }
                                     />
                                   </div>
                                 </div>
@@ -515,26 +642,33 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
                         Edit
                       </Link>
                     </Button>
-                    
+
                     <DeleteShiftDialog
                       shiftId={shift.id}
                       shiftName={shift.shiftType.name}
-                      shiftDate={format(shift.start, "EEEE, MMMM d, yyyy")}
+                      shiftDate={formatInNZT(shift.start, "EEEE, MMMM d, yyyy")}
                       hasSignups={shift.signups.length > 0}
-                      signupCount={shift.signups.filter(
-                        (signup) => signup.status !== "CANCELED" && signup.status !== "NO_SHOW"
-                      ).length}
+                      signupCount={
+                        shift.signups.filter(
+                          (signup) =>
+                            signup.status !== "CANCELED" &&
+                            signup.status !== "NO_SHOW"
+                        ).length
+                      }
                       onDelete={async () => {
-                        const response = await fetch(`/api/admin/shifts/${shift.id}`, {
-                          method: 'DELETE',
-                        });
-                        
+                        const response = await fetch(
+                          `/api/admin/shifts/${shift.id}`,
+                          {
+                            method: "DELETE",
+                          }
+                        );
+
                         if (!response.ok) {
-                          throw new Error('Failed to delete shift');
+                          throw new Error("Failed to delete shift");
                         }
-                        
+
                         // Refresh the page to show the updated list
-                        window.location.href = '/admin/shifts?deleted=1';
+                        window.location.href = "/admin/shifts?deleted=1";
                       }}
                     >
                       <Button
@@ -553,7 +687,8 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
             </motion.div>
           );
         })}
-      </AnimatePresence>
-    </motion.div>
+        </AnimatePresence>
+      </motion.div>
+    </LayoutUpdateContext.Provider>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatedShiftCardsWrapper } from "@/components/animated-shift-cards-wrapper";
+import { toNZT, formatInNZT } from "@/lib/timezone";
 
 interface Shift {
   id: string;
@@ -55,9 +56,10 @@ interface ShiftsByTimeOfDayProps {
 }
 
 export function ShiftsByTimeOfDay({ shifts }: ShiftsByTimeOfDayProps) {
-  // Helper function to determine if a shift is AM or PM
+  // Helper function to determine if a shift is AM or PM (in NZ timezone)
   const isAMShift = (shift: Shift) => {
-    const hour = shift.start.getHours();
+    const nzTime = toNZT(shift.start);
+    const hour = nzTime.getHours();
     return hour < 16; // Before 4pm (16:00) is considered "AM"
   };
 
@@ -86,7 +88,7 @@ export function ShiftsByTimeOfDay({ shifts }: ShiftsByTimeOfDayProps) {
           </div>
           <AnimatedShiftCardsWrapper
             shifts={amShifts}
-            dateString={amShifts[0]?.start ? new Date(amShifts[0].start).toISOString().split('T')[0] : ''}
+            dateString={amShifts[0]?.start ? formatInNZT(amShifts[0].start, 'yyyy-MM-dd') : ''}
             selectedLocation={amShifts[0]?.location || ''}
           />
         </section>
@@ -108,7 +110,7 @@ export function ShiftsByTimeOfDay({ shifts }: ShiftsByTimeOfDayProps) {
           </div>
           <AnimatedShiftCardsWrapper
             shifts={pmShifts}
-            dateString={pmShifts[0]?.start ? new Date(pmShifts[0].start).toISOString().split('T')[0] : ''}
+            dateString={pmShifts[0]?.start ? formatInNZT(pmShifts[0].start, 'yyyy-MM-dd') : ''}
             selectedLocation={pmShifts[0]?.location || ''}
           />
         </section>
