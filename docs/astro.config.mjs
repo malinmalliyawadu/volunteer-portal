@@ -8,11 +8,16 @@ export default defineConfig({
     starlight({
       title: "Everybody Eats Admin Guide",
       description: "Administrator documentation for the volunteer portal",
+      customCss: ["./src/styles/custom.css"],
+      logo: {
+        src: "./public/logo.svg",
+        replacesTitle: true,
+      },
       social: [
         {
           icon: "github",
           label: "GitHub",
-          href: "https://github.com/anthropics/volunteer-portal",
+          href: "https://github.com/everybody-eats-nz/volunteer-portal",
         },
       ],
       sidebar: [

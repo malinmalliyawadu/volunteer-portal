@@ -1,117 +1,29 @@
-/* Custom styles for Everybody Eats Admin Documentation */
-
+/* Dark mode colors. */
 :root {
-  --sl-color-accent-low: #e0f2fe;
-  --sl-color-accent: #0ea5e9;
-  --sl-color-accent-high: #0284c7;
+  --sl-color-accent-low: #072d00;
+  --sl-color-accent: #247f00;
+  --sl-color-accent-high: #aad7a0;
   --sl-color-white: #ffffff;
-  --sl-color-gray-1: #f8fafc;
-  --sl-color-gray-2: #f1f5f9;
-  --sl-color-gray-3: #e2e8f0;
-  --sl-color-gray-4: #cbd5e1;
-  --sl-color-gray-5: #94a3b8;
-  --sl-color-gray-6: #64748b;
-  --sl-color-black: #1e293b;
+  --sl-color-gray-1: #eaf0e8;
+  --sl-color-gray-2: #bdc4bb;
+  --sl-color-gray-3: #82907f;
+  --sl-color-gray-4: #4f5c4d;
+  --sl-color-gray-5: #303c2d;
+  --sl-color-gray-6: #1f2a1c;
+  --sl-color-black: #151a13;
 }
-
-/* Custom hero section styling */
-.hero h1 {
-  background: linear-gradient(135deg, var(--sl-color-accent) 0%, var(--sl-color-accent-high) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  color: transparent;
-}
-
-/* Badge styling for sections */
-.section-badge {
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  background: var(--sl-color-accent-low);
-  color: var(--sl-color-accent-high);
-  border-radius: 1rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  margin-right: 0.5rem;
-  margin-bottom: 0.5rem;
-}
-
-/* Feature card styling */
-.feature-card {
-  border: 1px solid var(--sl-color-gray-3);
-  border-radius: 8px;
-  padding: 1.5rem;
-  margin-bottom: 1rem;
-  background: var(--sl-color-white);
-}
-
-.feature-card h3 {
-  color: var(--sl-color-accent-high);
-  margin-top: 0;
-}
-
-/* Quick navigation cards */
-.quick-nav-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1rem;
-  margin: 2rem 0;
-}
-
-.quick-nav-card {
-  border: 1px solid var(--sl-color-gray-3);
-  border-radius: 8px;
-  padding: 1.5rem;
-  text-decoration: none;
-  transition: border-color 0.2s ease;
-}
-
-.quick-nav-card:hover {
-  border-color: var(--sl-color-accent);
-  text-decoration: none;
-}
-
-.quick-nav-card h4 {
-  color: var(--sl-color-accent-high);
-  margin: 0 0 0.5rem 0;
-}
-
-.quick-nav-card p {
-  margin: 0;
-  color: var(--sl-color-gray-6);
-  font-size: 0.9rem;
-}
-
-/* Status indicators */
-.status-indicator {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin: 0.5rem 0;
-}
-
-.status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-}
-
-.status-dot.green { background-color: #10b981; }
-.status-dot.yellow { background-color: #f59e0b; }
-.status-dot.red { background-color: #ef4444; }
-.status-dot.blue { background-color: var(--sl-color-accent); }
-
-/* Code blocks with better spacing */
-.expressive-code {
-  margin: 1.5rem 0;
-}
-
-/* Table styling */
-table {
-  margin: 1.5rem 0;
-}
-
-table th {
-  background: var(--sl-color-gray-1);
-  color: var(--sl-color-black);
+/* Light mode colors. */
+:root[data-theme="light"] {
+  --sl-color-accent-low: #c0e2b8;
+  --sl-color-accent: #237b00;
+  --sl-color-accent-high: #0d3e00;
+  --sl-color-white: #151a13;
+  --sl-color-gray-1: #1f2a1c;
+  --sl-color-gray-2: #303c2d;
+  --sl-color-gray-3: #4f5c4d;
+  --sl-color-gray-4: #82907f;
+  --sl-color-gray-5: #bdc4bb;
+  --sl-color-gray-6: #eaf0e8;
+  --sl-color-gray-7: #f4f7f3;
+  --sl-color-black: #ffffff;
 }
