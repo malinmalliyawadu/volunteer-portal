@@ -133,8 +133,11 @@ export function ShiftCalendar({
               selected: (date) => isSameDayInNZT(date, selectedDate),
             }}
             modifiersClassNames={{
-              hasShifts: "bg-blue-50 hover:bg-blue-100 text-blue-900 font-medium",
-              selected: "bg-blue-600 text-white hover:bg-blue-700",
+              hasShifts: "bg-blue-50 hover:bg-blue-100 text-blue-900 font-medium rounded-md",
+              selected: "bg-blue-600 text-white hover:bg-blue-700 rounded-md",
+            }}
+            classNames={{
+              today: "",
             }}
             data-testid="shift-calendar"
             components={{

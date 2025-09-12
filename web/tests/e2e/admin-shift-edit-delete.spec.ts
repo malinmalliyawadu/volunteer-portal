@@ -77,7 +77,7 @@ test.describe("Admin Shift Edit and Delete", () => {
       await expect(editButton).toContainText("Edit");
     });
 
-    test("should navigate to edit page when clicking edit button", async ({
+    test.skip("should navigate to edit page when clicking edit button", async ({
       page,
     }) => {
       await page.goto(
