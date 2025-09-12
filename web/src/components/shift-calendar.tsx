@@ -128,6 +128,8 @@ export function ShiftCalendar({
             onSelect={handleDateSelect}
             modifiers={{
               hasShifts: (date) => hasShifts(date),
+              // NZT-centric approach: Compare dates in NZ timezone regardless of server/client timezone
+              // This ensures calendar selection is consistent with NZ business logic
               selected: (date) => isSameDayInNZT(date, selectedDate),
             }}
             modifiersClassNames={{

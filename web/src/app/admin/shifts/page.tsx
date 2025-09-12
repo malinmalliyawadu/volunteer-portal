@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
-import { parseISO, startOfDay, endOfDay } from "date-fns";
-import { formatInNZT, toNZT, toUTC } from "@/lib/timezone";
+import { startOfDay, endOfDay } from "date-fns";
+import { formatInNZT, toNZT, toUTC, parseISOInNZT, getDSTTransitionInfo } from "@/lib/timezone";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { isFeatureEnabled } from "@/lib/posthog-server";
@@ -31,12 +31,20 @@ export default async function AdminShiftsPage({
 
   const params = await searchParams;
 
-  // Parse search parameters (handle dates in NZ timezone)
+  // Parse search parameters (handle dates consistently in NZ timezone)
   const today = formatInNZT(new Date(), "yyyy-MM-dd");
   const dateString = (params.date as string) || today;
   const selectedLocation = (params.location as LocationOption) || DEFAULT_LOCATION;
-  const selectedDate = parseISO(dateString);
+  
+  // Parse the date string directly in NZ timezone to avoid local time confusion
+  const selectedDateNZT = parseISOInNZT(dateString);
   const isToday = dateString === today;
+  
+  // Check for DST transition issues
+  const dstInfo = getDSTTransitionInfo(selectedDateNZT);
+  if (dstInfo.nearTransition && process.env.NODE_ENV === 'development') {
+    console.warn(`Admin Schedule: ${dstInfo.message}`, { date: dateString, dstInfo });
+  }
 
   // Check feature flag for flexible placement
   const isFlexiblePlacementEnabled = await isFeatureEnabled(
@@ -45,10 +53,9 @@ export default async function AdminShiftsPage({
   );
 
   // Fetch shifts for the selected date and location (using NZ timezone)
-  // Calculate day boundaries in NZ timezone
-  const selectedDateNZ = toNZT(selectedDate);
-  const startOfDayNZ = startOfDay(selectedDateNZ);
-  const endOfDayNZ = endOfDay(selectedDateNZ);
+  // Calculate day boundaries in NZ timezone - selectedDateNZT is already in NZT
+  const startOfDayNZ = startOfDay(selectedDateNZT);
+  const endOfDayNZ = endOfDay(selectedDateNZT);
   
   // Convert TZDate objects to explicit UTC for reliable Prisma queries
   const startOfDayUTC = toUTC(startOfDayNZ);
@@ -272,7 +279,7 @@ export default async function AdminShiftsPage({
                     <Calendar className="h-5 w-5 text-blue-600" />
                   </div>
                   <ShiftCalendarWrapper
-                    selectedDate={selectedDate}
+                    selectedDate={selectedDateNZT}
                     selectedLocation={selectedLocation}
                     shiftSummaries={processedShiftSummaries}
                   />
@@ -325,7 +332,7 @@ export default async function AdminShiftsPage({
             </h3>
             <p className="text-slate-600 mb-6">
               Get started by creating your first shift for{" "}
-              {formatInNZT(selectedDate, "EEEE, MMMM d, yyyy")} in {selectedLocation}
+              {formatInNZT(selectedDateNZT, "EEEE, MMMM d, yyyy")} in {selectedLocation}
               .
             </p>
             <Button asChild size="sm" className="btn-primary">

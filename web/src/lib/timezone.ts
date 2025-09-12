@@ -77,10 +77,56 @@ export function isSameDayInNZT(date1: Date | string, date2: Date | string): bool
 }
 
 /**
+ * Parse an ISO date string directly in NZ timezone
+ * This avoids the parseISO -> toNZT conversion inconsistency
+ * @param dateString - ISO date string (e.g., "2023-12-25")
+ * @returns TZDate object in NZ timezone
+ */
+export function parseISOInNZT(dateString: string) {
+  // Parse the date string and interpret it directly in NZ timezone
+  // This ensures the date represents the actual day in NZ, not local time
+  const [year, month, day] = dateString.split('-').map(Number);
+  const nzDate = nzTimezone(new Date(year, month - 1, day));
+  return nzDate;
+}
+
+/**
  * Convert a TZDate to UTC Date object for database queries
  * @param tzDate - The TZDate object to convert
  * @returns UTC Date object safe for database queries
  */
 export function toUTC(tzDate: Date): Date {
   return new Date(tzDate.getTime());
+}
+
+/**
+ * Check if a date falls within NZ DST transition periods
+ * DST transitions can cause 1-hour gaps or overlaps in local time
+ * @param date - Date to check
+ * @returns Object indicating if date is near DST transition
+ */
+export function getDSTTransitionInfo(date: Date | string) {
+  const nzDate = toNZT(date);
+  const year = nzDate.getFullYear();
+  
+  // NZ DST typically runs from last Sunday in September to first Sunday in April
+  // These are approximate - actual dates vary by year
+  const dstStart = new Date(year, 8, 24); // Late September approximation
+  const dstEnd = new Date(year, 3, 7);    // Early April approximation
+  
+  const dateTime = nzDate.getTime();
+  const dstStartTime = dstStart.getTime();
+  const dstEndTime = dstEnd.getTime();
+  
+  // Check if within 24 hours of a DST transition
+  const nearTransition = 
+    Math.abs(dateTime - dstStartTime) < 24 * 60 * 60 * 1000 ||
+    Math.abs(dateTime - dstEndTime) < 24 * 60 * 60 * 1000;
+    
+  return {
+    nearTransition,
+    isDST: dateTime >= dstStartTime || dateTime < dstEndTime,
+    message: nearTransition ? 
+      "Date is near DST transition - times may be affected" : null
+  };
 }
