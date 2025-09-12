@@ -50,10 +50,25 @@ jobs:
           cd web
           npm ci
 
+      - name: Get Playwright version
+        run: |
+          cd web
+          echo "PLAYWRIGHT_VERSION=$(npx playwright --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)" >> $GITHUB_ENV
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ env.PLAYWRIGHT_VERSION }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
       - name: Install Playwright Browsers
         run: |
           cd web
           npx playwright install --with-deps chromium
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
 
       - name: Setup test database
         env:
