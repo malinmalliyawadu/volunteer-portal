@@ -175,7 +175,10 @@ function getGradeInfo(grade: string | null | undefined) {
 export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
   return (
     <motion.div
-      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6 items-start"
+      className="columns-1 md:columns-2 xl:columns-3 gap-4 lg:gap-6"
+      // style={{
+      //   columnFill: 'balance',
+      // }}
       initial="hidden"
       animate="visible"
       exit="exit"
@@ -220,7 +223,7 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
               animate="visible"
               exit="exit"
               variants={createStaggerItemVariants(index)}
-              className="w-full"
+              className="w-full break-inside-avoid mb-4 lg:mb-6"
             >
               <Card
                 data-testid={`shift-card-${shift.id}`}
@@ -369,7 +372,10 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
                                 className="flex-shrink-0"
                                 data-testid={`volunteer-avatar-link-${signup.id}`}
                               >
-                                <Avatar className="h-9 w-9 border-2 border-white shadow-md hover:shadow-lg transition-shadow" data-testid={`volunteer-avatar-${signup.id}`}>
+                                <Avatar
+                                  className="h-9 w-9 border-2 border-white shadow-md hover:shadow-lg transition-shadow"
+                                  data-testid={`volunteer-avatar-${signup.id}`}
+                                >
                                   <AvatarImage
                                     src={
                                       signup.user.profilePhotoUrl || undefined
@@ -381,7 +387,10 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
                                     }
                                     data-testid={`volunteer-avatar-image-${signup.id}`}
                                   />
-                                  <AvatarFallback className="bg-gradient-to-br from-blue-400 to-blue-600 text-white font-bold text-xs" data-testid={`volunteer-avatar-fallback-${signup.id}`}>
+                                  <AvatarFallback
+                                    className="bg-gradient-to-br from-blue-400 to-blue-600 text-white font-bold text-xs"
+                                    data-testid={`volunteer-avatar-fallback-${signup.id}`}
+                                  >
                                     {(signup.user.name ||
                                       signup.user
                                         .firstName)?.[0]?.toUpperCase() || "V"}
@@ -404,9 +413,13 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
                                   {signup.user.adminNotes.length > 0 && (
                                     <AdminNotesDialog
                                       volunteerId={signup.user.id}
-                                      volunteerName={signup.user.name ||
-                                        `${signup.user.firstName || ""} ${signup.user.lastName || ""}`.trim() ||
-                                        "Volunteer"}
+                                      volunteerName={
+                                        signup.user.name ||
+                                        `${signup.user.firstName || ""} ${
+                                          signup.user.lastName || ""
+                                        }`.trim() ||
+                                        "Volunteer"
+                                      }
                                       trigger={
                                         <Button
                                           variant="ghost"
@@ -416,9 +429,9 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
                                         >
                                           <Info className="h-3.5 w-3.5 mr-0.5" />
                                           <span className="text-xs">
-                                            {signup.user.adminNotes.length > 1 
-                                              ? `${signup.user.adminNotes.length} notes` 
-                                              : 'Note'}
+                                            {signup.user.adminNotes.length > 1
+                                              ? `${signup.user.adminNotes.length} notes`
+                                              : "Note"}
                                           </span>
                                         </Button>
                                       }
@@ -436,20 +449,22 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
                                       )}
                                       {gradeInfo.label}
                                     </div>
-                                    {signup.user.customLabels.map((userLabel) => (
-                                      <CustomLabelBadge
-                                        key={userLabel.label.id}
-                                        label={{
-                                          ...userLabel.label,
-                                          isActive: true,
-                                          createdAt: new Date(),
-                                          updatedAt: new Date(),
-                                        }}
-                                        size="sm"
-                                        className="flex-shrink-0"
-                                        data-testid={`volunteer-label-${signup.id}-${userLabel.label.id}`}
-                                      />
-                                    ))}
+                                    {signup.user.customLabels.map(
+                                      (userLabel) => (
+                                        <CustomLabelBadge
+                                          key={userLabel.label.id}
+                                          label={{
+                                            ...userLabel.label,
+                                            isActive: true,
+                                            createdAt: new Date(),
+                                            updatedAt: new Date(),
+                                          }}
+                                          size="sm"
+                                          className="flex-shrink-0"
+                                          data-testid={`volunteer-label-${signup.id}-${userLabel.label.id}`}
+                                        />
+                                      )
+                                    )}
                                   </div>
                                   <div className="flex-shrink-0">
                                     <VolunteerActions
@@ -464,7 +479,10 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
                                           name: shift.shiftType.name,
                                         },
                                       }}
-                                      volunteerName={signup.user.name || `${signup.user.firstName} ${signup.user.lastName}`}
+                                      volunteerName={
+                                        signup.user.name ||
+                                        `${signup.user.firstName} ${signup.user.lastName}`
+                                      }
                                     />
                                   </div>
                                 </div>
@@ -515,26 +533,33 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
                         Edit
                       </Link>
                     </Button>
-                    
+
                     <DeleteShiftDialog
                       shiftId={shift.id}
                       shiftName={shift.shiftType.name}
                       shiftDate={formatInNZT(shift.start, "EEEE, MMMM d, yyyy")}
                       hasSignups={shift.signups.length > 0}
-                      signupCount={shift.signups.filter(
-                        (signup) => signup.status !== "CANCELED" && signup.status !== "NO_SHOW"
-                      ).length}
+                      signupCount={
+                        shift.signups.filter(
+                          (signup) =>
+                            signup.status !== "CANCELED" &&
+                            signup.status !== "NO_SHOW"
+                        ).length
+                      }
                       onDelete={async () => {
-                        const response = await fetch(`/api/admin/shifts/${shift.id}`, {
-                          method: 'DELETE',
-                        });
-                        
+                        const response = await fetch(
+                          `/api/admin/shifts/${shift.id}`,
+                          {
+                            method: "DELETE",
+                          }
+                        );
+
                         if (!response.ok) {
-                          throw new Error('Failed to delete shift');
+                          throw new Error("Failed to delete shift");
                         }
-                        
+
                         // Refresh the page to show the updated list
-                        window.location.href = '/admin/shifts?deleted=1';
+                        window.location.href = "/admin/shifts?deleted=1";
                       }}
                     >
                       <Button
