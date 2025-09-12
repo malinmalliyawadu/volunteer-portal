@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence, Variants } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, createContext, useContext } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 // Enhanced stagger container with day-level transition handling
@@ -78,6 +78,14 @@ import { getShiftTheme } from "@/lib/shift-themes";
 import { DeleteShiftDialog } from "@/components/delete-shift-dialog";
 import { CustomLabelBadge } from "@/components/custom-label-badge";
 import { AdminNotesDialog } from "@/components/admin-notes-dialog";
+
+// Layout update context for triggering masonry recalculation
+const LayoutUpdateContext = createContext<(() => void) | null>(null);
+
+export const useLayoutUpdate = () => {
+  const updateLayout = useContext(LayoutUpdateContext);
+  return updateLayout || (() => {});
+};
 
 interface Shift {
   id: string;
@@ -174,8 +182,9 @@ function getGradeInfo(grade: string | null | undefined) {
 }
 
 // Masonry layout hook
-function useMasonry(itemCount: number, columnCount: number) {
+function useMasonry(itemCount: number, columnCount: number, shifts: Shift[]) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const updateLayoutRef = useRef<(() => void) | null>(null);
   
   useEffect(() => {
     const updateLayout = () => {
@@ -214,6 +223,8 @@ function useMasonry(itemCount: number, columnCount: number) {
       container.style.height = `${maxHeight}px`;
     };
     
+    updateLayoutRef.current = updateLayout;
+    
     // Update layout on mount and resize
     updateLayout();
     
@@ -230,7 +241,26 @@ function useMasonry(itemCount: number, columnCount: number) {
     };
   }, [itemCount, columnCount]);
   
-  return containerRef;
+  // Update layout when shifts data changes (signups added/removed)
+  useEffect(() => {
+    // Use a timeout to allow DOM updates to complete first
+    const timeoutId = setTimeout(() => {
+      if (updateLayoutRef.current) {
+        updateLayoutRef.current();
+      }
+    }, 100);
+    
+    return () => clearTimeout(timeoutId);
+  }, [shifts]);
+  
+  // Expose updateLayout function for manual triggers
+  const triggerLayoutUpdate = () => {
+    if (updateLayoutRef.current) {
+      setTimeout(updateLayoutRef.current, 50);
+    }
+  };
+  
+  return { containerRef, triggerLayoutUpdate };
 }
 
 export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
@@ -249,19 +279,20 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
     return () => window.removeEventListener('resize', updateColumnCount);
   }, []);
   
-  const containerRef = useMasonry(shifts.length, columnCount);
+  const { containerRef, triggerLayoutUpdate } = useMasonry(shifts.length, columnCount, shifts);
 
   return (
-    <motion.div
-      ref={containerRef}
-      className="relative"
-      style={{ minHeight: '200px' }}
-      initial="hidden"
-      animate="visible"
-      exit="exit"
-      variants={enhancedStaggerContainer}
-    >
-      <AnimatePresence mode="popLayout">
+    <LayoutUpdateContext.Provider value={triggerLayoutUpdate}>
+      <motion.div
+        ref={containerRef}
+        className="relative"
+        style={{ minHeight: '200px' }}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+        variants={enhancedStaggerContainer}
+      >
+        <AnimatePresence mode="popLayout">
         {shifts.map((shift, index) => {
           const confirmed = shift.signups.filter(
             (s) => s.status === "CONFIRMED"
@@ -547,6 +578,7 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
                                     <VolunteerActions
                                       signupId={signup.id}
                                       currentStatus={signup.status}
+                                      onUpdate={triggerLayoutUpdate}
                                       testIdPrefix={`shift-${shift.id}-volunteer-${signup.id}`}
                                       currentShift={{
                                         id: shift.id,
@@ -655,7 +687,8 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
             </motion.div>
           );
         })}
-      </AnimatePresence>
-    </motion.div>
+        </AnimatePresence>
+      </motion.div>
+    </LayoutUpdateContext.Provider>
   );
 }
