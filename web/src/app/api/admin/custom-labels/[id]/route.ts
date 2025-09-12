@@ -6,7 +6,7 @@ import { authOptions } from "@/lib/auth-options";
 // Update custom label
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -24,9 +24,11 @@ export async function PUT(
       );
     }
 
+    const resolvedParams = await params;
+
     // Check if label exists
     const existingLabel = await prisma.customLabel.findUnique({
-      where: { id: params.id }
+      where: { id: resolvedParams.id }
     });
 
     if (!existingLabel) {
@@ -40,7 +42,7 @@ export async function PUT(
     const duplicateLabel = await prisma.customLabel.findFirst({
       where: { 
         name,
-        NOT: { id: params.id }
+        NOT: { id: resolvedParams.id }
       }
     });
 
@@ -52,7 +54,7 @@ export async function PUT(
     }
 
     const label = await prisma.customLabel.update({
-      where: { id: params.id },
+      where: { id: resolvedParams.id },
       data: {
         name,
         color,
@@ -74,7 +76,7 @@ export async function PUT(
 // Delete custom label (soft delete)
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
