@@ -81,6 +81,6 @@ export function isSameDayInNZT(date1: Date | string, date2: Date | string): bool
  * @param tzDate - The TZDate object to convert
  * @returns UTC Date object safe for database queries
  */
-export function toUTC(tzDate: any): Date {
+export function toUTC(tzDate: Date): Date {
   return new Date(tzDate.getTime());
 }

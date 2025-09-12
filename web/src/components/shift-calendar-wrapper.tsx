@@ -1,7 +1,6 @@
 "use client";
 
 import { ShiftCalendar } from "./shift-calendar";
-import { format } from "date-fns";
 import { formatInNZT } from "@/lib/timezone";
 import { useRouter } from "next/navigation";
 
