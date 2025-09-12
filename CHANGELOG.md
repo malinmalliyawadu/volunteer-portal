@@ -1,3 +1,9 @@
+## [0.38.1] - 2025-09-12
+
+### Changes
+- Potential fix for code scanning alert no. 2: Workflow does not contain permissions ([#109](https://github.com/everybody-eats-nz/volunteer-portal/pull/109)) by @malinmalliyawadu
+
+
 ## [0.38.0] - 2025-09-12
 
 ### Changes
