@@ -43,9 +43,9 @@ jobs:
           find dist -name "*.html" | wc -l | xargs echo "HTML pages generated:"
           find dist -name "*.js" -o -name "*.css" | wc -l | xargs echo "Asset files generated:"
           
-  # Provide meaningful check name while maintaining branch protection compatibility
+  # Shared check name that works for both web and docs PRs
   test-summary:
-    name: Documentation Build
+    name: Build & Test Summary
     runs-on: ubuntu-latest
     needs: docs-check
     if: always()
@@ -55,8 +55,8 @@ jobs:
         run: |
           if [[ "${{ needs.docs-check.result }}" == "success" ]]; then
             echo "✅ Documentation build completed successfully"
-            echo "📚 All pages generated without errors"
-            echo "🎉 Ready for deployment"
+            echo "📚 All pages generated without errors"  
+            echo "🎉 Build validation passed"
             exit 0
           else
             echo "❌ Documentation build failed"

@@ -130,7 +130,7 @@ jobs:
     if: always()
     needs: [test, merge-reports]
     runs-on: ubuntu-latest
-    name: Test Summary
+    name: Build & Test Summary
     steps:
       - name: Check all jobs
         run: |
