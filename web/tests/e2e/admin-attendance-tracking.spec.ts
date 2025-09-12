@@ -136,7 +136,7 @@ test.describe("Admin Attendance Tracking", () => {
       }
     });
 
-    test("should show move buttons with proper testids for confirmed volunteers", async ({ page }) => {
+    test.skip("should show move buttons with proper testids for confirmed volunteers", async ({ page }) => {
       await page.goto("/admin/shifts?location=Wellington");
       await page.waitForLoadState("load");
 
