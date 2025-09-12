@@ -1,9 +1,30 @@
 const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcrypt");
-const { addDays, set, subYears, subMonths, subDays } = require("date-fns");
+const { addDays, set, subYears, subMonths, subDays, format } = require("date-fns");
+const { tz } = require("@date-fns/tz");
 const fs = require("fs");
 const path = require("path");
 const https = require("https");
+
+// NZ timezone helper for seed script
+const NZ_TIMEZONE = "Pacific/Auckland";
+const nzTimezone = tz(NZ_TIMEZONE);
+
+// Helper functions for timezone-aware seeding
+function toNZT(date) {
+  return nzTimezone(date);
+}
+
+function formatInNZT(date, formatStr) {
+  const nzTime = nzTimezone(date);
+  return format(nzTime, formatStr, { in: nzTimezone });
+}
+
+function setInNZT(date, options) {
+  const nzDate = nzTimezone(date);
+  const setDate = set(nzDate, options);
+  return toNZT(setDate);
+}
 
 const prisma = new PrismaClient();
 
@@ -432,9 +453,9 @@ async function main() {
   // Helper function to check if user can sign up for a shift on a given date
   // For today's shifts, allow multiple signups since we need to fill all shifts
   function canUserSignUpForDate(userId, shiftDate) {
-    const dateKey = shiftDate.toISOString().split("T")[0]; // YYYY-MM-DD format
+    const dateKey = formatInNZT(shiftDate, "yyyy-MM-dd"); // NZ timezone date string
     const today = new Date();
-    const todayStr = today.toISOString().split("T")[0];
+    const todayStr = formatInNZT(today, "yyyy-MM-dd");
 
     // For today's shifts, allow multiple signups to ensure we can fill all shifts
     if (dateKey === todayStr) {
@@ -450,7 +471,7 @@ async function main() {
 
   // Helper function to record a user signup for a date
   function recordUserSignup(userId, shiftDate) {
-    const dateKey = shiftDate.toISOString().split("T")[0];
+    const dateKey = formatInNZT(shiftDate, "yyyy-MM-dd");
 
     if (!userDailySignups.has(userId)) {
       userDailySignups.set(userId, new Set());
@@ -1166,14 +1187,14 @@ async function main() {
       const config = shiftConfigs[shiftTypeIndex];
       const location = LOCATIONS[locationIndex];
 
-      const start = set(pastDate, {
+      const start = setInNZT(pastDate, {
         hours: config.startHour,
         minutes: config.startMinute,
         seconds: 0,
         milliseconds: 0,
       });
 
-      const end = set(pastDate, {
+      const end = setInNZT(pastDate, {
         hours: config.endHour,
         minutes: config.endMinute,
         seconds: 0,
@@ -1298,14 +1319,14 @@ async function main() {
           }
         }
 
-        const start = set(date, {
+        const start = setInNZT(date, {
           hours: startHour,
           minutes: startMinute,
           seconds: 0,
           milliseconds: 0,
         });
 
-        const end = set(date, {
+        const end = setInNZT(date, {
           hours: endHour,
           minutes: endMinute,
           seconds: 0,
@@ -1365,7 +1386,7 @@ async function main() {
       
       // Only include Sunday (0) through Thursday (4)
       if (dayOfWeek >= 0 && dayOfWeek <= 4) {
-        operatingDays.push(date.toISOString().split("T")[0]);
+        operatingDays.push(formatInNZT(date, "yyyy-MM-dd"));
         if (operatingDays.length === 2) break;
       }
     }
@@ -1384,8 +1405,8 @@ async function main() {
     const shiftDate = new Date(s.start);
     const today = new Date();
 
-    // Use date-only comparison by comparing YYYY-MM-DD strings
-    const shiftDateStr = shiftDate.toISOString().split("T")[0];
+    // Use date-only comparison by comparing YYYY-MM-DD strings in NZ timezone
+    const shiftDateStr = formatInNZT(shiftDate, "yyyy-MM-dd");
 
     const isNextOperatingDay = shiftDateStr === nextOperatingDay;
     const isSecondOperatingDay = shiftDateStr === secondOperatingDay;
