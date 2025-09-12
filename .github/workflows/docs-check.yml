@@ -43,8 +43,8 @@ jobs:
           find dist -name "*.html" | wc -l | xargs echo "HTML pages generated:"
           find dist -name "*.js" -o -name "*.css" | wc -l | xargs echo "Asset files generated:"
           
-  # Shared check name that works for both web and docs PRs
-  test-summary:
+  # Shared check with matching job ID and display name
+  tests-passed:
     name: Tests passed
     runs-on: ubuntu-latest
     needs: docs-check

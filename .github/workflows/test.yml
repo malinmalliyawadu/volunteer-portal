@@ -126,7 +126,7 @@ jobs:
           path: web/playwright-report/
           retention-days: 30
 
-  summary:
+  tests-passed:
     if: always()
     needs: [test, merge-reports]
     runs-on: ubuntu-latest
