@@ -222,8 +222,11 @@ export default defineConfig({
             // Also initialize after view transitions (Starlight SPA navigation)
             document.addEventListener('astro:page-load', initImageZoom);
           `
-        }
+        },
       ],
+      components: {
+        Footer: './src/components/Footer.astro',
+      },
       logo: {
         src: "./src/assets/logo.svg",
         replacesTitle: true,
