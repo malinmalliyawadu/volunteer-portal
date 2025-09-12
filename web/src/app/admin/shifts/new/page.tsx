@@ -18,6 +18,7 @@ import { PageContainer } from "@/components/page-container";
 import { BulkDateRangeSection } from "@/components/shift-date-time-section";
 import { ShiftCreationClientForm } from "@/components/shift-creation-client-form";
 import { CollapsibleTemplateSelection } from "@/components/collapsible-template-selection";
+import { formatInNZT } from "@/lib/timezone";
 import { DeleteTemplateForm } from "@/components/delete-template-form";
 import { CreateTemplateDialog } from "@/components/create-template-dialog";
 import { EditTemplateDialog } from "@/components/edit-template-dialog";
@@ -250,10 +251,10 @@ export default async function NewShiftPage() {
           const template = templatesWithShiftTypes[templateName];
           if (template) {
             const shiftStart = new Date(
-              `${current.toISOString().split("T")[0]}T${template.startTime}:00`
+              `${formatInNZT(current, "yyyy-MM-dd")}T${template.startTime}:00`
             );
             const shiftEnd = new Date(
-              `${current.toISOString().split("T")[0]}T${template.endTime}:00`
+              `${formatInNZT(current, "yyyy-MM-dd")}T${template.endTime}:00`
             );
 
             // Only create future shifts
