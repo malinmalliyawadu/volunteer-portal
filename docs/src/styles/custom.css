@@ -27,3 +27,13 @@
   --sl-color-gray-7: #f4f7f3;
   --sl-color-black: #ffffff;
 }
+
+/* Logo inversion for light mode */
+:root[data-theme="light"] .site-title img {
+  filter: invert(1);
+}
+
+/* Ensure logo is normal in dark mode */
+:root .site-title img {
+  filter: none;
+}
