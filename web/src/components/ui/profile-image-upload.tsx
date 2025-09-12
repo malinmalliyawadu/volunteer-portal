@@ -340,6 +340,7 @@ export function ProfileImageUpload({
                       minWidth={100}
                       minHeight={100}
                     >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         ref={imgRef}
                         alt="Crop preview"
