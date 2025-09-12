@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { startOfDay, endOfDay } from "date-fns";
-import { formatInNZT, toNZT, toUTC, parseISOInNZT, getDSTTransitionInfo } from "@/lib/timezone";
+import { formatInNZT, toUTC, parseISOInNZT, getDSTTransitionInfo } from "@/lib/timezone";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { isFeatureEnabled } from "@/lib/posthog-server";
