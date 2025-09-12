@@ -45,21 +45,18 @@ export default async function AdminShiftsPage({
   );
 
   // Fetch shifts for the selected date and location (using NZ timezone)
-  // For database queries, we need to convert the NZ date boundaries back to UTC
+  // Calculate day boundaries in NZ timezone
   const selectedDateNZ = toNZT(selectedDate);
   const startOfDayNZ = startOfDay(selectedDateNZ);
   const endOfDayNZ = endOfDay(selectedDateNZ);
   
-  // Convert NZ timezone boundaries back to UTC for database query
-  const startOfDayUTC = new Date(startOfDayNZ.getTime() - startOfDayNZ.getTimezoneOffset() * 60000);
-  const endOfDayUTC = new Date(endOfDayNZ.getTime() - endOfDayNZ.getTimezoneOffset() * 60000);
-  
+  // TZDate objects can be used directly with Prisma as they convert properly to UTC
   const allShifts = await prisma.shift.findMany({
     where: {
       location: selectedLocation,
       start: {
-        gte: startOfDayUTC,
-        lte: endOfDayUTC,
+        gte: startOfDayNZ,
+        lte: endOfDayNZ,
       },
     },
     include: {
