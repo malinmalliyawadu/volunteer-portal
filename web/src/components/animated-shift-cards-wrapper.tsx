@@ -34,6 +34,14 @@ interface Shift {
           lastName: string | null;
         };
       }>;
+      customLabels: Array<{
+        label: {
+          id: string;
+          name: string;
+          color: string;
+          icon: string | null;
+        };
+      }>;
     };
   }>;
   groupBookings: Array<{

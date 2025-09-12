@@ -107,6 +107,14 @@ export default async function AdminShiftsPage({
                 },
                 take: 1,
               },
+              customLabels: {
+                include: {
+                  label: true,
+                },
+                orderBy: {
+                  assignedAt: "desc",
+                },
+              },
             },
           },
         },

@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
 import { safeParseAvailability } from "@/lib/parse-availability";
+import { autoLabelUnder18User } from "@/lib/auto-label-utils";
 
 const updateProfileSchema = z.object({
   firstName: z.string().optional(),
@@ -218,6 +219,12 @@ export async function PUT(req: Request) {
         parentalConsentReceived: true,
       },
     });
+
+    // Auto-label users under 18 if date of birth was updated
+    if (validatedData.dateOfBirth !== undefined) {
+      const dateOfBirth = validatedData.dateOfBirth ? new Date(validatedData.dateOfBirth) : null;
+      await autoLabelUnder18User(user.id, dateOfBirth);
+    }
 
     // Parse JSON fields for response safely
     const responseUser = {

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import bcrypt from "bcrypt";
 import { prisma } from "@/lib/prisma";
+import { autoLabelUnder18User, autoLabelNewVolunteer } from "@/lib/auto-label-utils";
 
 /**
  * Validation schema for user registration
@@ -238,6 +239,19 @@ export async function POST(req: Request) {
           createdAt: true,
         },
       });
+    }
+
+    // Auto-assign labels after user creation
+    if (user.id) {
+      // Auto-label new volunteers (skip for migrations)
+      if (!isMigration) {
+        await autoLabelNewVolunteer(user.id);
+      }
+      
+      // Auto-label users under 18 if they have a date of birth
+      if (validatedData.dateOfBirth) {
+        await autoLabelUnder18User(user.id, new Date(validatedData.dateOfBirth));
+      }
     }
 
     return NextResponse.json(
