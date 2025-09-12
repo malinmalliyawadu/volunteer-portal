@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence, Variants } from "motion/react";
+import { useEffect, useRef, useState } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 // Enhanced stagger container with day-level transition handling
@@ -172,10 +173,89 @@ function getGradeInfo(grade: string | null | undefined) {
   }
 }
 
+// Masonry layout hook
+function useMasonry(itemCount: number, columnCount: number) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    const updateLayout = () => {
+      if (!containerRef.current) return;
+      
+      const container = containerRef.current;
+      const items = Array.from(container.children) as HTMLElement[];
+      const gap = 24; // 6 * 4px (gap-6)
+      
+      // Reset heights for each column
+      const columnHeights = new Array(columnCount).fill(0);
+      
+      items.forEach((item, index) => {
+        if (index < columnCount) {
+          // First row - just position at top
+          item.style.position = 'absolute';
+          item.style.left = `${(index * 100) / columnCount}%`;
+          item.style.top = '0px';
+          item.style.width = `calc(${100 / columnCount}% - ${((columnCount - 1) * gap) / columnCount}px)`;
+          columnHeights[index] = item.offsetHeight + gap;
+        } else {
+          // Find shortest column
+          const shortestColumn = columnHeights.indexOf(Math.min(...columnHeights));
+          
+          item.style.position = 'absolute';
+          item.style.left = `${(shortestColumn * 100) / columnCount}%`;
+          item.style.top = `${columnHeights[shortestColumn]}px`;
+          item.style.width = `calc(${100 / columnCount}% - ${((columnCount - 1) * gap) / columnCount}px)`;
+          
+          columnHeights[shortestColumn] += item.offsetHeight + gap;
+        }
+      });
+      
+      // Set container height to the tallest column
+      const maxHeight = Math.max(...columnHeights);
+      container.style.height = `${maxHeight}px`;
+    };
+    
+    // Update layout on mount and resize
+    updateLayout();
+    
+    const observer = new ResizeObserver(updateLayout);
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+    
+    window.addEventListener('resize', updateLayout);
+    
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', updateLayout);
+    };
+  }, [itemCount, columnCount]);
+  
+  return containerRef;
+}
+
 export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
+  // Determine column count based on screen size (we'll use a simple approach)
+  const [columnCount, setColumnCount] = useState(1);
+  
+  useEffect(() => {
+    const updateColumnCount = () => {
+      if (window.innerWidth >= 1280) setColumnCount(3); // xl
+      else if (window.innerWidth >= 768) setColumnCount(2); // md
+      else setColumnCount(1);
+    };
+    
+    updateColumnCount();
+    window.addEventListener('resize', updateColumnCount);
+    return () => window.removeEventListener('resize', updateColumnCount);
+  }, []);
+  
+  const containerRef = useMasonry(shifts.length, columnCount);
+
   return (
     <motion.div
-      className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6 items-start"
+      ref={containerRef}
+      className="relative"
+      style={{ minHeight: '200px' }}
       initial="hidden"
       animate="visible"
       exit="exit"
