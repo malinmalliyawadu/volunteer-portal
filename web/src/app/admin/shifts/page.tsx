@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { format, parseISO, startOfDay, endOfDay } from "date-fns";
+import { formatInNZT, toNZT } from "@/lib/timezone";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { isFeatureEnabled } from "@/lib/posthog-server";
@@ -30,12 +31,11 @@ export default async function AdminShiftsPage({
 
   const params = await searchParams;
 
-  // Parse search parameters
-  const dateString =
-    (params.date as string) || format(new Date(), "yyyy-MM-dd");
+  // Parse search parameters (handle dates in NZ timezone)
+  const today = formatInNZT(new Date(), "yyyy-MM-dd");
+  const dateString = (params.date as string) || today;
   const selectedLocation = (params.location as LocationOption) || DEFAULT_LOCATION;
   const selectedDate = parseISO(dateString);
-  const today = format(new Date(), "yyyy-MM-dd");
   const isToday = dateString === today;
 
   // Check feature flag for flexible placement
@@ -44,13 +44,22 @@ export default async function AdminShiftsPage({
     session.user.id || "admin"
   );
 
-  // Fetch shifts for the selected date and location
+  // Fetch shifts for the selected date and location (using NZ timezone)
+  // For database queries, we need to convert the NZ date boundaries back to UTC
+  const selectedDateNZ = toNZT(selectedDate);
+  const startOfDayNZ = startOfDay(selectedDateNZ);
+  const endOfDayNZ = endOfDay(selectedDateNZ);
+  
+  // Convert NZ timezone boundaries back to UTC for database query
+  const startOfDayUTC = new Date(startOfDayNZ.getTime() - startOfDayNZ.getTimezoneOffset() * 60000);
+  const endOfDayUTC = new Date(endOfDayNZ.getTime() - endOfDayNZ.getTimezoneOffset() * 60000);
+  
   const allShifts = await prisma.shift.findMany({
     where: {
       location: selectedLocation,
       start: {
-        gte: startOfDay(selectedDate),
-        lte: endOfDay(selectedDate),
+        gte: startOfDayUTC,
+        lte: endOfDayUTC,
       },
     },
     include: {
@@ -178,7 +187,7 @@ export default async function AdminShiftsPage({
   >();
 
   calendarShifts.forEach((shift) => {
-    const dateKey = format(shift.start, "yyyy-MM-dd");
+    const dateKey = formatInNZT(shift.start, "yyyy-MM-dd");
     const location = shift.location || "Unknown";
 
     if (!shiftSummariesMap.has(dateKey)) {
@@ -316,7 +325,7 @@ export default async function AdminShiftsPage({
             </h3>
             <p className="text-slate-600 mb-6">
               Get started by creating your first shift for{" "}
-              {format(selectedDate, "EEEE, MMMM d, yyyy")} in {selectedLocation}
+              {formatInNZT(selectedDate, "EEEE, MMMM d, yyyy")} in {selectedLocation}
               .
             </p>
             <Button asChild size="sm" className="btn-primary">

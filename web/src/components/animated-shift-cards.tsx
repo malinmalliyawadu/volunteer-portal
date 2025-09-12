@@ -53,6 +53,7 @@ const createStaggerItemVariants = (index: number): Variants => ({
   },
 });
 import { format } from "date-fns";
+import { formatInNZT } from "@/lib/timezone";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -236,8 +237,8 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
                       </div>
                       <p className="text-sm text-slate-700 font-medium flex items-center gap-1">
                         <Clock className="h-3.5 w-3.5" />
-                        {format(shift.start, "h:mm a")} -{" "}
-                        {format(shift.end, "h:mm a")}
+                        {formatInNZT(shift.start, "h:mm a")} -{" "}
+                        {formatInNZT(shift.end, "h:mm a")}
                       </p>
                     </div>
                     <div className="text-right">
@@ -494,7 +495,7 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
                     <DeleteShiftDialog
                       shiftId={shift.id}
                       shiftName={shift.shiftType.name}
-                      shiftDate={format(shift.start, "EEEE, MMMM d, yyyy")}
+                      shiftDate={formatInNZT(shift.start, "EEEE, MMMM d, yyyy")}
                       hasSignups={shift.signups.length > 0}
                       signupCount={shift.signups.filter(
                         (signup) => signup.status !== "CANCELED" && signup.status !== "NO_SHOW"

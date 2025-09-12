@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatedShiftCardsWrapper } from "@/components/animated-shift-cards-wrapper";
+import { toNZT } from "@/lib/timezone";
 
 interface Shift {
   id: string;
@@ -47,9 +48,10 @@ interface ShiftsByTimeOfDayProps {
 }
 
 export function ShiftsByTimeOfDay({ shifts }: ShiftsByTimeOfDayProps) {
-  // Helper function to determine if a shift is AM or PM
+  // Helper function to determine if a shift is AM or PM (in NZ timezone)
   const isAMShift = (shift: Shift) => {
-    const hour = shift.start.getHours();
+    const nzTime = toNZT(shift.start);
+    const hour = nzTime.getHours();
     return hour < 16; // Before 4pm (16:00) is considered "AM"
   };
 

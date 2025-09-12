@@ -2,6 +2,7 @@
 
 import { ShiftCalendar } from "./shift-calendar";
 import { format } from "date-fns";
+import { formatInNZT } from "@/lib/timezone";
 import { useRouter } from "next/navigation";
 
 type ShiftSummary = {
@@ -26,7 +27,7 @@ export function ShiftCalendarWrapper({
   const router = useRouter();
 
   const handleDateSelect = (date: Date) => {
-    const dateStr = format(date, "yyyy-MM-dd");
+    const dateStr = formatInNZT(date, "yyyy-MM-dd");
     router.push(`/admin/shifts?date=${dateStr}&location=${selectedLocation}`);
   };
 
