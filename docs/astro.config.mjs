@@ -223,7 +223,6 @@ export default defineConfig({
             { label: "Admin Permissions", slug: "reference/permissions" },
             { label: "Notification System", slug: "reference/notifications" },
             { label: "API Endpoints", slug: "reference/api-endpoints" },
-            { label: "Changelog", slug: "changelog" },
           ],
         },
       ],
