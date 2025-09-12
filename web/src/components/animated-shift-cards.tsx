@@ -75,6 +75,7 @@ import {
 import { VolunteerActions } from "@/components/volunteer-actions";
 import { getShiftTheme } from "@/lib/shift-themes";
 import { DeleteShiftDialog } from "@/components/delete-shift-dialog";
+import { CustomLabelBadge } from "@/components/custom-label-badge";
 import { AdminNotesDialog } from "@/components/admin-notes-dialog";
 
 interface Shift {
@@ -106,6 +107,14 @@ interface Shift {
           name: string | null;
           firstName: string | null;
           lastName: string | null;
+        };
+      }>;
+      customLabels: Array<{
+        label: {
+          id: string;
+          name: string;
+          color: string;
+          icon: string | null;
         };
       }>;
     };
@@ -417,14 +426,30 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
                                   )}
                                 </div>
                                 <div className="flex items-center justify-between gap-2">
-                                  <div
-                                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${gradeInfo.color} flex-shrink-0`}
-                                    data-testid={`volunteer-grade-${signup.id}`}
-                                  >
-                                    {GradeIcon && (
-                                      <GradeIcon className="h-3 w-3" />
-                                    )}
-                                    {gradeInfo.label}
+                                  <div className="flex items-center gap-1 flex-wrap">
+                                    <div
+                                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${gradeInfo.color} flex-shrink-0`}
+                                      data-testid={`volunteer-grade-${signup.id}`}
+                                    >
+                                      {GradeIcon && (
+                                        <GradeIcon className="h-3 w-3" />
+                                      )}
+                                      {gradeInfo.label}
+                                    </div>
+                                    {signup.user.customLabels.map((userLabel) => (
+                                      <CustomLabelBadge
+                                        key={userLabel.label.id}
+                                        label={{
+                                          ...userLabel.label,
+                                          isActive: true,
+                                          createdAt: new Date(),
+                                          updatedAt: new Date(),
+                                        }}
+                                        size="sm"
+                                        className="flex-shrink-0"
+                                        data-testid={`volunteer-label-${signup.id}-${userLabel.label.id}`}
+                                      />
+                                    ))}
                                   </div>
                                   <div className="flex-shrink-0">
                                     <VolunteerActions

@@ -32,6 +32,7 @@ import { VolunteerGradeToggle } from "@/components/volunteer-grade-toggle";
 import { VolunteerGradeBadge } from "@/components/volunteer-grade-badge";
 import { UserRoleToggle } from "@/components/user-role-toggle";
 import { AdminNotesManager } from "@/components/admin-notes-manager";
+import { UserCustomLabelsManager } from "@/components/user-custom-labels-manager";
 import { type VolunteerGrade } from "@prisma/client";
 import { LOCATIONS, LocationOption } from "@/lib/locations";
 
@@ -136,6 +137,14 @@ export default async function AdminVolunteerPage({
           ...(selectedLocation
             ? { shift: { location: selectedLocation } }
             : {}),
+        },
+      },
+      customLabels: {
+        include: {
+          label: true,
+        },
+        orderBy: {
+          assignedAt: "desc",
         },
       },
     },
@@ -473,6 +482,12 @@ export default async function AdminVolunteerPage({
                 <AdminNotesManager volunteerId={volunteer.id} />
               </CardContent>
             </Card>
+
+            {/* Custom Labels */}
+            <UserCustomLabelsManager
+              userId={volunteer.id}
+              currentLabels={volunteer.customLabels}
+            />
 
             {/* Contact Information */}
             <Card data-testid="contact-information-card">
