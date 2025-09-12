@@ -4,6 +4,7 @@ on:
   pull_request:
     types: [closed]
     branches: [main]
+    paths: ['web/**']
 
 jobs:
   version-bump:
