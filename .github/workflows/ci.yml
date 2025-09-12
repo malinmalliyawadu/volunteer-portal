@@ -5,8 +5,10 @@ permissions:
 on:
   pull_request:
     branches: [main]
+    paths: ['web/**', '.github/workflows/ci.yml']
   push:
     branches: [main]
+    paths: ['web/**', '.github/workflows/ci.yml']
 
 jobs:
   lint:
