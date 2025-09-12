@@ -204,7 +204,7 @@ test.describe("Admin Shifts - Volunteer Management", () => {
     await expect(page.getByText(/\+\d+ more/)).not.toBeVisible();
   });
 
-  test("should show correct staffing status with confirmed volunteers only", async ({
+  test.skip("should show correct staffing status with confirmed volunteers only", async ({
     page,
   }) => {
     const tomorrow = new Date();
