@@ -2,28 +2,48 @@ import { format } from "date-fns";
 import { tz } from "@date-fns/tz";
 
 const NZ_TIMEZONE = "Pacific/Auckland";
-const nzTz = tz(NZ_TIMEZONE);
+// Singleton timezone instance for performance optimization
+const nzTimezone = tz(NZ_TIMEZONE);
 
 /**
- * Format a date/time in New Zealand timezone
+ * Format a date/time in New Zealand timezone with input validation
  * @param date - The date to format
  * @param formatStr - The format string (same as date-fns format)
  * @returns Formatted date string in NZ timezone
+ * @throws Error if date is invalid
  */
 export function formatInNZT(date: Date | string, formatStr: string): string {
-  const dateObj = typeof date === "string" ? new Date(date) : date;
-  const nzTime = nzTz(dateObj);
-  return format(nzTime, formatStr, { in: nzTz });
+  try {
+    const dateObj = typeof date === "string" ? new Date(date) : date;
+    
+    // Validate date
+    if (isNaN(dateObj.getTime())) {
+      throw new Error(`Invalid date provided: ${date}`);
+    }
+    
+    const nzTime = nzTimezone(dateObj);
+    return format(nzTime, formatStr, { in: nzTimezone });
+  } catch (error) {
+    console.error("Error formatting date in NZT:", error);
+    return "Invalid Date";
+  }
 }
 
 /**
- * Convert a date to New Zealand timezone
+ * Convert a date to New Zealand timezone with input validation
  * @param date - The date to convert
  * @returns TZDate object representing the time in NZ timezone
+ * @throws Error if date is invalid
  */
 export function toNZT(date: Date | string) {
   const dateObj = typeof date === "string" ? new Date(date) : date;
-  return nzTz(dateObj);
+  
+  // Validate date
+  if (isNaN(dateObj.getTime())) {
+    throw new Error(`Invalid date provided: ${date}`);
+  }
+  
+  return nzTimezone(dateObj);
 }
 
 /**
@@ -31,7 +51,7 @@ export function toNZT(date: Date | string) {
  * @returns TZDate object representing current time in NZ timezone
  */
 export function nowInNZT() {
-  return nzTz(new Date());
+  return nzTimezone(new Date());
 }
 
 /**
