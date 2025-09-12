@@ -44,24 +44,6 @@ jobs:
           find dist -name "*.js" -o -name "*.css" | wc -l | xargs echo "Asset files generated:"
           
   # Provide the same check names that branch protection expects
-  lint:
-    name: lint
-    runs-on: ubuntu-latest
-    needs: docs-check
-    if: always()
-    
-    steps:
-      - name: Check documentation build
-        run: |
-          if [[ "${{ needs.docs-check.result }}" == "success" ]]; then
-            echo "✅ Documentation lint checks passed"
-            echo "🎉 Docs-only PR - no web lint required"
-            exit 0
-          else
-            echo "❌ Documentation checks failed"
-            exit 1
-          fi
-
   test-summary:
     name: Test Summary
     runs-on: ubuntu-latest
