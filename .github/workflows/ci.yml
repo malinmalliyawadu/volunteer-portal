@@ -45,3 +45,4 @@ jobs:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/volunteer_portal_test
           NEXTAUTH_URL: http://localhost:3000
           NEXTAUTH_SECRET: test-secret-for-ci-only
+          TZ: Pacific/Auckland
