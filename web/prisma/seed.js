@@ -126,6 +126,12 @@ function downloadImageAsBase64(url) {
 }
 
 async function downloadAndConvertProfileImages() {
+  // Skip profile image downloads in CI environments to speed up workflow runs
+  if (process.env.CI || process.env.NODE_ENV === 'test') {
+    console.log("🏃 Skipping profile image downloads in CI/test environment for faster execution");
+    return;
+  }
+
   console.log(
     "🎲 Generating random profile photos from randomuser.me for all users...\n"
   );
