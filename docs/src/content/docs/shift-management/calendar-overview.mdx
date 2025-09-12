@@ -5,6 +5,12 @@ description: Master the shift management calendar for scheduling volunteers and 
 
 The shift management calendar is your primary tool for scheduling volunteers and monitoring shift capacity across all restaurant locations.
 
+![Shift Management Calendar](/images/screenshots/admin-shifts.png)
+
+import AppLink from '../../../components/AppLink.astro';
+
+<AppLink path="/admin/shifts" text="📅 Open Live Shift Management" />
+
 ## Calendar Interface
 
 ### Date Navigation
@@ -22,7 +28,7 @@ The calendar uses color coding to show shift capacity:
 
 - <span class="status-dot green"></span> **Fully Staffed (100%+)** - Green background
 - <span class="status-dot yellow"></span> **Moderate Staffing (25-75%)** - Yellow background  
-- <span class="status-dot red"></span> **Critical Staffing (<25%)** - Red background
+- <span class="status-dot red"></span> **Critical Staffing (&lt;25%)** - Red background
 - **No color** - No shifts scheduled for that date
 
 ## Calendar Features

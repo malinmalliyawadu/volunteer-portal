@@ -5,6 +5,8 @@ description: Detailed guide to managing individual volunteer profiles and inform
 
 Manage detailed volunteer information, track activity, and maintain comprehensive records for each volunteer.
 
+![Volunteer Profile Interface](/images/screenshots/volunteer-profile.png)
+
 :::note[Coming Soon]
 This guide is being developed with detailed profile management instructions.
 :::

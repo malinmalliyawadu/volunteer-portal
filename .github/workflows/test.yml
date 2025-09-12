@@ -126,11 +126,11 @@ jobs:
           path: web/playwright-report/
           retention-days: 30
 
-  summary:
+  tests-passed:
     if: always()
     needs: [test, merge-reports]
     runs-on: ubuntu-latest
-    name: Test Summary
+    name: Tests passed
     steps:
       - name: Check all jobs
         run: |

@@ -5,6 +5,8 @@ description: Complete guide to navigating the admin interface and understanding 
 
 This guide will help you navigate the admin interface efficiently and understand how to access all the administrative features.
 
+![Volunteer Dashboard View](/images/screenshots/volunteer-dashboard.png)
+
 ## Main Navigation Structure
 
 ### Header Navigation

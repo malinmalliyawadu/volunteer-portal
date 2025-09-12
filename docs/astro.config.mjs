@@ -2,6 +2,9 @@
 import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
 
+// Get the app URL from environment variable, default to localhost for development
+const APP_URL = process.env.VOLUNTEER_PORTAL_URL || 'http://localhost:3000';
+
 // https://astro.build/config
 export default defineConfig({
   integrations: [
@@ -9,8 +12,108 @@ export default defineConfig({
       title: "Everybody Eats Admin Guide",
       description: "Administrator documentation for the volunteer portal",
       customCss: ["./src/styles/custom.css"],
+      editLink: {
+        baseUrl: 'https://github.com/everybody-eats-nz/volunteer-portal/edit/main/docs/',
+      },
+      head: [
+        {
+          tag: 'script',
+          content: `
+            // Wait for DOM and handle dynamic content
+            function initImageZoom() {
+              // Create modal elements if not exists
+              if (document.querySelector('.image-modal')) return;
+              
+              const modal = document.createElement('div');
+              modal.className = 'image-modal';
+              modal.innerHTML = \`
+                <button class="image-modal-close" aria-label="Close fullscreen image">×</button>
+                <img src="" alt="" />
+              \`;
+              document.body.appendChild(modal);
+
+              const modalImg = modal.querySelector('img');
+              const closeBtn = modal.querySelector('.image-modal-close');
+
+              // Add click listeners to all content images
+              const setupImageListeners = () => {
+                const images = document.querySelectorAll('main img, .content img, [class*="content"] img');
+                console.log('Found images:', images.length);
+                
+                images.forEach((img, index) => {
+                  // Skip logo and other non-content images
+                  if (img.closest('.site-title') || img.closest('nav') || img.closest('header')) {
+                    console.log('Skipping image', index, 'in header/nav');
+                    return;
+                  }
+                  
+                  console.log('Adding click listener to image', index, img.src);
+                  img.style.cursor = 'pointer';
+                  
+                  // Remove existing listeners
+                  img.removeEventListener('click', img._zoomHandler);
+                  
+                  img._zoomHandler = (e) => {
+                    console.log('Image clicked:', img.src);
+                    e.preventDefault();
+                    e.stopPropagation();
+                    modalImg.src = img.src;
+                    modalImg.alt = img.alt;
+                    modal.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                  };
+                  
+                  img.addEventListener('click', img._zoomHandler);
+                });
+              };
+
+              // Close modal functionality
+              const closeModal = () => {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+              };
+
+              closeBtn.addEventListener('click', closeModal);
+              
+              // Close on click outside image
+              modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                  closeModal();
+                }
+              });
+
+              // Close on escape key
+              document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && modal.classList.contains('active')) {
+                  closeModal();
+                }
+              });
+              
+              // Setup listeners immediately and on content changes
+              setupImageListeners();
+              
+              // Also setup listeners when content changes (for SPA navigation)
+              const observer = new MutationObserver(() => {
+                setTimeout(setupImageListeners, 100);
+              });
+              
+              observer.observe(document.body, { childList: true, subtree: true });
+            }
+            
+            // Initialize when DOM is ready
+            if (document.readyState === 'loading') {
+              document.addEventListener('DOMContentLoaded', initImageZoom);
+            } else {
+              initImageZoom();
+            }
+            
+            // Also initialize after view transitions (Starlight SPA navigation)
+            document.addEventListener('astro:page-load', initImageZoom);
+          `
+        }
+      ],
       logo: {
-        src: "./public/logo.svg",
+        src: "./src/assets/logo.svg",
         replacesTitle: true,
       },
       social: [
