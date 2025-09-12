@@ -24,6 +24,7 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@date-fns/tz": "^1.4.1",
     "@hookform/resolvers": "^5.2.1",
     "@million/lint": "^1.0.14",
     "@prisma/client": "^6.14.0",
