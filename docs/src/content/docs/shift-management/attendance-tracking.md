@@ -9,7 +9,7 @@ Track volunteer attendance and manage shift completion records.
 Detailed attendance tracking guide in development.
 :::
 
-## Features
+## Features :badge[Draft]{variant="danger"}
 
 - Shift completion tracking
 - Volunteer attendance records

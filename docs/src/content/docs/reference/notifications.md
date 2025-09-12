@@ -9,14 +9,14 @@ Technical details about the notification and communication system architecture.
 Notification system reference documentation in development.
 :::
 
-## System Components
+## System Components :badge[Draft]{variant="danger"}
 
 - Email notification system
 - In-app notifications
 - Communication preferences
 - Automated messaging
 
-## Features
+## Features :badge[Draft]{variant="danger"}
 
 - Volunteer communications
 - Admin notifications

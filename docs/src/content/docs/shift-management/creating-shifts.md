@@ -9,7 +9,7 @@ Learn how to create new volunteer shifts with proper scheduling, capacity, and r
 Detailed shift creation guide in development.
 :::
 
-## Key Features
+## Key Features :badge[Draft]{variant="danger"}
 
 - Shift date and time configuration
 - Capacity and volunteer requirements

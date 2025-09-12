@@ -9,7 +9,7 @@ Manage group volunteer bookings, invitations, and multi-volunteer coordination.
 Comprehensive group booking management guide in development.
 :::
 
-## Overview
+## Overview :badge[Draft]{variant="danger"}
 
 - Group creation and invitation management
 - Member status tracking

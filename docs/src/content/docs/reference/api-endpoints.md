@@ -9,14 +9,14 @@ Technical reference for system API endpoints and integration capabilities.
 API endpoint documentation in development.
 :::
 
-## Endpoint Categories
+## Endpoint Categories :badge[Draft]{variant="danger"}
 
 - Authentication endpoints
 - User management APIs
 - Shift management APIs
 - Reporting and analytics APIs
 
-## Integration Points
+## Integration Points :badge[Draft]{variant="danger"}
 
 - External system connections
 - Webhook capabilities
