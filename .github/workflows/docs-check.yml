@@ -45,7 +45,7 @@ jobs:
           
   # Shared check name that works for both web and docs PRs
   test-summary:
-    name: Build & Test Summary
+    name: Tests passed
     runs-on: ubuntu-latest
     needs: docs-check
     if: always()
