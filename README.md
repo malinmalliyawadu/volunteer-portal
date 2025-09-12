@@ -32,4 +32,4 @@ Next.js-based web application providing the main volunteer portal interface.
 
 Comprehensive administrator documentation built with Astro Starlight, providing detailed guides for managing volunteers, shifts, and restaurant operations.
 
-**[📖 Admin Documentation →](./docs/README.md)**
+**[📖 Admin Documentation →](./docs/README.md)** | **[🌐 Live Documentation Site →](https://volunteer-portal-docs.vercel.app)**

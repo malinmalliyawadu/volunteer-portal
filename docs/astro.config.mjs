@@ -12,6 +12,9 @@ export default defineConfig({
       title: "Everybody Eats Admin Guide",
       description: "Administrator documentation for the volunteer portal",
       customCss: ["./src/styles/custom.css"],
+      editLink: {
+        baseUrl: 'https://github.com/everybody-eats-nz/volunteer-portal/edit/main/docs/',
+      },
       head: [
         {
           tag: 'script',
