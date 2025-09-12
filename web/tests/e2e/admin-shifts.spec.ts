@@ -7,6 +7,21 @@ import {
   deleteTestShifts,
 } from "./helpers/test-helpers";
 import { randomUUID } from "crypto";
+import { format } from "date-fns";
+import { tz } from "@date-fns/tz";
+
+// NZ timezone helpers for consistent test behavior
+const NZ_TIMEZONE = "Pacific/Auckland";
+const nzTimezone = tz(NZ_TIMEZONE);
+
+function nowInNZT() {
+  return nzTimezone(new Date());
+}
+
+function formatInNZT(date: Date, formatStr: string): string {
+  const nzTime = nzTimezone(date);
+  return format(nzTime, formatStr, { in: nzTimezone });
+}
 
 test.describe("Admin Shifts Page", () => {
   const testId = randomUUID().slice(0, 8);
@@ -112,8 +127,8 @@ test.describe("Admin Shifts Page", () => {
     // Click today button
     await page.getByTestId("today-button").click();
 
-    // Check that we're now on today's date
-    const today = new Date().toISOString().split("T")[0];
+    // Check that we're now on today's date (NZ timezone)
+    const today = formatInNZT(nowInNZT(), "yyyy-MM-dd");
     await expect(page).toHaveURL(new RegExp(`date=${today}`));
   });
 
