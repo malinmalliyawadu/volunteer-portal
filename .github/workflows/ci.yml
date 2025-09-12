@@ -48,3 +48,28 @@ jobs:
           NEXTAUTH_URL: http://localhost:3000
           NEXTAUTH_SECRET: test-secret-for-ci-only
           TZ: Pacific/Auckland
+
+  # Shared check that both web and docs PRs can use
+  merge-check:
+    name: Ready to Merge
+    runs-on: ubuntu-latest
+    needs: lint
+    if: always()
+    
+    steps:
+      - name: Check lint and build
+        run: |
+          if [[ "${{ needs.lint.result }}" == "success" ]]; then
+            echo "✅ Web lint and build checks passed"
+            exit 0
+          else
+            echo "❌ Web lint and build checks failed"
+            exit 1
+          fi
+          
+      - name: Merge requirements satisfied
+        run: |
+          echo "🎉 All requirements satisfied for web PR"
+          echo "✅ Linting passed"
+          echo "✅ Type checking passed"
+          echo "✅ Build completed successfully"
