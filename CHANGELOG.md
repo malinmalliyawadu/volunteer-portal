@@ -1,3 +1,9 @@
+## [0.38.2] - 2025-09-12
+
+### Changes
+- fix: ensure admin schedule page displays times consistently in NZT ([#104](https://github.com/everybody-eats-nz/volunteer-portal/pull/104)) by @malinmalliyawadu
+
+
 ## [0.38.1] - 2025-09-12
 
 ### Changes
