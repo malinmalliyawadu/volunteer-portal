@@ -1,3 +1,9 @@
+## [0.38.0] - 2025-09-12
+
+### Changes
+- feat: require profile photo during registration ([#102](https://github.com/malinmalliyawadu/volunteer-portal/pull/102)) by @malinmalliyawadu
+
+
 ## [0.37.2] - 2025-09-11
 
 ### Changes

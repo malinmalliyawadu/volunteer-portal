@@ -506,25 +506,32 @@ export function PersonalInfoStep({
         return null;
       })()}
 
-      {!isRegistration && (
-        <div className="space-y-2">
-          <ProfileImageUpload
-            currentImage={formData.profilePhotoUrl}
-            onImageChange={(url: string | null) =>
-              onInputChange("profilePhotoUrl", url || "")
-            }
-            disabled={loading}
-            toast={toast}
-            fallbackText={
-              formData.firstName && formData.lastName
-                ? `${formData.firstName.charAt(0)}${formData.lastName.charAt(
-                    0
-                  )}`.toUpperCase()
-                : "?"
-            }
-          />
-        </div>
-      )}
+      <div className="space-y-2">
+        <Label htmlFor="profilePhoto" className="text-sm font-medium">
+          Profile Photo {isRegistration ? "*" : ""}
+        </Label>
+        <ProfileImageUpload
+          currentImage={formData.profilePhotoUrl}
+          onImageChange={(url: string | null) =>
+            onInputChange("profilePhotoUrl", url || "")
+          }
+          disabled={loading}
+          toast={toast}
+          fallbackText={
+            formData.firstName && formData.lastName
+              ? `${formData.firstName.charAt(0)}${formData.lastName.charAt(
+                  0
+                )}`.toUpperCase()
+              : "?"
+          }
+          required={isRegistration}
+        />
+        {isRegistration && (
+          <p className="text-xs text-muted-foreground">
+            A profile photo is required for all volunteer accounts
+          </p>
+        )}
+      </div>
     </div>
   );
 }

@@ -443,6 +443,14 @@ export default function RegisterPage() {
           });
           return false;
         }
+        if (!formData.profilePhotoUrl) {
+          toast({
+            title: "Profile photo required",
+            description: "Please upload a profile photo to continue",
+            variant: "destructive",
+          });
+          return false;
+        }
         break;
       case 3: // Medical & Background
         if (!formData.howDidYouHearAboutUs || formData.howDidYouHearAboutUs === "not_specified") {

@@ -43,8 +43,8 @@ const registerSchema = z
     volunteerAgreementAccepted: z.boolean(),
     healthSafetyPolicyAccepted: z.boolean(),
     
-    // Profile image (optional for regular registration, may be required for migration)
-    profilePhotoUrl: z.string().nullable().optional(),
+    // Profile image (required for all registrations)
+    profilePhotoUrl: z.string().min(1, "Profile photo is required"),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
@@ -133,13 +133,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // For migration registrations, require profile image
-    if (isMigration && !validatedData.profilePhotoUrl) {
-      return NextResponse.json(
-        { error: "Profile image is required for migration registration" },
-        { status: 400 }
-      );
-    }
+    // Profile photo is now required for all registrations (handled by schema validation)
 
     // Hash password
     const hashedPassword = await bcrypt.hash(validatedData.password, 10);
@@ -204,8 +198,8 @@ export async function POST(req: Request) {
       requiresParentalConsent,
       parentalConsentReceived: false, // Always false initially
       
-      // Profile image
-      profilePhotoUrl: validatedData.profilePhotoUrl || null,
+      // Profile image (required for registration, nullable in DB for existing users)
+      profilePhotoUrl: validatedData.profilePhotoUrl,
     };
 
     // For migration, update existing user; otherwise create new user
