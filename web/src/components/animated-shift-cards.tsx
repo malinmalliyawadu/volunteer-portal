@@ -176,9 +176,6 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
   return (
     <motion.div
       className="columns-1 md:columns-2 xl:columns-3 gap-4 lg:gap-6"
-      // style={{
-      //   columnFill: 'balance',
-      // }}
       initial="hidden"
       animate="visible"
       exit="exit"
