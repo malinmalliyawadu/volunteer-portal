@@ -197,7 +197,7 @@ export async function POST(req: Request) {
       requiresParentalConsent,
       parentalConsentReceived: false, // Always false initially
       
-      // Profile image (now required)
+      // Profile image (required for registration, nullable in DB for existing users)
       profilePhotoUrl: validatedData.profilePhotoUrl,
     };
 

@@ -17,7 +17,7 @@ model User {
   phone                        String?
   dateOfBirth                  DateTime?
   pronouns                     String?
-  profilePhotoUrl              String
+  profilePhotoUrl              String?
   hashedPassword               String
   role                         Role                   @default(VOLUNTEER)
   volunteerGrade               VolunteerGrade         @default(GREEN)
