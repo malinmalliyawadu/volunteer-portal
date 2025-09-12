@@ -128,7 +128,7 @@ export function ShiftCalendar({
             onSelect={handleDateSelect}
             modifiers={{
               hasShifts: (date) => hasShifts(date),
-              selected: (date) => isSameDay(date, selectedDate),
+              selected: (date) => isSameDayInNZT(date, selectedDate),
             }}
             modifiersClassNames={{
               hasShifts: "bg-blue-50 hover:bg-blue-100 text-blue-900 font-medium",

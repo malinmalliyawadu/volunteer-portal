@@ -61,12 +61,26 @@ export function nowInNZT() {
  * @returns True if both dates are on the same day in NZ timezone
  */
 export function isSameDayInNZT(date1: Date | string, date2: Date | string): boolean {
-  const nz1 = toNZT(date1);
-  const nz2 = toNZT(date2);
-  
-  return (
-    nz1.getFullYear() === nz2.getFullYear() &&
-    nz1.getMonth() === nz2.getMonth() &&
-    nz1.getDate() === nz2.getDate()
-  );
+  try {
+    const nz1 = toNZT(date1);
+    const nz2 = toNZT(date2);
+    
+    return (
+      nz1.getFullYear() === nz2.getFullYear() &&
+      nz1.getMonth() === nz2.getMonth() &&
+      nz1.getDate() === nz2.getDate()
+    );
+  } catch (error) {
+    console.error("Error comparing dates in NZT:", error);
+    return false;
+  }
+}
+
+/**
+ * Convert a TZDate to UTC Date object for database queries
+ * @param tzDate - The TZDate object to convert
+ * @returns UTC Date object safe for database queries
+ */
+export function toUTC(tzDate: any): Date {
+  return new Date(tzDate.getTime());
 }

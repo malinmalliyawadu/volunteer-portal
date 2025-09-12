@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { format, parseISO, startOfDay, endOfDay } from "date-fns";
-import { formatInNZT, toNZT } from "@/lib/timezone";
+import { formatInNZT, toNZT, toUTC } from "@/lib/timezone";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { isFeatureEnabled } from "@/lib/posthog-server";
@@ -50,13 +50,16 @@ export default async function AdminShiftsPage({
   const startOfDayNZ = startOfDay(selectedDateNZ);
   const endOfDayNZ = endOfDay(selectedDateNZ);
   
-  // TZDate objects can be used directly with Prisma as they convert properly to UTC
+  // Convert TZDate objects to explicit UTC for reliable Prisma queries
+  const startOfDayUTC = toUTC(startOfDayNZ);
+  const endOfDayUTC = toUTC(endOfDayNZ);
+  
   const allShifts = await prisma.shift.findMany({
     where: {
       location: selectedLocation,
       start: {
-        gte: startOfDayNZ,
-        lte: endOfDayNZ,
+        gte: startOfDayUTC,
+        lte: endOfDayUTC,
       },
     },
     include: {
