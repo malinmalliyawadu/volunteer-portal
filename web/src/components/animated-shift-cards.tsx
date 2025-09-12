@@ -175,7 +175,7 @@ function getGradeInfo(grade: string | null | undefined) {
 export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
   return (
     <motion.div
-      className="columns-1 md:columns-2 xl:columns-3 gap-4 lg:gap-6"
+      className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6 items-start"
       initial="hidden"
       animate="visible"
       exit="exit"
@@ -220,7 +220,7 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
               animate="visible"
               exit="exit"
               variants={createStaggerItemVariants(index)}
-              className="w-full break-inside-avoid mb-4 lg:mb-6"
+              className="w-full"
             >
               <Card
                 data-testid={`shift-card-${shift.id}`}
