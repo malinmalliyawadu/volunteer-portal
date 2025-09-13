@@ -1,3 +1,9 @@
+## [0.38.4] - 2025-09-13
+
+### Changes
+- chore(deps): bump hono from 4.9.6 to 4.9.7 in /web in the npm_and_yarn group across 1 directory ([#116](https://github.com/everybody-eats-nz/volunteer-portal/pull/116)) by @dependabot[bot]
+
+
 ## [0.38.3] - 2025-09-13
 
 ### Changes
