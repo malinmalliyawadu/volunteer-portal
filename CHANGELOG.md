@@ -1,3 +1,9 @@
+## [0.38.3] - 2025-09-13
+
+### Changes
+- fix: resolve timezone issues in admin shifts page ([#115](https://github.com/everybody-eats-nz/volunteer-portal/pull/115)) by @malinmalliyawadu
+
+
 ## [0.38.2] - 2025-09-12
 
 ### Changes
