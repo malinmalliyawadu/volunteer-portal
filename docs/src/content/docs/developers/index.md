@@ -5,10 +5,11 @@ description: Technical documentation and API reference for developers
 
 Welcome to the Developer Reference section of the Everybody Eats Volunteer Portal. This documentation provides technical details for developers working with or integrating with the volunteer system.
 
-## System Administration
+## Authentication & Authorization
 
-Technical details about system administration and permissions:
+Technical documentation for authentication systems and user management:
 
+- **[OAuth Authentication](/developers/oauth-authentication/)** - OAuth provider integration, configuration, and customization
 - **[Admin Permissions](/reference/permissions/)** - User roles, permission levels, and access control
 - **[Notification System](/reference/notifications/)** - Technical reference for the notification and communication system
 
