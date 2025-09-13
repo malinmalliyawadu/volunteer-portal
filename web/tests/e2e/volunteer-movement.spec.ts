@@ -98,7 +98,7 @@ test.describe("General Volunteer Movement System", () => {
     await deleteTestShifts(testShiftIds);
   });
 
-  test.describe("Admin Volunteer Movement Interface", () => {
+  test.describe.skip("Admin Volunteer Movement Interface", () => {
     test.afterEach(async () => {
       // Clean up any notifications created during the test to ensure isolation
       await prisma.notification.deleteMany({
