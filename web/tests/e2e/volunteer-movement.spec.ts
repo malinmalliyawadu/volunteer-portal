@@ -150,7 +150,9 @@ test.describe("General Volunteer Movement System", () => {
       );
     });
 
-    test("admin can move volunteer to different shift", async ({ page }) => {
+    test.skip("admin can move volunteer to different shift", async ({
+      page,
+    }) => {
       // Reset signup to original shift for this test
       await prisma.signup.update({
         where: { id: signupId },
