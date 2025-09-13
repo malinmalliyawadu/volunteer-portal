@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { CalendarIcon, Users } from "lucide-react";
-import { format, isSameDay } from "date-fns";
+import { formatInNZT, isSameDayInNZT, nowInNZT } from "@/lib/timezone";
 import { cn } from "@/lib/utils";
 
 type ShiftSummary = {
@@ -43,17 +43,17 @@ export function ShiftCalendar({
       .map(summary => summary.date)
   );
 
-  // Get shift data for a specific date
+  // Get shift data for a specific date (using NZ timezone)
   const getShiftDataForDate = (date: Date) => {
-    const dateStr = format(date, "yyyy-MM-dd");
+    const dateStr = formatInNZT(date, "yyyy-MM-dd");
     return shiftSummaries.find(
       summary => summary.date === dateStr && summary.locations.includes(selectedLocation)
     );
   };
 
-  // Check if a date has shifts
+  // Check if a date has shifts (using NZ timezone)
   const hasShifts = (date: Date) => {
-    const dateStr = format(date, "yyyy-MM-dd");
+    const dateStr = formatInNZT(date, "yyyy-MM-dd");
     return shiftDates.has(dateStr);
   };
 
@@ -92,11 +92,11 @@ export function ShiftCalendar({
             <div className="flex items-center gap-2 flex-1">
               <div>
                 <div className="text-sm font-medium">
-                  {format(selectedDate, "MMM d, yyyy")}
+                  {formatInNZT(selectedDate, "MMM d, yyyy")}
                 </div>
                 <div className="text-xs text-slate-600">
-                  {format(selectedDate, "EEEE")}
-                  {isSameDay(selectedDate, new Date()) && (
+                  {formatInNZT(selectedDate, "EEEE")}
+                  {isSameDayInNZT(selectedDate, nowInNZT()) && (
                     <span className="ml-2 px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-medium">
                       Today
                     </span>
@@ -127,17 +127,22 @@ export function ShiftCalendar({
             onSelect={handleDateSelect}
             modifiers={{
               hasShifts: (date) => hasShifts(date),
-              selected: (date) => isSameDay(date, selectedDate),
+              // NZT-centric approach: Compare dates in NZ timezone regardless of server/client timezone
+              // This ensures calendar selection is consistent with NZ business logic
+              selected: (date) => isSameDayInNZT(date, selectedDate),
             }}
             modifiersClassNames={{
-              hasShifts: "bg-blue-50 hover:bg-blue-100 text-blue-900 font-medium",
-              selected: "bg-blue-600 text-white hover:bg-blue-700",
+              hasShifts: "bg-blue-50 hover:bg-blue-100 text-blue-900 font-medium rounded-md",
+              selected: "bg-blue-600 text-white hover:bg-blue-700 rounded-md",
+            }}
+            classNames={{
+              today: "",
             }}
             data-testid="shift-calendar"
             components={{
               DayButton: (props) => {
                 const shiftData = getShiftDataForDate(props.day.date);
-                const dayNum = format(props.day.date, "d");
+                const dayNum = formatInNZT(props.day.date, "d");
                 
                 return (
                   <CalendarDayButton

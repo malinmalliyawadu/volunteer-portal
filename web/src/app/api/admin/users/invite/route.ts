@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth-options";
 import { sendInvitationEmail } from "@/lib/email";
 import bcrypt from "bcrypt";
 import { z } from "zod";
+import { randomBytes } from "crypto";
 
 const inviteUserSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -46,8 +47,8 @@ export async function POST(req: Request) {
       );
     }
 
-    // Generate a temporary password
-    const tempPassword = Math.random().toString(36).slice(-12);
+    // Generate a temporary password using cryptographically secure random bytes
+    const tempPassword = randomBytes(9).toString("base64").replace(/[^a-zA-Z0-9]/g, '').slice(0, 12);
     const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
     // Create the user

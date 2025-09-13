@@ -1,3 +1,45 @@
+## [0.38.5] - 2025-09-13
+
+### Changes
+- fix: ensure shifts/details page respects NZT timezone ([#118](https://github.com/everybody-eats-nz/volunteer-portal/pull/118)) by @malinmalliyawadu
+
+
+## [0.38.4] - 2025-09-13
+
+### Changes
+- chore(deps): bump hono from 4.9.6 to 4.9.7 in /web in the npm_and_yarn group across 1 directory ([#116](https://github.com/everybody-eats-nz/volunteer-portal/pull/116)) by @dependabot[bot]
+
+
+## [0.38.3] - 2025-09-13
+
+### Changes
+- fix: resolve timezone issues in admin shifts page ([#115](https://github.com/everybody-eats-nz/volunteer-portal/pull/115)) by @malinmalliyawadu
+
+
+## [0.38.2] - 2025-09-12
+
+### Changes
+- fix: ensure admin schedule page displays times consistently in NZT ([#104](https://github.com/everybody-eats-nz/volunteer-portal/pull/104)) by @malinmalliyawadu
+
+
+## [0.38.1] - 2025-09-12
+
+### Changes
+- Potential fix for code scanning alert no. 2: Workflow does not contain permissions ([#109](https://github.com/everybody-eats-nz/volunteer-portal/pull/109)) by @malinmalliyawadu
+
+
+## [0.38.0] - 2025-09-12
+
+### Changes
+- feat: require profile photo during registration ([#102](https://github.com/malinmalliyawadu/volunteer-portal/pull/102)) by @malinmalliyawadu
+
+
+## [0.37.2] - 2025-09-11
+
+### Changes
+- Fix calendar alignment in shifts/mine page ([#101](https://github.com/malinmalliyawadu/volunteer-portal/pull/101)) by @malinmalliyawadu
+
+
 ## [0.37.1] - 2025-09-10
 
 ### Changes

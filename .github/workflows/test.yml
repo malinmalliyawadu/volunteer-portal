@@ -1,10 +1,14 @@
 name: Test
+permissions:
+  contents: read
 
 on:
   push:
     branches: [main]
+    paths: ['web/**', '.github/workflows/test.yml']
   pull_request:
     branches: [main]
+    paths: ['web/**', '.github/workflows/test.yml']
 
 jobs:
   test:
@@ -46,15 +50,31 @@ jobs:
           cd web
           npm ci
 
+      - name: Get Playwright version
+        run: |
+          cd web
+          echo "PLAYWRIGHT_VERSION=$(npx playwright --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)" >> $GITHUB_ENV
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ env.PLAYWRIGHT_VERSION }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
       - name: Install Playwright Browsers
         run: |
           cd web
           npx playwright install --with-deps chromium
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
 
       - name: Setup test database
         env:
           DATABASE_URL: postgresql://postgres:password@localhost:5432/volunteer-portal
           DIRECT_URL: postgresql://postgres:password@localhost:5432/volunteer-portal
+          TZ: Pacific/Auckland
         run: |
           cd web
           cp .env.example .env
@@ -69,6 +89,7 @@ jobs:
           DIRECT_URL: postgresql://postgres:password@localhost:5432/volunteer-portal
           NEXTAUTH_SECRET: test-secret-for-ci
           NEXTAUTH_URL: http://localhost:3000
+          TZ: Pacific/Auckland
         run: |
           cd web
           npx playwright test --shard=${{ matrix.shard }}/${{ strategy.job-total }} --project=chromium --reporter=blob
@@ -120,11 +141,11 @@ jobs:
           path: web/playwright-report/
           retention-days: 30
 
-  summary:
+  tests-passed:
     if: always()
     needs: [test, merge-reports]
     runs-on: ubuntu-latest
-    name: Test Summary
+    name: Tests passed
     steps:
       - name: Check all jobs
         run: |

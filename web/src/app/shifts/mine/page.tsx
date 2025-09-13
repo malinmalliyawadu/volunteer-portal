@@ -6,6 +6,9 @@ import {
   eachDayOfInterval,
   isSameDay,
   differenceInHours,
+  startOfWeek,
+  endOfWeek,
+  isSameMonth,
 } from "date-fns";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
@@ -304,10 +307,12 @@ export default async function MyShiftsPage({
 
   const [completedShifts, upcomingShifts] = totalStats;
 
-  // Generate calendar days
+  // Generate calendar days with proper week alignment
+  const calendarStart = startOfWeek(monthStart);
+  const calendarEnd = endOfWeek(monthEnd);
   const calendarDays = eachDayOfInterval({
-    start: monthStart,
-    end: monthEnd,
+    start: calendarStart,
+    end: calendarEnd,
   });
 
   // Group shifts by date
@@ -821,6 +826,7 @@ export default async function MyShiftsPage({
               const dateKey = format(day, "yyyy-MM-dd");
               const dayShifts = shiftsByDate.get(dateKey) || [];
               const availableShifts = availableShiftsByDate.get(dateKey) || [];
+              const isCurrentMonth = isSameMonth(day, viewMonth);
               const isToday = isSameDay(day, now);
               const isPast = day < now && !isToday;
               const shift = dayShifts[0]; // Since only 1 shift per day is allowed
@@ -833,7 +839,9 @@ export default async function MyShiftsPage({
                     min-h-[140px] p-3 rounded-xl relative flex flex-col
                     transition-all duration-200 ease-in-out hover:scale-[1.02] hover:shadow-lg
                     ${
-                      isPast
+                      !isCurrentMonth
+                        ? "bg-gray-50/50 dark:bg-gray-900/30 border border-gray-200/40 dark:border-gray-700/40 opacity-50"
+                        : isPast
                         ? "bg-gray-50/70 dark:bg-gray-900/30 border border-gray-200/60 dark:border-gray-700/60 shadow-sm"
                         : isToday
                         ? "bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-indigo-950/40 border-2 border-blue-300 dark:border-blue-700 shadow-md ring-2 ring-blue-200/40 dark:ring-blue-800/40"
@@ -850,7 +858,9 @@ export default async function MyShiftsPage({
                       className={`
                         text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center
                         ${
-                          isPast
+                          !isCurrentMonth
+                            ? "text-gray-400 dark:text-gray-600"
+                            : isPast
                             ? "text-gray-400 dark:text-gray-600"
                             : isToday
                             ? "text-white bg-blue-500 shadow-md"
@@ -956,12 +966,13 @@ export default async function MyShiftsPage({
               const dateKey = format(day, "yyyy-MM-dd");
               const dayShifts = shiftsByDate.get(dateKey) || [];
               const availableShifts = availableShiftsByDate.get(dateKey) || [];
+              const isCurrentMonth = isSameMonth(day, viewMonth);
               const isToday = isSameDay(day, now);
               const isPast = day < now && !isToday;
               const shift = dayShifts[0];
 
-              // Skip days without shifts or available shifts unless it's today
-              if (!shift && availableShifts.length === 0 && !isToday) {
+              // Skip days without shifts or available shifts unless it's today, and skip non-current month days
+              if ((!shift && availableShifts.length === 0 && !isToday) || !isCurrentMonth) {
                 return null;
               }
 

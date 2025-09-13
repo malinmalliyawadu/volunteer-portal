@@ -27,3 +27,9 @@ This project is organized as a monorepo:
 Next.js-based web application providing the main volunteer portal interface.
 
 **[📖 Web Frontend Documentation →](./web/README.md)**
+
+### 📚 `/docs/` - Admin Documentation
+
+Comprehensive administrator documentation built with Astro Starlight, providing detailed guides for managing volunteers, shifts, and restaurant operations.
+
+**[📖 Admin Documentation →](./docs/README.md)** | **[🌐 Live Documentation Site →](https://volunteer-portal-docs.vercel.app)**

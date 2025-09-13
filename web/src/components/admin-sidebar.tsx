@@ -17,6 +17,7 @@ import {
   Bell,
   Settings,
   FileText,
+  Tags,
 } from "lucide-react";
 import {
   Sidebar,
@@ -81,6 +82,11 @@ const adminNavCategories = [
         title: "Parental Consent",
         href: "/admin/parental-consent",
         icon: FileText,
+      },
+      {
+        title: "Custom Labels",
+        href: "/admin/custom-labels",
+        icon: Tags,
       },
     ],
   },
