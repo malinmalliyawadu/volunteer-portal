@@ -2,6 +2,7 @@
 import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
 import starlightSidebarTopics from 'starlight-sidebar-topics';
+import mermaid from 'astro-mermaid';
 
 // Get the app URL from environment variable, default to localhost for development
 const APP_URL = process.env.VOLUNTEER_PORTAL_URL || 'http://localhost:3000';
@@ -9,6 +10,7 @@ const APP_URL = process.env.VOLUNTEER_PORTAL_URL || 'http://localhost:3000';
 // https://astro.build/config
 export default defineConfig({
   integrations: [
+    mermaid(),
     starlight({
       plugins: [starlightSidebarTopics([
         {
@@ -106,8 +108,15 @@ export default defineConfig({
           icon: 'laptop',
           items: [
             {
-              label: "System Administration",
+              label: "Getting Started",
               items: [
+                { label: "Technology Stack", slug: "developers/tech-stack" }
+              ]
+            },
+            {
+              label: "Authentication & Authorization",
+              items: [
+                { label: "OAuth Authentication", slug: "developers/oauth-authentication" },
                 { label: "Admin Permissions", slug: "reference/permissions" },
                 { label: "Notification System", slug: "reference/notifications" }
               ]
