@@ -1,3 +1,9 @@
+## [0.38.5] - 2025-09-13
+
+### Changes
+- fix: ensure shifts/details page respects NZT timezone ([#118](https://github.com/everybody-eats-nz/volunteer-portal/pull/118)) by @malinmalliyawadu
+
+
 ## [0.38.4] - 2025-09-13
 
 ### Changes
