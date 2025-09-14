@@ -30,8 +30,6 @@ These routes are accessible to everyone:
 - `/register` - Registration page
 - `/shifts` - Public shifts browsing
 - `/api/auth/*` - NextAuth endpoints
-- `/api/locations` - Location data
-- `/api/shift-types` - Shift type data
 
 ### User Routes (Login Required, Volunteer Access)
 
@@ -58,7 +56,7 @@ All other routes default to admin-only access including:
 
 ### Middleware Configuration
 
-The middleware automatically:
+The middleware ([`middleware.ts`](https://github.com/everybody-eats-nz/volunteer-portal/blob/main/web/middleware.ts)) automatically:
 - Checks authentication status using NextAuth tokens
 - Validates user roles for protected routes
 - Redirects unauthorized users to appropriate pages
@@ -67,7 +65,7 @@ The middleware automatically:
 ### Adding New Routes
 
 **For Public Routes:**
-Add to the `public` array in `middleware.ts`:
+Add to the `public` array in [`middleware.ts`](https://github.com/everybody-eats-nz/volunteer-portal/blob/main/web/middleware.ts):
 
 ```typescript
 public: [
@@ -76,7 +74,7 @@ public: [
 ```
 
 **For User Routes:**
-Add to the `user` array in `middleware.ts`:
+Add to the `user` array in [`middleware.ts`](https://github.com/everybody-eats-nz/volunteer-portal/blob/main/web/middleware.ts):
 
 ```typescript  
 user: [
@@ -89,7 +87,7 @@ No action needed - defaults to admin access
 
 ## Component-Level Authentication
 
-Use the auth utilities for conditional rendering within components:
+Use the auth utilities ([`auth-utils.ts`](https://github.com/everybody-eats-nz/volunteer-portal/blob/main/web/src/lib/auth-utils.ts)) for conditional rendering within components:
 
 ```typescript
 import { getAuthInfo } from "@/lib/auth-utils"
@@ -121,18 +119,7 @@ const currentUser = await authHelpers.getCurrentUser()
 
 ## Page Protection Patterns
 
-### ❌ Old Pattern (Manual Checks)
-```typescript
-export default async function AdminPage() {
-  const session = await getServerSession(authOptions)
-  if (!session || session.user?.role !== "ADMIN") {
-    redirect("/dashboard")
-  }
-  // Page content...
-}
-```
-
-### ✅ New Pattern (Middleware Protection)
+### Protected Pages
 ```typescript
 export default async function AdminPage() {
   // No auth checks needed - middleware handles protection
@@ -203,11 +190,10 @@ export async function POST(request: NextRequest) {
 4. **Testing**: Test both authorized and unauthorized access patterns
 5. **Documentation**: Update this guide when adding new route categories
 
-## Migration from Old System
+## Migration Guidelines
 
 When updating existing pages:
 
-1. Remove manual `getServerSession` and redirect logic
-2. Add route to appropriate middleware category if needed
-3. Use `getAuthInfo()` for conditional UI rendering only
-4. Update tests to account for middleware protection
+1. Add route to appropriate middleware category if needed
+2. Use `getAuthInfo()` for conditional UI rendering only
+3. Update tests to account for middleware protection

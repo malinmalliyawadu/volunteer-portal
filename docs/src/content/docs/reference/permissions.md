@@ -19,7 +19,7 @@ This page provides technical details about permission levels and access controls
 - Home page (`/`)
 - Authentication pages (`/login`, `/register`)
 - Public shift browsing (`/shifts`)
-- Public API endpoints (`/api/auth/*`, `/api/locations`, `/api/shift-types`)
+- Public API endpoints (`/api/auth/*`)
 
 #### User Routes (Volunteer Access)
 - User dashboard (`/dashboard`)

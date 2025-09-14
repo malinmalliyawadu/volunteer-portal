@@ -11,8 +11,6 @@ const routeConfig = {
     "/register", 
     "/shifts", // Public shifts page
     "/api/auth",
-    "/api/locations",
-    "/api/shift-types",
   ],
   
   // User routes - require login (volunteer access)

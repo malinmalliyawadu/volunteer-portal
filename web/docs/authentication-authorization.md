@@ -26,8 +26,6 @@ public: [
   "/register",            // Registration page
   "/shifts",              // Public shifts browsing
   "/api/auth",            // NextAuth endpoints
-  "/api/locations",       // Location data
-  "/api/shift-types",     // Shift type data
 ]
 ```
 
@@ -128,18 +126,7 @@ const currentUser = await authHelpers.getCurrentUser()
 
 ## Page Protection Patterns
 
-### ❌ Old Pattern (Manual Checks)
-```typescript
-export default async function AdminPage() {
-  const session = await getServerSession(authOptions)
-  if (!session || session.user?.role !== "ADMIN") {
-    redirect("/dashboard")
-  }
-  // Page content...
-}
-```
-
-### ✅ New Pattern (Middleware Protection)
+### Protected Pages
 ```typescript
 export default async function AdminPage() {
   // No auth checks needed - middleware handles protection
