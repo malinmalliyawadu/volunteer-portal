@@ -1,3 +1,9 @@
+## [0.39.1] - 2025-09-14
+
+### Changes
+- feat: implement comprehensive email verification system ([#119](https://github.com/everybody-eats-nz/volunteer-portal/pull/119)) by @malinmalliyawadu
+
+
 ## [0.39.0] - 2025-09-14
 
 ### Changes
