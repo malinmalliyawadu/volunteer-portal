@@ -122,24 +122,11 @@ export default function LoginPage() {
     setIsLoading(false);
 
     if (res?.error) {
-      // Check if this might be an email verification issue
-      try {
-        const checkResponse = await fetch("/api/auth/check-user", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
-        });
-        
-        if (checkResponse.ok) {
-          const userData = await checkResponse.json();
-          if (userData.exists && !userData.emailVerified) {
-            // Redirect to verify-email page with email pre-filled for resending
-            window.location.href = `/verify-email?email=${encodeURIComponent(email)}&from=login`;
-            return;
-          }
-        }
-      } catch {
-        // If the check fails, fall back to generic error
+      // Check for specific error types that indicate email verification issues
+      if (res.error === "EmailNotVerified") {
+        // Redirect to verify-email page with email pre-filled for resending
+        window.location.href = `/verify-email?email=${encodeURIComponent(email || "")}&from=login`;
+        return;
       }
       
       setError("Invalid credentials");
