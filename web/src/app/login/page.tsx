@@ -459,38 +459,41 @@ export default function LoginPage() {
                 </Button>
               </div>
 
-              <div
-                className="bg-accent/10 rounded-lg p-4 text-center"
-                data-testid="demo-credentials"
-              >
-                <p className="text-sm font-medium text-primary mb-3">
-                  Demo Credentials
-                </p>
-                <div className="flex flex-col gap-2">
-                  <Button
-                    onClick={() => handleQuickLogin("volunteer")}
-                    className="w-full btn-secondary"
-                    size="sm"
-                    disabled={isLoading || oauthLoading !== null}
-                    data-testid="quick-login-volunteer-button"
-                  >
-                    Login as Volunteer
-                  </Button>
-                  <Button
-                    onClick={() => handleQuickLogin("admin")}
-                    className="w-full btn-secondary"
-                    size="sm"
-                    disabled={isLoading || oauthLoading !== null}
-                    data-testid="quick-login-admin-button"
-                  >
-                    Login as Admin
-                  </Button>
+              {/* Only show demo credentials when not in production */}
+              {process.env.NEXT_PUBLIC_VERCEL_ENV !== 'production' && (
+                <div
+                  className="bg-accent/10 rounded-lg p-4 text-center"
+                  data-testid="demo-credentials"
+                >
+                  <p className="text-sm font-medium text-primary mb-3">
+                    Demo Credentials
+                  </p>
+                  <div className="flex flex-col gap-2">
+                    <Button
+                      onClick={() => handleQuickLogin("volunteer")}
+                      className="w-full btn-secondary"
+                      size="sm"
+                      disabled={isLoading || oauthLoading !== null}
+                      data-testid="quick-login-volunteer-button"
+                    >
+                      Login as Volunteer
+                    </Button>
+                    <Button
+                      onClick={() => handleQuickLogin("admin")}
+                      className="w-full btn-secondary"
+                      size="sm"
+                      disabled={isLoading || oauthLoading !== null}
+                      data-testid="quick-login-admin-button"
+                    >
+                      Login as Admin
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-3">
+                    Volunteer: volunteer@example.com | Admin:
+                    admin@everybodyeats.nz
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground mt-3">
-                  Volunteer: volunteer@example.com | Admin:
-                  admin@everybodyeats.nz
-                </p>
-              </div>
+              )}
             </motion.div>
           </CardContent>
         </MotionCard>

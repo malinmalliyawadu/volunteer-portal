@@ -16,6 +16,8 @@
     "test:migration": "./tests/scripts/run-migration-tests.sh",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "prisma db seed",
+    "prisma:seed:demo": "node prisma/seed-demo.js",
+    "prisma:seed:production": "node prisma/seed-production.js",
     "prisma:generate": "prisma generate",
     "prisma:deploy": "prisma migrate deploy",
     "prisma:reset": "prisma migrate reset",
@@ -93,5 +95,8 @@
     "tailwindcss": "^4",
     "tsx": "^4.19.2",
     "typescript": "^5"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
   }
 }
