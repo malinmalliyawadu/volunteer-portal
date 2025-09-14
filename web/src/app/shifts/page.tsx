@@ -1,15 +1,14 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth-options";
 import { PageHeader } from "@/components/page-header";
 import { MapPin } from "lucide-react";
 import { PageContainer } from "@/components/page-container";
 import { safeParseAvailability } from "@/lib/parse-availability";
 import { ShiftsCalendar } from "@/components/shifts-calendar";
-import { LOCATIONS, LocationOption } from "@/lib/locations";
+import { LOCATIONS, LocationOption, LOCATION_ADDRESSES, Location } from "@/lib/locations";
 import { ShiftsProfileCompletionBanner } from "@/components/shifts-profile-completion-banner";
 import { Suspense } from "react";
+import { getAuthInfo } from "@/lib/auth-utils";
 
 interface ShiftSummary {
   id: string;
@@ -40,7 +39,7 @@ export default async function ShiftsCalendarPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const session = await getServerSession(authOptions);
+  const { session, isLoggedIn } = await getAuthInfo();
   const params = await searchParams;
 
   // Get current user
@@ -234,12 +233,19 @@ export default async function ShiftsCalendarPage({
                       <Link
                         key={loc}
                         href={`/shifts?location=${loc}`}
-                        className="flex items-center justify-between p-4 bg-primary/5 hover:bg-primary/10 border border-primary/20 hover:border-primary/30 rounded-lg transition-all duration-200 group"
+                        className="flex items-center justify-between p-4 bg-primary/5 hover:bg-primary/10 border border-primary/20 hover:border-primary/30 rounded-lg transition-all duration-200 group text-left"
                         data-testid={`preferred-location-${loc.toLowerCase().replace(/\s+/g, "-")}`}
                       >
                         <div className="flex items-center gap-3">
                           <div className="w-3 h-3 bg-primary rounded-full"></div>
-                          <span className="font-medium">{loc}</span>
+                          <div>
+                            <span className="font-medium">{loc}</span>
+                            {LOCATION_ADDRESSES[loc as Location] && (
+                              <div className="text-xs text-muted-foreground/80 mt-1 max-w-xs text-left">
+                                {LOCATION_ADDRESSES[loc as Location]}
+                              </div>
+                            )}
+                          </div>
                         </div>
                         <div className="text-primary opacity-0 group-hover:opacity-100 transition-opacity">
                           →
@@ -265,12 +271,19 @@ export default async function ShiftsCalendarPage({
                   <Link
                     key={loc}
                     href={`/shifts?location=${loc}`}
-                    className="flex items-center justify-between p-4 bg-background hover:bg-muted border border-border hover:border-primary/30 rounded-lg transition-all duration-200 group"
+                    className="flex items-center justify-between p-4 bg-background hover:bg-muted border border-border hover:border-primary/30 rounded-lg transition-all duration-200 group text-left"
                     data-testid={`location-option-${loc.toLowerCase().replace(/\s+/g, "-")}`}
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-3 h-3 bg-muted-foreground rounded-full"></div>
-                      <span className="font-medium">{loc}</span>
+                      <div>
+                        <span className="font-medium">{loc}</span>
+                        {LOCATION_ADDRESSES[loc as Location] && (
+                          <div className="text-xs text-muted-foreground/80 mt-1 max-w-xs text-left">
+                            {LOCATION_ADDRESSES[loc as Location]}
+                          </div>
+                        )}
+                      </div>
                     </div>
                     <div className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
                       →
@@ -302,7 +315,7 @@ export default async function ShiftsCalendarPage({
               Selecting a location helps prevent accidental sign-ups to the wrong shifts. 
               You can change locations at any time using the tabs above the calendar.
             </p>
-            {userPreferredLocations.length === 0 && (
+            {userPreferredLocations.length === 0 && isLoggedIn && (
               <p className="mt-2">
                 <Link href="/profile/edit" className="underline hover:text-primary">
                   Set your preferred locations
@@ -318,20 +331,29 @@ export default async function ShiftsCalendarPage({
   return (
     <PageContainer testid="shifts-browse-page">
       <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
-        <PageHeader
-          title={selectedLocation || (showAll ? "All Locations" : (isUsingProfileFilter ? userPreferredLocations.join(", ") : "Shifts"))}
-          description={`Find and sign up for upcoming volunteer opportunities${
-            selectedLocation
-              ? ` in ${selectedLocation}`
-              : showAll
-              ? " at all locations"
-              : isUsingProfileFilter
-              ? ` in your preferred location`
-              : ""
-          }. Click on any date to see details and sign up.`}
-          className="flex-1"
-          data-testid="shifts-page-header"
-        />
+        <div className="flex-1">
+          <PageHeader
+            title={selectedLocation || (showAll ? "All Locations" : (isUsingProfileFilter ? userPreferredLocations.join(", ") : "Shifts"))}
+            description={`Find and sign up for upcoming volunteer opportunities${
+              selectedLocation
+                ? ` in ${selectedLocation}`
+                : showAll
+                ? " at all locations"
+                : isUsingProfileFilter
+                ? ` in your preferred location`
+                : ""
+            }. Click on any date to see details and sign up.`}
+            data-testid="shifts-page-header"
+          />
+          {selectedLocation && LOCATION_ADDRESSES[selectedLocation as Location] && (
+            <div className="mt-4 flex items-start gap-2 text-sm text-muted-foreground" data-testid="restaurant-address-banner">
+              <MapPin className="h-4 w-4 flex-shrink-0 mt-0.5" />
+              <span data-testid="restaurant-address" className="text-left">
+                {LOCATION_ADDRESSES[selectedLocation as Location]}
+              </span>
+            </div>
+          )}
+        </div>
 
         <div className="flex flex-col lg:flex-row gap-4 lg:items-end">
           {/* Back to locations button */}
@@ -361,10 +383,16 @@ export default async function ShiftsCalendarPage({
             Showing shifts in your preferred location: {userPreferredLocations.join(", ")}
           </p>
           <p className="text-xs text-muted-foreground mt-2">
-            <Link href="/profile/edit" className="underline hover:text-primary">
-              Update your preferences
-            </Link>{" "}
-            or select a specific location above.
+            {isLoggedIn ? (
+              <>
+                <Link href="/profile/edit" className="underline hover:text-primary">
+                  Update your preferences
+                </Link>{" "}
+                or select a specific location above.
+              </>
+            ) : (
+              "Select a specific location above to browse other areas."
+            )}
           </p>
         </div>
       )}
