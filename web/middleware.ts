@@ -9,8 +9,10 @@ const routeConfig = {
     "/",
     "/login",
     "/register", 
+    "/verify-email", // Email verification page
     "/shifts", // Public shifts page
-    "/api/auth",
+    "/api/auth", // NextAuth routes and auth endpoints
+    "/api/migration", // Migration registration API
   ],
   
   // User routes - require login (volunteer access)
