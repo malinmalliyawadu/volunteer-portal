@@ -2,6 +2,10 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// Seed configuration
+// For development: uses regular seed.js with demo data
+// For production: uses seed-production.js with essential data only
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
