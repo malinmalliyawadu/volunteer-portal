@@ -83,12 +83,27 @@ export default function LoginPage() {
   // Check for registration success message
   useEffect(() => {
     const message = searchParams.get("message");
+    const urlEmail = searchParams.get("email");
+    const verified = searchParams.get("verified");
+    
     if (message === "registration-success") {
       setSuccessMessage(
         "Registration successful! You can now sign in with your new account."
       );
       setEmail(""); // Clear demo email for new users
       setPassword(""); // Clear demo password for new users
+    } else if (message === "verify-email") {
+      setSuccessMessage(
+        "Registration successful! Please check your email and click the verification link to complete your registration."
+      );
+      if (urlEmail) {
+        setEmail(urlEmail); // Pre-fill with registered email
+      }
+      setPassword(""); // Clear demo password for new users
+    } else if (verified === "true") {
+      setSuccessMessage(
+        "Email verified successfully! You can now sign in to your account."
+      );
     }
   }, [searchParams]);
 
@@ -107,6 +122,26 @@ export default function LoginPage() {
     setIsLoading(false);
 
     if (res?.error) {
+      // Check if this might be an email verification issue
+      try {
+        const checkResponse = await fetch("/api/auth/check-user", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        });
+        
+        if (checkResponse.ok) {
+          const userData = await checkResponse.json();
+          if (userData.exists && !userData.emailVerified) {
+            // Redirect to verify-email page with email pre-filled for resending
+            window.location.href = `/verify-email?email=${encodeURIComponent(email)}&from=login`;
+            return;
+          }
+        }
+      } catch {
+        // If the check fails, fall back to generic error
+      }
+      
       setError("Invalid credentials");
     } else if (res?.ok) {
       // Add a small delay to ensure session is established
@@ -336,21 +371,23 @@ export default function LoginPage() {
               </motion.div>
 
               <MotionFormSuccess show={!!successMessage} data-testid="success-message">
-                <div className="flex items-center gap-2">
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                  {successMessage}
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 pt-0.5">
+                    <svg
+                      className="w-5 h-5 text-green-600 dark:text-green-400"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                  <div className="text-green-800 dark:text-green-200 font-medium text-sm leading-relaxed">
+                    {successMessage}
+                  </div>
                 </div>
               </MotionFormSuccess>
 

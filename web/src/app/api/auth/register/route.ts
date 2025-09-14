@@ -3,6 +3,8 @@ import { z } from "zod";
 import bcrypt from "bcrypt";
 import { prisma } from "@/lib/prisma";
 import { autoLabelUnder18User, autoLabelNewVolunteer } from "@/lib/auto-label-utils";
+import { createVerificationToken } from "@/lib/email-verification";
+import { getEmailService } from "@/lib/email-service";
 
 /**
  * Validation schema for user registration
@@ -254,10 +256,29 @@ export async function POST(req: Request) {
       }
     }
 
+    // Send email verification for new registrations (not migrations)
+    if (!isMigration && user.id) {
+      try {
+        const verificationToken = await createVerificationToken(user.id);
+        const emailService = getEmailService();
+        const verificationLink = `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/verify-email?token=${verificationToken}`;
+        
+        await emailService.sendEmailVerification({
+          to: user.email,
+          firstName: validatedData.firstName,
+          verificationLink,
+        });
+      } catch (emailError) {
+        console.error("Failed to send verification email:", emailError);
+        // Don't fail registration if email sending fails, just log the error
+      }
+    }
+
     return NextResponse.json(
       {
         message: isMigration ? "Migration successful" : "Registration successful",
         user,
+        requiresEmailVerification: !isMigration, // Let frontend know email verification is required
       },
       { status: 201 }
     );

@@ -88,6 +88,17 @@ export const authOptions: NextAuthOptions = {
         if (!credentials?.email || !credentials?.password) return null;
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            role: true,
+            phone: true,
+            firstName: true,
+            lastName: true,
+            hashedPassword: true,
+            emailVerified: true,
+          },
         });
         if (!user) return null;
         const valid = await bcrypt.compare(
@@ -95,6 +106,13 @@ export const authOptions: NextAuthOptions = {
           user.hashedPassword
         );
         if (!valid) return null;
+        
+        // Check if email is verified - return null but don't throw error
+        // The login page will need to handle this case separately
+        if (!user.emailVerified) {
+          return null;
+        }
+        
         return {
           id: user.id,
           email: user.email,
