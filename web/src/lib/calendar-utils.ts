@@ -1,4 +1,5 @@
 import { format } from "date-fns";
+import { LOCATION_ADDRESSES } from "./locations";
 
 /**
  * Calendar utilities for generating calendar links for shifts
@@ -65,5 +66,7 @@ export function generateGoogleMapsLink(location: string | null): string {
   if (!location || location === "TBD") {
     return "";
   }
-  return `https://maps.google.com/maps?q=${encodeURIComponent(location)}`;
+  
+  const address = LOCATION_ADDRESSES[location as keyof typeof LOCATION_ADDRESSES] || location;
+  return `https://maps.google.com/maps?q=${encodeURIComponent(address)}`;
 }

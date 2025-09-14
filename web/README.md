@@ -63,7 +63,7 @@ npm run prisma:seed
 cp .env.example .env.local
 ```
 
-   Then edit `.env.local` as needed. See the [Environment Variables](#-environment-variables) section below for detailed configuration.
+Then edit `.env.local` as needed. See the [Environment Variables](#-environment-variables) section below for detailed configuration.
 
 5. **🔒 Generate auth secret:**
 
@@ -122,7 +122,7 @@ NEXTAUTH_URL="http://localhost:3000"
 # Campaign Monitor (for transactional emails)
 CAMPAIGN_MONITOR_API_KEY="your-campaign-monitor-api-key"
 CAMPAIGN_MONITOR_MIGRATION_EMAIL_ID="your-migration-email-template-id"
-CAMPAIGN_MONITOR_SHIFT_CANCELLATION_EMAIL_ID="your-shift-cancellation-template-id"
+CAMPAIGN_MONITOR_SHIFT_ADMIN_CANCELLATION_EMAIL_ID="your-shift-cancellation-template-id"
 CAMPAIGN_MONITOR_SHIFT_SHORTAGE_EMAIL_ID="your-shift-shortage-template-id"
 CAMPAIGN_MONITOR_SHIFT_CONFIRMATION_EMAIL_ID="your-shift-confirmation-template-id"
 CAMPAIGN_MONITOR_VOLUNTEER_CANCELLATION_EMAIL_ID="your-volunteer-cancellation-template-id"
@@ -156,26 +156,32 @@ The application uses Campaign Monitor for sending various transactional emails:
 #### Required Email Templates:
 
 **Migration Invitation (`CAMPAIGN_MONITOR_MIGRATION_EMAIL_ID`)**
+
 - Variables: `{firstName}`, `{link}`
 - Used for user migration invitations
 
 **Shift Confirmation (`CAMPAIGN_MONITOR_SHIFT_CONFIRMATION_EMAIL_ID`)**
+
 - Variables: `{firstName}`, `{shiftType}`, `{shiftDate}`, `{shiftTime}`, `{location}`, `{linkToShift}`, `{addToCalendarLink}`, `{locationMapLink}`
 - Used when shifts are confirmed (auto-approval or admin approval)
 
-**Shift Cancellation - Manager (`CAMPAIGN_MONITOR_SHIFT_CANCELLATION_EMAIL_ID`)**
+**Shift Cancellation - Manager (`CAMPAIGN_MONITOR_SHIFT_ADMIN_CANCELLATION_EMAIL_ID`)**
+
 - Variables: `{managerName}`, `{volunteerName}`, `{volunteerEmail}`, `{shiftName}`, `{shiftDate}`, `{shiftTime}`, `{location}`, `{cancellationTime}`, `{remainingVolunteers}`, `{shiftCapacity}`
 - Sent to restaurant managers when volunteers cancel
 
 **Volunteer Cancellation (`CAMPAIGN_MONITOR_VOLUNTEER_CANCELLATION_EMAIL_ID`)**
+
 - Variables: `{firstName}`, `{shiftType}`, `{shiftDate}`, `{shiftTime}`, `{location}`
 - Sent to volunteers when admins cancel their shifts
 
 **Shift Shortage (`CAMPAIGN_MONITOR_SHIFT_SHORTAGE_EMAIL_ID`)**
+
 - Variables: `{firstName}`, `{shiftType}`, `{shiftDate}`, `{restarauntLocation}`, `{linkToEvent}`
 - Sent to notify volunteers about shifts needing more volunteers
 
 **Parental Consent Approval (`CAMPAIGN_MONITOR_PARENTAL_CONSENT_APPROVAL_EMAIL_ID`)**
+
 - Variables: `{firstName}`, `{linkToDashboard}`
 - Sent to volunteers under 18 when their parental consent is approved by an admin
 

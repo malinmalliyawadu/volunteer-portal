@@ -1,5 +1,5 @@
 import createsend from "createsend-node";
-import { generateGoogleCalendarLink, generateGoogleMapsLink } from "./calendar-utils";
+import { generateCalendarUrls, generateGoogleMapsLink } from "./calendar-utils";
 
 interface EmailData {
   firstName: string;
@@ -62,12 +62,14 @@ interface SendShiftShortageParams {
 
 interface ShiftConfirmationEmailData {
   firstName: string;
-  shiftType: string;
+  role: string;
   shiftDate: string;
   shiftTime: string;
   location: string;
   linkToShift: string;
-  addToCalendarLink: string;
+  addToGoogleCalendarLink: string;
+  addToOutlookCalendarLink: string;
+  addToCalendarIcsLink: string;
   locationMapLink: string;
 }
 
@@ -89,6 +91,7 @@ interface VolunteerCancellationEmailData {
   shiftDate: string;
   shiftTime: string;
   location: string;
+  browseShiftsLink: string;
 }
 
 interface SendVolunteerCancellationParams {
@@ -122,7 +125,7 @@ interface CampaignMonitorAPI {
 class EmailService {
   private api: CampaignMonitorAPI;
   private migrationSmartEmailID: string;
-  private shiftCancellationSmartEmailID: string;
+  private shiftCancellationAdminSmartEmailID: string;
   private shiftShortageSmartEmailID: string;
   private shiftConfirmationSmartEmailID: string;
   private volunteerCancellationSmartEmailID: string;
@@ -130,92 +133,126 @@ class EmailService {
 
   constructor() {
     const apiKey = process.env.CAMPAIGN_MONITOR_API_KEY;
-    const isDevelopment = process.env.NODE_ENV === 'development';
+    const isDevelopment = process.env.NODE_ENV === "development";
 
     if (!apiKey) {
       if (isDevelopment) {
-        console.warn("[EMAIL SERVICE] CAMPAIGN_MONITOR_API_KEY is not configured - emails will not be sent");
+        console.warn(
+          "[EMAIL SERVICE] CAMPAIGN_MONITOR_API_KEY is not configured - emails will not be sent"
+        );
       } else {
         throw new Error("CAMPAIGN_MONITOR_API_KEY is not configured");
       }
     }
 
-    const auth = { apiKey: apiKey || 'dummy-key-for-dev' };
+    const auth = { apiKey: apiKey || "dummy-key-for-dev" };
     this.api = new createsend(auth) as CampaignMonitorAPI;
 
     // Smart email ID for migration invites
     const migrationEmailId = process.env.CAMPAIGN_MONITOR_MIGRATION_EMAIL_ID;
     if (!migrationEmailId) {
       if (isDevelopment) {
-        console.warn("[EMAIL SERVICE] CAMPAIGN_MONITOR_MIGRATION_EMAIL_ID is not configured - migration emails will not be sent");
-        this.migrationSmartEmailID = 'dummy-migration-id';
+        console.warn(
+          "[EMAIL SERVICE] CAMPAIGN_MONITOR_MIGRATION_EMAIL_ID is not configured - migration emails will not be sent"
+        );
+        this.migrationSmartEmailID = "dummy-migration-id";
       } else {
-        throw new Error("CAMPAIGN_MONITOR_MIGRATION_EMAIL_ID is not configured");
+        throw new Error(
+          "CAMPAIGN_MONITOR_MIGRATION_EMAIL_ID is not configured"
+        );
       }
     } else {
       this.migrationSmartEmailID = migrationEmailId;
     }
 
     // Smart email ID for shift cancellation notifications
-    const cancellationEmailId = process.env.CAMPAIGN_MONITOR_SHIFT_CANCELLATION_EMAIL_ID;
-    if (!cancellationEmailId) {
+    const adminNotificationCancellationEmailId =
+      process.env.CAMPAIGN_MONITOR_SHIFT_ADMIN_CANCELLATION_EMAIL_ID;
+    if (!adminNotificationCancellationEmailId) {
       if (isDevelopment) {
-        console.warn("[EMAIL SERVICE] CAMPAIGN_MONITOR_SHIFT_CANCELLATION_EMAIL_ID is not configured - cancellation emails will not be sent");
-        this.shiftCancellationSmartEmailID = 'dummy-cancellation-id';
+        console.warn(
+          "[EMAIL SERVICE] CAMPAIGN_MONITOR_SHIFT_ADMIN_CANCELLATION_EMAIL_ID is not configured - cancellation emails will not be sent"
+        );
+        this.shiftCancellationAdminSmartEmailID = "dummy-cancellation-id";
       } else {
-        throw new Error("CAMPAIGN_MONITOR_SHIFT_CANCELLATION_EMAIL_ID is not configured");
+        throw new Error(
+          "CAMPAIGN_MONITOR_SHIFT_ADMIN_CANCELLATION_EMAIL_ID is not configured"
+        );
       }
     } else {
-      this.shiftCancellationSmartEmailID = cancellationEmailId;
+      this.shiftCancellationAdminSmartEmailID =
+        adminNotificationCancellationEmailId;
     }
 
     // Smart email ID for shift shortage notifications
-    const shortageEmailId = process.env.CAMPAIGN_MONITOR_SHIFT_SHORTAGE_EMAIL_ID;
+    const shortageEmailId =
+      process.env.CAMPAIGN_MONITOR_SHIFT_SHORTAGE_EMAIL_ID;
     if (!shortageEmailId) {
       if (isDevelopment) {
-        console.warn("[EMAIL SERVICE] CAMPAIGN_MONITOR_SHIFT_SHORTAGE_EMAIL_ID is not configured - shortage emails will not be sent");
-        this.shiftShortageSmartEmailID = 'dummy-shortage-id';
+        console.warn(
+          "[EMAIL SERVICE] CAMPAIGN_MONITOR_SHIFT_SHORTAGE_EMAIL_ID is not configured - shortage emails will not be sent"
+        );
+        this.shiftShortageSmartEmailID = "dummy-shortage-id";
       } else {
-        throw new Error("CAMPAIGN_MONITOR_SHIFT_SHORTAGE_EMAIL_ID is not configured");
+        throw new Error(
+          "CAMPAIGN_MONITOR_SHIFT_SHORTAGE_EMAIL_ID is not configured"
+        );
       }
     } else {
       this.shiftShortageSmartEmailID = shortageEmailId;
     }
 
     // Smart email ID for shift confirmation notifications
-    const confirmationEmailId = process.env.CAMPAIGN_MONITOR_SHIFT_CONFIRMATION_EMAIL_ID;
+    const confirmationEmailId =
+      process.env.CAMPAIGN_MONITOR_SHIFT_CONFIRMATION_EMAIL_ID;
     if (!confirmationEmailId) {
       if (isDevelopment) {
-        console.warn("[EMAIL SERVICE] CAMPAIGN_MONITOR_SHIFT_CONFIRMATION_EMAIL_ID is not configured - confirmation emails will not be sent");
-        this.shiftConfirmationSmartEmailID = 'dummy-confirmation-id';
+        console.warn(
+          "[EMAIL SERVICE] CAMPAIGN_MONITOR_SHIFT_CONFIRMATION_EMAIL_ID is not configured - confirmation emails will not be sent"
+        );
+        this.shiftConfirmationSmartEmailID = "dummy-confirmation-id";
       } else {
-        throw new Error("CAMPAIGN_MONITOR_SHIFT_CONFIRMATION_EMAIL_ID is not configured");
+        throw new Error(
+          "CAMPAIGN_MONITOR_SHIFT_CONFIRMATION_EMAIL_ID is not configured"
+        );
       }
     } else {
       this.shiftConfirmationSmartEmailID = confirmationEmailId;
     }
 
     // Smart email ID for volunteer cancellation notifications
-    const volunteerCancellationEmailId = process.env.CAMPAIGN_MONITOR_VOLUNTEER_CANCELLATION_EMAIL_ID;
+    const volunteerCancellationEmailId =
+      process.env.CAMPAIGN_MONITOR_VOLUNTEER_CANCELLATION_EMAIL_ID;
     if (!volunteerCancellationEmailId) {
       if (isDevelopment) {
-        console.warn("[EMAIL SERVICE] CAMPAIGN_MONITOR_VOLUNTEER_CANCELLATION_EMAIL_ID is not configured - volunteer cancellation emails will not be sent");
-        this.volunteerCancellationSmartEmailID = 'dummy-volunteer-cancellation-id';
+        console.warn(
+          "[EMAIL SERVICE] CAMPAIGN_MONITOR_VOLUNTEER_CANCELLATION_EMAIL_ID is not configured - volunteer cancellation emails will not be sent"
+        );
+        this.volunteerCancellationSmartEmailID =
+          "dummy-volunteer-cancellation-id";
       } else {
-        throw new Error("CAMPAIGN_MONITOR_VOLUNTEER_CANCELLATION_EMAIL_ID is not configured");
+        throw new Error(
+          "CAMPAIGN_MONITOR_VOLUNTEER_CANCELLATION_EMAIL_ID is not configured"
+        );
       }
     } else {
       this.volunteerCancellationSmartEmailID = volunteerCancellationEmailId;
     }
 
     // Smart email ID for parental consent approval notifications
-    const parentalConsentApprovalEmailId = process.env.CAMPAIGN_MONITOR_PARENTAL_CONSENT_APPROVAL_EMAIL_ID;
+    const parentalConsentApprovalEmailId =
+      process.env.CAMPAIGN_MONITOR_PARENTAL_CONSENT_APPROVAL_EMAIL_ID;
     if (!parentalConsentApprovalEmailId) {
       if (isDevelopment) {
-        console.warn("[EMAIL SERVICE] CAMPAIGN_MONITOR_PARENTAL_CONSENT_APPROVAL_EMAIL_ID is not configured - parental consent approval emails will not be sent");
-        this.parentalConsentApprovalSmartEmailID = 'dummy-parental-consent-approval-id';
+        console.warn(
+          "[EMAIL SERVICE] CAMPAIGN_MONITOR_PARENTAL_CONSENT_APPROVAL_EMAIL_ID is not configured - parental consent approval emails will not be sent"
+        );
+        this.parentalConsentApprovalSmartEmailID =
+          "dummy-parental-consent-approval-id";
       } else {
-        throw new Error("CAMPAIGN_MONITOR_PARENTAL_CONSENT_APPROVAL_EMAIL_ID is not configured");
+        throw new Error(
+          "CAMPAIGN_MONITOR_PARENTAL_CONSENT_APPROVAL_EMAIL_ID is not configured"
+        );
       }
     } else {
       this.parentalConsentApprovalSmartEmailID = parentalConsentApprovalEmailId;
@@ -227,11 +264,13 @@ class EmailService {
     firstName,
     migrationLink,
   }: SendEmailParams): Promise<void> {
-    const isDevelopment = process.env.NODE_ENV === 'development';
-    
+    const isDevelopment = process.env.NODE_ENV === "development";
+
     // In development, skip email sending if configuration is missing
-    if (isDevelopment && this.migrationSmartEmailID === 'dummy-migration-id') {
-      console.log(`[EMAIL SERVICE] Would send migration email to ${to} (skipped in dev - no config)`);
+    if (isDevelopment && this.migrationSmartEmailID === "dummy-migration-id") {
+      console.log(
+        `[EMAIL SERVICE] Would send migration email to ${to} (skipped in dev - no config)`
+      );
       return Promise.resolve();
     }
 
@@ -248,7 +287,10 @@ class EmailService {
       this.api.transactional.sendSmartEmail(details, (err: Error | null) => {
         if (err) {
           if (isDevelopment) {
-            console.warn("[EMAIL SERVICE] Error sending migration invite email (development):", err.message);
+            console.warn(
+              "[EMAIL SERVICE] Error sending migration invite email (development):",
+              err.message
+            );
             resolve(); // Don't fail in development
           } else {
             console.error("Error sending migration invite email:", err);
@@ -262,17 +304,24 @@ class EmailService {
     });
   }
 
-  async sendShiftCancellationNotification(params: SendShiftCancellationParams): Promise<void> {
-    const isDevelopment = process.env.NODE_ENV === 'development';
-    
+  async sendShiftCancellationNotification(
+    params: SendShiftCancellationParams
+  ): Promise<void> {
+    const isDevelopment = process.env.NODE_ENV === "development";
+
     // In development, skip email sending if configuration is missing
-    if (isDevelopment && this.shiftCancellationSmartEmailID === 'dummy-cancellation-id') {
-      console.log(`[EMAIL SERVICE] Would send cancellation email to ${params.to} (skipped in dev - no config)`);
+    if (
+      isDevelopment &&
+      this.shiftCancellationAdminSmartEmailID === "dummy-cancellation-id"
+    ) {
+      console.log(
+        `[EMAIL SERVICE] Would send cancellation email to ${params.to} (skipped in dev - no config)`
+      );
       return Promise.resolve();
     }
 
     const details = {
-      smartEmailID: this.shiftCancellationSmartEmailID,
+      smartEmailID: this.shiftCancellationAdminSmartEmailID,
       to: `${params.managerName} <${params.to}>`,
       data: {
         managerName: params.managerName,
@@ -292,40 +341,58 @@ class EmailService {
       this.api.transactional.sendSmartEmail(details, (err: Error | null) => {
         if (err) {
           if (isDevelopment) {
-            console.warn("[EMAIL SERVICE] Error sending shift cancellation email (development):", err.message);
+            console.warn(
+              "[EMAIL SERVICE] Error sending shift cancellation email (development):",
+              err.message
+            );
             resolve(); // Don't fail in development
           } else {
             console.error("Error sending shift cancellation email:", err);
             reject(err);
           }
         } else {
-          console.log("Shift cancellation email sent successfully to:", params.to);
+          console.log(
+            "Shift cancellation email sent successfully to:",
+            params.to
+          );
           resolve();
         }
       });
     });
   }
 
-  async sendShiftShortageNotification(params: SendShiftShortageParams): Promise<void> {
-    const isDevelopment = process.env.NODE_ENV === 'development';
-    
+  async sendShiftShortageNotification(
+    params: SendShiftShortageParams
+  ): Promise<void> {
+    const isDevelopment = process.env.NODE_ENV === "development";
+
     // In development, skip email sending if configuration is missing
-    if (isDevelopment && this.shiftShortageSmartEmailID === 'dummy-shortage-id') {
-      console.log(`[EMAIL SERVICE] Would send shortage email to ${params.to} (skipped in dev - no config)`);
+    if (
+      isDevelopment &&
+      this.shiftShortageSmartEmailID === "dummy-shortage-id"
+    ) {
+      console.log(
+        `[EMAIL SERVICE] Would send shortage email to ${params.to} (skipped in dev - no config)`
+      );
       console.log(`[EMAIL SERVICE] Email data:`, {
-        firstName: params.volunteerName.split(' ')[0],
+        firstName: params.volunteerName.split(" ")[0],
         shiftType: params.shiftName,
         shiftDate: `${params.shiftDate} at ${params.shiftTime}`,
         restarauntLocation: params.location,
-        linkToEvent: `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/shifts/${params.shiftId}`
+        linkToEvent: `${
+          process.env.NEXTAUTH_URL || "http://localhost:3000"
+        }/shifts/${params.shiftId}`,
       });
       return Promise.resolve();
     }
 
-    const signupLink = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/shifts/${params.shiftId}`;
-    
+    const signupLink = `${
+      process.env.NEXTAUTH_URL || "http://localhost:3000"
+    }/shifts/${params.shiftId}`;
+
     // Extract first name from volunteer name
-    const firstName = params.volunteerName.split(' ')[0] || params.volunteerName;
+    const firstName =
+      params.volunteerName.split(" ")[0] || params.volunteerName;
 
     const details = {
       smartEmailID: this.shiftShortageSmartEmailID,
@@ -343,7 +410,10 @@ class EmailService {
       this.api.transactional.sendSmartEmail(details, (err: Error | null) => {
         if (err) {
           if (isDevelopment) {
-            console.warn("[EMAIL SERVICE] Error sending shift shortage email (development):", err.message);
+            console.warn(
+              "[EMAIL SERVICE] Error sending shift shortage email (development):",
+              err.message
+            );
             resolve(); // Don't fail in development
           } else {
             console.error("Error sending shift shortage email:", err);
@@ -358,37 +428,50 @@ class EmailService {
     });
   }
 
-  async sendBulkShortageNotifications(shiftParams: Omit<SendShiftShortageParams, 'to' | 'volunteerName'>, recipients: Array<{ email: string; name: string }>): Promise<void> {
-    const promises = recipients.map(recipient => 
+  async sendBulkShortageNotifications(
+    shiftParams: Omit<SendShiftShortageParams, "to" | "volunteerName">,
+    recipients: Array<{ email: string; name: string }>
+  ): Promise<void> {
+    const promises = recipients.map((recipient) =>
       this.sendShiftShortageNotification({
         ...shiftParams,
         to: recipient.email,
         volunteerName: recipient.name,
       })
     );
-    
+
     await Promise.allSettled(promises);
   }
 
-  async sendShiftConfirmationNotification(params: SendShiftConfirmationParams): Promise<void> {
-    const isDevelopment = process.env.NODE_ENV === 'development';
-    
+  async sendShiftConfirmationNotification(
+    params: SendShiftConfirmationParams
+  ): Promise<void> {
+    const isDevelopment = process.env.NODE_ENV === "development";
+
     // In development, skip email sending if configuration is missing
-    if (isDevelopment && this.shiftConfirmationSmartEmailID === 'dummy-confirmation-id') {
-      console.log(`[EMAIL SERVICE] Would send shift confirmation email to ${params.to} (skipped in dev - no config)`);
+    if (
+      isDevelopment &&
+      this.shiftConfirmationSmartEmailID === "dummy-confirmation-id"
+    ) {
+      console.log(
+        `[EMAIL SERVICE] Would send shift confirmation email to ${params.to} (skipped in dev - no config)`
+      );
       return Promise.resolve();
     }
 
-    const shiftLink = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/shifts/${params.shiftId}`;
-    
+    const shiftLink = `${
+      process.env.NEXTAUTH_URL || "http://localhost:3000"
+    }/shifts/${params.shiftId}`;
+
     // Extract first name from volunteer name
-    const firstName = params.volunteerName.split(' ')[0] || params.volunteerName;
+    const firstName =
+      params.volunteerName.split(" ")[0] || params.volunteerName;
 
     // Generate calendar and maps links
     const locationMapLink = generateGoogleMapsLink(params.location);
-    
-    // Generate calendar link if we have the start/end dates
-    let addToCalendarLink = '';
+
+    // Generate all calendar links if we have the start/end dates
+    let calendarUrls = { google: "", outlook: "", ics: "" };
     if (params.shiftStart && params.shiftEnd) {
       const shiftData = {
         id: params.shiftId,
@@ -400,7 +483,7 @@ class EmailService {
           description: null,
         },
       };
-      addToCalendarLink = generateGoogleCalendarLink(shiftData);
+      calendarUrls = generateCalendarUrls(shiftData);
     }
 
     const details = {
@@ -408,12 +491,14 @@ class EmailService {
       to: `${params.volunteerName} <${params.to}>`,
       data: {
         firstName: firstName,
-        shiftType: params.shiftName,
+        role: params.shiftName,
         shiftDate: params.shiftDate,
         shiftTime: params.shiftTime,
         location: params.location,
         linkToShift: shiftLink,
-        addToCalendarLink: addToCalendarLink,
+        addToGoogleCalendarLink: calendarUrls.google,
+        addToOutlookCalendarLink: calendarUrls.outlook,
+        addToCalendarIcsLink: calendarUrls.ics,
         locationMapLink: locationMapLink,
       } as ShiftConfirmationEmailData,
     };
@@ -422,31 +507,50 @@ class EmailService {
       this.api.transactional.sendSmartEmail(details, (err: Error | null) => {
         if (err) {
           if (isDevelopment) {
-            console.warn("[EMAIL SERVICE] Error sending shift confirmation email (development):", err.message);
+            console.warn(
+              "[EMAIL SERVICE] Error sending shift confirmation email (development):",
+              err.message
+            );
             resolve(); // Don't fail in development
           } else {
             console.error("Error sending shift confirmation email:", err);
             reject(err);
           }
         } else {
-          console.log("Shift confirmation email sent successfully to:", params.to);
+          console.log(
+            "Shift confirmation email sent successfully to:",
+            params.to
+          );
           resolve();
         }
       });
     });
   }
 
-  async sendVolunteerCancellationNotification(params: SendVolunteerCancellationParams): Promise<void> {
-    const isDevelopment = process.env.NODE_ENV === 'development';
-    
+  async sendVolunteerCancellationNotification(
+    params: SendVolunteerCancellationParams
+  ): Promise<void> {
+    const isDevelopment = process.env.NODE_ENV === "development";
+
     // In development, skip email sending if configuration is missing
-    if (isDevelopment && this.volunteerCancellationSmartEmailID === 'dummy-volunteer-cancellation-id') {
-      console.log(`[EMAIL SERVICE] Would send volunteer cancellation email to ${params.to} (skipped in dev - no config)`);
+    if (
+      isDevelopment &&
+      this.volunteerCancellationSmartEmailID ===
+        "dummy-volunteer-cancellation-id"
+    ) {
+      console.log(
+        `[EMAIL SERVICE] Would send volunteer cancellation email to ${params.to} (skipped in dev - no config)`
+      );
       return Promise.resolve();
     }
-    
+
     // Extract first name from volunteer name
-    const firstName = params.volunteerName.split(' ')[0] || params.volunteerName;
+    const firstName =
+      params.volunteerName.split(" ")[0] || params.volunteerName;
+    
+    const browseShiftsLink = `${
+      process.env.NEXTAUTH_URL || "http://localhost:3000"
+    }/shifts`;
 
     const details = {
       smartEmailID: this.volunteerCancellationSmartEmailID,
@@ -457,6 +561,7 @@ class EmailService {
         shiftDate: params.shiftDate,
         shiftTime: params.shiftTime,
         location: params.location,
+        browseShiftsLink: browseShiftsLink,
       } as VolunteerCancellationEmailData,
     };
 
@@ -464,32 +569,49 @@ class EmailService {
       this.api.transactional.sendSmartEmail(details, (err: Error | null) => {
         if (err) {
           if (isDevelopment) {
-            console.warn("[EMAIL SERVICE] Error sending volunteer cancellation email (development):", err.message);
+            console.warn(
+              "[EMAIL SERVICE] Error sending volunteer cancellation email (development):",
+              err.message
+            );
             resolve(); // Don't fail in development
           } else {
             console.error("Error sending volunteer cancellation email:", err);
             reject(err);
           }
         } else {
-          console.log("Volunteer cancellation email sent successfully to:", params.to);
+          console.log(
+            "Volunteer cancellation email sent successfully to:",
+            params.to
+          );
           resolve();
         }
       });
     });
   }
 
-  async sendParentalConsentApprovalNotification(params: SendParentalConsentApprovalParams): Promise<void> {
-    const isDevelopment = process.env.NODE_ENV === 'development';
-    
+  async sendParentalConsentApprovalNotification(
+    params: SendParentalConsentApprovalParams
+  ): Promise<void> {
+    const isDevelopment = process.env.NODE_ENV === "development";
+
     // In development, skip email sending if configuration is missing
-    if (isDevelopment && this.parentalConsentApprovalSmartEmailID === 'dummy-parental-consent-approval-id') {
-      console.log(`[EMAIL SERVICE] Would send parental consent approval email to ${params.to} (skipped in dev - no config)`);
+    if (
+      isDevelopment &&
+      this.parentalConsentApprovalSmartEmailID ===
+        "dummy-parental-consent-approval-id"
+    ) {
+      console.log(
+        `[EMAIL SERVICE] Would send parental consent approval email to ${params.to} (skipped in dev - no config)`
+      );
       return Promise.resolve();
     }
-    
+
     // Extract first name from volunteer name
-    const firstName = params.volunteerName.split(' ')[0] || params.volunteerName;
-    const dashboardLink = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard`;
+    const firstName =
+      params.volunteerName.split(" ")[0] || params.volunteerName;
+    const dashboardLink = `${
+      process.env.NEXTAUTH_URL || "http://localhost:3000"
+    }/dashboard`;
 
     const details = {
       smartEmailID: this.parentalConsentApprovalSmartEmailID,
@@ -504,14 +626,23 @@ class EmailService {
       this.api.transactional.sendSmartEmail(details, (err: Error | null) => {
         if (err) {
           if (isDevelopment) {
-            console.warn("[EMAIL SERVICE] Error sending parental consent approval email (development):", err.message);
+            console.warn(
+              "[EMAIL SERVICE] Error sending parental consent approval email (development):",
+              err.message
+            );
             resolve(); // Don't fail in development
           } else {
-            console.error("Error sending parental consent approval email:", err);
+            console.error(
+              "Error sending parental consent approval email:",
+              err
+            );
             reject(err);
           }
         } else {
-          console.log("Parental consent approval email sent successfully to:", params.to);
+          console.log(
+            "Parental consent approval email sent successfully to:",
+            params.to
+          );
           resolve();
         }
       });
@@ -529,9 +660,9 @@ export function getEmailService(): EmailService {
   return emailServiceInstance;
 }
 
-export type { 
-  SendEmailParams, 
-  SendShiftCancellationParams, 
+export type {
+  SendEmailParams,
+  SendShiftCancellationParams,
   ShiftCancellationEmailData,
   SendShiftShortageParams,
   ShiftShortageEmailData,
@@ -540,5 +671,5 @@ export type {
   SendVolunteerCancellationParams,
   VolunteerCancellationEmailData,
   SendParentalConsentApprovalParams,
-  ParentalConsentApprovalEmailData
+  ParentalConsentApprovalEmailData,
 };
