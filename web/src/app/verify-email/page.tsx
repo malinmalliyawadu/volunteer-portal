@@ -114,19 +114,19 @@ export default function VerifyEmailPage() {
   const getIcon = () => {
     switch (state) {
       case "loading":
-        return <Loader2 className="h-12 w-12 text-blue-500 animate-spin" />;
+        return <Loader2 className="h-12 w-12 text-blue-500 animate-spin" data-testid="loading-spinner" />;
       case "success":
       case "already_verified":
-        return <CheckCircle2 className="h-12 w-12 text-green-500" />;
+        return <CheckCircle2 className="h-12 w-12 text-green-500" data-testid="success-icon" />;
       case "error":
         if (fromLogin && message === "Email verification required") {
-          return <Mail className="h-12 w-12 text-blue-500" />;
+          return <Mail className="h-12 w-12 text-blue-500" data-testid="email-required-icon" />;
         }
-        return <XCircle className="h-12 w-12 text-red-500" />;
+        return <XCircle className="h-12 w-12 text-red-500" data-testid="error-icon" />;
       case "expired":
-        return <XCircle className="h-12 w-12 text-red-500" />;
+        return <XCircle className="h-12 w-12 text-red-500" data-testid="expired-icon" />;
       default:
-        return <Mail className="h-12 w-12 text-blue-500" />;
+        return <Mail className="h-12 w-12 text-blue-500" data-testid="default-icon" />;
     }
   };
 
@@ -172,34 +172,34 @@ export default function VerifyEmailPage() {
 
   return (
     <>
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen} data-testid="verification-dialog">
+        <DialogContent data-testid="dialog-content">
           <DialogHeader>
-            <DialogTitle>{dialogContent.title}</DialogTitle>
-            <DialogDescription>
+            <DialogTitle data-testid="dialog-title">{dialogContent.title}</DialogTitle>
+            <DialogDescription data-testid="dialog-description">
               {dialogContent.description}
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end">
-            <Button onClick={() => setDialogOpen(false)}>OK</Button>
+            <Button onClick={() => setDialogOpen(false)} data-testid="dialog-ok-button">OK</Button>
           </div>
         </DialogContent>
       </Dialog>
 
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-md">
+      <div className="min-h-screen flex items-center justify-center bg-background p-4" data-testid="verify-email-page">
+        <Card className="w-full max-w-md" data-testid="verify-email-card">
         <CardHeader className="text-center">
-          <div className="flex justify-center mb-4">
+          <div className="flex justify-center mb-4" data-testid="verification-icon">
             {getIcon()}
           </div>
-          <CardTitle className="text-2xl">{getTitle()}</CardTitle>
-          <CardDescription className="text-base">
+          <CardTitle className="text-2xl" data-testid="verification-title">{getTitle()}</CardTitle>
+          <CardDescription className="text-base" data-testid="verification-description">
             {getDescription()}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {(state === "expired" || state === "error") && (
-            <div className="space-y-4">
+            <div className="space-y-4" data-testid="resend-section">
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                   Enter your email to resend verification
@@ -211,16 +211,18 @@ export default function VerifyEmailPage() {
                   onChange={(e) => setResendEmail(e.target.value)}
                   placeholder="your@email.com"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  data-testid="resend-email-input"
                 />
               </div>
               <Button 
                 onClick={handleResendVerification}
                 disabled={isResending}
                 className="w-full"
+                data-testid="resend-button"
               >
                 {isResending ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" data-testid="resend-loading-spinner" />
                     Sending...
                   </>
                 ) : (
@@ -233,15 +235,15 @@ export default function VerifyEmailPage() {
             </div>
           )}
 
-          <div className="space-y-2">
-            <Button asChild variant="outline" className="w-full">
+          <div className="space-y-2" data-testid="navigation-buttons">
+            <Button asChild variant="outline" className="w-full" data-testid="login-button">
               <Link href="/login">
                 Go to Login
               </Link>
             </Button>
             
             {(state === "success" || state === "already_verified") && (
-              <Button asChild className="w-full">
+              <Button asChild className="w-full" data-testid="dashboard-button">
                 <Link href="/dashboard">
                   Go to Dashboard
                 </Link>
