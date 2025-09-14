@@ -18,13 +18,18 @@ const routeConfig = {
   // User routes - require login (volunteer access)
   user: [
     "/dashboard",
-    "/profile",
-    "/achievements",
+    "/profile", // Including /profile/edit and sub-routes
+    "/achievements", 
     "/friends",
+    "/shifts/mine", // User's personal shifts
+    "/shifts/details", // Shift details and signup 
+    "/group-bookings", // Group booking functionality
     "/api/profile",
     "/api/achievements", 
     "/api/friends",
     "/api/notifications",
+    "/api/shifts", // User shift-related API calls
+    "/api/group-bookings", // Group booking API
   ],
   
   // Everything else defaults to admin-only access
