@@ -37,38 +37,23 @@ async function main() {
     adminUser = await prisma.user.create({
     data: {
       email: adminEmail,
-      password: adminHash,
+      hashedPassword: adminHash,
       firstName: adminFirstName,
       lastName: adminLastName,
       role: "ADMIN",
-      profileComplete: true,
+      profileCompleted: true,
       emailVerified: true,
       dateOfBirth: new Date("1990-01-01"), // Default DOB
       phone: "021-000-0000", // Default phone
-      address: "123 Admin Street, Auckland, New Zealand", // Default address
       emergencyContactName: "Emergency Contact",
       emergencyContactPhone: "021-111-1111",
       emergencyContactRelationship: "Next of Kin",
-      dietaryRequirements: "",
-      medicalInfo: "",
-      
-      // Additional fields that may be required by your schema
+      medicalConditions: "",
       pronouns: "",
-      ethnicity: "",
-      heardAboutUs: "System",
-      volunteerExperience: "",
-      skills: "",
-      
-      // Profile image - optional
-      profileImageFilename: null,
-      profileImageUrl: null,
-      
-      // Consent and terms
+      howDidYouHearAboutUs: "System",
+      volunteerAgreementAccepted: true,
+      healthSafetyPolicyAccepted: true,
       parentalConsentReceived: true,
-      termsAccepted: true,
-      
-      createdAt: new Date(),
-      updatedAt: new Date(),
     },
     });
 
