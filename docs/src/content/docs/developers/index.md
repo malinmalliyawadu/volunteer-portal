@@ -5,6 +5,13 @@ description: Technical documentation and API reference for developers
 
 Welcome to the Developer Reference section of the Everybody Eats Volunteer Portal. This documentation provides technical details for developers working with or integrating with the volunteer system.
 
+## Development & Setup
+
+Essential technical documentation for developers:
+
+- **[Seed Data & Demo Site](/developers/seed-data-demo/)** - Understanding the seeding system, demo data, and environment-specific behavior
+- **[Tech Stack](/developers/tech-stack/)** - Comprehensive overview of technologies, frameworks, and architecture decisions
+
 ## Authentication & Authorization
 
 Technical documentation for authentication systems and user management:

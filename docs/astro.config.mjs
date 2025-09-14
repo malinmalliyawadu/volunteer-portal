@@ -110,7 +110,8 @@ export default defineConfig({
             {
               label: "Getting Started",
               items: [
-                { label: "Technology Stack", slug: "developers/tech-stack" }
+                { label: "Technology Stack", slug: "developers/tech-stack" },
+                { label: "Seed Data & Demo Site", slug: "developers/seed-data-demo" }
               ]
             },
             {
