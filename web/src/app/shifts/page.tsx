@@ -39,15 +39,15 @@ export default async function ShiftsCalendarPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const { session, isLoggedIn } = await getAuthInfo();
+  const { user, isLoggedIn } = await getAuthInfo();
   const params = await searchParams;
 
   // Get current user
   let currentUser = null;
   let userFriendIds: string[] = [];
-  if (session?.user?.email) {
+  if (user?.email) {
     currentUser = await prisma.user.findUnique({
-      where: { email: session.user.email },
+      where: { email: user.email },
       select: { id: true, availableLocations: true },
     });
     
