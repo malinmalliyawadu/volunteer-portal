@@ -145,7 +145,7 @@ export default function LoginPage() {
       setError("Invalid credentials");
     } else if (res?.ok) {
       // Add a small delay to ensure session is established
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       window.location.href = "/";
     }
   }
@@ -261,7 +261,10 @@ export default function LoginPage() {
   };
 
   return (
-    <MotionPageContainer className="min-h-[80vh] flex items-center justify-center" testid="login-page">
+    <MotionPageContainer
+      className="min-h-[80vh] flex items-center justify-center"
+      testid="login-page"
+    >
       <div className="w-full max-w-md">
         <div className="text-center">
           <PageHeader
@@ -275,8 +278,8 @@ export default function LoginPage() {
           <CardContent className="p-8">
             {/* OAuth Providers */}
             {oauthProviders.length > 0 && (
-              <motion.div 
-                className="mb-6" 
+              <motion.div
+                className="mb-6"
                 data-testid="oauth-providers"
                 variants={containerVariants}
                 initial="hidden"
@@ -288,34 +291,38 @@ export default function LoginPage() {
                   </p>
                 </motion.div>
                 <div className="space-y-3">
-                {oauthProviders.map((provider) => (
-                  <motion.div key={provider.id} variants={itemVariants}>
-                  <Button
-                    key={provider.id}
-                    onClick={() => handleOAuthSignIn(provider.id)}
-                    disabled={oauthLoading !== null || isLoading}
-                    className={`w-full h-11 ${getProviderButtonStyle(
-                      provider.id
-                    )}`}
-                    variant="outline"
-                    data-testid={`oauth-${provider.id}-button`}
-                  >
-                    {oauthLoading === provider.id ? (
-                      <MotionSpinner size="sm" />
-                    ) : (
-                      <>
-                        {getProviderIcon(provider.id)}
-                        <span className="ml-3">
-                          Continue with {provider.name}
-                        </span>
-                      </>
-                    )}
-                  </Button>
-                  </motion.div>
-                ))}
+                  {oauthProviders.map((provider) => (
+                    <motion.div key={provider.id} variants={itemVariants}>
+                      <Button
+                        key={provider.id}
+                        onClick={() => handleOAuthSignIn(provider.id)}
+                        disabled={oauthLoading !== null || isLoading}
+                        className={`w-full h-11 ${getProviderButtonStyle(
+                          provider.id
+                        )}`}
+                        variant="outline"
+                        data-testid={`oauth-${provider.id}-button`}
+                      >
+                        {oauthLoading === provider.id ? (
+                          <MotionSpinner size="sm" />
+                        ) : (
+                          <>
+                            {getProviderIcon(provider.id)}
+                            <span className="ml-3">
+                              Continue with {provider.name}
+                            </span>
+                          </>
+                        )}
+                      </Button>
+                    </motion.div>
+                  ))}
                 </div>
 
-                <motion.div className="relative my-6" data-testid="oauth-divider" variants={itemVariants}>
+                <motion.div
+                  className="relative my-6"
+                  data-testid="oauth-divider"
+                  variants={itemVariants}
+                >
                   <div className="absolute inset-0 flex items-center">
                     <span className="w-full border-t border-border" />
                   </div>
@@ -328,15 +335,19 @@ export default function LoginPage() {
               </motion.div>
             )}
 
-            <motion.form 
-              onSubmit={onSubmit} 
-              className="space-y-6" 
+            <motion.form
+              onSubmit={onSubmit}
+              className="space-y-6"
               data-testid="login-form"
               variants={containerVariants}
               initial="hidden"
               animate="visible"
             >
-              <motion.div className="space-y-2" data-testid="email-field" variants={formFieldVariants}>
+              <motion.div
+                className="space-y-2"
+                data-testid="email-field"
+                variants={formFieldVariants}
+              >
                 <Label htmlFor="email" className="text-sm font-medium">
                   Email address
                 </Label>
@@ -353,7 +364,11 @@ export default function LoginPage() {
                 />
               </motion.div>
 
-              <motion.div className="space-y-2" data-testid="password-field" variants={formFieldVariants}>
+              <motion.div
+                className="space-y-2"
+                data-testid="password-field"
+                variants={formFieldVariants}
+              >
                 <Label htmlFor="password" className="text-sm font-medium">
                   Password
                 </Label>
@@ -432,23 +447,35 @@ export default function LoginPage() {
               </motion.div>
             </motion.form>
 
-            <motion.div 
-              className="mt-6 pt-6 border-t border-border" 
+            <motion.div
+              className="mt-6 pt-6 border-t border-border"
               data-testid="login-footer"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.8, ease: [0.22, 1, 0.36, 1] }}
+              transition={{
+                duration: 0.5,
+                delay: 0.8,
+                ease: [0.22, 1, 0.36, 1],
+              }}
             >
               <div className="text-center mb-4">
                 <p className="text-sm text-muted-foreground">
                   Don&apos;t have an account yet?
                 </p>
-                <Button asChild variant="outline" className="mt-2" data-testid="register-link">
+                <Button
+                  asChild
+                  variant="outline"
+                  className="mt-2"
+                  data-testid="register-link"
+                >
                   <Link href="/register">Create Volunteer Account</Link>
                 </Button>
               </div>
 
-              <div className="bg-accent/10 rounded-lg p-4 text-center" data-testid="demo-credentials">
+              <div
+                className="bg-accent/10 rounded-lg p-4 text-center"
+                data-testid="demo-credentials"
+              >
                 <p className="text-sm font-medium text-primary mb-3">
                   Demo Credentials
                 </p>

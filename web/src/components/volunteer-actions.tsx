@@ -26,6 +26,7 @@ interface VolunteerActionsProps {
   currentShift?: {
     id: string;
     start: Date;
+    end: Date;
     location: string | null;
     shiftType: {
       name: string;
@@ -184,7 +185,7 @@ export function VolunteerActions({ signupId, currentStatus, onUpdate, testIdPref
   };
 
   // Helper to check if shift has ended (use end time, not start time)
-  const isShiftCompleted = currentShift ? new Date() > new Date(currentShift.start) : false;
+  const isShiftCompleted = currentShift ? new Date() > new Date(currentShift.end) : false;
 
   if (currentStatus === "CONFIRMED") {
     const cancelDialogContent = getDialogContent("cancel");

@@ -1,3 +1,9 @@
+## [0.39.0] - 2025-09-14
+
+### Changes
+- feat: add email confirmation for auto-approved and admin-confirmed signups ([#100](https://github.com/everybody-eats-nz/volunteer-portal/pull/100)) by @malinmalliyawadu
+
+
 ## [0.38.5] - 2025-09-13
 
 ### Changes
