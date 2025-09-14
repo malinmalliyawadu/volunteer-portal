@@ -354,7 +354,7 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
                           {shift.shiftType.name}
                         </h3>
                       </div>
-                      <p className="text-sm text-slate-700 font-medium flex items-center gap-1">
+                      <p className="text-sm text-slate-700 dark:text-slate-300 font-medium flex items-center gap-1">
                         <Clock className="h-3.5 w-3.5" />
                         {formatInNZT(shift.start, "h:mm a")} -{" "}
                         {formatInNZT(shift.end, "h:mm a")}
