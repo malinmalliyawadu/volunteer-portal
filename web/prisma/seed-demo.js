@@ -127,17 +127,17 @@ function downloadImageAsBase64(url) {
 
 async function downloadAndConvertProfileImages() {
   // Skip profile image downloads in CI environments to speed up workflow runs
-  // Exception: Allow downloads in Vercel preview environments (VERCEL_ENV=preview) for demo purposes
+  // Exception: Allow downloads in any Vercel environment for rich demo experience
   const isCI = process.env.CI || process.env.NODE_ENV === 'test';
-  const isVercelPreview = process.env.VERCEL_ENV === 'preview';
+  const isVercel = process.env.VERCEL_ENV; // Any Vercel environment (production, preview, development)
   
-  if (isCI && !isVercelPreview) {
+  if (isCI && !isVercel) {
     console.log("🏃 Skipping profile image downloads in CI/test environment for faster execution");
     return;
   }
   
-  if (isVercelPreview) {
-    console.log("🌐 Vercel preview environment detected - downloading profile images for demo");
+  if (isVercel) {
+    console.log(`🌐 Vercel environment detected (${process.env.VERCEL_ENV}) - downloading profile images for demo`);
   }
 
   console.log(
