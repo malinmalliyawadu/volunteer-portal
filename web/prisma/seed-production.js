@@ -8,9 +8,17 @@ async function main() {
 
   // Get admin credentials from environment variables or use defaults
   const adminEmail = process.env.ADMIN_EMAIL || "admin@everybodyeats.nz";
-  const adminPassword = process.env.ADMIN_PASSWORD || "admin123";
+  let adminPassword = process.env.ADMIN_PASSWORD;
   const adminFirstName = process.env.ADMIN_FIRST_NAME || "Admin";
   const adminLastName = process.env.ADMIN_LAST_NAME || "User";
+
+  // Always require ADMIN_PASSWORD environment variable for security
+  if (!adminPassword) {
+    console.error("❌ ADMIN_PASSWORD environment variable is required");
+    console.error("   Please set ADMIN_PASSWORD to a secure initial password");
+    console.error("   Example: export ADMIN_PASSWORD='YourSecurePassword123!'");
+    process.exit(1);
+  }
 
   console.log(`Creating admin user: ${adminEmail}`);
 
@@ -66,8 +74,8 @@ async function main() {
 
     console.log(`✅ Admin user created successfully: ${adminUser.email}`);
     console.log(`📧 Email: ${adminEmail}`);
-    console.log(`🔑 Password: ${adminPassword}`);
-    console.log("⚠️  Please change the default password after first login!");
+    console.log("🔐 Initial Password: [HIDDEN] (from ADMIN_PASSWORD env var)");
+    console.log("⚠️  Please store your admin initial password securely and change it after first login!");
   }
 
   // Create essential shift types
