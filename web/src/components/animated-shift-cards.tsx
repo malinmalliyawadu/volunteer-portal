@@ -583,6 +583,7 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
                                       currentShift={{
                                         id: shift.id,
                                         start: shift.start,
+                                        end: shift.end,
                                         location: shift.location,
                                         shiftType: {
                                           name: shift.shiftType.name,

@@ -241,7 +241,7 @@ export async function createShiftConfirmedNotification(
     type: "SHIFT_CONFIRMED",
     title: "Shift confirmed",
     message: `Your ${shiftName} shift on ${shiftDate} has been confirmed`,
-    actionUrl: "/shifts/mine",
+    actionUrl: `/shifts/${shiftId}`,
     relatedId: shiftId,
   });
 }
@@ -261,6 +261,25 @@ export async function createShiftWaitlistedNotification(
     title: "Added to waitlist",
     message: `You've been added to the waitlist for ${shiftName} on ${shiftDate}`,
     actionUrl: "/shifts/mine",
+    relatedId: shiftId,
+  });
+}
+
+/**
+ * Create a shift canceled notification
+ */
+export async function createShiftCanceledNotification(
+  userId: string,
+  shiftName: string,
+  shiftDate: string,
+  shiftId: string
+) {
+  return createNotification({
+    userId,
+    type: "SHIFT_CANCELED",
+    title: "Shift canceled",
+    message: `Your ${shiftName} shift on ${shiftDate} has been canceled by an administrator`,
+    actionUrl: `/shifts/${shiftId}`,
     relatedId: shiftId,
   });
 }
