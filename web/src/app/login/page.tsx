@@ -60,8 +60,12 @@ const formFieldVariants: Variants = {
 };
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("volunteer@example.com");
-  const [password, setPassword] = useState("volunteer123");
+  const [email, setEmail] = useState(
+    process.env.NEXT_PUBLIC_VERCEL_ENV !== 'production' ? "volunteer@example.com" : ""
+  );
+  const [password, setPassword] = useState(
+    process.env.NEXT_PUBLIC_VERCEL_ENV !== 'production' ? "volunteer123" : ""
+  );
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [oauthLoading, setOauthLoading] = useState<string | null>(null);
@@ -160,12 +164,12 @@ export default function LoginPage() {
 
     const credentials = {
       volunteer: {
-        email: "volunteer@example.com",
-        password: "volunteer123",
+        email: process.env.NEXT_PUBLIC_DEMO_VOLUNTEER_EMAIL || "volunteer@example.com",
+        password: process.env.NEXT_PUBLIC_DEMO_VOLUNTEER_PASSWORD || "volunteer123",
       },
       admin: {
-        email: "admin@everybodyeats.nz",
-        password: "admin123",
+        email: process.env.NEXT_PUBLIC_DEMO_ADMIN_EMAIL || "admin@everybodyeats.nz",
+        password: process.env.NEXT_PUBLIC_DEMO_ADMIN_PASSWORD || "admin123",
       },
     };
 
