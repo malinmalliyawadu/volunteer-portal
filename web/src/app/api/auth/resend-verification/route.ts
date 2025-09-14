@@ -133,7 +133,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(
       {
-        message: "Verification email sent successfully",
+        message: "If an account with this email exists, a verification email has been sent",
       },
       { status: 200 }
     );

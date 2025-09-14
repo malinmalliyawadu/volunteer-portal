@@ -100,7 +100,7 @@ export default function VerifyEmailPage() {
       const data = await response.json();
 
       if (response.ok) {
-        showDialog("Email Sent", "Verification email sent! Please check your inbox.");
+        showDialog("Email Sent", data.message);
         setResendEmail("");
       } else {
         showDialog("Error", data.error || "Failed to send verification email");
