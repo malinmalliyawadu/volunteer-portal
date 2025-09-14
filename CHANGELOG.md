@@ -1,3 +1,9 @@
+## [0.40.0] - 2025-09-14
+
+### Changes
+- feat: production environment setup with environment-aware seeding ([#132](https://github.com/everybody-eats-nz/volunteer-portal/pull/132)) by @malinmalliyawadu
+
+
 ## [0.39.1] - 2025-09-14
 
 ### Changes
