@@ -108,24 +108,32 @@ test.describe("Email Verification System", () => {
       await expect(resendButton).toBeVisible();
     });
 
-    test("should show expired state for expired token", async ({ page }) => {
-      await page.goto("/verify-email?token=expired-token");
+    test("should show error state for invalid/expired token", async ({ page }) => {
+      await page.goto("/verify-email?token=invalid-or-expired-token");
       await waitForPageLoad(page);
 
       // Wait for verification to complete
       await page.waitForTimeout(2000);
 
-      const expiredTitle = page.getByText("Verification link expired");
-      await expect(expiredTitle).toBeVisible();
+      // Non-existent tokens will show error state (not expired state)
+      const errorIcon = page.getByTestId("error-icon");
+      await expect(errorIcon).toBeVisible();
 
-      const expiredDescription = page.getByText("Your verification link has expired. Please request a new verification email");
-      await expect(expiredDescription).toBeVisible();
+      const errorTitle = page.getByTestId("verification-title");
+      await expect(errorTitle).toBeVisible();
+      await expect(errorTitle).toHaveText("Verification failed");
 
-      // Should show resend form
-      const emailInput = page.locator('input[type="email"]');
+      const errorDescription = page.getByTestId("verification-description");
+      await expect(errorDescription).toBeVisible();
+
+      // Should show resend form for error states
+      const resendSection = page.getByTestId("resend-section");
+      await expect(resendSection).toBeVisible();
+
+      const emailInput = page.getByTestId("resend-email-input");
       await expect(emailInput).toBeVisible();
 
-      const resendButton = page.getByRole("button", { name: /resend verification email/i });
+      const resendButton = page.getByTestId("resend-button");
       await expect(resendButton).toBeVisible();
     });
 
