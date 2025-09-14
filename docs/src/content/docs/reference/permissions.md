@@ -7,10 +7,6 @@ description: Technical reference for permissions, access control, and route prot
 
 This page provides technical details about permission levels and access controls in the volunteer portal system.
 
-:::tip[New Authentication System]
-The application now uses a centralized middleware-based authentication system. For detailed developer information, see [Authentication & Authorization](/developers/authentication-authorization/).
-:::
-
 ## Permission Levels
 
 ### Database Roles
