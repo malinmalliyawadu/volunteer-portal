@@ -45,6 +45,11 @@ model User {
   receiveShortageNotifications Boolean                @default(true)
   excludedShortageNotificationTypes String[]          @default([]) // Array of shift type IDs they DON'T want notifications for (opt-out list), empty means get all types
   
+  // Email verification
+  emailVerified                Boolean                @default(false) // Whether email is verified
+  emailVerificationToken       String?                @unique // Token for email verification
+  emailVerificationTokenExpiresAt DateTime?          // When verification token expires
+  
   // Migration invitation tracking
   isMigrated                   Boolean                @default(false)
   migrationInvitationSent      Boolean                @default(false)

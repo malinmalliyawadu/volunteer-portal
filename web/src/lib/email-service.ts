@@ -103,6 +103,17 @@ interface SendVolunteerCancellationParams {
   location: string;
 }
 
+interface EmailVerificationData {
+  firstName: string;
+  verificationLink: string;
+}
+
+interface SendEmailVerificationParams {
+  to: string;
+  firstName: string;
+  verificationLink: string;
+}
+
 interface ParentalConsentApprovalEmailData {
   firstName: string;
   linkToDashboard: string;
@@ -129,6 +140,7 @@ class EmailService {
   private shiftShortageSmartEmailID: string;
   private shiftConfirmationSmartEmailID: string;
   private volunteerCancellationSmartEmailID: string;
+  private emailVerificationSmartEmailID: string;
   private parentalConsentApprovalSmartEmailID: string;
 
   constructor() {
@@ -237,6 +249,19 @@ class EmailService {
       }
     } else {
       this.volunteerCancellationSmartEmailID = volunteerCancellationEmailId;
+    }
+
+    // Smart email ID for email verification
+    const emailVerificationEmailId = process.env.CAMPAIGN_MONITOR_EMAIL_VERIFICATION_ID;
+    if (!emailVerificationEmailId) {
+      if (isDevelopment) {
+        console.warn("[EMAIL SERVICE] CAMPAIGN_MONITOR_EMAIL_VERIFICATION_ID is not configured - email verification emails will not be sent");
+        this.emailVerificationSmartEmailID = 'dummy-email-verification-id';
+      } else {
+        throw new Error("CAMPAIGN_MONITOR_EMAIL_VERIFICATION_ID is not configured");
+      }
+    } else {
+      this.emailVerificationSmartEmailID = emailVerificationEmailId;
     }
 
     // Smart email ID for parental consent approval notifications
@@ -648,6 +673,43 @@ class EmailService {
       });
     });
   }
+
+  async sendEmailVerification(params: SendEmailVerificationParams): Promise<void> {
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    
+    // In development, skip email sending if configuration is missing
+    if (isDevelopment && this.emailVerificationSmartEmailID === 'dummy-email-verification-id') {
+      console.log(`[EMAIL SERVICE] Would send email verification to ${params.to} (skipped in dev - no config)`);
+      console.log(`[EMAIL SERVICE] Verification link:`, params.verificationLink);
+      return Promise.resolve();
+    }
+
+    const details = {
+      smartEmailID: this.emailVerificationSmartEmailID,
+      to: `${params.firstName} <${params.to}>`,
+      data: {
+        firstName: params.firstName,
+        verificationLink: params.verificationLink,
+      } as EmailVerificationData,
+    };
+
+    return new Promise<void>((resolve, reject) => {
+      this.api.transactional.sendSmartEmail(details, (err: Error | null) => {
+        if (err) {
+          if (isDevelopment) {
+            console.warn("[EMAIL SERVICE] Error sending email verification (development):", err.message);
+            resolve(); // Don't fail in development
+          } else {
+            console.error("Error sending email verification:", err);
+            reject(err);
+          }
+        } else {
+          console.log("Email verification sent successfully to:", params.to);
+          resolve();
+        }
+      });
+    });
+  }
 }
 
 // Export singleton instance
@@ -670,6 +732,8 @@ export type {
   ShiftConfirmationEmailData,
   SendVolunteerCancellationParams,
   VolunteerCancellationEmailData,
+  SendEmailVerificationParams,
+  EmailVerificationData,
   SendParentalConsentApprovalParams,
   ParentalConsentApprovalEmailData,
 };

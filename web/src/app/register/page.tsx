@@ -282,14 +282,25 @@ export default function RegisterPage() {
         throw new Error(error.error || "Registration failed");
       }
 
-      toast({
-        title: "Registration successful!",
-        description:
-          "Welcome to Everybody Eats! You can now sign in to your account.",
-      });
-
-      // Redirect to login page
-      router.push("/login?message=registration-success");
+      const result = await response.json();
+      
+      if (result.requiresEmailVerification) {
+        toast({
+          title: "Registration successful!",
+          description:
+            "Please check your email and click the verification link to complete your registration.",
+        });
+        // Redirect to login page with email verification message
+        router.push("/login?message=verify-email&email=" + encodeURIComponent(formData.email || ""));
+      } else {
+        toast({
+          title: "Registration successful!",
+          description:
+            "Welcome to Everybody Eats! You can now sign in to your account.",
+        });
+        // Redirect to login page
+        router.push("/login?message=registration-success");
+      }
     } catch (error) {
       toast({
         title: "Registration failed",
