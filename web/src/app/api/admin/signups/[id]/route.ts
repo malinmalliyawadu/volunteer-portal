@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
-import { createShiftConfirmedNotification, createShiftWaitlistedNotification } from "@/lib/notifications";
+import { createShiftConfirmedNotification, createShiftWaitlistedNotification, createShiftCanceledNotification } from "@/lib/notifications";
 import { getEmailService } from "@/lib/email-service";
 import { format } from "date-fns";
 
@@ -218,6 +218,26 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       } catch (emailError) {
         console.error("Error sending cancellation email:", emailError);
         // Don't fail the API call if email fails
+      }
+
+      // Create in-app notification
+      try {
+        const shiftDate = new Intl.DateTimeFormat('en-NZ', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        }).format(signup.shift.start);
+
+        await createShiftCanceledNotification(
+          signup.user.id,
+          signup.shift.shiftType.name,
+          shiftDate,
+          signup.shift.id
+        );
+      } catch (notificationError) {
+        console.error("Error creating cancellation notification:", notificationError);
+        // Don't fail the API call if notification fails
       }
 
       return NextResponse.json({
