@@ -1,3 +1,9 @@
+## [0.40.1] - 2025-09-14
+
+### Changes
+- feat: production environment setup with secure demo credentials ([#135](https://github.com/everybody-eats-nz/volunteer-portal/pull/135)) by @malinmalliyawadu
+
+
 ## [0.40.0] - 2025-09-14
 
 ### Changes
