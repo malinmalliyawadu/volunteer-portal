@@ -54,6 +54,10 @@ model User {
   emailVerificationToken       String?                @unique // Token for email verification
   emailVerificationTokenExpiresAt DateTime?          // When verification token expires
   
+  // Password reset
+  passwordResetToken           String?                @unique // Token for password reset
+  passwordResetTokenExpiresAt  DateTime?              // When password reset token expires
+  
   // Migration invitation tracking
   isMigrated                   Boolean                @default(false)
   migrationInvitationSent      Boolean                @default(false)

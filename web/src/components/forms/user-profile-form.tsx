@@ -26,13 +26,12 @@ import {
   ExternalLink,
   Bell,
   CalendarIcon,
-  Check,
-  X,
   Eye,
   EyeOff,
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { PasswordRequirements } from "@/components/password-requirements";
 
 // Shared constants
 export const daysOfWeek = [
@@ -193,83 +192,7 @@ export function AccountStep({
             )}
           </button>
         </div>
-        {formData.password && (
-          <div className="space-y-1" data-testid="password-requirements">
-            <div className="flex items-center gap-2 text-xs">
-              {(formData.password || "").length >= 6 ? (
-                <Check className="h-3 w-3 text-green-600" />
-              ) : (
-                <X className="h-3 w-3 text-red-500" />
-              )}
-              <span
-                className={
-                  (formData.password || "").length >= 6
-                    ? "text-green-600"
-                    : "text-red-500"
-                }
-              >
-                At least 6 characters
-              </span>
-            </div>
-            <div className="flex items-center gap-2 text-xs">
-              {/[A-Z]/.test(formData.password || "") ? (
-                <Check className="h-3 w-3 text-green-600" />
-              ) : (
-                <X className="h-3 w-3 text-red-500" />
-              )}
-              <span
-                className={
-                  /[A-Z]/.test(formData.password || "")
-                    ? "text-green-600"
-                    : "text-red-500"
-                }
-              >
-                Contains uppercase letter
-              </span>
-            </div>
-            <div className="flex items-center gap-2 text-xs">
-              {/[a-z]/.test(formData.password || "") ? (
-                <Check className="h-3 w-3 text-green-600" />
-              ) : (
-                <X className="h-3 w-3 text-red-500" />
-              )}
-              <span
-                className={
-                  /[a-z]/.test(formData.password || "")
-                    ? "text-green-600"
-                    : "text-red-500"
-                }
-              >
-                Contains lowercase letter
-              </span>
-            </div>
-            <div className="flex items-center gap-2 text-xs">
-              {/[0-9]/.test(formData.password || "") ? (
-                <Check className="h-3 w-3 text-green-600" />
-              ) : (
-                <X className="h-3 w-3 text-red-500" />
-              )}
-              <span
-                className={
-                  /[0-9]/.test(formData.password || "")
-                    ? "text-green-600"
-                    : "text-red-500"
-                }
-              >
-                Contains number
-              </span>
-            </div>
-          </div>
-        )}
-        {!formData.password && (
-          <p
-            className="text-xs text-muted-foreground"
-            data-testid="password-hint"
-          >
-            Password must be at least 6 characters long and contain uppercase,
-            lowercase, and number
-          </p>
-        )}
+        <PasswordRequirements password={formData.password || ""} />
       </div>
 
       <div className="space-y-2" data-testid="confirm-password-field">
