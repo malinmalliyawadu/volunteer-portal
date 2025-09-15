@@ -143,7 +143,7 @@ function ShiftCard({
                   <div className="flex items-center gap-2">
                     <Badge
                       variant="secondary"
-                      className={`text-xs font-medium ${theme.textColor} ${theme.bgColor} border ${theme.borderColor}`}
+                      className={`text-xs font-medium text-gray-700 dark:text-gray-200 ${theme.bgColor} border ${theme.borderColor}`}
                     >
                       {duration}
                     </Badge>
@@ -287,7 +287,7 @@ function ShiftCard({
                 <Button
                   disabled
                   data-testid="shift-signup-button-disabled"
-                  className="w-full font-medium bg-gray-100 text-gray-400 cursor-not-allowed"
+                  className="w-full font-medium bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 cursor-not-allowed"
                   variant="outline"
                 >
                   {needsParentalConsent
