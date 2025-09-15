@@ -58,6 +58,8 @@ interface User {
 interface MigrationRegistrationFormProps {
   user: User;
   token: string;
+  locationOptions: Array<{ value: string; label: string }>;
+  shiftTypes: Array<{ id: string; name: string }>;
 }
 
 /**
@@ -67,17 +69,13 @@ interface MigrationRegistrationFormProps {
 export function MigrationRegistrationForm({
   user,
   token,
+  locationOptions,
+  shiftTypes,
 }: MigrationRegistrationFormProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
-  const [locationOptions, setLocationOptions] = useState<
-    Array<{ value: string; label: string }>
-  >([]);
-  const [shiftTypes, setShiftTypes] = useState<
-    Array<{ id: string; name: string }>
-  >([]);
   const [volunteerAgreementContent, setVolunteerAgreementContent] = useState("");
   const [healthSafetyPolicyContent, setHealthSafetyPolicyContent] = useState("");
   const [volunteerAgreementOpen, setVolunteerAgreementOpen] = useState(false);
@@ -129,7 +127,7 @@ export function MigrationRegistrationForm({
     profilePhotoUrl: undefined,
   });
 
-  // Load policy content and location options
+  // Load policy content
   useEffect(() => {
     const loadPolicyContent = async () => {
       try {
@@ -152,40 +150,7 @@ export function MigrationRegistrationForm({
       }
     };
 
-    const loadLocationOptions = async () => {
-      try {
-        const response = await fetch("/api/locations");
-        if (response.ok) {
-          const locations = await response.json();
-          setLocationOptions(locations);
-        } else {
-          setLocationOptions([]);
-        }
-      } catch (error) {
-        console.error("Failed to load locations:", error);
-        setLocationOptions([]);
-      }
-    };
-
-    const loadShiftTypes = async () => {
-      try {
-        const response = await fetch("/api/shift-types");
-        if (response.ok) {
-          const types = await response.json();
-          setShiftTypes(types);
-        } else {
-          console.error("Failed to load shift types");
-          setShiftTypes([]);
-        }
-      } catch (error) {
-        console.error("Failed to load shift types:", error);
-        setShiftTypes([]);
-      }
-    };
-
     loadPolicyContent();
-    loadLocationOptions();
-    loadShiftTypes();
   }, []);
 
   // Define steps with migration-specific configuration
