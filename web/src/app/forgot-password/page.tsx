@@ -96,7 +96,7 @@ export default function ForgotPasswordPage() {
                 />
               </motion.div>
 
-              <MotionFormSuccess show={state?.success} data-testid="success-message">
+              <MotionFormSuccess show={!!state?.success} data-testid="success-message">
                 <div className="flex items-start gap-3">
                   <div className="flex-shrink-0 pt-0.5">
                     <svg

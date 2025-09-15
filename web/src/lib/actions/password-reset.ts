@@ -19,7 +19,7 @@ interface ResetPasswordResult {
 }
 
 export async function forgotPasswordAction(
-  prevState: any,
+  prevState: unknown,
   formData: FormData
 ): Promise<ForgotPasswordResult> {
   try {
@@ -92,7 +92,7 @@ export async function forgotPasswordAction(
 
 export async function resetPasswordAction(
   token: string,
-  prevState: any,
+  prevState: unknown,
   formData: FormData
 ): Promise<ResetPasswordResult> {
   try {
@@ -185,7 +185,7 @@ export async function resetPasswordAction(
 
 export async function resetPasswordRedirectAction(
   token: string,
-  prevState: any,
+  prevState: unknown,
   formData: FormData
 ): Promise<void> {
   const result = await resetPasswordAction(token, prevState, formData);
