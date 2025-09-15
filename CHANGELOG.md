@@ -1,3 +1,9 @@
+## [0.41.0] - 2025-09-15
+
+### Changes
+- Centralized middleware-based authorization system ([#137](https://github.com/everybody-eats-nz/volunteer-portal/pull/137)) by @malinmalliyawadu
+
+
 ## [0.40.1] - 2025-09-14
 
 ### Changes
