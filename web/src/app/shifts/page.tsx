@@ -5,7 +5,12 @@ import { MapPin } from "lucide-react";
 import { PageContainer } from "@/components/page-container";
 import { safeParseAvailability } from "@/lib/parse-availability";
 import { ShiftsCalendar } from "@/components/shifts-calendar";
-import { LOCATIONS, LocationOption, LOCATION_ADDRESSES, Location } from "@/lib/locations";
+import {
+  LOCATIONS,
+  LocationOption,
+  LOCATION_ADDRESSES,
+  Location,
+} from "@/lib/locations";
 import { ShiftsProfileCompletionBanner } from "@/components/shifts-profile-completion-banner";
 import { Suspense } from "react";
 import { getAuthInfo } from "@/lib/auth-utils";
@@ -50,7 +55,7 @@ export default async function ShiftsCalendarPage({
       where: { email: user.email },
       select: { id: true, availableLocations: true },
     });
-    
+
     // Get user's friend IDs if logged in
     if (currentUser?.id) {
       userFriendIds = await prisma.friendship
@@ -70,7 +75,9 @@ export default async function ShiftsCalendarPage({
         })
         .then((friendships) =>
           friendships.map((friendship) =>
-            friendship.userId === currentUser!.id ? friendship.friendId : friendship.userId
+            friendship.userId === currentUser!.id
+              ? friendship.friendId
+              : friendship.userId
           )
         );
     }
@@ -161,7 +168,7 @@ export default async function ShiftsCalendarPage({
   if (userFriendIds.length > 0) {
     const friendSignups = await prisma.signup.findMany({
       where: {
-        shiftId: { in: shifts.map(s => s.id) },
+        shiftId: { in: shifts.map((s) => s.id) },
         userId: { in: userFriendIds },
         status: { in: ["CONFIRMED", "PENDING"] },
       },
@@ -180,11 +187,14 @@ export default async function ShiftsCalendarPage({
     });
 
     // Group by shift ID
-    friendSignupsMap = friendSignups.reduce<Record<string, FriendSignup[]>>((acc, signup) => {
-      if (!acc[signup.shiftId]) acc[signup.shiftId] = [];
-      acc[signup.shiftId].push(signup);
-      return acc;
-    }, {});
+    friendSignupsMap = friendSignups.reduce<Record<string, FriendSignup[]>>(
+      (acc, signup) => {
+        if (!acc[signup.shiftId]) acc[signup.shiftId] = [];
+        acc[signup.shiftId].push(signup);
+        return acc;
+      },
+      {}
+    );
   }
 
   // Transform to ShiftSummary format for calendar
@@ -213,46 +223,60 @@ export default async function ShiftsCalendarPage({
               <MapPin className="h-8 w-8" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold tracking-tight mb-2" data-testid="location-selection-title">
+              <h1
+                className="text-3xl font-bold tracking-tight mb-2"
+                data-testid="location-selection-title"
+              >
                 Choose Your Location
               </h1>
-              <p className="text-muted-foreground text-lg" data-testid="location-selection-description">
+              <p
+                className="text-muted-foreground text-lg"
+                data-testid="location-selection-description"
+              >
                 Please select a location to view available volunteer shifts
               </p>
             </div>
           </div>
 
-          <div className="max-w-md w-full space-y-4" data-testid="location-selection-options">
+          <div
+            className="max-w-md w-full space-y-4"
+            data-testid="location-selection-options"
+          >
             {/* User's preferred locations (if any) */}
             {userPreferredLocations.length > 1 && (
               <div className="space-y-3">
-                <p className="text-sm font-medium text-muted-foreground">Your preferred locations:</p>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Your preferred locations:
+                </p>
                 <div className="grid gap-3">
-                  {userPreferredLocations.map((loc) => (
-                    LOCATIONS.includes(loc as LocationOption) && (
-                      <Link
-                        key={loc}
-                        href={`/shifts?location=${loc}`}
-                        className="flex items-center justify-between p-4 bg-primary/5 hover:bg-primary/10 border border-primary/20 hover:border-primary/30 rounded-lg transition-all duration-200 group text-left"
-                        data-testid={`preferred-location-${loc.toLowerCase().replace(/\s+/g, "-")}`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-3 h-3 bg-primary rounded-full"></div>
-                          <div>
-                            <span className="font-medium">{loc}</span>
-                            {LOCATION_ADDRESSES[loc as Location] && (
-                              <div className="text-xs text-muted-foreground/80 mt-1 max-w-xs text-left">
-                                {LOCATION_ADDRESSES[loc as Location]}
-                              </div>
-                            )}
+                  {userPreferredLocations.map(
+                    (loc) =>
+                      LOCATIONS.includes(loc as LocationOption) && (
+                        <Link
+                          key={loc}
+                          href={`/shifts?location=${loc}`}
+                          className="flex items-center justify-between p-4 bg-primary/5 hover:bg-primary/10 border border-primary/20 hover:border-primary/30 rounded-lg transition-all duration-200 group text-left"
+                          data-testid={`preferred-location-${loc
+                            .toLowerCase()
+                            .replace(/\s+/g, "-")}`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-3 h-3 bg-primary rounded-full"></div>
+                            <div>
+                              <span className="font-medium">{loc}</span>
+                              {LOCATION_ADDRESSES[loc as Location] && (
+                                <div className="text-xs text-muted-foreground/80 mt-1 max-w-xs text-left">
+                                  {LOCATION_ADDRESSES[loc as Location]}
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                        <div className="text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                          →
-                        </div>
-                      </Link>
-                    )
-                  ))}
+                          <div className="text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                            →
+                          </div>
+                        </Link>
+                      )
+                  )}
                 </div>
               </div>
             )}
@@ -260,19 +284,23 @@ export default async function ShiftsCalendarPage({
             {/* All locations */}
             <div className="space-y-3">
               {userPreferredLocations.length > 1 && (
-                <p className="text-sm font-medium text-muted-foreground">Other locations:</p>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Other locations:
+                </p>
               )}
               <div className="grid gap-3">
-                {LOCATIONS.filter((loc) => 
-                  userPreferredLocations.length > 1 
-                    ? !userPreferredLocations.includes(loc) 
+                {LOCATIONS.filter((loc) =>
+                  userPreferredLocations.length > 1
+                    ? !userPreferredLocations.includes(loc)
                     : true
                 ).map((loc) => (
                   <Link
                     key={loc}
                     href={`/shifts?location=${loc}`}
                     className="flex items-center justify-between p-4 bg-background hover:bg-muted border border-border hover:border-primary/30 rounded-lg transition-all duration-200 group text-left"
-                    data-testid={`location-option-${loc.toLowerCase().replace(/\s+/g, "-")}`}
+                    data-testid={`location-option-${loc
+                      .toLowerCase()
+                      .replace(/\s+/g, "-")}`}
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-3 h-3 bg-muted-foreground rounded-full"></div>
@@ -290,7 +318,7 @@ export default async function ShiftsCalendarPage({
                     </div>
                   </Link>
                 ))}
-                
+
                 {/* Show all locations option */}
                 <Link
                   href="/shifts?showAll=true"
@@ -310,19 +338,19 @@ export default async function ShiftsCalendarPage({
           </div>
 
           {/* Help text */}
-          <div className="text-sm text-muted-foreground max-w-lg">
-            <p>
-              Selecting a location helps prevent accidental sign-ups to the wrong shifts. 
-              You can change locations at any time using the tabs above the calendar.
-            </p>
-            {userPreferredLocations.length === 0 && isLoggedIn && (
+          {userPreferredLocations.length === 0 && isLoggedIn && (
+            <div className="text-sm text-muted-foreground max-w-lg">
               <p className="mt-2">
-                <Link href="/profile/edit" className="underline hover:text-primary">
+                <Link
+                  href="/profile/edit"
+                  className="underline hover:text-primary"
+                >
                   Set your preferred locations
-                </Link> to customize your experience.
+                </Link>{" "}
+                to customize your experience.
               </p>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </PageContainer>
     );
@@ -333,7 +361,14 @@ export default async function ShiftsCalendarPage({
       <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
         <div className="flex-1">
           <PageHeader
-            title={selectedLocation || (showAll ? "All Locations" : (isUsingProfileFilter ? userPreferredLocations.join(", ") : "Shifts"))}
+            title={
+              selectedLocation ||
+              (showAll
+                ? "All Locations"
+                : isUsingProfileFilter
+                ? userPreferredLocations.join(", ")
+                : "Shifts")
+            }
             description={`Find and sign up for upcoming volunteer opportunities${
               selectedLocation
                 ? ` in ${selectedLocation}`
@@ -345,14 +380,18 @@ export default async function ShiftsCalendarPage({
             }. Click on any date to see details and sign up.`}
             data-testid="shifts-page-header"
           />
-          {selectedLocation && LOCATION_ADDRESSES[selectedLocation as Location] && (
-            <div className="mt-4 flex items-start gap-2 text-sm text-muted-foreground" data-testid="restaurant-address-banner">
-              <MapPin className="h-4 w-4 flex-shrink-0 mt-0.5" />
-              <span data-testid="restaurant-address" className="text-left">
-                {LOCATION_ADDRESSES[selectedLocation as Location]}
-              </span>
-            </div>
-          )}
+          {selectedLocation &&
+            LOCATION_ADDRESSES[selectedLocation as Location] && (
+              <div
+                className="mt-4 flex items-start gap-2 text-sm text-muted-foreground"
+                data-testid="restaurant-address-banner"
+              >
+                <MapPin className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                <span data-testid="restaurant-address" className="text-left">
+                  {LOCATION_ADDRESSES[selectedLocation as Location]}
+                </span>
+              </div>
+            )}
         </div>
 
         <div className="flex flex-col lg:flex-row gap-4 lg:items-end">
@@ -380,12 +419,16 @@ export default async function ShiftsCalendarPage({
         >
           <p className="text-sm font-medium flex items-center gap-2">
             <MapPin className="h-4 w-4" />
-            Showing shifts in your preferred location: {userPreferredLocations.join(", ")}
+            Showing shifts in your preferred location:{" "}
+            {userPreferredLocations.join(", ")}
           </p>
           <p className="text-xs text-muted-foreground mt-2">
             {isLoggedIn ? (
               <>
-                <Link href="/profile/edit" className="underline hover:text-primary">
+                <Link
+                  href="/profile/edit"
+                  className="underline hover:text-primary"
+                >
                   Update your preferences
                 </Link>{" "}
                 or select a specific location above.
