@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -17,7 +17,6 @@ export function AdminUsersSearch({
 }: AdminUsersSearchProps) {
   const [searchValue, setSearchValue] = useState(initialSearch || "");
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
