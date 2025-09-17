@@ -898,10 +898,10 @@ test.describe("Migration Registration Flow", () => {
         page.locator('[data-testid="migration-registration-form"]')
       ).toBeVisible();
 
-      // Check step indicator is visible
+      // Step indicator should be hidden on mobile for better space usage
       await expect(
         page.locator('[data-testid="step-indicator"]')
-      ).toBeVisible();
+      ).toBeHidden();
 
       // Check form fields are accessible
       await expect(
