@@ -1,3 +1,9 @@
+## [0.42.0] - 2025-09-16
+
+### Changes
+- feat: implement password reset functionality with shared validation utilities ([#139](https://github.com/everybody-eats-nz/volunteer-portal/pull/139)) by @malinmalliyawadu
+
+
 ## [0.41.0] - 2025-09-15
 
 ### Changes

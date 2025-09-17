@@ -26,13 +26,12 @@ import {
   ExternalLink,
   Bell,
   CalendarIcon,
-  Check,
-  X,
   Eye,
   EyeOff,
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { PasswordRequirements } from "@/components/password-requirements";
 
 // Shared constants
 export const daysOfWeek = [
@@ -194,83 +193,7 @@ export function AccountStep({
             )}
           </button>
         </div>
-        {formData.password && (
-          <div className="space-y-1" data-testid="password-requirements">
-            <div className="flex items-center gap-2 text-xs">
-              {(formData.password || "").length >= 6 ? (
-                <Check className="h-3 w-3 text-green-600" />
-              ) : (
-                <X className="h-3 w-3 text-red-500" />
-              )}
-              <span
-                className={
-                  (formData.password || "").length >= 6
-                    ? "text-green-600"
-                    : "text-red-500"
-                }
-              >
-                At least 6 characters
-              </span>
-            </div>
-            <div className="flex items-center gap-2 text-xs">
-              {/[A-Z]/.test(formData.password || "") ? (
-                <Check className="h-3 w-3 text-green-600" />
-              ) : (
-                <X className="h-3 w-3 text-red-500" />
-              )}
-              <span
-                className={
-                  /[A-Z]/.test(formData.password || "")
-                    ? "text-green-600"
-                    : "text-red-500"
-                }
-              >
-                Contains uppercase letter
-              </span>
-            </div>
-            <div className="flex items-center gap-2 text-xs">
-              {/[a-z]/.test(formData.password || "") ? (
-                <Check className="h-3 w-3 text-green-600" />
-              ) : (
-                <X className="h-3 w-3 text-red-500" />
-              )}
-              <span
-                className={
-                  /[a-z]/.test(formData.password || "")
-                    ? "text-green-600"
-                    : "text-red-500"
-                }
-              >
-                Contains lowercase letter
-              </span>
-            </div>
-            <div className="flex items-center gap-2 text-xs">
-              {/[0-9]/.test(formData.password || "") ? (
-                <Check className="h-3 w-3 text-green-600" />
-              ) : (
-                <X className="h-3 w-3 text-red-500" />
-              )}
-              <span
-                className={
-                  /[0-9]/.test(formData.password || "")
-                    ? "text-green-600"
-                    : "text-red-500"
-                }
-              >
-                Contains number
-              </span>
-            </div>
-          </div>
-        )}
-        {!formData.password && (
-          <p
-            className="text-xs text-muted-foreground"
-            data-testid="password-hint"
-          >
-            Password must be at least 6 characters long and contain uppercase,
-            lowercase, and number
-          </p>
-        )}
+        <PasswordRequirements password={formData.password || ""} />
       </div>
 
       <div className="space-y-2" data-testid="confirm-password-field">
@@ -308,9 +231,13 @@ export function AccountStep({
             data-testid="password-match-check"
           >
             {formData.password === formData.confirmPassword ? (
-              <Check className="h-3 w-3 text-green-600" />
+              <svg className="h-3 w-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
             ) : (
-              <X className="h-3 w-3 text-red-500" />
+              <svg className="h-3 w-3 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
             )}
             <span
               className={

@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { autoLabelUnder18User, autoLabelNewVolunteer } from "@/lib/auto-label-utils";
 import { createVerificationToken } from "@/lib/email-verification";
 import { getEmailService } from "@/lib/email-service";
+import { validatePassword } from "@/lib/utils/password-validation";
 
 /**
  * Validation schema for user registration
@@ -14,7 +15,12 @@ const registerSchema = z
   .object({
     // Basic account info
     email: z.string().email("Invalid email address"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
+    password: z.string().refine((password) => {
+      const validation = validatePassword(password);
+      return validation.isValid;
+    }, {
+      message: "Password must be at least 6 characters long and contain uppercase, lowercase letter, and number"
+    }),
     confirmPassword: z.string(),
 
     // Personal information

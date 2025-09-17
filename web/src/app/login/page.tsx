@@ -108,6 +108,10 @@ export default function LoginPage() {
       setSuccessMessage(
         "Email verified successfully! You can now sign in to your account."
       );
+    } else if (message === "password-reset-success") {
+      setSuccessMessage(
+        "Password reset successful! You can now sign in with your new password."
+      );
     }
   }, [searchParams]);
 
@@ -360,9 +364,18 @@ export default function LoginPage() {
                 data-testid="password-field"
                 variants={formFieldVariants}
               >
-                <Label htmlFor="password" className="text-sm font-medium">
-                  Password
-                </Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password" className="text-sm font-medium">
+                    Password
+                  </Label>
+                  <Link
+                    href="/forgot-password"
+                    className="text-sm text-primary hover:underline"
+                    data-testid="forgot-password-link"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
                 <Input
                   id="password"
                   placeholder="Enter your password"
