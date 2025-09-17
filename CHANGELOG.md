@@ -1,3 +1,9 @@
+## [0.42.2] - 2025-09-17
+
+### Changes
+- fix: improve mobile layout for registration pages ([#143](https://github.com/everybody-eats-nz/volunteer-portal/pull/143)) by @malinmalliyawadu
+
+
 ## [0.42.1] - 2025-09-17
 
 ### Changes
