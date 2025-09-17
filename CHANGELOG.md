@@ -1,3 +1,9 @@
+## [0.42.1] - 2025-09-17
+
+### Changes
+- Fix: Improve dashboard shift links and resolve profile edit performance issues ([#145](https://github.com/everybody-eats-nz/volunteer-portal/pull/145)) by @malinmalliyawadu
+
+
 ## [0.42.0] - 2025-09-16
 
 ### Changes
