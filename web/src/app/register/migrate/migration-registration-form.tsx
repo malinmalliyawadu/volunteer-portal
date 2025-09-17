@@ -106,6 +106,7 @@ export function MigrationRegistrationForm({
     medicalConditions: user.medicalConditions || "",
     willingToProvideReference: false,
     howDidYouHearAboutUs: "not_specified", // Will be set to "migration" on submit
+    customHowDidYouHearAboutUs: "",
 
     // Availability - safely parse from JSON or text format
     availableDays: user.availableDays

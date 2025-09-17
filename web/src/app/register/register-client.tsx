@@ -117,6 +117,7 @@ export default function RegisterClient({ locationOptions, shiftTypes }: Register
     medicalConditions: "",
     willingToProvideReference: false,
     howDidYouHearAboutUs: "not_specified",
+    customHowDidYouHearAboutUs: "",
 
     // Availability
     availableDays: [],
@@ -218,6 +219,8 @@ export default function RegisterClient({ locationOptions, shiftTypes }: Register
         howDidYouHearAboutUs:
           formData.howDidYouHearAboutUs === "not_specified"
             ? null
+            : formData.howDidYouHearAboutUs === "other"
+            ? formData.customHowDidYouHearAboutUs || null
             : formData.howDidYouHearAboutUs,
         name: `${formData.firstName} ${formData.lastName}`.trim(),
       };
@@ -421,6 +424,14 @@ export default function RegisterClient({ locationOptions, shiftTypes }: Register
           toast({
             title: "Required field missing",
             description: "Please tell us how you heard about us",
+            variant: "destructive",
+          });
+          return false;
+        }
+        if (formData.howDidYouHearAboutUs === "other" && !formData.customHowDidYouHearAboutUs?.trim()) {
+          toast({
+            title: "Required field missing",
+            description: "Please specify how you heard about us",
             variant: "destructive",
           });
           return false;

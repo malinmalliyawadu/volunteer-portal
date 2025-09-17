@@ -92,6 +92,7 @@ export default function ProfileEditClient({ locationOptions, shiftTypes }: Profi
     medicalConditions: "",
     willingToProvideReference: false,
     howDidYouHearAboutUs: "not_specified",
+    customHowDidYouHearAboutUs: "",
     availableDays: [],
     availableLocations: [],
     emailNewsletterSubscription: true,
@@ -128,6 +129,8 @@ export default function ProfileEditClient({ locationOptions, shiftTypes }: Profi
               profileData.willingToProvideReference || false,
             howDidYouHearAboutUs:
               profileData.howDidYouHearAboutUs || "not_specified",
+            customHowDidYouHearAboutUs:
+              profileData.customHowDidYouHearAboutUs || "",
             availableDays: profileData.availableDays || [],
             availableLocations: profileData.availableLocations || [],
             emailNewsletterSubscription:
@@ -233,7 +236,11 @@ export default function ProfileEditClient({ locationOptions, shiftTypes }: Profi
             }
           } else if (key === "howDidYouHearAboutUs") {
             if (value !== "not_specified" && value !== "") {
-              processedData[key] = value;
+              if (value === "other" && formData.customHowDidYouHearAboutUs?.trim()) {
+                processedData[key] = formData.customHowDidYouHearAboutUs;
+              } else if (value !== "other") {
+                processedData[key] = value;
+              }
             }
           } else if (typeof value === "string") {
             // For string fields, only include non-empty values
