@@ -21,6 +21,7 @@ const updateProfileSchema = z.object({
   medicalConditions: z.string().optional(),
   willingToProvideReference: z.boolean().optional(),
   howDidYouHearAboutUs: z.string().optional(),
+  customHowDidYouHearAboutUs: z.string().optional(),
   availableDays: z.array(z.string()).optional(),
   availableLocations: z.array(z.string()).optional(),
   emailNewsletterSubscription: z.boolean().optional(),
@@ -137,7 +138,9 @@ export async function PUT(req: Request) {
         validatedData.willingToProvideReference;
     if (validatedData.howDidYouHearAboutUs !== undefined)
       updateData.howDidYouHearAboutUs =
-        validatedData.howDidYouHearAboutUs || null;
+        validatedData.howDidYouHearAboutUs === "other"
+          ? validatedData.customHowDidYouHearAboutUs || null
+          : validatedData.howDidYouHearAboutUs || null;
     if (validatedData.emailNewsletterSubscription !== undefined)
       updateData.emailNewsletterSubscription =
         validatedData.emailNewsletterSubscription;

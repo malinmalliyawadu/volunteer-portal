@@ -94,6 +94,7 @@ export interface UserProfileFormData {
   medicalConditions: string;
   willingToProvideReference: boolean;
   howDidYouHearAboutUs: string;
+  customHowDidYouHearAboutUs?: string;
 
   // Availability
   availableDays: string[];
@@ -682,6 +683,20 @@ export function MedicalInfoStep({
           className="h-11"
           data-testid="how-did-you-hear-select"
         />
+        
+        {formData.howDidYouHearAboutUs === "other" && (
+          <div className="mt-3">
+            <Input
+              id="customHowDidYouHearAboutUs"
+              data-testid="custom-how-did-you-hear-input"
+              value={formData.customHowDidYouHearAboutUs || ""}
+              onChange={(e) => onInputChange("customHowDidYouHearAboutUs", e.target.value)}
+              placeholder="Please specify how you heard about us"
+              disabled={loading}
+              className="h-11"
+            />
+          </div>
+        )}
       </div>
     </div>
   );

@@ -117,6 +117,7 @@ export default function RegisterClient({ locationOptions, shiftTypes }: Register
     medicalConditions: "",
     willingToProvideReference: false,
     howDidYouHearAboutUs: "not_specified",
+    customHowDidYouHearAboutUs: "",
 
     // Availability
     availableDays: [],
@@ -218,6 +219,8 @@ export default function RegisterClient({ locationOptions, shiftTypes }: Register
         howDidYouHearAboutUs:
           formData.howDidYouHearAboutUs === "not_specified"
             ? null
+            : formData.howDidYouHearAboutUs === "other"
+            ? formData.customHowDidYouHearAboutUs || null
             : formData.howDidYouHearAboutUs,
         name: `${formData.firstName} ${formData.lastName}`.trim(),
       };
@@ -421,6 +424,14 @@ export default function RegisterClient({ locationOptions, shiftTypes }: Register
           toast({
             title: "Required field missing",
             description: "Please tell us how you heard about us",
+            variant: "destructive",
+          });
+          return false;
+        }
+        if (formData.howDidYouHearAboutUs === "other" && !formData.customHowDidYouHearAboutUs?.trim()) {
+          toast({
+            title: "Required field missing",
+            description: "Please specify how you heard about us",
             variant: "destructive",
           });
           return false;
@@ -633,7 +644,7 @@ export default function RegisterClient({ locationOptions, shiftTypes }: Register
 
   return (
     <MotionPageContainer className="min-h-screen" data-testid="register-page">
-      <div className="max-w-4xl mx-auto p-6 space-y-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-8">
         <PageHeader
           title="Join Everybody Eats"
           description="Create your volunteer account and start making a difference in your community. The registration process takes about 5-10 minutes to complete."
@@ -649,7 +660,7 @@ export default function RegisterClient({ locationOptions, shiftTypes }: Register
         </PageHeader>
 
         {/* Progress Indicator */}
-        <div className="bg-card dark:bg-card rounded-xl shadow-sm border border-border p-6" data-testid="progress-indicator">
+        <div className="hidden md:block bg-card dark:bg-card rounded-xl shadow-sm border border-border p-6" data-testid="progress-indicator">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold" data-testid="progress-title">Registration Progress</h2>
             <Badge variant="outline" className="text-xs" data-testid="step-counter">

@@ -40,6 +40,7 @@ const registerSchema = z
     medicalConditions: z.string().optional(),
     willingToProvideReference: z.boolean().optional(),
     howDidYouHearAboutUs: z.string().nullable().optional(),
+    customHowDidYouHearAboutUs: z.string().optional(),
 
     // Availability
     availableDays: z.array(z.string()).optional(),
@@ -185,7 +186,10 @@ export async function POST(req: Request) {
       medicalConditions: validatedData.medicalConditions || null,
       willingToProvideReference:
         validatedData.willingToProvideReference || false,
-      howDidYouHearAboutUs: validatedData.howDidYouHearAboutUs || null,
+      howDidYouHearAboutUs:
+        validatedData.howDidYouHearAboutUs === "other"
+          ? validatedData.customHowDidYouHearAboutUs || null
+          : validatedData.howDidYouHearAboutUs || null,
 
       // Availability - store as JSON strings
       availableDays: validatedData.availableDays
