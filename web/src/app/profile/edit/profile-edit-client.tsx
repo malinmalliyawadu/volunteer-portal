@@ -158,7 +158,7 @@ export default function ProfileEditClient({ locationOptions, shiftTypes }: Profi
     };
 
     loadProfileData();
-  }, [toast]); // Added toast dependency
+  }, []); // No dependencies - only run on mount
 
   const sections = useMemo(() => [
     {
@@ -282,7 +282,7 @@ export default function ProfileEditClient({ locationOptions, shiftTypes }: Profi
         setLoading(false);
       }
     },
-    [formData, toast, router]
+    [toast, router]
   );
 
   const handleInputChange = useCallback(
@@ -331,7 +331,6 @@ export default function ProfileEditClient({ locationOptions, shiftTypes }: Profi
             onInputChange={handleInputChange}
             loading={loading}
             isRegistration={false}
-            toast={toast}
           />
         );
       case 1: // Emergency Contact
