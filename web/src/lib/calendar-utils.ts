@@ -68,5 +68,5 @@ export function generateGoogleMapsLink(location: string | null): string {
   }
   
   const address = LOCATION_ADDRESSES[location as keyof typeof LOCATION_ADDRESSES] || location;
-  return `https://maps.google.com/maps?q=${encodeURIComponent(address)}`;
+  return `https://maps.google.com/maps?q=${encodeURIComponent(`Everybody Eats ${address}`)}`;
 }
