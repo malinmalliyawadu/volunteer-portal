@@ -521,7 +521,7 @@ export function MigrationRegistrationForm({
   return (
     <div className="space-y-8" data-testid="migration-registration-form">
       {/* Progress Indicator */}
-      <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+      <div className="hidden md:block bg-card rounded-xl shadow-sm border border-border p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold">Migration Progress</h2>
           <Badge variant="outline" className="text-xs" data-testid="step-indicator">
