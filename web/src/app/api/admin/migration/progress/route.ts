@@ -73,8 +73,13 @@ export async function GET(request: NextRequest) {
 
 // Helper function to send progress updates
 export function sendProgress(sessionId: string, data: any) {
+  console.log(`[SSE-ROUTE] Looking for connection for session: ${sessionId}`);
+  console.log(`[SSE-ROUTE] Active connections: ${connections.size}`);
+  
   const controller = connections.get(sessionId);
   if (controller) {
+    console.log(`[SSE-ROUTE] Found controller, sending data:`, data.message || data.type);
+    
     // Store progress data
     progressData.set(sessionId, {
       ...data,
@@ -88,11 +93,14 @@ export function sendProgress(sessionId: string, data: any) {
         timestamp: new Date().toISOString()
       })}\n\n`;
       controller.enqueue(new TextEncoder().encode(event));
+      console.log(`[SSE-ROUTE] Successfully sent progress update for ${sessionId}`);
     } catch (e) {
-      console.error(`Failed to send progress update for ${sessionId}:`, e);
+      console.error(`[SSE-ROUTE] Failed to send progress update for ${sessionId}:`, e);
       // Remove dead connection
       connections.delete(sessionId);
     }
+  } else {
+    console.log(`[SSE-ROUTE] No controller found for session ${sessionId}`);
   }
 }
 

@@ -275,7 +275,6 @@ export class LaravelNovaScraper {
     }
 
     const url = `${this.config.baseUrl}/nova-api${endpoint}`;
-    console.log(`[API] Making request to: ${url}`);
 
     const requestHeaders = {
       Accept: "application/json",
@@ -288,19 +287,12 @@ export class LaravelNovaScraper {
       ...options.headers,
     };
 
-    console.log(`[API] Request headers:`, {
-      ...requestHeaders,
-      'X-CSRF-TOKEN': this.csrfToken.substring(0, 10) + '...',
-      'Cookie': this.cookies.length + ' cookies',
-    });
 
     const response = await fetch(url, {
       ...options,
       headers: requestHeaders,
     });
 
-    console.log(`[API] Response status: ${response.status} ${response.statusText}`);
-    console.log(`[API] Response headers:`, Object.fromEntries(response.headers.entries()));
 
     // Update cookies from API response (Nova might rotate session cookies)
     const apiSetCookieHeaders = response.headers.raw()["set-cookie"];
@@ -328,19 +320,16 @@ export class LaravelNovaScraper {
       }
       
       this.cookies = updatedCookies;
-      console.log(`[API] Updated cookies from API response. Total cookies: ${this.cookies.length}`);
     }
 
     if (!response.ok) {
       const responseText = await response.text();
-      console.log(`[API] Error response body:`, responseText.substring(0, 500));
       throw new Error(
         `Nova API request failed: ${response.status} ${response.statusText} - ${responseText.substring(0, 100)}`
       );
     }
 
     const jsonResponse = await response.json();
-    console.log(`[API] Response data keys:`, Object.keys(jsonResponse));
     
     return jsonResponse;
   }

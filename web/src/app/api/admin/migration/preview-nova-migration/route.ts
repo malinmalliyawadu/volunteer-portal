@@ -12,6 +12,7 @@ interface PreviewRequest {
   };
   options?: {
     skipExistingUsers?: boolean;
+    batchSize?: number;
   };
 }
 
@@ -48,7 +49,7 @@ export async function POST(request: NextRequest) {
 
     const body: PreviewRequest = await request.json();
     const { novaConfig, options = {} } = body;
-    const { skipExistingUsers = true } = options;
+    const { skipExistingUsers = true, batchSize = 50 } = options;
 
     if (!novaConfig.baseUrl || !novaConfig.email || !novaConfig.password) {
       return NextResponse.json(
@@ -67,8 +68,8 @@ export async function POST(request: NextRequest) {
         password: novaConfig.password,
       } as NovaAuthConfig);
 
-      console.log(`[PREVIEW] Fetching all users from Nova for preview...`);
-      const allNovaUsers = await scraper.scrapeUsers(); // Fetch ALL users for preview
+      console.log(`[PREVIEW] Fetching users from Nova for preview (limit: ${batchSize})...`);
+      const allNovaUsers = await scraper.scrapeUsers(batchSize); // Respect batch size limit
       
       console.log(`[PREVIEW] Found ${allNovaUsers.length} users, analyzing status...`);
 

@@ -16,6 +16,7 @@ interface BulkMigrationRequest {
     skipExistingUsers?: boolean;
     includeHistoricalData?: boolean;
     batchSize?: number;
+    dryRun?: boolean;
   };
   sessionId?: string;
 }
@@ -31,16 +32,21 @@ interface BulkMigrationResponse {
   totalSignups: number;
   errors: string[];
   duration: number;
+  dryRun: boolean;
 }
 
 // Helper function to send progress updates
 async function sendProgress(sessionId: string | undefined, data: any) {
-  if (!sessionId) return;
+  if (!sessionId) {
+    console.log('[SSE] No sessionId provided for progress update');
+    return;
+  }
   
   try {
+    console.log(`[SSE] Sending progress update for session ${sessionId}:`, data.message || data.type);
     sendProgressUpdate(sessionId, data);
   } catch (error) {
-    console.log('Failed to send progress update:', error);
+    console.error('[SSE] Failed to send progress update:', error);
   }
 }
 
@@ -68,6 +74,7 @@ export async function POST(request: NextRequest) {
       skipExistingUsers = true,
       includeHistoricalData = true,
       batchSize = 50,
+      dryRun = false,
     } = options;
 
     const response: BulkMigrationResponse = {
@@ -81,13 +88,14 @@ export async function POST(request: NextRequest) {
       totalSignups: 0,
       errors: [],
       duration: 0,
+      dryRun: dryRun,
     };
 
-    console.log(`[BULK] Starting bulk Nova migration`);
+    console.log(`[BULK] Starting bulk Nova migration${dryRun ? ' (DRY RUN)' : ''}`);
     
     await sendProgress(sessionId, {
       type: 'status',
-      message: 'Starting bulk migration...',
+      message: `Starting bulk migration${dryRun ? ' (DRY RUN)' : ''}...`,
       stage: 'connecting'
     });
 
@@ -127,7 +135,7 @@ export async function POST(request: NextRequest) {
 
       // Step 2: Process users in batches
       const transformer = new HistoricalDataTransformer({
-        dryRun: false,
+        dryRun: dryRun,
         skipExistingUsers,
         markAsMigrated: true,
       });
@@ -175,33 +183,90 @@ export async function POST(request: NextRequest) {
               }
             }
 
-            // Create user in our system (pass scraper for photo downloads)
-            const userData = await transformer.transformUser(novaUser, scraper);
-            const newUser = await prisma.user.create({
+            // Fetch full user details to get all fields including approved_at
+            const novaUserResource = novaUser as NovaUserResource;
+            const userId = novaUserResource.id.value;
+            
+            await sendProgress(sessionId, {
+              type: 'status',
+              message: `Fetching full details for ${userEmail}...`,
+              stage: 'processing'
+            });
+            
+            const fullUserResponse = await scraper.novaApiRequest(`/users/${userId}`);
+            const fullUserData = fullUserResponse.resource || novaUser;
+            
+            // Create user in our system (pass scraper for photo downloads) or simulate
+            const userData = await transformer.transformUser(fullUserData, scraper);
+            let newUser;
+            
+            if (dryRun) {
+              // In dry run, just simulate user creation with fake ID
+              newUser = { 
+                id: `dry-run-${Date.now()}-${Math.random()}`, 
+                email: userData.email,
+                ...userData 
+              };
+              console.log(`[BULK] [DRY RUN] Would create user: ${newUser.email}`);
+            } else {
+              newUser = await prisma.user.create({
                 data: userData,
               });
-
-              response.usersCreated++;
               console.log(`[BULK] Created user: ${newUser.email}`);
+            }
+
+            response.usersCreated++;
 
             // Step 3: Import historical data if requested
             if (includeHistoricalData) {
               try {
                 const novaUserId = novaUserResource.id.value;
                 
+                await sendProgress(sessionId, {
+                  type: 'status',
+                  message: `Importing historical data for ${userEmail}...`,
+                  stage: 'processing'
+                });
+                
                 // Get user's event applications with pagination
                 let allSignups = [];
                 let page = 1;
                 let hasMorePages = true;
 
-                // For development, just get first few signups
-                const signupsResponse = await scraper.novaApiRequest(
-                  `/event-applications?viaResource=users&viaResourceId=${novaUserId}&viaRelationship=event_applications&perPage=3&page=1`
-                );
+                // Get all user's event applications with pagination
+                while (hasMorePages) {
+                  const signupsResponse = await scraper.novaApiRequest(
+                    `/event-applications?viaResource=users&viaResourceId=${novaUserId}&viaRelationship=event_applications&perPage=50&page=${page}`
+                  );
 
-                if (signupsResponse.resources && signupsResponse.resources.length > 0) {
-                  allSignups = signupsResponse.resources;
-                  console.log(`[BULK] Found ${signupsResponse.resources.length} signups for user (limited to 3 for dev)`);
+                  console.log(`[BULK] Page ${page} signups response:`, {
+                    resourceCount: signupsResponse.resources?.length || 0,
+                    hasNextPage: !!signupsResponse.next_page_url,
+                    currentTotal: allSignups.length
+                  });
+
+                  if (signupsResponse.resources && signupsResponse.resources.length > 0) {
+                    allSignups.push(...signupsResponse.resources);
+                    
+                    // Check if there are more pages using next_page_url
+                    if (signupsResponse.next_page_url && signupsResponse.resources.length > 0) {
+                      page++;
+                    } else {
+                      hasMorePages = false;
+                    }
+                  } else {
+                    hasMorePages = false;
+                  }
+                }
+
+                if (allSignups.length > 0) {
+                  console.log(`[BULK] Found ${allSignups.length} signups for user`);
+                  
+                  await sendProgress(sessionId, {
+                    type: 'status',
+                    message: `Found ${allSignups.length} shifts for ${userEmail}, processing...`,
+                    stage: 'processing'
+                  });
                 }
 
                 if (allSignups.length > 0) {
@@ -220,8 +285,25 @@ export async function POST(request: NextRequest) {
                   let shiftsImported = 0;
                   let signupsImported = 0;
 
+                  await sendProgress(sessionId, {
+                    type: 'status',
+                    message: `Processing ${eventIds.size} unique shifts for ${userEmail}...`,
+                    stage: 'processing'
+                  });
+
+                  let processedEvents = 0;
                   for (const eventId of eventIds) {
+                    processedEvents++;
                     try {
+                      // Only send progress updates every 5 shifts to avoid overwhelming SSE
+                      if (processedEvents % 5 === 1 || processedEvents === eventIds.size || eventIds.size <= 5) {
+                        await sendProgress(sessionId, {
+                          type: 'status',
+                          message: `Processing shift ${processedEvents}/${eventIds.size} for ${userEmail}...`,
+                          stage: 'processing'
+                        });
+                      }
+
                       // Get event details
                       const eventResponse = await scraper.novaApiRequest(`/events/${eventId}`);
                       if (eventResponse.resource) {
@@ -239,38 +321,60 @@ export async function POST(request: NextRequest) {
                         // Transform event to shift with signup position data
                         const shiftData = transformer.transformEvent(eventResponse.resource, signupData);
                         
-                        // Create or find shift type
-                        let shiftType = await prisma.shiftType.findUnique({
-                          where: { name: shiftData.shiftTypeName },
-                        });
-
-                        if (!shiftType) {
-                          shiftType = await prisma.shiftType.create({
-                            data: {
-                              name: shiftData.shiftTypeName,
-                              description: `Migrated from Nova - ${shiftData.shiftTypeName}`,
-                            },
+                        // Create or find shift type (or simulate in dry run)
+                        let shiftType;
+                        if (dryRun) {
+                          // In dry run, simulate shift type
+                          shiftType = {
+                            id: `dry-run-shift-type-${Date.now()}`,
+                            name: shiftData.shiftTypeName,
+                            description: `Migrated from Nova - ${shiftData.shiftTypeName}`,
+                          };
+                        } else {
+                          shiftType = await prisma.shiftType.findUnique({
+                            where: { name: shiftData.shiftTypeName },
                           });
+
+                          if (!shiftType) {
+                            shiftType = await prisma.shiftType.create({
+                              data: {
+                                name: shiftData.shiftTypeName,
+                                description: `Migrated from Nova - ${shiftData.shiftTypeName}`,
+                              },
+                            });
+                          }
                         }
 
-                        // Check if shift already exists
-                        const existingShift = await prisma.shift.findFirst({
-                          where: {
-                            notes: { contains: `Nova Event ID: ${eventId}` },
-                          },
-                        });
-
-                        let shift = existingShift;
-                        if (!existingShift) {
-                          const { shiftTypeName, ...shiftCreateData } = shiftData;
-                          shift = await prisma.shift.create({
-                            data: {
-                              ...shiftCreateData,
-                              shiftTypeId: shiftType.id,
-                              notes: `${shiftData.notes || ''} Nova Event ID: ${eventId}`.trim(),
+                        // Check if shift already exists (or simulate in dry run)
+                        let shift;
+                        if (dryRun) {
+                          // In dry run, simulate shift creation
+                          shift = {
+                            id: `dry-run-shift-${eventId}`,
+                            shiftTypeId: shiftType.id,
+                            notes: `${shiftData.notes || ''} Nova Event ID: ${eventId}`.trim(),
+                            ...shiftData,
+                          };
+                          shiftsImported++;
+                        } else {
+                          const existingShift = await prisma.shift.findFirst({
+                            where: {
+                              notes: { contains: `Nova Event ID: ${eventId}` },
                             },
                           });
-                          shiftsImported++;
+
+                          shift = existingShift;
+                          if (!existingShift) {
+                            const { shiftTypeName, ...shiftCreateData } = shiftData;
+                            shift = await prisma.shift.create({
+                              data: {
+                                ...shiftCreateData,
+                                shiftTypeId: shiftType.id,
+                                notes: `${shiftData.notes || ''} Nova Event ID: ${eventId}`.trim(),
+                              },
+                            });
+                            shiftsImported++;
+                          }
                         }
 
                         // Create signups for this shift
@@ -281,20 +385,25 @@ export async function POST(request: NextRequest) {
                           });
 
                           for (const signupInfo of userSignups) {
-                            const existingSignup = await prisma.signup.findUnique({
-                              where: {
-                                userId_shiftId: {
-                                  userId: newUser.id,
-                                  shiftId: shift.id,
-                                },
-                              },
-                            });
-
-                            if (!existingSignup) {
-                              await prisma.signup.create({
-                                data: transformer.transformSignup(signupInfo, newUser.id, shift.id),
-                              });
+                            if (dryRun) {
+                              // In dry run, just simulate signup creation
                               signupsImported++;
+                            } else {
+                              const existingSignup = await prisma.signup.findUnique({
+                                where: {
+                                  userId_shiftId: {
+                                    userId: newUser.id,
+                                    shiftId: shift.id,
+                                  },
+                                },
+                              });
+
+                              if (!existingSignup) {
+                                await prisma.signup.create({
+                                  data: transformer.transformSignup(signupInfo, newUser.id, shift.id),
+                                });
+                                signupsImported++;
+                              }
                             }
                           }
                         }
@@ -308,6 +417,12 @@ export async function POST(request: NextRequest) {
                   response.totalSignups += signupsImported;
                   
                   console.log(`[BULK] Imported ${shiftsImported} shifts and ${signupsImported} signups for ${userEmail}`);
+                  
+                  await sendProgress(sessionId, {
+                    type: 'status',
+                    message: `✅ Completed ${userEmail}: ${shiftsImported} shifts, ${signupsImported} signups imported`,
+                    stage: 'processing'
+                  });
                 }
               } catch (error) {
                 response.errors.push(`Error importing historical data for ${userEmail}: ${error instanceof Error ? error.message : 'Unknown error'}`);

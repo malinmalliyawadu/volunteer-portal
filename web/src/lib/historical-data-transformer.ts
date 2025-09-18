@@ -294,7 +294,7 @@ export class HistoricalDataTransformer {
     const hashedPassword = await hash(randomPassword, 12);
 
     // Handle both old flat structure and new Nova field structure
-    let email, firstName, lastName, phone, profilePhoto;
+    let email, firstName, lastName, phone, profilePhoto, approvedAt;
     
     if (novaUser.fields) {
       // New Nova field structure
@@ -302,6 +302,11 @@ export class HistoricalDataTransformer {
       firstName = novaUser.fields.find((f: any) => f.attribute === 'first_name')?.value;
       lastName = novaUser.fields.find((f: any) => f.attribute === 'last_name')?.value;
       phone = novaUser.fields.find((f: any) => f.attribute === 'phone')?.value;
+      approvedAt = novaUser.fields.find((f: any) => f.attribute === 'approved_at')?.value;
+      
+      // Debug: log all available fields to see what's actually there
+      console.log(`[DEBUG] Available fields for ${email}:`, novaUser.fields.map((f: any) => f.attribute));
+      console.log(`[DEBUG] Found approved_at value for ${email}:`, approvedAt);
       
       // Look for profile photo field - Nova uses 'avatar' with advanced media library
       const photoField = novaUser.fields.find((f: any) => f.attribute === 'avatar');
@@ -324,6 +329,7 @@ export class HistoricalDataTransformer {
       lastName = novaUser.last_name;
       phone = novaUser.phone;
       profilePhoto = novaUser.profile_photo || novaUser.photo || novaUser.avatar;
+      approvedAt = novaUser.approved_at;
     }
 
     const name = `${firstName || ''} ${lastName || ''}`.trim() || email;
@@ -361,6 +367,26 @@ export class HistoricalDataTransformer {
       console.log(`[PHOTO] Profile photo URL stored (not downloaded): ${profilePhotoUrl}`);
     }
 
+    // Parse approved_at date or fallback to current time
+    let createdAtDate = new Date(); // Default fallback
+    if (approvedAt) {
+      try {
+        createdAtDate = new Date(approvedAt);
+        // Validate the date
+        if (isNaN(createdAtDate.getTime())) {
+          console.warn(`[USER] Invalid approved_at date for ${email}: ${approvedAt}, using current time`);
+          createdAtDate = new Date();
+        } else {
+          console.log(`[USER] Using approved_at date for ${email}: ${createdAtDate.toISOString()}`);
+        }
+      } catch (error) {
+        console.warn(`[USER] Error parsing approved_at date for ${email}: ${approvedAt}, using current time`);
+        createdAtDate = new Date();
+      }
+    } else {
+      console.log(`[USER] No approved_at date found for ${email}, using current time`);
+    }
+
     return {
       email: email.toLowerCase(),
       name,
@@ -376,7 +402,7 @@ export class HistoricalDataTransformer {
       hashedPassword,
       profileCompleted: false, // Let users complete profile through invitation flow
       isMigrated: this.options.markAsMigrated,
-      createdAt: new Date(), // Use current time since Nova doesn't provide created_at in field structure
+      createdAt: createdAtDate, // Use approved_at from Nova or fallback to current time
       updatedAt: new Date(),
     };
   }
