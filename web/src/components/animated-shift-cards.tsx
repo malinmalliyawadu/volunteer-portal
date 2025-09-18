@@ -78,6 +78,7 @@ import { getShiftTheme } from "@/lib/shift-themes";
 import { DeleteShiftDialog } from "@/components/delete-shift-dialog";
 import { CustomLabelBadge } from "@/components/custom-label-badge";
 import { AdminNotesDialog } from "@/components/admin-notes-dialog";
+import { isShiftCompleted } from "@/lib/shift-utils";
 
 // Layout update context for triggering masonry recalculation
 const LayoutUpdateContext = createContext<(() => void) | null>(null);
@@ -316,7 +317,10 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
             const noShow = shift.signups.filter(
               (s) => s.status === "NO_SHOW"
             ).length;
-            const staffingStatus = getStaffingStatus(confirmed, shift.capacity);
+            const isCompleted = isShiftCompleted(shift.end);
+            const staffingStatus = isCompleted 
+              ? { color: "bg-gray-500", text: "Completed", icon: CheckCircle2 }
+              : getStaffingStatus(confirmed, shift.capacity);
 
             // Count volunteer grades
             const gradeCount = {
@@ -617,7 +621,7 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
                     </div>
 
                     {/* Shortage Action Button */}
-                    {(staffingStatus.text === "Critical" ||
+                    {!isCompleted && (staffingStatus.text === "Critical" ||
                       staffingStatus.text === "Understaffed") && (
                       <div className="mt-4 pt-4 border-t border-slate-100">
                         <Button
@@ -639,6 +643,7 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
                     )}
 
                     {/* Admin Action Buttons */}
+                    {!isCompleted && (
                     <div className="mt-4 pt-4 border-t border-slate-100 flex gap-2">
                       <Button
                         asChild
@@ -698,6 +703,7 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
                         </Button>
                       </DeleteShiftDialog>
                     </div>
+                    )}
                   </CardContent>
                 </Card>
               </motion.div>
