@@ -184,7 +184,6 @@ export async function POST(request: NextRequest) {
             }
 
             // Fetch full user details to get all fields including approved_at
-            const novaUserResource = novaUser as NovaUserResource;
             const userId = novaUserResource.id.value;
             
             await sendProgress(sessionId, {

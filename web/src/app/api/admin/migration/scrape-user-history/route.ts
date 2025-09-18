@@ -453,12 +453,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(response);
     } catch (error) {
       console.error("Nova scraping error:", error);
-      response.errors.push(
-        `Nova scraping failed: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
+      return NextResponse.json(
+        {
+          success: false,
+          userFound: false,
+          userAlreadyExists: false,
+          shiftsFound: 0,
+          shiftsImported: 0,
+          signupsFound: 0,
+          signupsImported: 0,
+          errors: [`Nova scraping failed: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`],
+        },
+        { status: 500 }
       );
-      return NextResponse.json(response, { status: 500 });
     }
   } catch (error) {
     console.error("Request processing error:", error);

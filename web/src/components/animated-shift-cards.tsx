@@ -694,6 +694,15 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
                           window.location.href = "/admin/shifts?deleted=1";
                         }}
                       >
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 text-red-600 hover:bg-red-50 border-red-200"
+                          data-testid={`delete-shift-button-${shift.id}`}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete
+                        </Button>
                       </DeleteShiftDialog>
                     </div>
                     )}

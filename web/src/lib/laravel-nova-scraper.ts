@@ -583,5 +583,6 @@ export type {
   NovaShiftSignup,
   NovaEvent,
   NovaUser,
+  NovaUserResource,
   ScrapedData,
 };

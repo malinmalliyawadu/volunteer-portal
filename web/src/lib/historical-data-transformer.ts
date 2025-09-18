@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma';
-import { ScrapedData, NovaUser, NovaShift, NovaShiftSignup, LaravelNovaScraper } from './laravel-nova-scraper';
+import { ScrapedData, NovaUser, NovaShift, NovaShiftSignup, NovaEvent, LaravelNovaScraper } from './laravel-nova-scraper';
 import { hash } from 'bcryptjs';
 import { SignupStatus } from '@prisma/client';
 import { profilePhotoDownloader } from './profile-photo-downloader';
@@ -71,14 +71,14 @@ export class HistoricalDataTransformer {
    */
   async transformAndImport(scrapedData: ScrapedData): Promise<TransformationResult> {
     console.log('Starting historical data transformation...');
-    console.log(`Processing ${scrapedData.users.length} users, ${scrapedData.shifts.length} shifts, ${scrapedData.signups.length} signups`);
+    console.log(`Processing ${scrapedData.users.length} users, ${scrapedData.events.length} events, ${scrapedData.signups.length} signups`);
 
     try {
       // Step 1: Process users first
       await this.processUsers(scrapedData.users);
 
       // Step 2: Process shift types and shifts
-      await this.processShifts(scrapedData.shifts);
+      await this.processShifts(scrapedData.events);
 
       // Step 3: Process signups
       await this.processSignups(scrapedData.signups, scrapedData.users);
@@ -144,24 +144,26 @@ export class HistoricalDataTransformer {
   /**
    * Process and create shifts from Nova data
    */
-  private async processShifts(novaShifts: NovaShift[]): Promise<void> {
+  private async processShifts(novaEvents: NovaEvent[]): Promise<void> {
     console.log('Processing shifts...');
 
     // First, ensure shift types exist
-    const shiftTypeMap = await this.ensureShiftTypes(novaShifts);
+    const shiftTypeMap = await this.ensureShiftTypes(novaEvents);
 
-    for (const novaShift of novaShifts) {
+    for (const novaEvent of novaEvents) {
       this.result.stats.shiftsProcessed++;
 
       try {
         // Skip if shift already exists (based on start time, end time, and shift type)
         if (this.options.skipExistingShifts) {
+          // For events, we need to extract data from the fields structure
+          const eventData = this.transformEvent(novaEvent);
           const existingShift = await prisma.shift.findFirst({
             where: {
-              start: new Date(novaShift.start_time),
-              end: new Date(novaShift.end_time),
+              start: eventData.start,
+              end: eventData.end,
               shiftType: {
-                name: novaShift.shift_type,
+                name: eventData.shiftTypeName,
               },
             },
           });
@@ -173,7 +175,8 @@ export class HistoricalDataTransformer {
         }
 
         if (!this.options.dryRun) {
-          const shiftData = this.transformShift(novaShift, shiftTypeMap);
+          const shiftData = this.transformEvent(novaEvent);
+          shiftData.shiftTypeId = shiftTypeMap.get(shiftData.shiftTypeName);
           
           const createdShift = await prisma.shift.create({
             data: shiftData,
@@ -188,10 +191,10 @@ export class HistoricalDataTransformer {
       } catch (error) {
         this.result.errors.push({
           type: 'shift',
-          id: novaShift.id,
+          id: novaEvent.id.value,
           error: error instanceof Error ? error.message : 'Unknown error',
         });
-        console.error(`Failed to process shift ${novaShift.id}:`, error);
+        console.error(`Failed to process event ${novaEvent.id.value}:`, error);
       }
     }
 
@@ -211,9 +214,12 @@ export class HistoricalDataTransformer {
       this.result.stats.signupsProcessed++;
 
       try {
-        const userEmail = userEmailMap.get(novaSignup.user_id);
+        // Extract user ID from Nova's field structure
+        const userField = novaSignup.fields.find((f: any) => f.attribute === 'user');
+        const userId = userField?.belongsToId;
+        const userEmail = userEmailMap.get(userId);
         if (!userEmail) {
-          throw new Error(`User not found for signup ${novaSignup.id}`);
+          throw new Error(`User not found for signup ${novaSignup.id.value}`);
         }
 
         // Find corresponding user and shift in new system
@@ -227,12 +233,14 @@ export class HistoricalDataTransformer {
         }
 
         // Find corresponding shift - this is tricky without direct ID mapping
-        // We'll match based on Nova shift ID stored in a custom field or notes
+        // We'll match based on Nova event ID stored in notes
+        const eventField = novaSignup.fields.find((f: any) => f.attribute === 'event');
+        const eventId = eventField?.belongsToId;
         const shift = await prisma.shift.findFirst({
           where: {
-            // We'll need to find a way to map this - perhaps by timestamp and type
-            // For now, skip if we can't find a reliable way to match
-            id: `nova_${novaSignup.shift_id}`, // This won't work, need better strategy
+            notes: {
+              contains: `Nova ID: ${eventId}`,
+            },
           },
         });
 
@@ -275,10 +283,10 @@ export class HistoricalDataTransformer {
       } catch (error) {
         this.result.errors.push({
           type: 'signup',
-          id: novaSignup.id,
+          id: novaSignup.id.value,
           error: error instanceof Error ? error.message : 'Unknown error',
         });
-        console.error(`Failed to process signup ${novaSignup.id}:`, error);
+        console.error(`Failed to process signup ${novaSignup.id.value}:`, error);
       }
     }
 
@@ -592,8 +600,12 @@ export class HistoricalDataTransformer {
   /**
    * Ensure all shift types exist, create if necessary
    */
-  private async ensureShiftTypes(novaShifts: NovaShift[]): Promise<Map<string, string>> {
-    const uniqueShiftTypes = [...new Set(novaShifts.map(shift => shift.shift_type))];
+  private async ensureShiftTypes(novaEvents: NovaEvent[]): Promise<Map<string, string>> {
+    // Extract shift types from events by transforming them
+    const uniqueShiftTypes = [...new Set(novaEvents.map(event => {
+      const eventData = this.transformEvent(event);
+      return eventData.shiftTypeName;
+    }))];
     const shiftTypeMap = new Map<string, string>();
 
     for (const shiftTypeName of uniqueShiftTypes) {
