@@ -349,28 +349,43 @@ export async function POST(request: NextRequest) {
                         let shift;
                         if (dryRun) {
                           // In dry run, simulate shift creation
+                          // Generate clean notes - include meaningful info only
+                          const noteParts = [];
+                          if (shiftData.notes && shiftData.notes.trim()) {
+                            noteParts.push(shiftData.notes.trim());
+                          }
+                          noteParts.push(`Nova ID: ${eventId}`);
+                          
                           shift = {
                             id: `dry-run-shift-${eventId}`,
                             shiftTypeId: shiftType.id,
-                            notes: `${shiftData.notes || ''} Nova Event ID: ${eventId}`.trim(),
+                            notes: noteParts.join(' • '),
                             ...shiftData,
                           };
                           shiftsImported++;
                         } else {
                           const existingShift = await prisma.shift.findFirst({
                             where: {
-                              notes: { contains: `Nova Event ID: ${eventId}` },
+                              notes: { contains: `Nova ID: ${eventId}` },
                             },
                           });
 
                           shift = existingShift;
                           if (!existingShift) {
                             const { shiftTypeName, ...shiftCreateData } = shiftData;
+                            
+                            // Generate clean notes - include meaningful info only
+                            const noteParts = [];
+                            if (shiftData.notes && shiftData.notes.trim()) {
+                              noteParts.push(shiftData.notes.trim());
+                            }
+                            noteParts.push(`Nova ID: ${eventId}`);
+                            
                             shift = await prisma.shift.create({
                               data: {
                                 ...shiftCreateData,
                                 shiftTypeId: shiftType.id,
-                                notes: `${shiftData.notes || ''} Nova Event ID: ${eventId}`.trim(),
+                                notes: noteParts.join(' • '),
                               },
                             });
                             shiftsImported++;

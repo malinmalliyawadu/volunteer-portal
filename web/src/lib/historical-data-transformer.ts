@@ -506,13 +506,19 @@ export class HistoricalDataTransformer {
 
     console.log(`[SHIFT_TIMES] ${shiftTypeName} on ${baseDate.toDateString()}: ${startDate.toLocaleTimeString()} - ${endDate.toLocaleTimeString()}`);
 
+    // Generate clean notes - only include meaningful event name
+    let notes = '';
+    if (eventName && eventName !== 'Unknown Event') {
+      notes = `Event: ${eventName}`;
+    }
+
     return {
       shiftTypeId: null, // Will be resolved when creating the shift
       start: startDate,
       end: endDate,
       location: location,
       capacity: parseInt(capacity.toString()) || 10,
-      notes: `Migrated from Nova: ${eventName}`,
+      notes: notes,
       createdAt: this.parseDate(novaEvent.created_at),
       updatedAt: this.parseDate(novaEvent.updated_at),
       shiftTypeName, // Helper field for creating shift type

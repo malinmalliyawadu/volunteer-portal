@@ -365,13 +365,19 @@ export async function POST(request: NextRequest) {
                     let shift = existingShift;
                     if (!existingShift) {
                       const { shiftTypeName, ...shiftCreateData } = shiftData;
+                      
+                      // Generate clean notes - include meaningful info only
+                      const noteParts = [];
+                      if (shiftData.notes && shiftData.notes.trim()) {
+                        noteParts.push(shiftData.notes.trim());
+                      }
+                      noteParts.push(`Nova ID: ${eventDetail.id.value}`);
+                      
                       shift = await prisma.shift.create({
                         data: {
                           ...shiftCreateData,
                           shiftTypeId: shiftType.id,
-                          notes: `${shiftData.notes || ""} Nova Event ID: ${
-                            eventDetail.id.value
-                          }`.trim(),
+                          notes: noteParts.join(' • '),
                         },
                       });
                       shiftsImported++;
