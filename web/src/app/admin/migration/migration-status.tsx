@@ -1,12 +1,25 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { RefreshCw, Users, Mail, CheckCircle, AlertCircle, Calendar, MapPin, Clock, Tag } from "lucide-react";
+import {
+  RefreshCw,
+  Users,
+  CheckCircle,
+  Calendar,
+  MapPin,
+  Clock,
+  Tag,
+} from "lucide-react";
 
 interface MigratedDataResponse {
   success: boolean;
@@ -125,7 +138,9 @@ export function MigrationStatus() {
               <span className="text-sm font-medium">Migrated Users</span>
             </div>
             <div className="text-2xl font-bold">{data.data.users.migrated}</div>
-            <p className="text-xs text-muted-foreground">of {data.data.users.total} total</p>
+            <p className="text-xs text-muted-foreground">
+              of {data.data.users.total} total
+            </p>
           </CardContent>
         </Card>
 
@@ -135,8 +150,12 @@ export function MigrationStatus() {
               <Calendar className="h-4 w-4 text-green-600" />
               <span className="text-sm font-medium">Nova Shifts</span>
             </div>
-            <div className="text-2xl font-bold">{data.data.shifts.migratedFromNova}</div>
-            <p className="text-xs text-muted-foreground">of {data.data.shifts.total} total</p>
+            <div className="text-2xl font-bold">
+              {data.data.shifts.migratedFromNova}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              of {data.data.shifts.total} total
+            </p>
           </CardContent>
         </Card>
 
@@ -146,8 +165,12 @@ export function MigrationStatus() {
               <CheckCircle className="h-4 w-4 text-purple-600" />
               <span className="text-sm font-medium">Nova Signups</span>
             </div>
-            <div className="text-2xl font-bold">{data.data.signups.migratedFromNova}</div>
-            <p className="text-xs text-muted-foreground">of {data.data.signups.total} total</p>
+            <div className="text-2xl font-bold">
+              {data.data.signups.migratedFromNova}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              of {data.data.signups.total} total
+            </p>
           </CardContent>
         </Card>
 
@@ -157,7 +180,9 @@ export function MigrationStatus() {
               <Tag className="h-4 w-4 text-amber-600" />
               <span className="text-sm font-medium">Shift Types</span>
             </div>
-            <div className="text-2xl font-bold">{data.data.shiftTypes.total}</div>
+            <div className="text-2xl font-bold">
+              {data.data.shiftTypes.total}
+            </div>
             <p className="text-xs text-muted-foreground">categories</p>
           </CardContent>
         </Card>
@@ -171,7 +196,9 @@ export function MigrationStatus() {
           size="sm"
           variant="outline"
         >
-          <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+          <RefreshCw
+            className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
+          />
           Refresh
         </Button>
       </div>
@@ -179,10 +206,18 @@ export function MigrationStatus() {
       {/* Detailed Data Tabs */}
       <Tabs defaultValue="users" className="w-full">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="users">Users ({data.data.users.recent.length})</TabsTrigger>
-          <TabsTrigger value="shifts">Shifts ({data.data.shifts.recent.length})</TabsTrigger>
-          <TabsTrigger value="signups">Signups ({data.data.signups.recent.length})</TabsTrigger>
-          <TabsTrigger value="shift-types">Types ({data.data.shiftTypes.recent.length})</TabsTrigger>
+          <TabsTrigger value="users">
+            Users ({data.data.users.recent.length})
+          </TabsTrigger>
+          <TabsTrigger value="shifts">
+            Shifts ({data.data.shifts.recent.length})
+          </TabsTrigger>
+          <TabsTrigger value="signups">
+            Signups ({data.data.signups.recent.length})
+          </TabsTrigger>
+          <TabsTrigger value="shift-types">
+            Types ({data.data.shiftTypes.recent.length})
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="users" className="mt-6">
@@ -197,7 +232,10 @@ export function MigrationStatus() {
               {data.data.users.recent.length > 0 ? (
                 <div className="space-y-4">
                   {data.data.users.recent.map((user) => (
-                    <div key={user.id} className="flex items-center justify-between py-3 border-b last:border-b-0">
+                    <div
+                      key={user.id}
+                      className="flex items-center justify-between py-3 border-b last:border-b-0"
+                    >
                       <div className="space-y-1">
                         <div className="flex items-center space-x-2">
                           <span className="font-medium">{user.name}</span>
@@ -205,7 +243,9 @@ export function MigrationStatus() {
                             {user.signupsCount} signups
                           </Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground">{user.email}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {user.email}
+                        </p>
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-medium">
@@ -239,10 +279,15 @@ export function MigrationStatus() {
               {data.data.shifts.recent.length > 0 ? (
                 <div className="space-y-4">
                   {data.data.shifts.recent.map((shift) => (
-                    <div key={shift.id} className="py-3 border-b last:border-b-0">
+                    <div
+                      key={shift.id}
+                      className="py-3 border-b last:border-b-0"
+                    >
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center space-x-2">
-                          <Badge variant="secondary">{shift.shiftType.name}</Badge>
+                          <Badge variant="secondary">
+                            {shift.shiftType.name}
+                          </Badge>
                           <span className="text-sm text-muted-foreground">
                             {shift.signupsCount} signups
                           </span>
@@ -256,12 +301,14 @@ export function MigrationStatus() {
                           <div className="flex items-center space-x-1">
                             <Clock className="h-4 w-4" />
                             <span>
-                              {new Date(shift.start).toLocaleDateString()} {new Date(shift.start).toLocaleTimeString()} - {new Date(shift.end).toLocaleTimeString()}
+                              {new Date(shift.start).toLocaleDateString()}{" "}
+                              {new Date(shift.start).toLocaleTimeString()} -{" "}
+                              {new Date(shift.end).toLocaleTimeString()}
                             </span>
                           </div>
                           <div className="flex items-center space-x-1">
                             <MapPin className="h-4 w-4" />
-                            <span>{shift.location || 'No location'}</span>
+                            <span>{shift.location || "No location"}</span>
                           </div>
                         </div>
                         <p className="text-sm text-muted-foreground">
@@ -297,25 +344,37 @@ export function MigrationStatus() {
               {data.data.signups.recent.length > 0 ? (
                 <div className="space-y-4">
                   {data.data.signups.recent.map((signup) => (
-                    <div key={signup.id} className="flex items-center justify-between py-3 border-b last:border-b-0">
+                    <div
+                      key={signup.id}
+                      className="flex items-center justify-between py-3 border-b last:border-b-0"
+                    >
                       <div className="space-y-1">
                         <div className="flex items-center space-x-2">
-                          <span className="font-medium">{signup.user.name}</span>
-                          <Badge 
+                          <span className="font-medium">
+                            {signup.user.name}
+                          </span>
+                          <Badge
                             variant={
-                              signup.status === 'CONFIRMED' ? 'default' :
-                              signup.status === 'CANCELED' ? 'destructive' :
-                              'secondary'
+                              signup.status === "CONFIRMED"
+                                ? "default"
+                                : signup.status === "CANCELED"
+                                ? "destructive"
+                                : "secondary"
                             }
                           >
                             {signup.status}
                           </Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground">{signup.user.email}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {signup.user.email}
+                        </p>
                         <div className="text-sm">
-                          <Badge variant="outline" className="mr-2">{signup.shift.shiftType.name}</Badge>
+                          <Badge variant="outline" className="mr-2">
+                            {signup.shift.shiftType.name}
+                          </Badge>
                           <span className="text-muted-foreground">
-                            {new Date(signup.shift.start).toLocaleDateString()} {new Date(signup.shift.start).toLocaleTimeString()}
+                            {new Date(signup.shift.start).toLocaleDateString()}{" "}
+                            {new Date(signup.shift.start).toLocaleTimeString()}
                           </span>
                         </div>
                       </div>
@@ -351,12 +410,19 @@ export function MigrationStatus() {
               {data.data.shiftTypes.recent.length > 0 ? (
                 <div className="space-y-4">
                   {data.data.shiftTypes.recent.map((shiftType) => (
-                    <div key={shiftType.id} className="flex items-center justify-between py-3 border-b last:border-b-0">
+                    <div
+                      key={shiftType.id}
+                      className="flex items-center justify-between py-3 border-b last:border-b-0"
+                    >
                       <div className="space-y-1">
                         <h4 className="font-medium">{shiftType.name}</h4>
-                        <p className="text-sm text-muted-foreground">{shiftType.description}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {shiftType.description}
+                        </p>
                         <p className="text-sm">
-                          <Badge variant="outline">{shiftType.shiftsCount} shifts</Badge>
+                          <Badge variant="outline">
+                            {shiftType.shiftsCount} shifts
+                          </Badge>
                         </p>
                       </div>
                       <div className="text-right">

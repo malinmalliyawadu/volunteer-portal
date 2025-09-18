@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
       console.log(`Merging OAuth user ${currentUser.id} with migration user ${migrationUser.id}`);
       
       // Transfer OAuth data to migration user and mark as completed
-      const updateData: any = {
+      const updateData: Record<string, unknown> = {
         profileCompleted: true,
         migrationInvitationToken: null,
         migrationTokenExpiresAt: null,

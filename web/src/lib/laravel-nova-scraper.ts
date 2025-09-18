@@ -269,7 +269,7 @@ export class LaravelNovaScraper {
   async novaApiRequest(
     endpoint: string,
     options: RequestInit = {}
-  ): Promise<any> {
+  ): Promise<Record<string, unknown>> {
     if (!this.csrfToken) {
       throw new Error("Not authenticated. Call authenticate() first.");
     }

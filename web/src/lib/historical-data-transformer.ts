@@ -1,38 +1,28 @@
 import { prisma } from '@/lib/prisma';
-import { ScrapedData, NovaUser, NovaShift, NovaShiftSignup, NovaEvent, LaravelNovaScraper } from './laravel-nova-scraper';
+import { LaravelNovaScraper } from './laravel-nova-scraper';
+import {
+  ScrapedData,
+  NovaUser,
+  NovaShift,
+  NovaShiftSignup,
+  NovaEvent,
+  TransformationOptions,
+  TransformationResult,
+  TransformedUserData,
+  TransformedShiftData,
+  TransformedSignupData,
+  NovaField,
+  NovaUserResource,
+  NovaEventResource,
+  SignupDataWithPosition,
+  NovaStatusMapping
+} from '@/types/nova-migration';
 import { hash } from 'bcryptjs';
 import { SignupStatus } from '@prisma/client';
 import { profilePhotoDownloader } from './profile-photo-downloader';
 import { randomBytes } from 'crypto';
 
-interface TransformationResult {
-  success: boolean;
-  stats: {
-    usersProcessed: number;
-    usersCreated: number;
-    usersSkipped: number;
-    shiftTypesCreated: number;
-    shiftsProcessed: number;
-    shiftsCreated: number;
-    shiftsSkipped: number;
-    signupsProcessed: number;
-    signupsCreated: number;
-    signupsSkipped: number;
-  };
-  errors: Array<{
-    type: 'user' | 'shift' | 'signup';
-    id: number;
-    error: string;
-  }>;
-}
-
-interface TransformationOptions {
-  dryRun?: boolean;
-  skipExistingUsers?: boolean;
-  skipExistingShifts?: boolean;
-  defaultPassword?: string;
-  markAsMigrated?: boolean;
-}
+// Types are now imported from @/types/nova-migration
 
 export class HistoricalDataTransformer {
   private options: TransformationOptions;
@@ -215,9 +205,9 @@ export class HistoricalDataTransformer {
 
       try {
         // Extract user ID from Nova's field structure
-        const userField = novaSignup.fields.find((f: any) => f.attribute === 'user');
+        const userField = novaSignup.fields.find((f: NovaField) => f.attribute === 'user');
         const userId = userField?.belongsToId;
-        const userEmail = userEmailMap.get(userId);
+        const userEmail = userId ? userEmailMap.get(userId) : undefined;
         if (!userEmail) {
           throw new Error(`User not found for signup ${novaSignup.id.value}`);
         }
@@ -234,7 +224,7 @@ export class HistoricalDataTransformer {
 
         // Find corresponding shift - this is tricky without direct ID mapping
         // We'll match based on Nova event ID stored in notes
-        const eventField = novaSignup.fields.find((f: any) => f.attribute === 'event');
+        const eventField = novaSignup.fields.find((f: NovaField) => f.attribute === 'event');
         const eventId = eventField?.belongsToId;
         const shift = await prisma.shift.findFirst({
           where: {
@@ -296,48 +286,53 @@ export class HistoricalDataTransformer {
   /**
    * Transform Nova user to Prisma user format (public method for API usage)
    */
-  async transformUser(novaUser: any, scraper?: LaravelNovaScraper): Promise<any> {
+  async transformUser(novaUser: NovaUser, scraper?: LaravelNovaScraper): Promise<TransformedUserData> {
     // Generate cryptographically secure random password for migrated users (they'll reset it during invitation flow)
     const randomPassword = randomBytes(32).toString('hex');
     const hashedPassword = await hash(randomPassword, 12);
 
     // Handle both old flat structure and new Nova field structure
-    let email, firstName, lastName, phone, profilePhoto, approvedAt;
+    let email: string | undefined, firstName: string | undefined, lastName: string | undefined, phone: string | undefined, profilePhoto: string | undefined, approvedAt: string | undefined;
     
-    if (novaUser.fields) {
+    if ('fields' in novaUser && novaUser.fields) {
       // New Nova field structure
-      email = novaUser.fields.find((f: any) => f.attribute === 'email')?.value;
-      firstName = novaUser.fields.find((f: any) => f.attribute === 'first_name')?.value;
-      lastName = novaUser.fields.find((f: any) => f.attribute === 'last_name')?.value;
-      phone = novaUser.fields.find((f: any) => f.attribute === 'phone')?.value;
-      approvedAt = novaUser.fields.find((f: any) => f.attribute === 'approved_at')?.value;
+      const novaUserResource = novaUser as NovaUserResource;
+      email = novaUserResource.fields.find((f: NovaField) => f.attribute === 'email')?.value as string;
+      firstName = novaUserResource.fields.find((f: NovaField) => f.attribute === 'first_name')?.value as string;
+      lastName = novaUserResource.fields.find((f: NovaField) => f.attribute === 'last_name')?.value as string;
+      phone = novaUserResource.fields.find((f: NovaField) => f.attribute === 'phone')?.value as string;
+      approvedAt = novaUserResource.fields.find((f: NovaField) => f.attribute === 'approved_at')?.value as string;
       
       // Debug: log all available fields to see what's actually there
-      console.log(`[DEBUG] Available fields for ${email}:`, novaUser.fields.map((f: any) => f.attribute));
+      console.log(`[DEBUG] Available fields for ${email}:`, novaUserResource.fields.map((f: NovaField) => f.attribute));
       console.log(`[DEBUG] Found approved_at value for ${email}:`, approvedAt);
       
       // Look for profile photo field - Nova uses 'avatar' with advanced media library
-      const photoField = novaUser.fields.find((f: any) => f.attribute === 'avatar');
+      const photoField = novaUserResource.fields.find((f: NovaField) => f.attribute === 'avatar');
       
       if (photoField && photoField.value && Array.isArray(photoField.value) && photoField.value.length > 0) {
         // Extract URL from advanced media library structure
         const mediaItem = photoField.value[0];
-        if (mediaItem.__media_urls__) {
-          // Use the original image URL for best quality
-          profilePhoto = mediaItem.__media_urls__.__original__ || 
-                        mediaItem.__media_urls__.detailView || 
-                        mediaItem.__media_urls__.form ||
-                        mediaItem.__media_urls__.preview;
+        if (mediaItem && typeof mediaItem === 'object' && '__media_urls__' in mediaItem) {
+          const mediaUrls = mediaItem.__media_urls__;
+          if (mediaUrls) {
+            // Use the original image URL for best quality
+            profilePhoto = mediaUrls.__original__ || 
+                          mediaUrls.detailView || 
+                          mediaUrls.form ||
+                          mediaUrls.preview;
+          }
         }
       }
     } else {
       // Old flat structure (backward compatibility)
-      email = novaUser.email;
-      firstName = novaUser.first_name;
-      lastName = novaUser.last_name;
-      phone = novaUser.phone;
-      profilePhoto = novaUser.profile_photo || novaUser.photo || novaUser.avatar;
-      approvedAt = novaUser.approved_at;
+      const legacyUser = novaUser as NovaLegacyUser; // Type assertion for legacy format
+      email = legacyUser.email;
+      firstName = legacyUser.first_name;
+      lastName = legacyUser.last_name;
+      phone = legacyUser.phone;
+      profilePhoto = legacyUser.profile_photo || legacyUser.photo || legacyUser.avatar;
+      approvedAt = legacyUser.approved_at;
     }
 
     const name = `${firstName || ''} ${lastName || ''}`.trim() || email;
@@ -418,7 +413,7 @@ export class HistoricalDataTransformer {
   /**
    * Transform Nova shift to Prisma shift format
    */
-  private transformShift(novaShift: NovaShift, shiftTypeMap: Map<string, string>): any {
+  private transformShift(novaShift: NovaShift, shiftTypeMap: Map<string, string>): TransformedShiftData {
     const shiftTypeId = shiftTypeMap.get(novaShift.shift_type);
     
     if (!shiftTypeId) {
@@ -440,12 +435,12 @@ export class HistoricalDataTransformer {
   /**
    * Transform Nova event to Prisma shift format
    */
-  transformEvent(novaEvent: any, signupData?: any[]): any {
+  transformEvent(novaEvent: NovaEventResource, signupData?: SignupDataWithPosition[]): TransformedShiftData {
     // Extract event details from Nova's field structure
-    const eventName = novaEvent.fields?.find((f: any) => f.attribute === 'name')?.value || 'Unknown Event';
-    const eventDate = novaEvent.fields?.find((f: any) => f.attribute === 'date')?.value;
-    const location = novaEvent.fields?.find((f: any) => f.attribute === 'location')?.value || 'Unknown Location';
-    const capacity = novaEvent.fields?.find((f: any) => f.attribute === 'capacity')?.value || 10;
+    const eventName = novaEvent.fields?.find((f: NovaField) => f.attribute === 'name')?.value as string || 'Unknown Event';
+    const eventDate = novaEvent.fields?.find((f: NovaField) => f.attribute === 'date')?.value as string;
+    const location = novaEvent.fields?.find((f: NovaField) => f.attribute === 'location')?.value as string || 'Unknown Location';
+    const capacity = novaEvent.fields?.find((f: NovaField) => f.attribute === 'capacity')?.value as number || 10;
 
     // Determine shift type from signup position data if available
     let shiftTypeName = 'General Volunteering';
@@ -536,7 +531,7 @@ export class HistoricalDataTransformer {
   /**
    * Safely parse date values, returning current date if invalid
    */
-  private parseDate(dateValue: any): Date {
+  private parseDate(dateValue: unknown): Date {
     if (!dateValue) return new Date();
     const parsed = new Date(dateValue);
     return isNaN(parsed.getTime()) ? new Date() : parsed;
@@ -545,10 +540,10 @@ export class HistoricalDataTransformer {
   /**
    * Transform Nova signup to Prisma signup format
    */
-  transformSignup(novaSignup: any, userId: string, shiftId: string): any {
+  transformSignup(novaSignup: NovaShiftSignup, userId: string, shiftId: string): TransformedSignupData {
     // Map Nova status to Prisma SignupStatus
     // Nova uses numeric IDs: 1=Requested, 2=Draft, 3=Confirmed, 4=Waitlist, 5=Attended, 6=Cancelled, 7=Not Needed, 8=Unavailable, 9=No Show
-    const statusMap: Record<string, SignupStatus> = {
+    const statusMap: NovaStatusMapping = {
       // Numeric IDs from Nova
       '1': SignupStatus.PENDING,      // Requested
       '2': SignupStatus.PENDING,      // Draft

@@ -2,42 +2,24 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
-import { createNovaScraper, NovaAuthConfig, NovaUserResource } from "@/lib/laravel-nova-scraper";
+import { createNovaScraper } from "@/lib/laravel-nova-scraper";
+import {
+  NovaAuthConfig,
+  NovaUserResource,
+  BulkMigrationRequest,
+  BulkMigrationResponse,
+  NovaField,
+  MigrationProgressEvent,
+  SignupDataWithPosition
+} from "@/types/nova-migration";
 import { HistoricalDataTransformer } from "@/lib/historical-data-transformer";
 import { sendProgress as sendProgressUpdate } from "../progress/route";
 import { randomBytes } from "crypto";
 
-interface BulkMigrationRequest {
-  novaConfig: {
-    baseUrl: string;
-    email: string;
-    password: string;
-  };
-  options?: {
-    skipExistingUsers?: boolean;
-    includeHistoricalData?: boolean;
-    batchSize?: number;
-    dryRun?: boolean;
-  };
-  sessionId?: string;
-}
-
-interface BulkMigrationResponse {
-  success: boolean;
-  totalUsers: number;
-  usersProcessed: number;
-  usersCreated: number;
-  usersSkipped: number;
-  usersWithHistory: number;
-  totalShifts: number;
-  totalSignups: number;
-  errors: string[];
-  duration: number;
-  dryRun: boolean;
-}
+// Types are now imported from @/types/nova-migration
 
 // Helper function to send progress updates
-async function sendProgress(sessionId: string | undefined, data: any) {
+async function sendProgress(sessionId: string | undefined, data: Partial<MigrationProgressEvent>) {
   if (!sessionId) {
     console.log('[SSE] No sessionId provided for progress update');
     return;
@@ -229,7 +211,7 @@ export async function POST(request: NextRequest) {
                 });
                 
                 // Get user's event applications with pagination
-                let allSignups = [];
+                let allSignups: NovaUserResource[] = [];
                 let page = 1;
                 let hasMorePages = true;
 
@@ -275,7 +257,7 @@ export async function POST(request: NextRequest) {
                   // Extract event IDs
                   const eventIds = new Set<number>();
                   for (const signup of allSignups) {
-                    const eventField = signup.fields.find((f: any) => f.attribute === 'event');
+                    const eventField = signup.fields.find((f: NovaField) => f.attribute === 'event');
                     if (eventField?.belongsToId) {
                       eventIds.add(eventField.belongsToId);
                     }
@@ -308,14 +290,14 @@ export async function POST(request: NextRequest) {
                       const eventResponse = await scraper.novaApiRequest(`/events/${eventId}`);
                       if (eventResponse.resource) {
                         // Get signups for this event to determine position/shift type
-                        const eventSignups = allSignups.filter((s: any) => {
-                          const eventField = s.fields.find((f: any) => f.attribute === 'event');
+                        const eventSignups = allSignups.filter((s: NovaUserResource) => {
+                          const eventField = s.fields.find((f: NovaField) => f.attribute === 'event');
                           return eventField?.belongsToId === eventId;
                         });
                         
                         // Extract signup data with positions
-                        const signupData = eventSignups.map((signup: any) => ({
-                          positionName: signup.fields.find((f: any) => f.attribute === 'position')?.value || 'General Volunteering'
+                        const signupData: SignupDataWithPosition[] = eventSignups.map((signup: NovaUserResource) => ({
+                          positionName: (signup.fields.find((f: NovaField) => f.attribute === 'position')?.value as string) || 'General Volunteering'
                         }));
 
                         // Transform event to shift with signup position data
@@ -394,8 +376,8 @@ export async function POST(request: NextRequest) {
 
                         // Create signups for this shift
                         if (shift) {
-                          const userSignups = allSignups.filter((s: any) => {
-                            const eventField = s.fields.find((f: any) => f.attribute === 'event');
+                          const userSignups = allSignups.filter((s: NovaUserResource) => {
+                            const eventField = s.fields.find((f: NovaField) => f.attribute === 'event');
                             return eventField?.belongsToId === eventId;
                           });
 

@@ -2,7 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
-import { createNovaScraper, NovaAuthConfig } from "@/lib/laravel-nova-scraper";
+import { createNovaScraper } from "@/lib/laravel-nova-scraper";
+import {
+  NovaAuthConfig,
+  ScrapeUserHistoryRequest,
+  ScrapeUserHistoryResponse,
+  NovaUserResource,
+  NovaEventResource,
+  NovaField,
+  MigrationProgressEvent
+} from "@/types/nova-migration";
 import { HistoricalDataTransformer } from "@/lib/historical-data-transformer";
 import { sendProgress as sendProgressUpdate } from "../progress/route";
 
@@ -32,14 +41,24 @@ interface ScrapeUserResponse {
   signupsImported: number;
   errors: string[];
   details?: {
-    userData?: any;
-    shifts?: any[];
-    signups?: any[];
+    userData?: NovaUserResource;
+    shifts?: NovaEventResource[];
+    signups?: SignupWithDetails[];
   };
 }
 
+interface SignupWithDetails {
+  id: number;
+  eventId?: number;
+  eventName?: string | number;
+  positionId?: number;
+  positionName?: string | number;
+  statusId?: number;
+  statusName?: string | number;
+}
+
 // Helper function to send progress updates
-async function sendProgress(sessionId: string | undefined, data: any) {
+async function sendProgress(sessionId: string | undefined, data: Partial<MigrationProgressEvent>) {
   if (!sessionId) return;
 
   try {
@@ -111,7 +130,7 @@ export async function POST(request: NextRequest) {
         stage: "searching",
       });
 
-      let targetNovaUser = null;
+      let targetNovaUser: NovaUserResource | null = null;
       let userFound = false;
 
       try {
@@ -125,7 +144,7 @@ export async function POST(request: NextRequest) {
           for (const user of novaResponse.resources) {
             // Extract email from Nova's field structure
             const emailField = user.fields.find(
-              (field: any) => field.attribute === "email"
+              (field: NovaField) => field.attribute === "email"
             );
             const userEmail_fromNova = emailField?.value;
 
@@ -153,7 +172,7 @@ export async function POST(request: NextRequest) {
             // Log first user's email for debugging
             if (novaResponse.resources[0]?.fields) {
               const firstUserEmailField = novaResponse.resources[0].fields.find(
-                (field: any) => field.attribute === "email"
+                (field: NovaField) => field.attribute === "email"
               );
               console.log(`First result email: ${firstUserEmailField?.value}`);
             }
@@ -222,7 +241,7 @@ export async function POST(request: NextRequest) {
           console.log(`Scraping event applications for user ${novaUserId}...`);
 
           // Get user's event applications (shift signups) - need to paginate through all results
-          let allSignups = [];
+          let allSignups: NovaUserResource[] = [];
           let page = 1;
           let hasMorePages = true;
 
@@ -267,17 +286,17 @@ export async function POST(request: NextRequest) {
 
             // Extract event IDs and application data
             const eventIds = new Set<number>();
-            const signupData = [];
+            const signupData: SignupWithDetails[] = [];
 
             for (const signup of allSignups) {
               const eventField = signup.fields.find(
-                (f: any) => f.attribute === "event"
+                (f: NovaField) => f.attribute === "event"
               );
               const positionField = signup.fields.find(
-                (f: any) => f.attribute === "position"
+                (f: NovaField) => f.attribute === "position"
               );
               const statusField = signup.fields.find(
-                (f: any) => f.attribute === "applicationStatus"
+                (f: NovaField) => f.attribute === "applicationStatus"
               );
 
               if (eventField && eventField.belongsToId) {
@@ -296,7 +315,7 @@ export async function POST(request: NextRequest) {
             }
 
             // Get details for events (shifts)
-            const eventDetails = [];
+            const eventDetails: NovaEventResource[] = [];
             for (const eventId of eventIds) {
               try {
                 const eventResponse = await scraper.novaApiRequest(

@@ -78,7 +78,7 @@ export function NovaBulkMigration() {
   const [showPassword, setShowPassword] = useState(false);
   const [result, setResult] = useState<BulkMigrationResult | null>(null);
   const [connectionTested, setConnectionTested] = useState(false);
-  const [progressData, setProgressData] = useState<any>(null);
+  const [progressData, setProgressData] = useState<Record<string, unknown> | null>(null);
   const [currentStep, setCurrentStep] = useState<string>("");
   const [migrationLogs, setMigrationLogs] = useState<string[]>([]);
   const { toast } = useToast();

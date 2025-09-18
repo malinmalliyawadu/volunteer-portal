@@ -1,10 +1,11 @@
 import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
+import { MigrationProgressEvent } from "@/types/nova-migration";
 
 // Store for SSE connections
 const connections = new Map<string, ReadableStreamDefaultController>();
-const progressData = new Map<string, any>();
+const progressData = new Map<string, MigrationProgressEvent>();
 
 export async function GET(request: NextRequest) {
   try {
@@ -72,7 +73,7 @@ export async function GET(request: NextRequest) {
 }
 
 // Helper function to send progress updates
-export function sendProgress(sessionId: string, data: any) {
+export function sendProgress(sessionId: string, data: Partial<MigrationProgressEvent>) {
   console.log(`[SSE-ROUTE] Looking for connection for session: ${sessionId}`);
   console.log(`[SSE-ROUTE] Active connections: ${connections.size}`);
   
