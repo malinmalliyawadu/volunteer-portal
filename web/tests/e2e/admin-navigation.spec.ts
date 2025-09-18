@@ -53,7 +53,7 @@ test.describe("Admin Navigation", () => {
       ).toBeVisible();
       await expect(
         page.getByTestId("sidebar-migration#migration")
-      ).toContainText("Upload CSV");
+      ).toContainText("Bulk Migration");
 
       await expect(page.getByTestId("sidebar-migration#status")).toBeVisible();
       await expect(page.getByTestId("sidebar-migration#status")).toContainText(
