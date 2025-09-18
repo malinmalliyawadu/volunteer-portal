@@ -1,11 +1,11 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, Page } from "@playwright/test";
 import { randomBytes } from "crypto";
 import { addDays } from "date-fns";
 import path from "path";
 import { prisma } from "@/lib/prisma";
 
 // Helper function to upload a test profile image
-async function uploadTestImage(page: any) {
+async function uploadTestImage(page: Page) {
   const testImagePath = path.join(__dirname, "../fixtures/test-profile.png");
 
   // Set up the file input for upload
@@ -23,7 +23,7 @@ async function uploadTestImage(page: any) {
 }
 
 // Helper function to accept agreements through dialogs
-async function acceptAgreements(page: any) {
+async function acceptAgreements(page: Page) {
   // Handle Volunteer Agreement
   await page.click('text=I have read and agree with the Volunteer Agreement');
   

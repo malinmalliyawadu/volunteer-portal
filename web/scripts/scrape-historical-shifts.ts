@@ -22,6 +22,7 @@ import fs from 'fs';
 import path from 'path';
 import { createNovaScraper, NovaAuthConfig } from '../src/lib/laravel-nova-scraper';
 import { importHistoricalData, TransformationOptions } from '../src/lib/historical-data-transformer';
+import { ScrapedData } from '../src/types/nova-migration';
 
 interface Config {
   novaUrl: string;
@@ -160,7 +161,7 @@ function validateConfig(config: Config): void {
   }
 }
 
-async function saveScrapedData(data: any, outputFile: string): Promise<void> {
+async function saveScrapedData(data: ScrapedData, outputFile: string): Promise<void> {
   const outputPath = path.resolve(outputFile);
   const outputDir = path.dirname(outputPath);
 
