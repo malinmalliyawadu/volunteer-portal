@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { randomBytes } from "crypto";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -167,9 +168,7 @@ export function NovaBulkMigration() {
     ]);
 
     // Generate session ID for SSE
-    const sessionId = `migration-${Date.now()}-${Math.random()
-      .toString(36)
-      .substr(2, 9)}`;
+    const sessionId = `migration-${Date.now()}-${randomBytes(8).toString('hex')}`;
 
     // Connect to SSE stream
     const eventSource = new EventSource(

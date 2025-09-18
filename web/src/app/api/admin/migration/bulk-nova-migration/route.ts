@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { createNovaScraper, NovaAuthConfig, NovaUserResource } from "@/lib/laravel-nova-scraper";
 import { HistoricalDataTransformer } from "@/lib/historical-data-transformer";
 import { sendProgress as sendProgressUpdate } from "../progress/route";
+import { randomBytes } from "crypto";
 
 interface BulkMigrationRequest {
   novaConfig: {
@@ -202,7 +203,7 @@ export async function POST(request: NextRequest) {
             if (dryRun) {
               // In dry run, just simulate user creation with fake ID
               newUser = { 
-                id: `dry-run-${Date.now()}-${Math.random()}`, 
+                id: `dry-run-${Date.now()}-${randomBytes(8).toString('hex')}`, 
                 email: userData.email,
                 ...userData 
               };
