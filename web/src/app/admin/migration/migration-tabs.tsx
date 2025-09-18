@@ -3,11 +3,12 @@
 import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload, Users, Mail, CheckCircle } from "lucide-react";
+import { Upload, Users, Mail, CheckCircle, Database } from "lucide-react";
 import { CSVUploadForm } from "./csv-upload-form";
 import { MigrationStatus } from "./migration-status";
 import { UserInvitations } from "./user-invitations";
 import { MigratedUsers } from "./migrated-users";
+import { NovaHistoricalData } from "./nova-historical-data";
 
 export function MigrationTabs() {
   const [activeTab, setActiveTab] = useState("upload");
@@ -16,7 +17,7 @@ export function MigrationTabs() {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#', '');
-      if (hash && ['upload', 'status', 'invitations', 'users'].includes(hash)) {
+      if (hash && ['upload', 'status', 'invitations', 'users', 'historical'].includes(hash)) {
         setActiveTab(hash);
       }
     };
@@ -40,7 +41,7 @@ export function MigrationTabs() {
 
   return (
     <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-      <TabsList className="grid w-full grid-cols-4" data-testid="migration-tabs">
+      <TabsList className="grid w-full grid-cols-5" data-testid="migration-tabs">
         <TabsTrigger value="upload" className="flex items-center gap-2" data-testid="tab-upload-csv">
           <Upload className="h-4 w-4" />
           Upload CSV
@@ -56,6 +57,10 @@ export function MigrationTabs() {
         <TabsTrigger value="users" className="flex items-center gap-2" data-testid="tab-migrated-users">
           <Users className="h-4 w-4" />
           Migrated Users
+        </TabsTrigger>
+        <TabsTrigger value="historical" className="flex items-center gap-2" data-testid="tab-historical-data">
+          <Database className="h-4 w-4" />
+          Historical Data
         </TabsTrigger>
       </TabsList>
 
@@ -131,6 +136,10 @@ export function MigrationTabs() {
 
       <TabsContent value="users" className="space-y-6" data-testid="tab-content-users">
         <MigratedUsers />
+      </TabsContent>
+
+      <TabsContent value="historical" className="space-y-6" data-testid="tab-content-historical">
+        <NovaHistoricalData />
       </TabsContent>
     </Tabs>
   );
