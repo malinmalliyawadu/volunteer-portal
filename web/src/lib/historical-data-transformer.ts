@@ -456,13 +456,35 @@ export class HistoricalDataTransformer {
       }
     }
 
-    // Parse dates
-    let startDate = new Date();
-    let endDate = new Date();
+    // Hardcoded shift times based on seed data templates
+    const getShiftTimes = (shiftType: string): { startHour: number; startMinute: number; endHour: number; endMinute: number } => {
+      const normalizedType = shiftType.toLowerCase();
+      
+      // Match patterns from seed data
+      if (normalizedType.includes('dishwasher')) {
+        return { startHour: 17, startMinute: 30, endHour: 21, endMinute: 0 }; // 5:30pm-9:00pm
+      } else if (normalizedType.includes('front of house setup')) {
+        return { startHour: 16, startMinute: 30, endHour: 21, endMinute: 0 }; // 4:30pm-9:00pm
+      } else if (normalizedType.includes('front of house')) {
+        return { startHour: 17, startMinute: 30, endHour: 21, endMinute: 0 }; // 5:30pm-9:00pm
+      } else if (normalizedType.includes('kitchen prep')) {
+        return { startHour: 12, startMinute: 0, endHour: 16, endMinute: 0 }; // 12:00pm-4:00pm
+      } else if (normalizedType.includes('kitchen service') || normalizedType.includes('kitchen pack')) {
+        return { startHour: 17, startMinute: 30, endHour: 21, endMinute: 0 }; // 5:30pm-9:00pm
+      } else if (normalizedType.includes('media')) {
+        return { startHour: 17, startMinute: 0, endHour: 19, endMinute: 0 }; // 5:00pm-7:00pm
+      } else if (normalizedType.includes('anywhere needed')) {
+        return { startHour: 16, startMinute: 0, endHour: 21, endMinute: 0 }; // 4:00pm-9:00pm
+      } else {
+        // Default times for unknown shift types
+        return { startHour: 17, startMinute: 30, endHour: 21, endMinute: 0 }; // 5:30pm-9:00pm
+      }
+    };
 
+    // Parse base date from event
+    let baseDate = new Date();
     if (eventDate) {
-      startDate = new Date(eventDate);
-      endDate = new Date(startDate.getTime() + (4 * 60 * 60 * 1000)); // 4 hours later
+      baseDate = new Date(eventDate);
     } else if (eventName.includes('Sunday')) {
       // Try to parse date from event name
       const match = eventName.match(/(\d+)(?:st|nd|rd|th)\s+(\w+)/);
@@ -470,10 +492,19 @@ export class HistoricalDataTransformer {
         const [, day, month] = match;
         const year = new Date().getFullYear();
         const monthIndex = new Date(`${month} 1, ${year}`).getMonth();
-        startDate = new Date(year, monthIndex, parseInt(day), 10, 0); // 10 AM start
-        endDate = new Date(year, monthIndex, parseInt(day), 14, 0); // 2 PM end
+        baseDate = new Date(year, monthIndex, parseInt(day));
       }
     }
+
+    // Apply hardcoded times based on shift type
+    const times = getShiftTimes(shiftTypeName);
+    const startDate = new Date(baseDate);
+    startDate.setHours(times.startHour, times.startMinute, 0, 0);
+    
+    const endDate = new Date(baseDate);
+    endDate.setHours(times.endHour, times.endMinute, 0, 0);
+
+    console.log(`[SHIFT_TIMES] ${shiftTypeName} on ${baseDate.toDateString()}: ${startDate.toLocaleTimeString()} - ${endDate.toLocaleTimeString()}`);
 
     return {
       shiftTypeId: null, // Will be resolved when creating the shift
