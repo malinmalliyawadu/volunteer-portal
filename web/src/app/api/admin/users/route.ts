@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 
-// GET /api/admin/users - List all users (for admin use)
+// GET /api/admin/users - List all users (for admin use) with optional search
 export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
   const role = session?.user?.role;
@@ -17,8 +17,47 @@ export async function GET(request: Request) {
   const limit = searchParams.get("limit");
 
   try {
-    // Fetch all users first, then filter in memory for better search flexibility
-    const allUsers = await prisma.user.findMany({
+    let whereClause = {};
+
+    // If there's a search query, add search conditions
+    if (query && query.trim()) {
+      const searchQuery = query.trim();
+      whereClause = {
+        OR: [
+          { email: { contains: searchQuery, mode: "insensitive" } },
+          { firstName: { contains: searchQuery, mode: "insensitive" } },
+          { lastName: { contains: searchQuery, mode: "insensitive" } },
+          { name: { contains: searchQuery, mode: "insensitive" } },
+          // Search for full name combinations
+          {
+            AND: [
+              { firstName: { not: null } },
+              { lastName: { not: null } },
+              {
+                OR: [
+                  // "First Last" format
+                  {
+                    firstName: {
+                      contains: searchQuery.split(" ")[0],
+                      mode: "insensitive",
+                    },
+                  },
+                  {
+                    lastName: {
+                      contains: searchQuery.split(" ").slice(1).join(" "),
+                      mode: "insensitive",
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+    }
+
+    const users = await prisma.user.findMany({
+      where: whereClause,
       select: {
         id: true,
         email: true,
@@ -35,59 +74,8 @@ export async function GET(request: Request) {
         { role: "asc" }, // Admins first
         { email: "asc" },
       ],
+      take: limit ? parseInt(limit) : undefined,
     });
-
-    let users = allUsers;
-
-    // Filter users if query exists
-    if (query) {
-      const queryLower = query.toLowerCase();
-      
-      users = allUsers.filter(user => {
-        // Check email
-        if (user.email?.toLowerCase().includes(queryLower)) {
-          return true;
-        }
-        
-        // Check name field
-        if (user.name?.toLowerCase().includes(queryLower)) {
-          return true;
-        }
-        
-        // Check firstName
-        if (user.firstName?.toLowerCase().includes(queryLower)) {
-          return true;
-        }
-        
-        // Check lastName  
-        if (user.lastName?.toLowerCase().includes(queryLower)) {
-          return true;
-        }
-        
-        // Check concatenated firstName + lastName
-        if (user.firstName && user.lastName) {
-          const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
-          if (fullName.includes(queryLower)) {
-            return true;
-          }
-        }
-        
-        // Check concatenated lastName + firstName  
-        if (user.firstName && user.lastName) {
-          const reverseName = `${user.lastName} ${user.firstName}`.toLowerCase();
-          if (reverseName.includes(queryLower)) {
-            return true;
-          }
-        }
-        
-        return false;
-      });
-    }
-
-    // Apply limit if specified
-    if (limit) {
-      users = users.slice(0, parseInt(limit));
-    }
 
     return NextResponse.json(users);
   } catch (error) {

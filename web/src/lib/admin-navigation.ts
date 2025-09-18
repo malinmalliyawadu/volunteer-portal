@@ -1,3 +1,4 @@
+import React from "react";
 import {
   LayoutDashboard,
   Users,
@@ -8,7 +9,6 @@ import {
   Upload,
   CheckCircle,
   Mail,
-  ExternalLink,
   Bell,
   Settings,
   FileText,
@@ -18,7 +18,7 @@ import {
 export interface AdminNavItem {
   title: string;
   href: string;
-  icon: any;
+  icon: React.ComponentType<{ className?: string }>;
   exact?: boolean;
   description?: string;
   opensInNewTab?: boolean;

@@ -2,9 +2,8 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { User, Mail, Shield, UserCheck, Loader2, ExternalLink } from "lucide-react";
+import { User, Mail, Shield, UserCheck, ExternalLink } from "lucide-react";
 import { adminNavCategories, publicNavItems, getIconColor } from "@/lib/admin-navigation";
-import { Button } from "@/components/ui/button";
 import {
   CommandDialog,
   CommandEmpty,
@@ -261,6 +260,7 @@ export function AdminCommandPalette({ children }: AdminCommandPaletteProps) {
                   >
                     <div className="flex items-center gap-3 flex-1">
                       {user.profilePhotoUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={user.profilePhotoUrl}
                           alt={getDisplayName(user)}

@@ -317,10 +317,10 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
             const noShow = shift.signups.filter(
               (s) => s.status === "NO_SHOW"
             ).length;
-            const staffingStatus = getStaffingStatus(confirmed, shift.capacity);
-            
-            // Check if shift is in the past (using same logic as VolunteerActions)
-            const isPastShift = isShiftCompleted(shift.end);
+            const isCompleted = isShiftCompleted(shift.end);
+            const staffingStatus = isCompleted 
+              ? { color: "bg-gray-500", text: "Completed", icon: CheckCircle2 }
+              : getStaffingStatus(confirmed, shift.capacity);
 
             // Count volunteer grades
             const gradeCount = {
@@ -378,11 +378,11 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
                       <div className="text-right">
                         <Badge
                           data-testid={`shift-capacity-${shift.id}`}
-                          className={`${isPastShift ? 'bg-gray-500' : staffingStatus.color} text-white text-sm px-2 py-1.5 font-bold`}
+                          className={`${staffingStatus.color} text-white text-sm px-2 py-1.5 font-bold`}
                         >
                           {confirmed}/{shift.capacity}
                         </Badge>
-                        {!isPastShift && (
+                        {!isCompleted && (
                           <p className="text-xs text-slate-600 mt-1">
                             {staffingStatus.text}
                           </p>
@@ -623,7 +623,7 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
                     </div>
 
                     {/* Shortage Action Button */}
-                    {!isPastShift && (staffingStatus.text === "Critical" ||
+                    {!isCompleted && (staffingStatus.text === "Critical" ||
                       staffingStatus.text === "Understaffed") && (
                       <div className="mt-4 pt-4 border-t border-slate-100">
                         <Button
@@ -644,67 +644,58 @@ export function AnimatedShiftCards({ shifts }: AnimatedShiftCardsProps) {
                       </div>
                     )}
 
-                    {/* Admin Action Buttons - only show for future shifts */}
-                    {!isPastShift && (
-                      <div className="mt-4 pt-4 border-t border-slate-100 flex gap-2">
-                        <Button
-                          asChild
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 text-blue-600 hover:bg-blue-50 border-blue-200"
-                          data-testid={`edit-shift-button-${shift.id}`}
+                    {/* Admin Action Buttons */}
+                    {!isCompleted && (
+                    <div className="mt-4 pt-4 border-t border-slate-100 flex gap-2">
+                      <Button
+                        asChild
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 text-blue-600 hover:bg-blue-50 border-blue-200"
+                        data-testid={`edit-shift-button-${shift.id}`}
+                      >
+                        <Link
+                          href={`/admin/shifts/${shift.id}/edit`}
+                          className="flex items-center gap-2 justify-center"
                         >
-                          <Link
-                            href={`/admin/shifts/${shift.id}/edit`}
-                            className="flex items-center gap-2 justify-center"
-                          >
-                            <Edit className="h-4 w-4" />
-                            Edit
-                          </Link>
-                        </Button>
+                          <Edit className="h-4 w-4" />
+                          Edit
+                        </Link>
+                      </Button>
 
-                        <DeleteShiftDialog
-                          shiftId={shift.id}
-                          shiftName={shift.shiftType.name}
-                          shiftDate={formatInNZT(
-                            shift.start,
-                            "EEEE, MMMM d, yyyy"
-                          )}
-                          hasSignups={shift.signups.length > 0}
-                          signupCount={
-                            shift.signups.filter(
-                              (signup) =>
-                                signup.status !== "CANCELED" &&
-                                signup.status !== "NO_SHOW"
-                            ).length
-                          }
-                          onDelete={async () => {
-                            const response = await fetch(
-                              `/api/admin/shifts/${shift.id}`,
-                              {
-                                method: "DELETE",
-                              }
-                            );
-
-                            if (!response.ok) {
-                              throw new Error("Failed to delete shift");
+                      <DeleteShiftDialog
+                        shiftId={shift.id}
+                        shiftName={shift.shiftType.name}
+                        shiftDate={formatInNZT(
+                          shift.start,
+                          "EEEE, MMMM d, yyyy"
+                        )}
+                        hasSignups={shift.signups.length > 0}
+                        signupCount={
+                          shift.signups.filter(
+                            (signup) =>
+                              signup.status !== "CANCELED" &&
+                              signup.status !== "NO_SHOW"
+                          ).length
+                        }
+                        onDelete={async () => {
+                          const response = await fetch(
+                            `/api/admin/shifts/${shift.id}`,
+                            {
+                              method: "DELETE",
                             }
+                          );
 
-                            // Refresh the page to show the updated list
-                            window.location.href = "/admin/shifts?deleted=1";
-                          }}
-                        >
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="flex-1 text-red-600 hover:bg-red-50 border-red-200"
-                            data-testid={`delete-shift-button-${shift.id}`}
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete
-                          </Button>
-                        </DeleteShiftDialog>
-                      </div>
+                          if (!response.ok) {
+                            throw new Error("Failed to delete shift");
+                          }
+
+                          // Refresh the page to show the updated list
+                          window.location.href = "/admin/shifts?deleted=1";
+                        }}
+                      >
+                      </DeleteShiftDialog>
+                    </div>
                     )}
                   </CardContent>
                 </Card>

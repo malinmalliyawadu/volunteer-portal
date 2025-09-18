@@ -1,3 +1,9 @@
+## [0.42.3] - 2025-09-18
+
+### Changes
+- feat: add admin command palette with user search and navigation ([#147](https://github.com/everybody-eats-nz/volunteer-portal/pull/147)) by @malinmalliyawadu
+
+
 ## [0.42.2] - 2025-09-17
 
 ### Changes

@@ -1,32 +1,77 @@
 /**
- * Utility functions for shift-related operations
+ * Utility functions for shift operations
  */
 
 /**
- * Checks if a shift has been completed (ended)
- * Uses the shift's end time to determine if it's in the past
- * 
- * @param shiftEnd - The end time of the shift (Date or string)
- * @returns True if the shift has ended, false otherwise
+ * Determines if a shift has completed by comparing the shift end time to the current time
+ * @param shiftEnd - The end date/time of the shift (as Date object or string)
+ * @returns true if the shift has ended, false otherwise
  */
-export function isShiftCompleted(shiftEnd: Date | string): boolean {
-  return new Date() > new Date(shiftEnd);
+export function isShiftCompleted(shiftEnd: Date | string | null | undefined): boolean {
+  if (!shiftEnd) {
+    return false;
+  }
+  
+  const endDate = shiftEnd instanceof Date ? shiftEnd : new Date(shiftEnd);
+  const now = new Date();
+  
+  return now > endDate;
 }
 
 /**
- * Type for shift objects with required date fields
+ * Determines if a shift is currently in progress
+ * @param shiftStart - The start date/time of the shift
+ * @param shiftEnd - The end date/time of the shift
+ * @returns true if the shift is currently running, false otherwise
  */
-export interface ShiftWithDates {
-  start: Date | string;
-  end: Date | string;
+export function isShiftInProgress(
+  shiftStart: Date | string | null | undefined,
+  shiftEnd: Date | string | null | undefined
+): boolean {
+  if (!shiftStart || !shiftEnd) {
+    return false;
+  }
+  
+  const startDate = shiftStart instanceof Date ? shiftStart : new Date(shiftStart);
+  const endDate = shiftEnd instanceof Date ? shiftEnd : new Date(shiftEnd);
+  const now = new Date();
+  
+  return now >= startDate && now <= endDate;
 }
 
 /**
- * Checks if a shift has been completed using a shift object
- * 
- * @param shift - Shift object with start and end dates
- * @returns True if the shift has ended, false otherwise
+ * Determines if a shift is upcoming (hasn't started yet)
+ * @param shiftStart - The start date/time of the shift
+ * @returns true if the shift hasn't started yet, false otherwise
  */
-export function isShiftCompletedFromShift(shift: ShiftWithDates): boolean {
-  return isShiftCompleted(shift.end);
+export function isShiftUpcoming(shiftStart: Date | string | null | undefined): boolean {
+  if (!shiftStart) {
+    return false;
+  }
+  
+  const startDate = shiftStart instanceof Date ? shiftStart : new Date(shiftStart);
+  const now = new Date();
+  
+  return now < startDate;
+}
+
+/**
+ * Gets the status of a shift based on its start and end times
+ * @param shiftStart - The start date/time of the shift
+ * @param shiftEnd - The end date/time of the shift
+ * @returns 'upcoming' | 'in_progress' | 'completed'
+ */
+export function getShiftStatus(
+  shiftStart: Date | string | null | undefined,
+  shiftEnd: Date | string | null | undefined
+): 'upcoming' | 'in_progress' | 'completed' {
+  if (isShiftCompleted(shiftEnd)) {
+    return 'completed';
+  }
+  
+  if (isShiftInProgress(shiftStart, shiftEnd)) {
+    return 'in_progress';
+  }
+  
+  return 'upcoming';
 }
