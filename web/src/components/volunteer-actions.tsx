@@ -17,6 +17,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { isShiftCompleted } from "@/lib/shift-utils";
 
 interface VolunteerActionsProps {
   signupId: string;
@@ -185,13 +186,13 @@ export function VolunteerActions({ signupId, currentStatus, onUpdate, testIdPref
   };
 
   // Helper to check if shift has ended (use end time, not start time)
-  const isShiftCompleted = currentShift ? new Date() > new Date(currentShift.end) : false;
+  const shiftCompleted = currentShift ? isShiftCompleted(currentShift.end) : false;
 
   if (currentStatus === "CONFIRMED") {
     const cancelDialogContent = getDialogContent("cancel");
     const markAbsentDialogContent = getDialogContent("mark_absent");
     
-    if (isShiftCompleted) {
+    if (shiftCompleted) {
       // Past shift - show attendance tracking
       return (
         <div className="flex gap-1" data-testid={testIdPrefix ? `${testIdPrefix}-confirmed-past-actions` : `volunteer-actions-${signupId}-confirmed-past`}>
@@ -264,7 +265,7 @@ export function VolunteerActions({ signupId, currentStatus, onUpdate, testIdPref
         </div>
 
         {/* Move Button */}
-        {currentShift && !isShiftCompleted && (
+        {currentShift && !shiftCompleted && (
           <Dialog open={dialogOpen === "move"} onOpenChange={(open) => setDialogOpen(open ? "move" : null)}>
             <DialogTrigger asChild>
               <Button
@@ -343,7 +344,7 @@ export function VolunteerActions({ signupId, currentStatus, onUpdate, testIdPref
         )}
 
         {/* Cancel Button - only for future shifts */}
-        {!isShiftCompleted && (
+        {!shiftCompleted && (
           <Dialog open={dialogOpen === "cancel"} onOpenChange={(open) => setDialogOpen(open ? "cancel" : null)}>
             <DialogTrigger asChild>
               <Button
