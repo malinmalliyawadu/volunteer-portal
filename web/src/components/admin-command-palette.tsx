@@ -29,6 +29,40 @@ interface AdminCommandPaletteProps {
   children: React.ReactNode;
 }
 
+// Helper function to determine if a query matches any navigation items
+function isNavigationQuery(query: string): boolean {
+  const queryLower = query.toLowerCase().trim();
+  
+  // Check if query matches any navigation item data
+  const allNavItems = [
+    ...adminNavCategories.flatMap(category => 
+      category.items.map(item => ({
+        title: item.title,
+        description: item.description,
+        category: category.label,
+        commandKey: item.commandKey
+      }))
+    ),
+    ...publicNavItems.map(item => ({
+      title: item.title,
+      description: item.description,
+      category: 'Public',
+      commandKey: item.commandKey
+    }))
+  ];
+  
+  return allNavItems.some(item => {
+    const searchableText = [
+      item.title,
+      item.description,
+      item.category,
+      item.commandKey
+    ].filter(Boolean).join(' ').toLowerCase();
+    
+    return searchableText.includes(queryLower);
+  });
+}
+
 export function AdminCommandPalette({ children }: AdminCommandPaletteProps) {
   const [open, setOpen] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
@@ -144,14 +178,15 @@ export function AdminCommandPalette({ children }: AdminCommandPaletteProps) {
             </CommandEmpty>
           )}
           
-          {!query.trim() && (
+          {/* Navigation Items - Show when no query or when query is relevant to navigation */}
+          {(!query.trim() || isNavigationQuery(query)) && (
             <>
               {adminNavCategories.map((category) => (
                 <CommandGroup key={category.label} heading={category.label}>
                   {category.items.map((item) => (
                     <CommandItem
                       key={item.href}
-                      value={item.commandKey || item.title}
+                      value={`${item.title} ${item.description || ''} ${category.label} navigate admin ${item.commandKey || ''}`}
                       onSelect={() => handleQuickAction(item.href, item.opensInNewTab)}
                       className="flex items-center gap-3"
                     >
@@ -174,7 +209,7 @@ export function AdminCommandPalette({ children }: AdminCommandPaletteProps) {
                 {publicNavItems.map((item) => (
                   <CommandItem
                     key={item.href}
-                    value={item.commandKey || item.title}
+                    value={`${item.title} ${item.description || ''} public navigate ${item.commandKey || ''}`}
                     onSelect={() => handleQuickAction(item.href, item.opensInNewTab)}
                     className="flex items-center gap-3"
                   >
