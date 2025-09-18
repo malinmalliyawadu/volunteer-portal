@@ -338,8 +338,8 @@ test.describe("Parental Consent System", () => {
       await expect(page.getByText("Parental Consent Management")).toBeVisible();
       await expect(page.getByText("volunteers@everybodyeats.nz")).toBeVisible();
 
-      // Should show list of users requiring consent
-      await expect(page.getByText("Pending Approval")).toBeVisible();
+      // Should show list of users requiring consent (use exact text match to avoid ambiguity)
+      await expect(page.getByRole('heading', { name: 'Pending Approval', exact: true })).toBeVisible();
     });
 
     test("should show underage users in parental consent table", async ({
