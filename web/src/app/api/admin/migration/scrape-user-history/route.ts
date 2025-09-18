@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
 import { createNovaScraper, NovaAuthConfig } from "@/lib/laravel-nova-scraper";
 import { HistoricalDataTransformer } from "@/lib/historical-data-transformer";
+import { sendProgress as sendProgressUpdate } from "../progress/route";
 
 interface ScrapeUserRequest {
   userEmail: string;
@@ -42,11 +43,7 @@ async function sendProgress(sessionId: string | undefined, data: any) {
   if (!sessionId) return;
   
   try {
-    await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/admin/migration/progress`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionId, ...data })
-    });
+    sendProgressUpdate(sessionId, data);
   } catch (error) {
     console.log('Failed to send progress update:', error);
   }

@@ -57,6 +57,17 @@ interface NovaUser {
   updated_at: string;
 }
 
+interface NovaUserResource {
+  id: {
+    value: number;
+  };
+  fields: Array<{
+    attribute: string;
+    value: string | number;
+    name: string;
+  }>;
+}
+
 interface ScrapedData {
   users: NovaUser[];
   events: NovaEvent[];
@@ -335,27 +346,32 @@ export class LaravelNovaScraper {
   }
 
   /**
-   * Scrape all users from Nova
+   * Scrape users from Nova
    */
-  async scrapeUsers(): Promise<NovaUser[]> {
-    console.log("Scraping users from Laravel Nova...");
+  async scrapeUsers(limit?: number): Promise<NovaUser[]> {
+    console.log(`Scraping users from Laravel Nova${limit ? ` (limit: ${limit})` : ''}...`);
     const users: NovaUser[] = [];
     let page = 1;
     let hasMorePages = true;
 
-    while (hasMorePages) {
+    while (hasMorePages && (!limit || users.length < limit)) {
       try {
+        // Calculate how many to request for this page
+        const remainingUsers = limit ? limit - users.length : 100;
+        const perPage = Math.min(100, remainingUsers);
+        
         const response = await this.novaApiRequest(
-          `/users?page=${page}&perPage=100`
+          `/users?page=${page}&perPage=${perPage}`
         );
 
-        if (response.data && response.data.length > 0) {
-          users.push(...response.data);
+        if (response.resources && response.resources.length > 0) {
+          const usersToAdd = limit ? response.resources.slice(0, limit - users.length) : response.resources;
+          users.push(...usersToAdd);
           console.log(`Scraped page ${page}, total users: ${users.length}`);
           page++;
 
-          // Check if there are more pages
-          hasMorePages = response.links && response.links.next;
+          // Check if we've reached the limit or there are no more pages
+          hasMorePages = response.next_page_url && (!limit || users.length < limit);
         } else {
           hasMorePages = false;
         }

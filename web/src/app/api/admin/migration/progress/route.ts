@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 
 // Store for SSE connections
-const connections = new Map<string, Response>();
+const connections = new Map<string, ReadableStreamDefaultController>();
 const progressData = new Map<string, any>();
 
 export async function GET(request: NextRequest) {
@@ -25,17 +25,8 @@ export async function GET(request: NextRequest) {
     // Create SSE stream
     const stream = new ReadableStream({
       start(controller) {
-        // Store connection
-        const response = new Response(stream, {
-          headers: {
-            "Content-Type": "text/event-stream",
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
-            "Access-Control-Allow-Origin": "*",
-          },
-        });
-        
-        connections.set(sessionId, response);
+        // Store controller for this session
+        connections.set(sessionId, controller);
 
         // Send initial connection event
         const data = `data: ${JSON.stringify({ 
@@ -56,7 +47,11 @@ export async function GET(request: NextRequest) {
         request.signal.addEventListener("abort", () => {
           connections.delete(sessionId);
           progressData.delete(sessionId);
-          controller.close();
+          try {
+            controller.close();
+          } catch (e) {
+            // Controller might already be closed
+          }
         });
       },
     });
@@ -78,14 +73,26 @@ export async function GET(request: NextRequest) {
 
 // Helper function to send progress updates
 export function sendProgress(sessionId: string, data: any) {
-  const connection = connections.get(sessionId);
-  if (connection) {
+  const controller = connections.get(sessionId);
+  if (controller) {
     // Store progress data
-    progressData.set(sessionId, data);
+    progressData.set(sessionId, {
+      ...data,
+      timestamp: new Date().toISOString()
+    });
     
-    // Note: In a production environment, you'd want to use a more robust
-    // method to send data to SSE streams. This is a simplified version.
-    console.log(`Progress update for ${sessionId}:`, data);
+    try {
+      // Send data to SSE stream
+      const event = `data: ${JSON.stringify({
+        ...data,
+        timestamp: new Date().toISOString()
+      })}\n\n`;
+      controller.enqueue(new TextEncoder().encode(event));
+    } catch (e) {
+      console.error(`Failed to send progress update for ${sessionId}:`, e);
+      // Remove dead connection
+      connections.delete(sessionId);
+    }
   }
 }
 
