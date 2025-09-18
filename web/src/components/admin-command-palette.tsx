@@ -2,7 +2,8 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { User, Mail, Shield, UserCheck, Calendar, Settings, Loader2 } from "lucide-react";
+import { User, Mail, Shield, UserCheck, Loader2, ExternalLink } from "lucide-react";
+import { adminNavCategories, publicNavItems, getIconColor } from "@/lib/admin-navigation";
 import { Button } from "@/components/ui/button";
 import {
   CommandDialog,
@@ -89,28 +90,11 @@ export function AdminCommandPalette({ children }: AdminCommandPaletteProps) {
     setUsers([]);
   };
 
-  const handleQuickAction = (action: string) => {
-    switch (action) {
-      case "dashboard":
-        router.push("/admin");
-        break;
-      case "users":
-        router.push("/admin/users");
-        break;
-      case "shifts":
-        router.push("/admin/shifts");
-        break;
-      case "regulars":
-        router.push("/admin/regulars");
-        break;
-      case "notifications":
-        router.push("/admin/notifications");
-        break;
-      case "auto-accept":
-        router.push("/admin/auto-accept-rules");
-        break;
-      default:
-        break;
+  const handleQuickAction = (href: string, opensInNewTab?: boolean) => {
+    if (opensInNewTab) {
+      window.open(href, "_blank");
+    } else {
+      router.push(href);
     }
     setOpen(false);
     setQuery("");
@@ -161,40 +145,53 @@ export function AdminCommandPalette({ children }: AdminCommandPaletteProps) {
           )}
           
           {!query.trim() && (
-            <CommandGroup heading="Quick Navigation">
-              <CommandItem
-                value="dashboard"
-                onSelect={() => handleQuickAction("dashboard")}
-                className="flex items-center gap-3"
-              >
-                <Settings className="h-4 w-4 text-blue-600" />
-                <span>Admin Dashboard</span>
-              </CommandItem>
-              <CommandItem
-                value="shifts"
-                onSelect={() => handleQuickAction("shifts")}
-                className="flex items-center gap-3"
-              >
-                <Calendar className="h-4 w-4 text-green-600" />
-                <span>Manage Shifts</span>
-              </CommandItem>
-              <CommandItem
-                value="users"
-                onSelect={() => handleQuickAction("users")}
-                className="flex items-center gap-3"
-              >
-                <User className="h-4 w-4 text-purple-600" />
-                <span>User Management</span>
-              </CommandItem>
-              <CommandItem
-                value="regulars"
-                onSelect={() => handleQuickAction("regulars")}
-                className="flex items-center gap-3"
-              >
-                <UserCheck className="h-4 w-4 text-yellow-600" />
-                <span>Regular Volunteers</span>
-              </CommandItem>
-            </CommandGroup>
+            <>
+              {adminNavCategories.map((category) => (
+                <CommandGroup key={category.label} heading={category.label}>
+                  {category.items.map((item) => (
+                    <CommandItem
+                      key={item.href}
+                      value={item.commandKey || item.title}
+                      onSelect={() => handleQuickAction(item.href, item.opensInNewTab)}
+                      className="flex items-center gap-3"
+                    >
+                      <item.icon className={`h-4 w-4 ${getIconColor(category.label, item.title)}`} />
+                      <div className="flex flex-col">
+                        <span>{item.title}</span>
+                        {item.description && (
+                          <span className="text-xs text-muted-foreground">{item.description}</span>
+                        )}
+                      </div>
+                      {item.opensInNewTab && (
+                        <ExternalLink className="w-3 h-3 ml-auto opacity-60" />
+                      )}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              ))}
+
+              <CommandGroup heading="Public">
+                {publicNavItems.map((item) => (
+                  <CommandItem
+                    key={item.href}
+                    value={item.commandKey || item.title}
+                    onSelect={() => handleQuickAction(item.href, item.opensInNewTab)}
+                    className="flex items-center gap-3"
+                  >
+                    <item.icon className={`h-4 w-4 ${getIconColor("Public", item.title)}`} />
+                    <div className="flex flex-col">
+                      <span>{item.title}</span>
+                      {item.description && (
+                        <span className="text-xs text-muted-foreground">{item.description}</span>
+                      )}
+                    </div>
+                    {item.opensInNewTab && (
+                      <ExternalLink className="w-3 h-3 ml-auto opacity-60" />
+                    )}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </>
           )}
           
           {query.trim() && (
