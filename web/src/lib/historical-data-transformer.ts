@@ -1,7 +1,9 @@
 import { prisma } from '@/lib/prisma';
-import { ScrapedData, NovaUser, NovaShift, NovaShiftSignup } from './laravel-nova-scraper';
+import { ScrapedData, NovaUser, NovaShift, NovaShiftSignup, LaravelNovaScraper } from './laravel-nova-scraper';
 import { hash } from 'bcryptjs';
 import { SignupStatus } from '@prisma/client';
+import { profilePhotoDownloader } from './profile-photo-downloader';
+import { randomBytes } from 'crypto';
 
 interface TransformationResult {
   success: boolean;
@@ -286,11 +288,13 @@ export class HistoricalDataTransformer {
   /**
    * Transform Nova user to Prisma user format (public method for API usage)
    */
-  async transformUser(novaUser: any): Promise<any> {
-    const hashedPassword = await hash(this.options.defaultPassword!, 12);
+  async transformUser(novaUser: any, scraper?: LaravelNovaScraper): Promise<any> {
+    // Generate cryptographically secure random password for migrated users (they'll reset it during invitation flow)
+    const randomPassword = randomBytes(32).toString('hex');
+    const hashedPassword = await hash(randomPassword, 12);
 
     // Handle both old flat structure and new Nova field structure
-    let email, firstName, lastName, phone;
+    let email, firstName, lastName, phone, profilePhoto;
     
     if (novaUser.fields) {
       // New Nova field structure
@@ -298,15 +302,64 @@ export class HistoricalDataTransformer {
       firstName = novaUser.fields.find((f: any) => f.attribute === 'first_name')?.value;
       lastName = novaUser.fields.find((f: any) => f.attribute === 'last_name')?.value;
       phone = novaUser.fields.find((f: any) => f.attribute === 'phone')?.value;
+      
+      // Look for profile photo field - Nova uses 'avatar' with advanced media library
+      const photoField = novaUser.fields.find((f: any) => f.attribute === 'avatar');
+      
+      if (photoField && photoField.value && Array.isArray(photoField.value) && photoField.value.length > 0) {
+        // Extract URL from advanced media library structure
+        const mediaItem = photoField.value[0];
+        if (mediaItem.__media_urls__) {
+          // Use the original image URL for best quality
+          profilePhoto = mediaItem.__media_urls__.__original__ || 
+                        mediaItem.__media_urls__.detailView || 
+                        mediaItem.__media_urls__.form ||
+                        mediaItem.__media_urls__.preview;
+        }
+      }
     } else {
       // Old flat structure (backward compatibility)
       email = novaUser.email;
       firstName = novaUser.first_name;
       lastName = novaUser.last_name;
       phone = novaUser.phone;
+      profilePhoto = novaUser.profile_photo || novaUser.photo || novaUser.avatar;
     }
 
     const name = `${firstName || ''} ${lastName || ''}`.trim() || email;
+
+    // Handle profile photo download and storage
+    let profilePhotoUrl = null;
+    if (profilePhoto && typeof profilePhoto === 'string' && scraper && !this.options.dryRun) {
+      try {
+        console.log(`[PHOTO] Found profile photo for ${email}: ${profilePhoto}`);
+        
+        // Download and save the profile photo
+        const photoResult = await profilePhotoDownloader.downloadNovaPhoto(
+          profilePhoto,
+          email,
+          scraper.getCookies()
+        );
+        
+        if (photoResult.success && photoResult.base64Data) {
+          profilePhotoUrl = photoResult.base64Data;
+          console.log(`[PHOTO] Successfully downloaded and converted profile photo to base64 (${photoResult.base64Data.length} chars)`);
+        } else {
+          console.error(`[PHOTO] Failed to download profile photo for ${email}:`, photoResult.error);
+        }
+      } catch (error) {
+        console.error(`[PHOTO] Error processing profile photo for ${email}:`, error);
+      }
+    } else if (profilePhoto && typeof profilePhoto === 'string') {
+      // Fallback: Just store the URL if no scraper provided or in dry run mode
+      if (profilePhoto.startsWith('/')) {
+        const baseUrl = process.env.NOVA_BASE_URL || 'https://app.everybodyeats.nz';
+        profilePhotoUrl = `${baseUrl}${profilePhoto}`;
+      } else if (profilePhoto.startsWith('http')) {
+        profilePhotoUrl = profilePhoto;
+      }
+      console.log(`[PHOTO] Profile photo URL stored (not downloaded): ${profilePhotoUrl}`);
+    }
 
     return {
       email: email.toLowerCase(),
@@ -314,13 +367,14 @@ export class HistoricalDataTransformer {
       firstName,
       lastName,
       phone,
+      profilePhotoUrl,
       dateOfBirth: null, // Nova doesn't seem to have this in the current structure
       emergencyContactName: null, // Not available in current Nova structure
       emergencyContactRelationship: null,
       emergencyContactPhone: null,
       medicalConditions: null,
       hashedPassword,
-      profileCompleted: true, // Assume legacy users had completed profiles
+      profileCompleted: false, // Let users complete profile through invitation flow
       isMigrated: this.options.markAsMigrated,
       createdAt: new Date(), // Use current time since Nova doesn't provide created_at in field structure
       updatedAt: new Date(),
@@ -352,18 +406,33 @@ export class HistoricalDataTransformer {
   /**
    * Transform Nova event to Prisma shift format
    */
-  transformEvent(novaEvent: any): any {
+  transformEvent(novaEvent: any, signupData?: any[]): any {
     // Extract event details from Nova's field structure
     const eventName = novaEvent.fields?.find((f: any) => f.attribute === 'name')?.value || 'Unknown Event';
     const eventDate = novaEvent.fields?.find((f: any) => f.attribute === 'date')?.value;
     const location = novaEvent.fields?.find((f: any) => f.attribute === 'location')?.value || 'Unknown Location';
     const capacity = novaEvent.fields?.find((f: any) => f.attribute === 'capacity')?.value || 10;
 
-    // Parse event name to extract date and shift type
-    // Format: "Sunday 7th September WGTN"
+    // Determine shift type from signup position data if available
+    let shiftTypeName = 'General Volunteering';
+    if (signupData && signupData.length > 0) {
+      // Use the first signup's position as the shift type
+      const firstSignup = signupData[0];
+      if (firstSignup.positionName) {
+        shiftTypeName = firstSignup.positionName;
+      }
+    } else {
+      // Fallback to parsing event name if no signup data
+      if (eventName.includes('WGTN')) {
+        shiftTypeName = 'Wellington Event';
+      } else if (eventName.includes('AKL')) {
+        shiftTypeName = 'Auckland Event';
+      }
+    }
+
+    // Parse dates
     let startDate = new Date();
     let endDate = new Date();
-    let shiftTypeName = 'General Volunteering';
 
     if (eventDate) {
       startDate = new Date(eventDate);
@@ -380,12 +449,6 @@ export class HistoricalDataTransformer {
       }
     }
 
-    if (eventName.includes('WGTN')) {
-      shiftTypeName = 'Wellington Event';
-    } else if (eventName.includes('AKL')) {
-      shiftTypeName = 'Auckland Event';
-    }
-
     return {
       shiftTypeId: null, // Will be resolved when creating the shift
       start: startDate,
@@ -393,10 +456,19 @@ export class HistoricalDataTransformer {
       location: location,
       capacity: parseInt(capacity.toString()) || 10,
       notes: `Migrated from Nova: ${eventName}`,
-      createdAt: novaEvent.created_at ? new Date(novaEvent.created_at) : new Date(),
-      updatedAt: novaEvent.updated_at ? new Date(novaEvent.updated_at) : new Date(),
+      createdAt: this.parseDate(novaEvent.created_at),
+      updatedAt: this.parseDate(novaEvent.updated_at),
       shiftTypeName, // Helper field for creating shift type
     };
+  }
+
+  /**
+   * Safely parse date values, returning current date if invalid
+   */
+  private parseDate(dateValue: any): Date {
+    if (!dateValue) return new Date();
+    const parsed = new Date(dateValue);
+    return isNaN(parsed.getTime()) ? new Date() : parsed;
   }
 
   /**
@@ -404,24 +476,53 @@ export class HistoricalDataTransformer {
    */
   transformSignup(novaSignup: any, userId: string, shiftId: string): any {
     // Map Nova status to Prisma SignupStatus
+    // Nova uses numeric IDs: 1=Requested, 2=Draft, 3=Confirmed, 4=Waitlist, 5=Attended, 6=Cancelled, 7=Not Needed, 8=Unavailable, 9=No Show
     const statusMap: Record<string, SignupStatus> = {
+      // Numeric IDs from Nova
+      '1': SignupStatus.PENDING,      // Requested
+      '2': SignupStatus.PENDING,      // Draft
+      '3': SignupStatus.CONFIRMED,    // Confirmed
+      '4': SignupStatus.WAITLISTED,   // Waitlist
+      '5': SignupStatus.CONFIRMED,    // Attended (treat as confirmed)
+      '6': SignupStatus.CANCELED,     // Cancelled
+      '7': SignupStatus.NOT_NEEDED,   // Not Needed
+      '8': SignupStatus.UNAVAILABLE,  // Unavailable
+      '9': SignupStatus.NO_SHOW,      // No Show
+      
+      // String fallbacks for backward compatibility
+      'requested': SignupStatus.PENDING,
+      'draft': SignupStatus.PENDING,
       'confirmed': SignupStatus.CONFIRMED,
-      'pending': SignupStatus.PENDING,
+      'waitlist': SignupStatus.WAITLISTED,
+      'waitlisted': SignupStatus.WAITLISTED,
+      'attended': SignupStatus.CONFIRMED,
       'cancelled': SignupStatus.CANCELED,
       'canceled': SignupStatus.CANCELED,
-      'waitlisted': SignupStatus.WAITLISTED,
+      'not needed': SignupStatus.NOT_NEEDED,
+      'unavailable': SignupStatus.UNAVAILABLE,
+      'no show': SignupStatus.NO_SHOW,
       'no_show': SignupStatus.NO_SHOW,
     };
 
-    const status = statusMap[novaSignup.status.toLowerCase()] || SignupStatus.CONFIRMED;
+    // Try to get status from statusId (numeric) first, then fall back to status name
+    const statusId = novaSignup.statusId?.toString();
+    const statusName = novaSignup.statusName?.toLowerCase();
+    const rawStatus = novaSignup.status?.toLowerCase();
+    
+    const status = statusMap[statusId] || 
+                  statusMap[statusName] || 
+                  statusMap[rawStatus] || 
+                  SignupStatus.PENDING;
+    
+    console.log(`[SIGNUP] Mapping status for signup - statusId: ${statusId}, statusName: ${statusName}, rawStatus: ${rawStatus} -> ${status}`);
 
     return {
       userId,
       shiftId,
       status,
-      canceledAt: novaSignup.canceled_at ? new Date(novaSignup.canceled_at) : null,
-      createdAt: new Date(novaSignup.created_at),
-      updatedAt: new Date(novaSignup.updated_at),
+      canceledAt: novaSignup.canceled_at ? this.parseDate(novaSignup.canceled_at) : null,
+      createdAt: this.parseDate(novaSignup.created_at),
+      updatedAt: this.parseDate(novaSignup.updated_at),
     };
   }
 

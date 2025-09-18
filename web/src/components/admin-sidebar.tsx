@@ -119,8 +119,8 @@ const adminNavCategories = [
     label: "User Migration",
     items: [
       {
-        title: "Upload CSV",
-        href: "/admin/migration#upload",
+        title: "Bulk Migration",
+        href: "/admin/migration#migration",
         icon: Upload,
       },
       {

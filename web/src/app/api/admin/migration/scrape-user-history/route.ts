@@ -17,12 +17,14 @@ interface ScrapeUserRequest {
     includeShifts?: boolean;
     includeSignups?: boolean;
   };
+  sessionId?: string;
 }
 
 interface ScrapeUserResponse {
   success: boolean;
   userFound: boolean;
   userCreated?: boolean;
+  userAlreadyExists: boolean;
   shiftsFound: number;
   shiftsImported: number;
   signupsFound: number;
@@ -35,6 +37,21 @@ interface ScrapeUserResponse {
   };
 }
 
+// Helper function to send progress updates
+async function sendProgress(sessionId: string | undefined, data: any) {
+  if (!sessionId) return;
+  
+  try {
+    await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/admin/migration/progress`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId, ...data })
+    });
+  } catch (error) {
+    console.log('Failed to send progress update:', error);
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Check authentication and admin role
@@ -44,7 +61,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body: ScrapeUserRequest = await request.json();
-    const { userEmail, novaConfig, options = {} } = body;
+    const { userEmail, novaConfig, options = {}, sessionId } = body;
 
     if (!userEmail || !novaConfig.baseUrl || !novaConfig.email || !novaConfig.password) {
       return NextResponse.json(
@@ -53,20 +70,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const response: ScrapeUserResponse = {
-      success: false,
-      userFound: false,
-      shiftsFound: 0,
-      shiftsImported: 0,
-      signupsFound: 0,
-      signupsImported: 0,
-      errors: [],
-    };
-
     try {
       // Check if user already exists in our system
       const existingUser = await prisma.user.findUnique({
         where: { email: userEmail.toLowerCase() },
+      });
+
+      const response: ScrapeUserResponse = {
+        success: false,
+        userFound: false,
+        userAlreadyExists: !!existingUser,
+        shiftsFound: 0,
+        shiftsImported: 0,
+        signupsFound: 0,
+        signupsImported: 0,
+        errors: [],
+      };
+
+      await sendProgress(sessionId, {
+        type: 'status',
+        message: 'Connecting to Nova...',
+        stage: 'connecting'
       });
 
       // Create Nova scraper instance
@@ -78,6 +102,12 @@ export async function POST(request: NextRequest) {
 
       // First, find the user in Nova system using search parameter
       console.log(`Looking for user: ${userEmail} in Nova...`);
+      
+      await sendProgress(sessionId, {
+        type: 'status',
+        message: `Searching for user: ${userEmail}`,
+        stage: 'searching'
+      });
       
       let targetNovaUser = null;
       let userFound = false;
@@ -139,7 +169,7 @@ export async function POST(request: NextRequest) {
             markAsMigrated: true,
           });
 
-          const userData = await transformer.transformUser(targetNovaUser);
+          const userData = await transformer.transformUser(targetNovaUser, scraper);
           ourUser = await prisma.user.create({
             data: userData,
           });
@@ -163,21 +193,14 @@ export async function POST(request: NextRequest) {
           let page = 1;
           let hasMorePages = true;
 
-          while (hasMorePages) {
-            const signupsResponse = await scraper.novaApiRequest(
-              `/event-applications?viaResource=users&viaResourceId=${novaUserId}&viaRelationship=event_applications&perPage=100&page=${page}`
-            );
+          // For development, just get first page with limited results
+          const signupsResponse = await scraper.novaApiRequest(
+            `/event-applications?viaResource=users&viaResourceId=${novaUserId}&viaRelationship=event_applications&perPage=5&page=1`
+          );
 
-            if (signupsResponse.resources && signupsResponse.resources.length > 0) {
-              allSignups.push(...signupsResponse.resources);
-              console.log(`Found ${signupsResponse.resources.length} signups on page ${page}, total: ${allSignups.length}`);
-              
-              // Check for more pages
-              hasMorePages = signupsResponse.next_page_url !== null;
-              page++;
-            } else {
-              hasMorePages = false;
-            }
+          if (signupsResponse.resources && signupsResponse.resources.length > 0) {
+            allSignups = signupsResponse.resources;
+            console.log(`Found ${signupsResponse.resources.length} signups (limited to 5 for dev)`);
           }
 
           if (allSignups.length > 0) {
@@ -237,8 +260,11 @@ export async function POST(request: NextRequest) {
 
                 for (const eventDetail of eventDetails) {
                   try {
-                    // Transform event to shift format
-                    const shiftData = transformer.transformEvent(eventDetail);
+                    // Get signups for this event to determine position/shift type
+                    const eventSignups = signupData.filter(s => s.eventId === eventDetail.id.value);
+                    
+                    // Transform event to shift format with signup position data
+                    const shiftData = transformer.transformEvent(eventDetail, eventSignups);
                     
                     // Ensure shift type exists
                     let shiftType = await prisma.shiftType.findUnique({

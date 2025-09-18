@@ -544,6 +544,13 @@ export class LaravelNovaScraper {
       return false;
     }
   }
+
+  /**
+   * Get current authentication cookies for external requests
+   */
+  getCookies(): string {
+    return this.cookies.join("; ");
+  }
 }
 
 /**
