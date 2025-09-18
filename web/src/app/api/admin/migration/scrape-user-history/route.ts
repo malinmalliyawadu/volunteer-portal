@@ -241,7 +241,7 @@ export async function POST(request: NextRequest) {
           console.log(`Scraping event applications for user ${novaUserId}...`);
 
           // Get user's event applications (shift signups) - need to paginate through all results
-          let allSignups: NovaUserResource[] = [];
+          const allSignups: NovaUserResource[] = [];
           let page = 1;
           let hasMorePages = true;
 

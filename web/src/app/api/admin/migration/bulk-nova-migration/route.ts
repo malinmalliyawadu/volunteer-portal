@@ -211,7 +211,7 @@ export async function POST(request: NextRequest) {
                 });
                 
                 // Get user's event applications with pagination
-                let allSignups: NovaUserResource[] = [];
+                const allSignups: NovaUserResource[] = [];
                 let page = 1;
                 let hasMorePages = true;
 
