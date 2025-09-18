@@ -1,5 +1,5 @@
 import { test, expect } from "./base";
-import { readFileSync } from "fs";
+import { readFileSync, writeFileSync, unlinkSync } from "fs";
 import path from "path";
 import { loginAsAdmin } from "./helpers/auth";
 
@@ -257,7 +257,7 @@ test.describe("Admin Migration System", () => {
       const textFilePath = path.join(__dirname, "../fixtures/test.txt");
 
       // Create a temporary text file for testing
-      require("fs").writeFileSync(textFilePath, "This is not a CSV file");
+      writeFileSync(textFilePath, "This is not a CSV file");
 
       try {
         await page.locator('input[type="file"]').setInputFiles(textFilePath);
@@ -267,7 +267,7 @@ test.describe("Admin Migration System", () => {
         ).toBeVisible();
       } finally {
         // Clean up
-        require("fs").unlinkSync(textFilePath);
+        unlinkSync(textFilePath);
       }
     });
 
