@@ -189,7 +189,7 @@ export async function deleteTestShifts(shiftIds: string[]): Promise<void> {
 export async function createNotificationGroup(data: {
   name: string;
   description?: string;
-  filters: any;
+  filters: Prisma.JsonValue;
   createdBy: string;
 }): Promise<{ id: string }> {
   const group = await prisma.notificationGroup.create({
