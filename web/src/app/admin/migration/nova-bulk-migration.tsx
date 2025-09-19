@@ -60,8 +60,8 @@ interface BulkMigrationResult {
 export function NovaBulkMigration() {
   const [novaConfig, setNovaConfig] = useState<NovaConfig>({
     baseUrl: "https://app.everybodyeats.nz",
-    email: "malin.malliya.wadu@gmail.com",
-    password: "p@SSw0rd",
+    email: "",
+    password: "",
   });
 
   const [options, setOptions] = useState<MigrationOptions>({
@@ -78,7 +78,10 @@ export function NovaBulkMigration() {
   const [showPassword, setShowPassword] = useState(false);
   const [result, setResult] = useState<BulkMigrationResult | null>(null);
   const [connectionTested, setConnectionTested] = useState(false);
-  const [progressData, setProgressData] = useState<Record<string, unknown> | null>(null);
+  const [progressData, setProgressData] = useState<Record<
+    string,
+    unknown
+  > | null>(null);
   const [currentStep, setCurrentStep] = useState<string>("");
   const [migrationLogs, setMigrationLogs] = useState<string[]>([]);
   const { toast } = useToast();
@@ -168,7 +171,9 @@ export function NovaBulkMigration() {
     ]);
 
     // Generate session ID for SSE
-    const sessionId = `migration-${Date.now()}-${randomBytes(8).toString('hex')}`;
+    const sessionId = `migration-${Date.now()}-${randomBytes(8).toString(
+      "hex"
+    )}`;
 
     // Connect to SSE stream
     const eventSource = new EventSource(
