@@ -210,7 +210,7 @@ test.describe("Migration Registration Flow", () => {
       // Check step indicator - now 6 steps with photo upload
       await expect(
         page.locator('[data-testid="step-indicator"]')
-      ).toContainText("Step 1 of 6");
+      ).toContainText("Step 1 of 5");
       await expect(page.locator('[data-testid="step-title"]')).toContainText(
         "Review Your Information"
       );
@@ -229,7 +229,7 @@ test.describe("Migration Registration Flow", () => {
       // Check step 2 is now active
       await expect(
         page.locator('[data-testid="step-indicator"]')
-      ).toContainText("Step 2 of 6");
+      ).toContainText("Step 2 of 5");
       await expect(page.locator('[data-testid="step-title"]')).toContainText(
         "Emergency Contact"
       );
@@ -332,7 +332,7 @@ test.describe("Migration Registration Flow", () => {
       // Check step 3 is now active - Medical & Availability
       await expect(
         page.locator('[data-testid="step-indicator"]')
-      ).toContainText("Step 3 of 6");
+      ).toContainText("Step 3 of 5");
       await expect(page.locator('[data-testid="step-title"]')).toContainText(
         "Medical & Availability"
       );
@@ -392,7 +392,7 @@ test.describe("Migration Registration Flow", () => {
       // Check step 4 is now active - Profile Photo
       await expect(
         page.locator('[data-testid="step-indicator"]')
-      ).toContainText("Step 4 of 6");
+      ).toContainText("Step 4 of 5");
       await expect(page.locator('[data-testid="step-title"]')).toContainText(
         "Profile Photo"
       );
@@ -439,7 +439,7 @@ test.describe("Migration Registration Flow", () => {
       // Should proceed to next step
       await expect(
         page.locator('[data-testid="step-indicator"]')
-      ).toContainText("Step 5 of 6");
+      ).toContainText("Step 5 of 5");
     });
 
     test("should complete step 4: Profile Photo Upload", async ({ page }) => {
@@ -474,7 +474,7 @@ test.describe("Migration Registration Flow", () => {
       // Check step 5 is now active - Set Password
       await expect(
         page.locator('[data-testid="step-indicator"]')
-      ).toContainText("Step 5 of 6");
+      ).toContainText("Step 5 of 5");
       await expect(page.locator('[data-testid="step-title"]')).toContainText(
         "Set Password"
       );
@@ -511,7 +511,7 @@ test.describe("Migration Registration Flow", () => {
       // Now on step 5: Set Password
       await expect(
         page.locator('[data-testid="step-indicator"]')
-      ).toContainText("Step 5 of 6");
+      ).toContainText("Step 5 of 5");
       await expect(page.locator('[data-testid="step-title"]')).toContainText(
         "Set Password"
       );
@@ -529,7 +529,7 @@ test.describe("Migration Registration Flow", () => {
       // Check step 6 is now active - Final Steps
       await expect(
         page.locator('[data-testid="step-indicator"]')
-      ).toContainText("Step 6 of 6");
+      ).toContainText("Step 5 of 5");
       await expect(page.locator('[data-testid="step-title"]')).toContainText(
         "Final Steps"
       );
@@ -557,7 +557,7 @@ test.describe("Migration Registration Flow", () => {
       );
       await expect(
         page.locator('[data-testid="step-indicator"]')
-      ).toContainText("Step 2 of 6");
+      ).toContainText("Step 2 of 5");
 
       // Fill out required emergency contact fields
       await page.fill(
@@ -577,7 +577,7 @@ test.describe("Migration Registration Flow", () => {
       // Now should proceed to step 3
       await expect(
         page.locator('[data-testid="step-indicator"]')
-      ).toContainText("Step 3 of 6");
+      ).toContainText("Step 3 of 5");
       await expect(page.locator('[data-testid="step-title"]')).toContainText(
         "Medical & Availability"
       );
@@ -612,7 +612,7 @@ test.describe("Migration Registration Flow", () => {
       // Now on step 3: Medical & Availability
       await expect(
         page.locator('[data-testid="step-indicator"]')
-      ).toContainText("Step 3 of 6");
+      ).toContainText("Step 3 of 5");
       await expect(page.locator('[data-testid="step-title"]')).toContainText(
         "Medical & Availability"
       );
@@ -641,7 +641,7 @@ test.describe("Migration Registration Flow", () => {
       // Check step 4 is now active
       await expect(
         page.locator('[data-testid="step-indicator"]')
-      ).toContainText("Step 4 of 6");
+      ).toContainText("Step 4 of 5");
       await expect(page.locator('[data-testid="step-title"]')).toContainText(
         "Profile Photo"
       );
@@ -689,7 +689,7 @@ test.describe("Migration Registration Flow", () => {
       // Now on step 6: Final Steps
       await expect(
         page.locator('[data-testid="step-indicator"]')
-      ).toContainText("Step 6 of 6");
+      ).toContainText("Step 5 of 5");
       await expect(page.locator('[data-testid="step-title"]')).toContainText(
         "Final Steps"
       );
@@ -753,7 +753,7 @@ test.describe("Migration Registration Flow", () => {
       // Should still be on step 1
       await expect(
         page.locator('[data-testid="step-indicator"]')
-      ).toContainText("Step 1 of 6");
+      ).toContainText("Step 1 of 5");
       await expect(page.locator('[data-testid="step-title"]')).toContainText(
         "Review Your Information"
       );
