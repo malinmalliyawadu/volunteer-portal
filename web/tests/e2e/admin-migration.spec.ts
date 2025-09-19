@@ -19,40 +19,43 @@ test.describe("Admin Migration System", () => {
       await page.getByTestId("tab-migration-status").click();
 
       // Wait for the stats to load
-      await expect(page.getByTestId("total-migrations-card")).toBeVisible({
+      await expect(page.getByTestId("migrated-users-card")).toBeVisible({
         timeout: 10000,
       });
 
       // Check statistics cards are visible
       await expect(
         page
-          .getByTestId("total-migrations-card")
-          .locator("text=Total Migrations")
+          .getByTestId("migrated-users-card")
+          .locator("text=Migrated Users")
       ).toBeVisible();
       await expect(
         page
-          .getByTestId("successful-migrations-card")
-          .locator("text=Successful")
+          .getByTestId("migrated-shifts-card")
+          .locator("text=Nova Shifts")
       ).toBeVisible();
       await expect(
-        page.getByTestId("failed-migrations-card").locator("text=Failed")
+        page.getByTestId("migrated-signups-card").locator("text=Nova Signups")
       ).toBeVisible();
       await expect(
-        page.getByTestId("last-migration-card").locator("text=Last Migration")
+        page.getByTestId("shift-types-card").locator("text=Shift Types")
       ).toBeVisible();
     });
 
-    test("should show recent migration activity", async ({ page }) => {
+    test("should show migrated data sections", async ({ page }) => {
       // Switch to migration status tab
       await page.getByTestId("tab-migration-status").click();
 
-      // Check recent activity section
-      await expect(page.getByTestId("recent-migration-activity")).toBeVisible({
-        timeout: 10000,
-      });
+      // Check migrated data section
       await expect(
-        page.locator("text=Recent Migration Activity")
-      ).toBeVisible();
+        page.locator("text=All Migrated Data")
+      ).toBeVisible({ timeout: 10000 });
+      
+      // Check that tabs for different data types exist (use role="tab" to be more specific)
+      await expect(page.getByRole("tab", { name: /Users \(\d+\)/ })).toBeVisible();
+      await expect(page.getByRole("tab", { name: /Shifts \(\d+\)/ })).toBeVisible();
+      await expect(page.getByRole("tab", { name: /Signups \(\d+\)/ })).toBeVisible();
+      await expect(page.getByRole("tab", { name: /Types \(\d+\)/ })).toBeVisible();
     });
   });
 
